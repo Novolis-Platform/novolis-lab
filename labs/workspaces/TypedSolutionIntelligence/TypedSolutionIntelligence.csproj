@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TypedSolutionIntelligence</RootNamespace>
+    <Description>Demonstrates typed SLNX topology, MSBuild evaluation, and Roslyn solution catalogs.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="Novolis.IO.Workspace.Abstractions" />
+    <PackageReference Include="Novolis.Workspaces.DotNet.Abstractions" />
+    <PackageReference Include="Novolis.Workspaces.DotNet.Slnx" />
+    <PackageReference Include="Novolis.Workspaces.DotNet.MSBuild" />
+    <PackageReference Include="Novolis.Workspaces.DotNet.Roslyn" />
+    <PackageReference Include="Novolis.Workspaces.DotNet.Indexing" />
+  </ItemGroup>
+</Project>

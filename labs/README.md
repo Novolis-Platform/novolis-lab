@@ -6,6 +6,15 @@ Add a project under `labs/` (or `labs/<repo>/` for grouped labs like `rendering/
 
 API walkthroughs (`HelloGame`, `HelloRuntime`, …) live under `labs/raylib/Hello*`. Library repos keep packable `src/`, tests, and `tools/` only — no `samples/` or product hosts.
 
+## Typed Solution Intelligence
+
+Console walkthrough for the layered solution model: a typed directory root, SLNX topology, optional
+MSBuild evaluation, optional Roslyn semantic facts, and immutable solution catalogs.
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\workspaces\TypedSolutionIntelligence\TypedSolutionIntelligence.csproj -p:NovolisUseProjectReferences=true -- d:\novolis\novolis-workspaces\Novolis.Workspaces.slnx --semantic --framework net10.0
+```
+
 ## FriendLab
 
 Multi-window Find-a-Friend prototype (3-of-5 interest overlap + geo radius). Control window opens one Avalonia window per simulated app user.

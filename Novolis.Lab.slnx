@@ -121,5 +121,6 @@
   <Folder Name="/workspaces/">
     <Project Path="labs/workspaces/MinimalWorkspaceTimeline/MinimalWorkspaceTimeline.csproj" />
     <Project Path="labs/workspaces/ProjectTimelineBench/ProjectTimelineBench.csproj" />
+    <Project Path="labs/workspaces/TypedSolutionIntelligence/TypedSolutionIntelligence.csproj" />
   </Folder>
 </Solution>

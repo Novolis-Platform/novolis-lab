@@ -15,6 +15,7 @@
     <PackageVersion Include="Optris.Icons.Avalonia.FontAwesome" Version="12.0.6" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="System.IO.Abstractions" Version="22.1.0" />
+    <PackageVersion Include="Novolis.IO.Workspace.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
@@ -102,6 +103,11 @@
     <PackageVersion Include="Novolis.Workspaces.FileSystem" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.Snapshots" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.Timeline" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Workspaces.DotNet.Abstractions" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Workspaces.DotNet.Slnx" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Workspaces.DotNet.MSBuild" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Workspaces.DotNet.Roslyn" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Workspaces.DotNet.Indexing" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Commands.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Commands.Engine" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Commands.Queueing" Version="2026.1.*" />

@@ -783,6 +783,18 @@
         "labs/workspaces/ProjectTimelineBench/**",
         "labs/shared/**"
       ]
+    },
+    {
+      "Key": "workspaces-TypedSolutionIntelligence",
+      "DisplayName": "workspaces Typed Solution Intelligence",
+      "Projects": [
+        "labs/workspaces/TypedSolutionIntelligence/TypedSolutionIntelligence.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/workspaces/TypedSolutionIntelligence/**",
+        "labs/shared/**"
+      ]
     }
   ]
 }
