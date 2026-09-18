@@ -8,12 +8,89 @@ on:
       - 'LICENSE'
       - '.editorconfig'
   workflow_dispatch:
+
+concurrency:
+  group: lab-merge-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: read
+
 jobs:
-  ci:
-    uses: Novolis-Platform/novolis-workflows/.github/workflows/dotnet-pull-request.yml@main
-    secrets: inherit
-    with:
-      solution: Novolis.Dogfooding.slnx
-    permissions:
-      contents: read
-      packages: read
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      skip_build: ${{ steps.matrix.outputs.skip_build }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+      - uses: Novolis-Platform/novolis-workflows/actions/setup-dotnet@main
+        with:
+          dotnet-version: 10.0.x
+      - name: Validate labs manifest
+        run: dotnet run --project tools/LabsManifest/LabsManifest.csproj --no-launch-profile -- validate --repo "$GITHUB_WORKSPACE"
+      - name: Resolve changed-lab matrix
+        id: matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            dotnet run --project tools/LabsManifest/LabsManifest.csproj --no-launch-profile -- \
+              ci-matrix --repo "$GITHUB_WORKSPACE" --all > /tmp/matrix.json
+          else
+            before="${{ github.event.before }}"
+            if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+              dotnet run --project tools/LabsManifest/LabsManifest.csproj --no-launch-profile -- \
+                ci-matrix --repo "$GITHUB_WORKSPACE" --all > /tmp/matrix.json
+            else
+              git diff --name-only "$before...${{ github.sha }}" > /tmp/changed-files.txt || true
+              dotnet run --project tools/LabsManifest/LabsManifest.csproj --no-launch-profile -- \
+                ci-matrix --repo "$GITHUB_WORKSPACE" --changed-files /tmp/changed-files.txt \
+                > /tmp/matrix.json
+            fi
+          fi
+          echo "matrix=$(jq -c '.include' /tmp/matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "skip_build=$(jq -r '.skip_build' /tmp/matrix.json)" >> "$GITHUB_OUTPUT"
+          cat /tmp/matrix.json
+
+  build:
+    needs: detect
+    if: needs.detect.outputs.skip_build != 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.detect.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - uses: Novolis-Platform/novolis-workflows/actions/setup-dotnet@main
+        with:
+          dotnet-version: 10.0.x
+      - uses: Novolis-Platform/novolis-workflows/actions/authenticate-github-packages@main
+        with:
+          token: ${{ github.token }}
+      - name: Restore and build changed lab
+        env:
+          PROJECTS_JSON: ${{ toJson(matrix.projects) }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r project; do
+            [ -n "$project" ] || continue
+            dotnet restore "$project"
+            dotnet build "$project" --no-restore -c Release
+          done < <(jq -r '.[]' <<< "$PROJECTS_JSON")
+      - name: Test changed lab scope
+        env:
+          TESTS_JSON: ${{ toJson(matrix.tests) }}
+        run: |
+          set -euo pipefail
+          while IFS= read -r test; do
+            [ -n "$test" ] || continue
+            dotnet test "$test" -c Release
+          done < <(jq -r '.[]' <<< "$TESTS_JSON")

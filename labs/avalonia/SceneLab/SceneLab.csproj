@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SceneLab</RootNamespace>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <Description>Dogfood Novolis.Avalonia.ThreeD — CAD 3D editor / renderer (scene hierarchy, primitives, mesh edit, lights, cameras).</Description>
+    <IsPackable>false</IsPackable>
+    <DefaultItemExcludes>$(DefaultItemExcludes);tools\**\*</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Novolis.Avalonia.ThreeD" />
+    <PackageReference Include="Novolis.Agent.Core" />
+    <PackageReference Include="Novolis.Agent.Surface" />
+    <PackageReference Include="Novolis.ThreeD.Scene" />
+    <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs (same pattern as CalypsoCad). -->
+    <PackageReference Include="Novolis.Avalonia.Raylib" />
+    <PackageReference Include="Novolis.Raylib" />
+    <PackageReference Include="Novolis.Raylib.Abstractions" />
+    <PackageReference Include="Novolis.Raylib.Bindings" />
+    <PackageReference Include="Novolis.Raylib.Runtime" />
+    <PackageReference Include="Novolis.Avalonia.Rendering" />
+    <!-- Vulkan viewport: explicit under ProjectRef (non-transitive). -->
+    <PackageReference Include="Novolis.Rendering.Backends.Vulkan" />
+    <!-- ProjectRef non-transitive: Silk natives for OpenGL / Vulkan wire presenters. -->
+    <PackageReference Include="Silk.NET.OpenGL" />
+    <PackageReference Include="Silk.NET.Vulkan" />
+    <PackageReference Include="Silk.NET.Shaderc" />
+    <PackageReference Include="Silk.NET.Shaderc.Native" />
+  </ItemGroup>
+    <ItemGroup>
+      <None Include="samples\spatial-smoke.nov3djson" CopyToOutputDirectory="PreserveNewest" Link="samples\spatial-smoke.nov3djson" />
+      <None Include="samples\triangle-soup.json" CopyToOutputDirectory="PreserveNewest" Link="samples\triangle-soup.json" />
+    </ItemGroup>
+  </Project>

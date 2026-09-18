@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>BridgeCommander</RootNamespace>
+    <Description>Dogfood Novolis.Commands — Spectre Star Trek bridge with per-character voice.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="ModelContextProtocol" />
+    <PackageReference Include="Novolis.Commands.Abstractions" />
+    <PackageReference Include="Novolis.Commands.Engine" />
+    <PackageReference Include="Novolis.Commands.Queueing" />
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="Novolis.Audio.Voice" />
+    <PackageReference Include="Novolis.Audio.Voice.Profiles" />
+    <ProjectReference Include="..\shared\Novolis.Lab.Voice\Novolis.Lab.Voice.csproj" />
+    <PackageReference Include="Novolis.Audio.Voice.SherpaOnnx" />
+  </ItemGroup>
+</Project>

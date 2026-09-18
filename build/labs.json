@@ -1,0 +1,788 @@
+{
+  "SchemaVersion": 1,
+  "Repository": "novolis-lab",
+  "Labs": [
+    {
+      "Key": "ArtillerySimulator",
+      "DisplayName": "Artillery Simulator",
+      "Projects": [
+        "labs/ArtillerySimulator/ArtillerySimulator.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/ArtillerySimulator/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "astro-AstroSmoke",
+      "DisplayName": "astro Astro Smoke",
+      "Projects": [
+        "labs/astro/AstroSmoke/AstroSmoke.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/astro/AstroSmoke/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "astro-StarMapLab",
+      "DisplayName": "astro Star Map Lab",
+      "Projects": [
+        "labs/astro/StarMapLab/StarMapLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/astro/StarMapLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "audio-VoiceSmoke",
+      "DisplayName": "audio Voice Smoke",
+      "Projects": [
+        "labs/audio/VoiceSmoke/VoiceSmoke.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/audio/VoiceSmoke/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-ChannelLab",
+      "DisplayName": "avalonia Channel Lab",
+      "Projects": [
+        "labs/avalonia/ChannelLab/ChannelHost/ChannelHost.csproj",
+        "labs/avalonia/ChannelLab/ChannelLab.csproj",
+        "labs/avalonia/ChannelLab/ChannelSmoke/ChannelSmoke.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/ChannelLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-CharacterLab",
+      "DisplayName": "avalonia Character Lab",
+      "Projects": [
+        "labs/avalonia/CharacterLab/CharacterLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/CharacterLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-FriendLab",
+      "DisplayName": "avalonia Friend Lab",
+      "Projects": [
+        "labs/avalonia/FriendLab/FriendLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/FriendLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-HumanoidLab",
+      "DisplayName": "avalonia Humanoid Lab",
+      "Projects": [
+        "labs/avalonia/HumanoidLab/HumanoidLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/HumanoidLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-KatoriLab",
+      "DisplayName": "avalonia Katori Lab",
+      "Projects": [
+        "labs/avalonia/KatoriLab/KatoriLab.csproj"
+      ],
+      "Tests": [
+        "labs/avalonia/KatoriLab.Tests/KatoriLab.Tests.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/avalonia/KatoriLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-MobilityLab",
+      "DisplayName": "avalonia Mobility Lab",
+      "Projects": [
+        "labs/avalonia/MobilityLab/MobilityLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/MobilityLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-MovieMakerLab",
+      "DisplayName": "avalonia Movie Maker Lab",
+      "Projects": [
+        "labs/avalonia/MovieMakerLab/MovieMakerLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/MovieMakerLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-MusicMakerLab",
+      "DisplayName": "avalonia Music Maker Lab",
+      "Projects": [
+        "labs/avalonia/MusicMakerLab/MusicMakerLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/MusicMakerLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-RenderingAvalonia",
+      "DisplayName": "avalonia Rendering Avalonia",
+      "Projects": [
+        "labs/avalonia/RenderingAvalonia/RenderingAvalonia.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/RenderingAvalonia/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-SceneLab",
+      "DisplayName": "avalonia Scene Lab",
+      "Projects": [
+        "labs/avalonia/SceneLab/SceneLab.csproj",
+        "labs/avalonia/SceneLab/tools/ChiselCorvetteBuilder/ChiselCorvetteBuilder.csproj",
+        "labs/avalonia/SceneLab/tools/CorellianFreighterBuilder/CorellianFreighterBuilder.csproj",
+        "labs/avalonia/SceneLab/tools/KeelTransportBuilder/KeelTransportBuilder.csproj",
+        "labs/avalonia/SceneLab/tools/TroopCorvetteBuilder/TroopCorvetteBuilder.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/SceneLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-SketchLab",
+      "DisplayName": "avalonia Sketch Lab",
+      "Projects": [
+        "labs/avalonia/SketchLab/SketchLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/SketchLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-StudioChromeLab",
+      "DisplayName": "avalonia Studio Chrome Lab",
+      "Projects": [
+        "labs/avalonia/StudioChromeLab/StudioChromeLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/StudioChromeLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "avalonia-ViewportBench",
+      "DisplayName": "avalonia Viewport Bench",
+      "Projects": [
+        "labs/avalonia/ViewportBench/ViewportBench.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/ViewportBench/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "AvaloniaAgentMcp",
+      "DisplayName": "Avalonia Agent Mcp",
+      "Projects": [
+        "labs/AvaloniaAgentMcp/AvaloniaAgentMcp.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/AvaloniaAgentMcp/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "BouncingBall",
+      "DisplayName": "Bouncing Ball",
+      "Projects": [
+        "labs/BouncingBall/BouncingBall.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/BouncingBall/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "BridgeCommander",
+      "DisplayName": "Bridge Commander",
+      "Projects": [
+        "labs/BridgeCommander/BridgeCommander.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/BridgeCommander/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "cad-CalypsoCad",
+      "DisplayName": "cad Calypso Cad",
+      "Projects": [
+        "labs/cad/CalypsoCad/CalypsoCad.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/cad/CalypsoCad/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "cad-CalypsoInternalsCad",
+      "DisplayName": "cad Calypso Internals Cad",
+      "Projects": [
+        "labs/cad/CalypsoInternalsCad/CalypsoInternalsCad.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/cad/CalypsoInternalsCad/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "civics-PolityTriad",
+      "DisplayName": "civics Polity Triad",
+      "Projects": [
+        "labs/civics/PolityTriad/PolityTriad.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/civics/PolityTriad/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "ClothPlay",
+      "DisplayName": "Cloth Play",
+      "Projects": [
+        "labs/ClothPlay/ClothPlay.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/ClothPlay/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "documents-HelloDocument",
+      "DisplayName": "documents Hello Document",
+      "Projects": [
+        "labs/documents/HelloDocument/HelloDocument.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/documents/HelloDocument/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "documents-HelloMarkdownPdf",
+      "DisplayName": "documents Hello Markdown Pdf",
+      "Projects": [
+        "labs/documents/HelloMarkdownPdf/HelloMarkdownPdf.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/documents/HelloMarkdownPdf/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "DoomLite3D",
+      "DisplayName": "Doom Lite3D",
+      "Projects": [
+        "labs/DoomLite3D/DoomLite3D.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/DoomLite3D/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "economy-EconomyBoard",
+      "DisplayName": "economy Economy Board",
+      "Projects": [
+        "labs/economy/EconomyBoard/EconomyBoard.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/economy/EconomyBoard/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "economy-NearSolPolity",
+      "DisplayName": "economy Near Sol Polity",
+      "Projects": [
+        "labs/economy/NearSolPolity/NearSolPolity.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/economy/NearSolPolity/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "economy-TrampFreighterPlay",
+      "DisplayName": "economy Tramp Freighter Play",
+      "Projects": [
+        "labs/economy/TrampFreighterPlay/TrampFreighterPlay.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/economy/TrampFreighterPlay/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "economy-TrampFreighterSim",
+      "DisplayName": "economy Tramp Freighter Sim",
+      "Projects": [
+        "labs/economy/TrampFreighterSim/TrampFreighterSim.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/economy/TrampFreighterSim/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "gaming-GamingSmoke",
+      "DisplayName": "gaming Gaming Smoke",
+      "Projects": [
+        "labs/gaming/GamingSmoke/GamingSmoke.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/gaming/GamingSmoke/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "gaming-TapDuelFootball",
+      "DisplayName": "gaming Tap Duel Football",
+      "Projects": [
+        "labs/gaming/TapDuelFootball/TapDuelFootball.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/gaming/TapDuelFootball/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "gaming-TopDownDoom",
+      "DisplayName": "gaming Top Down Doom",
+      "Projects": [
+        "labs/gaming/TopDownDoom/TopDownDoom.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/gaming/TopDownDoom/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "io-IoSmoke",
+      "DisplayName": "io Io Smoke",
+      "Projects": [
+        "labs/io/IoSmoke/IoSmoke.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/io/IoSmoke/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "manuscript-ManuscriptSmoke",
+      "DisplayName": "manuscript Manuscript Smoke",
+      "Projects": [
+        "labs/manuscript/ManuscriptSmoke/ManuscriptSmoke.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/manuscript/ManuscriptSmoke/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "MathGridDemo",
+      "DisplayName": "Math Grid Demo",
+      "Projects": [
+        "labs/MathGridDemo/MathGridDemo.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/MathGridDemo/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "NeuralRacing",
+      "DisplayName": "Neural Racing",
+      "Projects": [
+        "labs/NeuralRacing/NeuralRacing.csproj"
+      ],
+      "Tests": [
+        "labs/NeuralRacing.Tests/NeuralRacing.Tests.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/NeuralRacing/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "PlatformerHop",
+      "DisplayName": "Platformer Hop",
+      "Projects": [
+        "labs/PlatformerHop/PlatformerHop.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/PlatformerHop/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "PlatformerTwoD",
+      "DisplayName": "Platformer Two D",
+      "Projects": [
+        "labs/PlatformerTwoD/PlatformerTwoD.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/PlatformerTwoD/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "RagdollPlay",
+      "DisplayName": "Ragdoll Play",
+      "Projects": [
+        "labs/RagdollPlay/RagdollPlay.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/RagdollPlay/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "RandoriFight",
+      "DisplayName": "Randori Fight",
+      "Projects": [
+        "labs/RandoriFight/RandoriFight.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/RandoriFight/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-FreightWing",
+      "DisplayName": "raylib Freight Wing",
+      "Projects": [
+        "labs/raylib/FreightWing/FreightWing.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/FreightWing/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-HelloCapture",
+      "DisplayName": "raylib Hello Capture",
+      "Projects": [
+        "labs/raylib/HelloCapture/HelloCapture.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/HelloCapture/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-HelloGame",
+      "DisplayName": "raylib Hello Game",
+      "Projects": [
+        "labs/raylib/HelloGame/HelloGame.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/HelloGame/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-HelloGui",
+      "DisplayName": "raylib Hello Gui",
+      "Projects": [
+        "labs/raylib/HelloGui/HelloGui.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/HelloGui/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-HelloHosting",
+      "DisplayName": "raylib Hello Hosting",
+      "Projects": [
+        "labs/raylib/HelloHosting/HelloHosting.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/HelloHosting/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-HelloRaygui",
+      "DisplayName": "raylib Hello Raygui",
+      "Projects": [
+        "labs/raylib/HelloRaygui/HelloRaygui.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/HelloRaygui/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-HelloRuntime",
+      "DisplayName": "raylib Hello Runtime",
+      "Projects": [
+        "labs/raylib/HelloRuntime/HelloRuntime.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/HelloRuntime/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-HelloTesting",
+      "DisplayName": "raylib Hello Testing",
+      "Projects": [
+        "labs/raylib/HelloTesting/HelloTesting.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/HelloTesting/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-PulseStrip",
+      "DisplayName": "raylib Pulse Strip",
+      "Projects": [
+        "labs/raylib/PulseStrip/PulseStrip.csproj"
+      ],
+      "Tests": [
+        "labs/raylib/PulseStrip.Tests/PulseStrip.Tests.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/raylib/PulseStrip/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-PulseStrip.Core",
+      "DisplayName": "raylib Pulse Strip.Core",
+      "Projects": [
+        "labs/raylib/PulseStrip.Core/PulseStrip.Core.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/PulseStrip.Core/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-XFighter",
+      "DisplayName": "raylib XFighter",
+      "Projects": [
+        "labs/raylib/XFighter/XFighter.csproj"
+      ],
+      "Tests": [
+        "labs/raylib/XFighter.Tests/XFighter.Tests.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/raylib/XFighter/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "RaylibHello",
+      "DisplayName": "Raylib Hello",
+      "Projects": [
+        "labs/RaylibHello/RaylibHello.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/RaylibHello/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "RaylibHello.Android",
+      "DisplayName": "Raylib Hello.Android",
+      "Projects": [
+        "labs/RaylibHello.Android/RaylibHello.Android.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/RaylibHello.Android/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "rendering-MeshBench",
+      "DisplayName": "rendering Mesh Bench",
+      "Projects": [
+        "labs/rendering/MeshBench/MeshBench.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/rendering/MeshBench/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "rendering-RaytraceHello",
+      "DisplayName": "rendering Raytrace Hello",
+      "Projects": [
+        "labs/rendering/RaytraceHello/RaytraceHello.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/rendering/RaytraceHello/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "rendering-SilkTraceHello",
+      "DisplayName": "rendering Silk Trace Hello",
+      "Projects": [
+        "labs/rendering/SilkTraceHello/SilkTraceHello.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/rendering/SilkTraceHello/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "rendering-SilkTraceStudio",
+      "DisplayName": "rendering Silk Trace Studio",
+      "Projects": [
+        "labs/rendering/SilkTraceStudio/SilkTraceStudio.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/rendering/SilkTraceStudio/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "rendering-SilkTwoDHello",
+      "DisplayName": "rendering Silk Two DHello",
+      "Projects": [
+        "labs/rendering/SilkTwoDHello/SilkTwoDHello.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/rendering/SilkTwoDHello/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "RtsLite",
+      "DisplayName": "Rts Lite",
+      "Projects": [
+        "labs/RtsLite/RtsLite.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/RtsLite/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "RtsLiteTwoD",
+      "DisplayName": "Rts Lite Two D",
+      "Projects": [
+        "labs/RtsLiteTwoD/RtsLiteTwoD.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/RtsLiteTwoD/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "workspaces-MinimalWorkspaceTimeline",
+      "DisplayName": "workspaces Minimal Workspace Timeline",
+      "Projects": [
+        "labs/workspaces/MinimalWorkspaceTimeline/MinimalWorkspaceTimeline.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/workspaces/MinimalWorkspaceTimeline/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "workspaces-ProjectTimelineBench",
+      "DisplayName": "workspaces Project Timeline Bench",
+      "Projects": [
+        "labs/workspaces/ProjectTimelineBench/ProjectTimelineBench.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/workspaces/ProjectTimelineBench/**",
+        "labs/shared/**"
+      ]
+    }
+  ]
+}

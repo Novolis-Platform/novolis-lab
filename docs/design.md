@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`novolis-dogfooding` validates the Novolis ecosystem **as package consumers**: library repos publish to **GitHub Packages**; this repo restores those packages via `PackageReference` only.
+`novolis-lab` validates the Novolis ecosystem **as package consumers**: library repos publish to **GitHub Packages**; this repo restores those packages via `PackageReference` only.
 
 ## Non-goals
 
@@ -27,7 +27,7 @@ Version pin: `Directory.Packages.props` → floating `2026.1.*` for Novolis pack
 
 ## CI
 
-Authenticate with `GITHUB_TOKEN`, `dotnet restore` from `nuget.config`, then build `Novolis.Dogfooding.slnx`.
+Authenticate with `GITHUB_TOKEN`, `dotnet restore` from `nuget.config`, then build `Novolis.Lab.slnx`.
 
 ## 2D rendering dogfood
 
@@ -35,7 +35,7 @@ Authenticate with `GITHUB_TOKEN`, `dotnet restore` from `nuget.config`, then bui
 
 ## Compose helpers
 
-`Novolis.Dogfooding.Compose` provides app-layer bridges (e.g. `ViewPose` → `CameraSnapshot`) without forbidden package references between Simulation and Rendering.
+`Novolis.Lab.Compose` provides app-layer bridges (e.g. `ViewPose` → `CameraSnapshot`) without forbidden package references between Simulation and Rendering.
 
 ## Related
 

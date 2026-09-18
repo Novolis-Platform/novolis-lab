@@ -6,23 +6,23 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Novolis-Platform/.github/main/brand/banners/novolis-dogfooding.svg" width="100%" alt="novolis-dogfooding"/>
+  <img src="https://raw.githubusercontent.com/Novolis-Platform/.github/main/brand/banners/novolis-lab.svg" width="100%" alt="novolis-lab"/>
 </p>
 
 <p align="center">
-  <strong>Integration labs that prove the stack</strong><br/>
-  Dogfood apps and labs that exercise Novolis packages end-to-end.
+  <strong>Fast integration labs</strong><br/>
+  Quick experiments, package demos, smokes, and benchmarks for the Novolis platform.
 </p>
 
 <p align="center">
-  <a href="https://novolis-platform.github.io/.github/novolis-dogfooding/"><img src="https://img.shields.io/badge/docs-portfolio-0a7ea3" alt="docs"/></a>
-  <a href="https://github.com/Novolis-Platform/novolis-dogfooding/actions"><img src="https://img.shields.io/github/actions/workflow/status/Novolis-Platform/novolis-dogfooding/merge.yml?branch=main&label=merge&logo=github" alt="merge"/></a>
-  <a href="https://github.com/orgs/Novolis-Platform/packages?repo_name=novolis-dogfooding"><img src="https://img.shields.io/badge/packages-GitHub%20Packages-0a7ea3?logo=nuget" alt="packages"/></a>
+  <a href="https://novolis-platform.github.io/.github/novolis-lab/"><img src="https://img.shields.io/badge/docs-portfolio-0a7ea3" alt="docs"/></a>
+  <a href="https://github.com/Novolis-Platform/novolis-lab/actions"><img src="https://img.shields.io/github/actions/workflow/status/Novolis-Platform/novolis-lab/merge.yml?branch=main&label=merge&logo=github" alt="merge"/></a>
+  <a href="https://github.com/orgs/Novolis-Platform/packages?repo_name=novolis-lab"><img src="https://img.shields.io/badge/packages-GitHub%20Packages-0a7ea3?logo=nuget" alt="packages"/></a>
   <a href="https://github.com/Novolis-Platform"><img src="https://img.shields.io/badge/org-Novolis--Platform-111827" alt="org"/></a>
 </p>
 
 <p align="center">
-  <a href="https://novolis-platform.github.io/.github/novolis-dogfooding/">Docs</a>
+  <a href="https://novolis-platform.github.io/.github/novolis-lab/">Docs</a>
   ·
   <a href="https://nuget.pkg.github.com/Novolis-Platform/index.json"><code>https://nuget.pkg.github.com/Novolis-Platform/index.json</code></a>
   ·
@@ -33,26 +33,26 @@
 
 ---
 <!-- novolis-marketing:end -->
-# novolis-dogfooding
+# novolis-lab
 
 Integration workspace that **consumes published Novolis packages** from [GitHub Packages](https://github.com/orgs/Novolis-Platform/packages) (`PackageReference` only).
 
-This repo does not publish packages and has **no GitHub Actions CI**. Library repos validate and publish via their own `merge.yml` / `release.yml` workflows; dogfooding is for local integration against what is already on the feed.
+This repo does not publish packages. Pull-request and merge CI build only changed labs; the lab is for local integration against what is already on the feed.
 
-Per-app READMEs live under `apps/<name>/README.md` (see also [apps/README.md](apps/README.md) for a short index).
+Per-app READMEs live under `labs/<name>/README.md` (see also [labs/README.md](labs/README.md) for a short index).
 
 ## Quick start
 
 ```powershell
-git clone https://github.com/Novolis-Platform/novolis-dogfooding.git
-cd novolis-dogfooding
+git clone https://github.com/Novolis-Platform/novolis-lab.git
+cd novolis-lab
 
 # One-time per machine: user NuGet.Config (not repo nuget.config)
 ..\novolis-governance\scripts\configure-gpr-user-nuget.ps1
 
 dotnet restore
 dotnet build --no-restore
-dotnet run --project apps/MathGridDemo
+dotnet run --project labs/MathGridDemo
 ```
 
 Feed: `https://nuget.pkg.github.com/Novolis-Platform/index.json` (see `nuget.config`).
@@ -63,72 +63,88 @@ If restore returns 401, re-run `configure-gpr-user-nuget.ps1` (credentials live 
 
 **Local iteration:** open `Novolis.Platform.slnx` or pass `-p:NovolisUseProjectReferences=true` when building/running apps against sibling checkouts. Committed consumers use GitHub Packages only.
 
-## Apps
+## Selected library checkouts
+
+The lab is empty of library submodules by default. Add only the library needed for an experiment:
+
+```powershell
+pwsh -File scripts/Add-LabLibrary.ps1 -Repo novolis-logging
+pwsh -File scripts/Sync-LabLibraries.ps1
+```
+
+If `d:\novolis\novolis-logging` already exists, synchronization uses that sibling checkout and does not clone a second copy. For a recorded submodule checkout, set `-p:NovolisLibraryRoot=.../submodules` when enabling ProjectReference mode. Lab project files must remain `PackageReference`-only; CI does not initialize submodules.
+
+Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new experiment with `scripts/New-Lab.ps1 -Name FooLab -Stack console|avalonia|raylib|spectre`.
+
+## Labs
 
 | App | Folder | Novolis packages exercised |
 |-----|--------|---------------------------|
-| `MathGridDemo` | `apps/MathGridDemo` | Math.Arrays |
-| `RaylibHello` | `apps/RaylibHello` | Raylib |
-| `HelloGame` … `HelloRaygui` | `apps/raylib/Hello*` | Raylib API walkthroughs |
-| `RenderingAvalonia` | `apps/avalonia/RenderingAvalonia` | Avalonia.Rendering + Avalonia.Raylib |
-| `MobilityLab` | `apps/avalonia/MobilityLab` | Tax–mobility Civics/Economy/Geopolitics Avalonia desk |
-| `MovieMakerLab` | `apps/avalonia/MovieMakerLab` | Video.Edit full demo (images/audio/transitions/text/export) |
-| `MusicMakerLab` | `apps/avalonia/MusicMakerLab` | Audio.Edit multi-track (library/waveforms/fades/export) |
-| `MinimalWorkspaceTimeline` | `apps/workspaces/MinimalWorkspaceTimeline` | Workspaces + Timeline |
-| `ProjectTimelineBench` | `apps/workspaces/ProjectTimelineBench` | Workspaces.Projects.Timeline |
-| `XFighter` | `apps/raylib/XFighter` | Raylib, Audio (Core, Effects, Playback, Voice) |
-| `ArtillerySimulator` | `apps/ArtillerySimulator` | Raylib, Physics.Ballistics, Physics.Collision, Simulation |
-| `BouncingBall` | `apps/BouncingBall` | Raylib, Math.Arrays, Simulation, Physics.Collision |
-| `DoomLite3D` | `apps/DoomLite3D` | Raylib, Math, Simulation (World, View, Kinematics) |
-| `RagdollPlay` | `apps/RagdollPlay` | Raylib, Simulation, Physics.Joints, Physics.Collision |
-| `ClothPlay` | `apps/ClothPlay` | Raylib, Simulation, Physics.Joints cloth sheet, Physics.Collision |
-| `RandoriFight` | `apps/RandoriFight` | Raylib, Simulation.View, Simulation.Humanoid |
-| `PlatformerHop` | `apps/PlatformerHop` | Raylib, Simulation.Kinematics, Simulation.View |
-| `PlatformerTwoD` | `apps/PlatformerTwoD` | Rendering.TwoD, Backends.TwoD.Silk, Simulation |
-| `RtsLite` | `apps/RtsLite` | Raylib, Simulation (Kinematics, View, World) |
-| `RtsLiteTwoD` | `apps/RtsLiteTwoD` | Rendering.TwoD, Backends.TwoD.Silk, Simulation.Kinematics |
-| `RaytraceHello` | `apps/rendering/RaytraceHello` | Raylib.Game, Rendering (ILGPU + DI + Presentation.Raylib) |
-| `SilkTraceHello` | `apps/rendering/SilkTraceHello` | Rendering (env backend + PathTrace.Demos + Presentation.Silk) |
-| `SilkTraceStudio` | `apps/rendering/SilkTraceStudio` | Rendering backends + PathTrace.Demos + Presentation.Silk |
-| `SilkTwoDHello` | `apps/rendering/SilkTwoDHello` | Rendering.TwoD, Backends.TwoD.Silk |
-| `MeshBench` (Mesh Studio) | `apps/rendering/MeshBench` | Workspaces, Timeline, Snapshots, Rendering, Audio |
-| `GamingSmoke` | `apps/gaming/GamingSmoke` | Game.Identity, Game.MenuFlows, Game.Multiplayer.Abstractions |
-| `TopDownDoom` | `apps/gaming/TopDownDoom` | Rendering.TwoD, Game flows |
-| `TapDuelFootball` | `apps/gaming/TapDuelFootball` | Rendering.TwoD, Game.MenuFlows — hotseat tap duel |
-| `NeuralRacing` | `apps/NeuralRacing` | Simulation.Racing, MachineLearning.Neural |
-| `VoiceSmoke` | `apps/audio/VoiceSmoke` | Audio.Voice, Voice.Atc (Sherpa Piper TTS) |
-| `NovolisVoiceStudio` | `apps/audio/NovolisVoiceStudio` | Voice.Design + Avalonia.Voice |
-| `StudioChromeLab` | `apps/avalonia/StudioChromeLab` | Controls dialogs/lists/jobs + Studio focus/dirty chrome |
-| `AvaloniaAgentMcp` | `apps/AvaloniaAgentMcp` | Avalonia.Agent.Protocol, Transports.LocalIpc, Agent.Core/Surface |
-| `SketchLab` | `apps/avalonia/SketchLab` | SketchControl freehand canvas + PNG/SVG export |
-| `ViewportBench` | `apps/avalonia/ViewportBench` | Shared-camera CAD wireframe (OpenGL/CPU/Vulkan/Raylib) |
-| `SceneLab` | `apps/avalonia/SceneLab` | Avalonia 3D scene lab |
-| `TorrentLab` | `apps/avalonia/TorrentLab` | Avalonia torrent session UI |
-| `HumanoidLab` | `apps/avalonia/HumanoidLab` | Simulation.Humanoid, Humanoid.Physics |
-| `CharacterLab` | `apps/avalonia/CharacterLab` | Drill/salute rig + character/rifle parade scene |
-| `KatoriLab` | `apps/avalonia/KatoriLab` | TSKSR-inspired kenjutsu wire + bokken hold IK |
-| `KatoriLab.Tests` | `apps/avalonia/KatoriLab.Tests` | Kata correctness (timeline, holds, walk hang) |
-| `FriendLab` | `apps/avalonia/FriendLab` | Find-a-Friend prototype — multi-window users, 3-of-5 interests + geo |
-| `CalypsoCad` | `apps/cad/CalypsoCad` | CAD deckplan generation |
-| `CalypsoInternalsCad` | `apps/cad/CalypsoInternalsCad` | CAL-INT drawings → CAD + OBJ 3D |
-| `AstroSmoke` | `apps/astro/AstroSmoke` | Astro catalog/routing/assessment/overlay/plotting |
-| `StarMapLab` | `apps/astro/StarMapLab` | Avalonia.StarMap + Astro route planner |
-| `EconomyBoard` | `apps/economy/EconomyBoard` | Economy kernel — Avalonia board |
-| `TrampFreighterPlay` | `apps/economy/TrampFreighterPlay` | Economy logistics — interactive Spectre |
-| `TrampFreighterSim` | `apps/economy/TrampFreighterSim` | Economy logistics — observer Spectre |
-| `NearSolPolity` | `apps/economy/NearSolPolity` | Astro catalog bridged to Economy |
-| `PolityTriad` | `apps/civics/PolityTriad` | Civics + Economy + Geopolitics composed month |
-| `IoSmoke` | `apps/io/IoSmoke` | IO.Paths, Recovery, Watching, Processes, Git |
-| `AdbLab` | `apps/io/AdbLab` | IO.Mobile.Android — ADB protocol |
-| `ManuscriptSmoke` | `apps/manuscript/ManuscriptSmoke` | Markup.Manuscript, Voice.Manuscript |
-| `BridgeCommander` | `apps/BridgeCommander` | Commands + Audio.Voice (Spectre console) |
-| `WireFishViewer` | `apps/WireFishViewer` | Avalonia, Transports.WireFish, Messaging.Channels |
+| `MathGridDemo` | `labs/MathGridDemo` | Math.Arrays |
+| `RaylibHello` | `labs/RaylibHello` | Raylib |
+| `HelloGame` … `HelloRaygui` | `labs/raylib/Hello*` | Raylib API walkthroughs |
+| `RenderingAvalonia` | `labs/avalonia/RenderingAvalonia` | Avalonia.Rendering + Avalonia.Raylib |
+| `MobilityLab` | `labs/avalonia/MobilityLab` | Tax–mobility Civics/Economy/Geopolitics Avalonia UI |
+| `MovieMakerLab` | `labs/avalonia/MovieMakerLab` | Video.Edit full demo (images/audio/transitions/text/export) |
+| `MusicMakerLab` | `labs/avalonia/MusicMakerLab` | Audio.Edit multi-track (library/waveforms/fades/export) |
+| `MinimalWorkspaceTimeline` | `labs/workspaces/MinimalWorkspaceTimeline` | Workspaces + Timeline |
+| `ProjectTimelineBench` | `labs/workspaces/ProjectTimelineBench` | Workspaces.Projects.Timeline |
+| `XFighter` | `labs/raylib/XFighter` | Raylib, Audio (Core, Effects, Playback, Voice) |
+| `ArtillerySimulator` | `labs/ArtillerySimulator` | Raylib, Physics.Ballistics, Physics.Collision, Simulation |
+| `BouncingBall` | `labs/BouncingBall` | Raylib, Math.Arrays, Simulation, Physics.Collision |
+| `DoomLite3D` | `labs/DoomLite3D` | Raylib, Math, Simulation (World, View, Kinematics) |
+| `RagdollPlay` | `labs/RagdollPlay` | Raylib, Simulation, Physics.Joints, Physics.Collision |
+| `ClothPlay` | `labs/ClothPlay` | Raylib, Simulation, Physics.Joints cloth sheet, Physics.Collision |
+| `RandoriFight` | `labs/RandoriFight` | Raylib, Simulation.View, Simulation.Humanoid |
+| `PlatformerHop` | `labs/PlatformerHop` | Raylib, Simulation.Kinematics, Simulation.View |
+| `PlatformerTwoD` | `labs/PlatformerTwoD` | Rendering.TwoD, Backends.TwoD.Silk, Simulation |
+| `RtsLite` | `labs/RtsLite` | Raylib, Simulation (Kinematics, View, World) |
+| `RtsLiteTwoD` | `labs/RtsLiteTwoD` | Rendering.TwoD, Backends.TwoD.Silk, Simulation.Kinematics |
+| `RaytraceHello` | `labs/rendering/RaytraceHello` | Raylib.Game, Rendering (ILGPU + DI + Presentation.Raylib) |
+| `SilkTraceHello` | `labs/rendering/SilkTraceHello` | Rendering (env backend + PathTrace.Demos + Presentation.Silk) |
+| `SilkTraceStudio` | `labs/rendering/SilkTraceStudio` | Rendering backends + PathTrace.Demos + Presentation.Silk |
+| `SilkTwoDHello` | `labs/rendering/SilkTwoDHello` | Rendering.TwoD, Backends.TwoD.Silk |
+| `MeshBench` (Mesh Studio) | `labs/rendering/MeshBench` | Workspaces, Timeline, Snapshots, Rendering, Audio |
+| `GamingSmoke` | `labs/gaming/GamingSmoke` | Game.Identity, Game.MenuFlows, Game.Multiplayer.Abstractions |
+| `TopDownDoom` | `labs/gaming/TopDownDoom` | Rendering.TwoD, Game flows |
+| `TapDuelFootball` | `labs/gaming/TapDuelFootball` | Rendering.TwoD, Game.MenuFlows — hotseat tap duel |
+| `NeuralRacing` | `labs/NeuralRacing` | Simulation.Racing, MachineLearning.Neural |
+| `VoiceSmoke` | `labs/audio/VoiceSmoke` | Audio.Voice, Voice.Atc (Sherpa Piper TTS) |
+| `StudioChromeLab` | `labs/avalonia/StudioChromeLab` | Controls dialogs/lists/jobs + Studio focus/dirty chrome |
+| `AvaloniaAgentMcp` | `labs/AvaloniaAgentMcp` | Avalonia.Agent.Protocol, Transports.LocalIpc, Agent.Core/Surface |
+| `SketchLab` | `labs/avalonia/SketchLab` | SketchControl freehand canvas + PNG/SVG export |
+| `ViewportBench` | `labs/avalonia/ViewportBench` | Shared-camera CAD wireframe (OpenGL/CPU/Vulkan/Raylib) |
+| `SceneLab` | `labs/avalonia/SceneLab` | Avalonia 3D scene lab |
+| `HumanoidLab` | `labs/avalonia/HumanoidLab` | Simulation.Humanoid, Humanoid.Physics |
+| `CharacterLab` | `labs/avalonia/CharacterLab` | Drill/salute rig + character/rifle parade scene |
+| `KatoriLab` | `labs/avalonia/KatoriLab` | TSKSR-inspired kenjutsu wire + bokken hold IK |
+| `KatoriLab.Tests` | `labs/avalonia/KatoriLab.Tests` | Kata correctness (timeline, holds, walk hang) |
+| `FriendLab` | `labs/avalonia/FriendLab` | Find-a-Friend prototype — multi-window users, 3-of-5 interests + geo |
+| `CalypsoCad` | `labs/cad/CalypsoCad` | CAD deckplan generation |
+| `CalypsoInternalsCad` | `labs/cad/CalypsoInternalsCad` | CAL-INT drawings → CAD + OBJ 3D |
+| `AstroSmoke` | `labs/astro/AstroSmoke` | Astro catalog/routing/assessment/overlay/plotting |
+| `StarMapLab` | `labs/astro/StarMapLab` | Avalonia.StarMap + Astro route planner |
+| `EconomyBoard` | `labs/economy/EconomyBoard` | Economy kernel — Avalonia board |
+| `TrampFreighterPlay` | `labs/economy/TrampFreighterPlay` | Economy logistics — interactive Spectre |
+| `TrampFreighterSim` | `labs/economy/TrampFreighterSim` | Economy logistics — observer Spectre |
+| `NearSolPolity` | `labs/economy/NearSolPolity` | Astro catalog bridged to Economy |
+| `PolityTriad` | `labs/civics/PolityTriad` | Civics + Economy + Geopolitics composed month |
+| `IoSmoke` | `labs/io/IoSmoke` | IO.Paths, Recovery, Watching, Processes, Git |
+| `ManuscriptSmoke` | `labs/manuscript/ManuscriptSmoke` | Markup.Manuscript, Voice.Manuscript |
+| `BridgeCommander` | `labs/BridgeCommander` | Commands + Audio.Voice (Spectre console) |
+
+The first utility wave graduated to
+`d:\novolis\novolis-utilities`: Adb, WireFish, Torrent, and VoiceStudio.
+
+## Graduation
+
+Labs do not ship. Use `scripts/Graduate-Lab.ps1 -Name FooLab -To tools|utilities|apps` to validate shared-project references and emit a checklist plus destination manifest fragment. The script does not copy or rewrite files. Keep experiments here until a destination repository accepts the host.
 
 ## Shared in-repo libraries
 
 | Library | Folder | Purpose |
 |---------|--------|---------|
-| `Novolis.Dogfooding.Compose` | `apps/shared/Novolis.Dogfooding.Compose` | ViewPose → rendering camera bridge |
-| `Novolis.Dogfooding.TwoD` | `apps/shared/Novolis.Dogfooding.TwoD` | TwoD platform/camera helpers |
-| `Novolis.Dogfooding.Voice` | `apps/shared/Novolis.Dogfooding.Voice` | ATC voice DI for demos |
+| `Novolis.Lab.Compose` | `labs/shared/Novolis.Lab.Compose` | ViewPose → rendering camera bridge |
+| `Novolis.Lab.TwoD` | `labs/shared/Novolis.Lab.TwoD` | TwoD platform/camera helpers |
+| `Novolis.Lab.Voice` | `labs/shared/Novolis.Lab.Voice` | ATC voice DI for demos |
 

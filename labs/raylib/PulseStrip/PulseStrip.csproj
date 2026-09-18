@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PulseStrip</RootNamespace>
+    <Description>3D anti-grav racer homage — spline circuits, weapons, procedural FX/SFX, ML opponents (Win/Linux).</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AssimpNet" />
+    <PackageReference Include="Novolis.Audio" />
+    <PackageReference Include="Novolis.Audio.Abstractions" />
+    <PackageReference Include="Novolis.Audio.Runtime" />
+    <PackageReference Include="Novolis.Game.MenuFlows" />
+    <PackageReference Include="Novolis.MachineLearning.Neural" />
+    <PackageReference Include="Novolis.MachineLearning.Neural.Abstractions" />
+    <PackageReference Include="Novolis.Math.Geometry" />
+    <PackageReference Include="Novolis.ThreeD.Import.Assimp" />
+    <PackageReference Include="Novolis.Simulation.Racing" />
+    <PackageReference Include="Novolis.Raylib">
+      <ExcludeAssets>buildTransitive</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Novolis.Raylib.Game" />
+    <PackageReference Include="Novolis.Raylib.Bindings" />
+    <PackageReference Include="Novolis.Raylib.Runtime" />
+    <ProjectReference Include="..\PulseStrip.Core\PulseStrip.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Content\**\*" CopyToOutputDirectory="PreserveNewest" Link="Content\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

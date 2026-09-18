@@ -6,15 +6,16 @@ artifacts/
 *.suo
 .DS_Store
 
-# Legacy local library clones (not used by the build)
-submodules/
+# Selected library clones are managed by scripts; keep the empty root visible.
+submodules/*
+!submodules/.gitkeep
 
 # Generated SceneLab meshes over GitHub's 100MB hard limit — bake with CorellianFreighterBuilder
-apps/avalonia/SceneLab/samples/corellian-freighter.nov3djson
+labs/avalonia/SceneLab/samples/corellian-freighter.nov3djson
 
 # FreightWing baked XWA content (local bake-app only)
-apps/raylib/FreightWing/Content/**
-!apps/raylib/FreightWing/Content/README.md
+labs/raylib/FreightWing/Content/**
+!labs/raylib/FreightWing/Content/README.md
 # MTP / VS test output
 TestResults/
 [Tt]est[Rr]esults/

@@ -1,5 +1,5 @@
 <Project>
-  <PropertyGroup Label="Dogfooding repo (not a package repo)">
+  <PropertyGroup Label="Lab repo (not a package repo)">
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -12,7 +12,7 @@
     <Authors>Novolis</Authors>
     <Company>Novolis</Company>
     <Copyright>Copyright (c) Novolis-Platform</Copyright>
-    <RepositoryUrl>https://github.com/Novolis-Platform/novolis-dogfooding</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Novolis-Platform/novolis-lab</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 

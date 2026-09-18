@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "bridge-commander": {
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "labs/BridgeCommander/BridgeCommander.csproj",
+        "--",
+        "--mcp"
+      ],
+      "cwd": "${workspaceFolder}/novolis-lab"
+    }
+  }
+}

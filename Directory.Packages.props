@@ -69,11 +69,11 @@
     <PackageVersion Include="Novolis.Ship.Topology" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Ship.Validation" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Ship.Structure" Version="2026.1.*" />
-    <PackageVersion Include="Novolis.Avalonia.3D" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.ThreeD" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Agent.Core" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Agent.Surface" Version="2026.1.*" />
-    <PackageVersion Include="Novolis.3D.Scene" Version="2026.1.*" />
-    <PackageVersion Include="Novolis.3D.Import" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.ThreeD.Scene" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.ThreeD.Import.Assimp" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Raylib" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Gaming" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Rendering" Version="2026.1.*" />

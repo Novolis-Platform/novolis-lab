@@ -1,0 +1,125 @@
+<Solution>
+  <Folder Name="/shared/">
+    <Project Path="labs/shared/Novolis.Lab.TwoD/Novolis.Lab.TwoD.csproj" />
+    <Project Path="labs/shared/Novolis.Lab.Compose/Novolis.Lab.Compose.csproj" />
+    <Project Path="labs/shared/Novolis.Lab.Voice/Novolis.Lab.Voice.csproj" />
+    <Project Path="labs/shared/Novolis.Lab.SpaceCombat/Novolis.Lab.SpaceCombat.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Novolis.Lab.Voice.Unit/Novolis.Lab.Voice.Unit.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="Novolis.Lab.sln.DotSettings" />
+    <File Path="nuget.config" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/LabsManifest/LabsManifest.csproj" />
+  </Folder>
+  <Folder Name="/raylib/">
+    <Project Path="labs/RaylibHello/RaylibHello.csproj" />
+    <Project Path="labs/raylib/HelloGame/HelloGame.csproj" />
+    <Project Path="labs/raylib/HelloRuntime/HelloRuntime.csproj" />
+    <Project Path="labs/raylib/HelloHosting/HelloHosting.csproj" />
+    <Project Path="labs/raylib/HelloTesting/HelloTesting.csproj" />
+    <Project Path="labs/raylib/HelloCapture/HelloCapture.csproj" />
+    <Project Path="labs/raylib/HelloGui/HelloGui.csproj" />
+    <Project Path="labs/raylib/HelloRaygui/HelloRaygui.csproj" />
+    <Project Path="labs/raylib/XFighter/XFighter.csproj" />
+    <Project Path="labs/raylib/XFighter.Tests/XFighter.Tests.csproj" />
+    <Project Path="labs/raylib/FreightWing/FreightWing.csproj" />
+    <Project Path="labs/raylib/PulseStrip.Core/PulseStrip.Core.csproj" />
+    <Project Path="labs/raylib/PulseStrip/PulseStrip.csproj" />
+    <Project Path="labs/raylib/PulseStrip.Tests/PulseStrip.Tests.csproj" />
+  </Folder>
+  <Folder Name="/rendering/">
+    <Project Path="labs/rendering/RaytraceHello/RaytraceHello.csproj" />
+    <Project Path="labs/rendering/SilkTraceHello/SilkTraceHello.csproj" />
+    <Project Path="labs/rendering/SilkTraceStudio/SilkTraceStudio.csproj" />
+    <Project Path="labs/rendering/SilkTwoDHello/SilkTwoDHello.csproj" />
+    <Project Path="labs/rendering/MeshBench/MeshBench.csproj" />
+  </Folder>
+  <Folder Name="/math/">
+    <Project Path="labs/MathGridDemo/MathGridDemo.csproj" />
+  </Folder>
+  <Folder Name="/documents/">
+    <Project Path="labs/documents/HelloDocument/HelloDocument.csproj" />
+    <Project Path="labs/documents/HelloMarkdownPdf/HelloMarkdownPdf.csproj" />
+  </Folder>
+  <Folder Name="/simulation/">
+    <Project Path="labs/DoomLite3D/DoomLite3D.csproj" />
+    <Project Path="labs/BouncingBall/BouncingBall.csproj" />
+    <Project Path="labs/ArtillerySimulator/ArtillerySimulator.csproj" />
+    <Project Path="labs/RagdollPlay/RagdollPlay.csproj" />
+    <Project Path="labs/ClothPlay/ClothPlay.csproj" />
+    <Project Path="labs/PlatformerHop/PlatformerHop.csproj" />
+    <Project Path="labs/PlatformerTwoD/PlatformerTwoD.csproj" />
+    <Project Path="labs/RtsLite/RtsLite.csproj" />
+    <Project Path="labs/RtsLiteTwoD/RtsLiteTwoD.csproj" />
+    <Project Path="labs/RandoriFight/RandoriFight.csproj" />
+  </Folder>
+  <Folder Name="/commands/">
+    <Project Path="labs/BridgeCommander/BridgeCommander.csproj" />
+    <Project Path="labs/AvaloniaAgentMcp/AvaloniaAgentMcp.csproj" />
+  </Folder>
+  <Folder Name="/machine-learning/">
+    <Project Path="labs/NeuralRacing/NeuralRacing.csproj" />
+    <Project Path="labs/NeuralRacing.Tests/NeuralRacing.Tests.csproj" />
+  </Folder>
+  <Folder Name="/avalonia/">
+    <Project Path="labs/avalonia/StudioChromeLab/StudioChromeLab.csproj" />
+    <Project Path="labs/avalonia/SketchLab/SketchLab.csproj" />
+    <Project Path="labs/avalonia/ViewportBench/ViewportBench.csproj" />
+    <Project Path="labs/avalonia/RenderingAvalonia/RenderingAvalonia.csproj" />
+    <Project Path="labs/avalonia/MovieMakerLab/MovieMakerLab.csproj" />
+    <Project Path="labs/avalonia/MobilityLab/MobilityLab.csproj" />
+    <Project Path="labs/avalonia/MusicMakerLab/MusicMakerLab.csproj" />
+    <Project Path="labs/avalonia/SceneLab/SceneLab.csproj" />
+    <Project Path="labs/avalonia/HumanoidLab/HumanoidLab.csproj" />
+    <Project Path="labs/avalonia/CharacterLab/CharacterLab.csproj" />
+    <Project Path="labs/avalonia/KatoriLab/KatoriLab.csproj" />
+    <Project Path="labs/avalonia/KatoriLab.Tests/KatoriLab.Tests.csproj" />
+
+
+    <Project Path="labs/avalonia/FriendLab/FriendLab.csproj" />
+    <Project Path="labs/avalonia/ChannelLab/ChannelLab.csproj" />
+    <Project Path="labs/avalonia/ChannelLab/ChannelHost/ChannelHost.csproj" />
+    <Project Path="labs/avalonia/ChannelLab/ChannelSmoke/ChannelSmoke.csproj" />
+  </Folder>
+  <Folder Name="/audio/">
+    <Project Path="labs/audio/VoiceSmoke/VoiceSmoke.csproj" />
+  </Folder>
+  <Folder Name="/astro/">
+    <Project Path="labs/astro/AstroSmoke/AstroSmoke.csproj" />
+    <Project Path="labs/astro/StarMapLab/StarMapLab.csproj" />
+  </Folder>
+  <Folder Name="/economy/">
+    <Project Path="labs/economy/EconomyBoard/EconomyBoard.csproj" />
+    <Project Path="labs/economy/TrampFreighterPlay/TrampFreighterPlay.csproj" />
+    <Project Path="labs/economy/TrampFreighterSim/TrampFreighterSim.csproj" />
+    <Project Path="labs/economy/NearSolPolity/NearSolPolity.csproj" />
+  </Folder>
+  <Folder Name="/civics/">
+    <Project Path="labs/civics/PolityTriad/PolityTriad.csproj" />
+  </Folder>
+  <Folder Name="/io/">
+    <Project Path="labs/io/IoSmoke/IoSmoke.csproj" />
+  </Folder>
+  <Folder Name="/manuscript/">
+    <Project Path="labs/manuscript/ManuscriptSmoke/ManuscriptSmoke.csproj" />
+  </Folder>
+  <Folder Name="/gaming/">
+    <Project Path="labs/gaming/GamingSmoke/GamingSmoke.csproj" />
+    <Project Path="labs/gaming/TopDownDoom/TopDownDoom.csproj" />
+    <Project Path="labs/gaming/TapDuelFootball/TapDuelFootball.csproj" />
+  </Folder>
+  <Folder Name="/cad/">
+    <Project Path="labs/cad/CalypsoCad/CalypsoCad.csproj" />
+    <Project Path="labs/cad/CalypsoInternalsCad/CalypsoInternalsCad.csproj" />
+  </Folder>
+  <Folder Name="/workspaces/">
+    <Project Path="labs/workspaces/MinimalWorkspaceTimeline/MinimalWorkspaceTimeline.csproj" />
+    <Project Path="labs/workspaces/ProjectTimelineBench/ProjectTimelineBench.csproj" />
+  </Folder>
+</Solution>

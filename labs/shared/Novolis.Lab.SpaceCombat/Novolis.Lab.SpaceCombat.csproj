@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Novolis.Lab.SpaceCombat</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Novolis.Simulation.SpaceCombat" />
+    <PackageReference Include="Novolis.Simulation.View" />
+    <PackageReference Include="Novolis.Raylib">
+      <ExcludeAssets>buildTransitive</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Novolis.Raylib.Game" />
+  </ItemGroup>
+</Project>

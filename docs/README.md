@@ -1,8 +1,8 @@
-# novolis-dogfooding documentation
+# novolis-lab documentation
 
 Dogfood apps and labs that exercise Novolis packages end-to-end.
 
-Published docs: [https://novolis-platform.github.io/.github/novolis-dogfooding/](https://novolis-platform.github.io/.github/novolis-dogfooding/)
+Published docs: [https://novolis-platform.github.io/.github/novolis-lab/](https://novolis-platform.github.io/.github/novolis-lab/)
 
 ## Guides
 

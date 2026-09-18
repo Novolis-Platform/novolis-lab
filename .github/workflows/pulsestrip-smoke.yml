@@ -2,16 +2,16 @@ name: PulseStrip smoke
 on:
   pull_request:
     paths:
-      - 'apps/raylib/PulseStrip/**'
-      - 'apps/raylib/PulseStrip.Core/**'
-      - 'apps/raylib/PulseStrip.Tests/**'
+      - 'labs/raylib/PulseStrip/**'
+      - 'labs/raylib/PulseStrip.Core/**'
+      - 'labs/raylib/PulseStrip.Tests/**'
       - '.github/workflows/pulsestrip-smoke.yml'
   push:
     branches: [main]
     paths:
-      - 'apps/raylib/PulseStrip/**'
-      - 'apps/raylib/PulseStrip.Core/**'
-      - 'apps/raylib/PulseStrip.Tests/**'
+      - 'labs/raylib/PulseStrip/**'
+      - 'labs/raylib/PulseStrip.Core/**'
+      - 'labs/raylib/PulseStrip.Tests/**'
       - '.github/workflows/pulsestrip-smoke.yml'
   workflow_dispatch:
 concurrency:
@@ -32,10 +32,10 @@ jobs:
         with:
           token: ${{ github.token }}
       - name: Test Core
-        run: dotnet test apps/raylib/PulseStrip.Tests/PulseStrip.Tests.csproj --configuration Release
+        run: dotnet test labs/raylib/PulseStrip.Tests/PulseStrip.Tests.csproj --configuration Release
       - name: Build game
-        run: dotnet build apps/raylib/PulseStrip/PulseStrip.csproj --configuration Release
+        run: dotnet build labs/raylib/PulseStrip/PulseStrip.csproj --configuration Release
       - name: Headless smoke
         env:
           NOVOLIS_RAYLIB_HEADLESS: '1'
-        run: dotnet run --project apps/raylib/PulseStrip/PulseStrip.csproj --configuration Release --no-build -- --smoke
+        run: dotnet run --project labs/raylib/PulseStrip/PulseStrip.csproj --configuration Release --no-build -- --smoke

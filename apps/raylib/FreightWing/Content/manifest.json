@@ -1,0 +1,29 @@
+{
+  "pack": "freightwing.novpack",
+  "craft": [
+    "c_1c8bf0238237",
+    "c_937d7c0e1c62",
+    "c_f03c866f3993",
+    "c_148fbe509a49"
+  ],
+  "missions": [
+    "q_c6b46fc04f82",
+    "q_fbbada720344",
+    "q_f63b22091011"
+  ],
+  "sfx": [
+    "s_4f39ecab34c3",
+    "s_5163cbdfa08e",
+    "s_7821284100ea",
+    "s_384619ef1a50",
+    "s_62df55f35c97",
+    "s_91c93e5ca8b6",
+    "s_8f67ed78fad6",
+    "s_a47a58aa6294",
+    "s_8481cbd5a6a6",
+    "s_44a99e6e45ef",
+    "s_2a392ed1da33",
+    "s_a44a19a76fc8",
+    "s_46e70295bc67"
+  ]
+}

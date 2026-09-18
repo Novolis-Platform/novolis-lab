@@ -6,16 +6,16 @@ Orthographic 2D lives in **`Novolis.Rendering.TwoD`** (+ **`Backends.TwoD.Silk`*
 
 | App | Stack | Purpose |
 |-----|-------|---------|
-| `apps/rendering/SilkTwoDHello` | Rendering.TwoD + Silk | Collision, platforms, HUD, menus — no Simulation |
-| `apps/PlatformerTwoD` | Simulation.Kinematics + World + Rendering.TwoD | Same tile demo as `PlatformerHop`, planar XZ via `PlanarAgent` |
-| `apps/RtsLiteTwoD` | Shared RTS sim + Rendering.TwoD | Top-down orthographic RTS (Raylib `RtsLite` = pseudo-3D + PNG billboards) |
+| `labs/rendering/SilkTwoDHello` | Rendering.TwoD + Silk | Collision, platforms, HUD, menus — no Simulation |
+| `labs/PlatformerTwoD` | Simulation.Kinematics + World + Rendering.TwoD | Same tile demo as `PlatformerHop`, planar XZ via `PlanarAgent` |
+| `labs/RtsLiteTwoD` | Shared RTS sim + Rendering.TwoD | Top-down orthographic RTS (Raylib `RtsLite` = pseudo-3D + PNG billboards) |
 
 Run:
 
 ```bash
-dotnet run --project apps/rendering/SilkTwoDHello
-dotnet run --project apps/PlatformerTwoD
-dotnet run --project apps/RtsLiteTwoD
+dotnet run --project labs/rendering/SilkTwoDHello
+dotnet run --project labs/PlatformerTwoD
+dotnet run --project labs/RtsLiteTwoD
 ```
 
 | Raylib (3D-style) | TwoD (orthographic) |
@@ -23,7 +23,7 @@ dotnet run --project apps/RtsLiteTwoD
 | `PlatformerHop` | `PlatformerTwoD` |
 | `RtsLite` | `RtsLiteTwoD` |
 
-Shared helpers: `apps/shared/Novolis.Dogfooding.TwoD` (`DenseGridPlatforms`, `OrthoPanCamera`).
+Shared helpers: `labs/shared/Novolis.Lab.TwoD` (`DenseGridPlatforms`, `OrthoPanCamera`).
 
 ## Side-view vs planar XZ
 
@@ -59,7 +59,7 @@ static Vector3 SideToPlanar(Vector3 side) => new(side.X, 0f, side.Y);
 4. **ViewPose bridge** — still app-only for path tracing ([simulation-viewpose-to-rendering-bridge](../../novolis-governance/docs/imports-todo/internal-novolis-audit/simulation-viewpose-to-rendering-bridge.md)); irrelevant for orthographic TwoD.
 5. **NeuralRacing / headless sims** — no visualization; 2D would be a new app if needed.
 6. **RtsLite / top-down** — `RtsLiteTwoD` dogfoods orthographic RTS; PNG billboards still Raylib-only in `RtsLite`.
-7. **Assets** — no committed PNGs under dogfooding for `SilkTwoDPngLoader`; polygon/HUD dogfood works without art.
+7. **Assets** — no committed PNGs under lab for `SilkTwoDPngLoader`; polygon/HUD dogfood works without art.
 
 ### Explicit non-goals
 
@@ -76,7 +76,7 @@ Package **`Novolis.Avalonia.Rendering`** (`novolis-avalonia`):
 | `TwoDSceneControl` | `TwoDScene` via OpenGL (`SilkTwoDRenderer`) |
 | `Rgba32FrameControl` | CPU `Rgba32` frames (`IFramePresenter`) — path trace preview |
 
-Sample: `novolis-dogfooding/apps/avalonia/RenderingAvalonia`. PackageReference `Novolis.Avalonia.Rendering` (no cross-repo `ProjectReference`).
+Sample: `novolis-lab/labs/avalonia/RenderingAvalonia`. PackageReference `Novolis.Avalonia.Rendering` (no cross-repo `ProjectReference`).
 
 ## Dropped: TerraFX
 
