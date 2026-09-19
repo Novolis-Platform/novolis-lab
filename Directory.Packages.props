@@ -5,23 +5,23 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AssimpNet" Version="4.1.0" />
-    <PackageVersion Include="Avalonia" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
-    <PackageVersion Include="Avalonia.Desktop" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.2" />
+    <PackageVersion Include="Avalonia" Version="12.1.2" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.2" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.2" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.2" />
     <PackageVersion Include="AdvancedSharpAdbClient" Version="3.6.16" />
-    <PackageVersion Include="Optris.Icons.Avalonia" Version="12.0.6" />
-    <PackageVersion Include="Optris.Icons.Avalonia.FontAwesome" Version="12.0.6" />
-    <PackageVersion Include="Spectre.Console" Version="0.54.0" />
-    <PackageVersion Include="System.IO.Abstractions" Version="22.1.0" />
+    <PackageVersion Include="Optris.Icons.Avalonia" Version="12.0.7" />
+    <PackageVersion Include="Optris.Icons.Avalonia.FontAwesome" Version="12.0.7" />
+    <PackageVersion Include="Spectre.Console" Version="0.57.2" />
+    <PackageVersion Include="System.IO.Abstractions" Version="22.2.0" />
     <PackageVersion Include="Novolis.IO.Workspace.Abstractions" Version="2026.1.*" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     <PackageVersion Include="ModelContextProtocol" Version="0.8.0-preview.1" />
-    <PackageVersion Include="MessagePack" Version="3.1.8" />
+    <PackageVersion Include="MessagePack" Version="3.1.9" />
     <PackageVersion Include="NAudio" Version="2.3.0" />
     <PackageVersion Include="MeltySynth" Version="2.4.1" />
     <PackageVersion Include="Novolis.Audio" Version="2026.1.*" />
@@ -135,9 +135,9 @@
     <PackageVersion Include="Novolis.Game.Identity.AspNetCore" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Game.MenuFlows" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Game.Multiplayer.Abstractions" Version="2026.1.*" />
-    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
     <PackageVersion Include="Novolis.MachineLearning.Neural" Version="2026.1.*" />
     <PackageVersion Include="Novolis.MachineLearning.Neural.Abstractions" Version="2026.1.*" />
         <PackageVersion Include="Novolis.Manuscript" Version="2026.1.*" />
@@ -200,16 +200,16 @@
     <PackageVersion Include="Novolis.Transports.Torrent" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Transports.LocalIpc" Version="2026.1.*" />
     <!-- ProjectRef is non-transitive for NuGet graphs: CAD / TwoD Silk hosts must pin Silk packages explicitly. -->
-    <PackageVersion Include="Silk.NET.GLFW" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.Input" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.Input.Common" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.Input.Glfw" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.OpenGL" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.Vulkan" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.Shaderc" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.Shaderc.Native" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.Windowing" Version="2.22.0" />
-    <PackageVersion Include="Silk.NET.Windowing.Glfw" Version="2.22.0" />
-    <PackageVersion Include="TUnit" Version="1.44.39" />
+    <PackageVersion Include="Silk.NET.GLFW" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Input" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Input.Common" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Input.Glfw" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.OpenGL" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Vulkan" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Shaderc" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Shaderc.Native" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Windowing" Version="2.23.0" />
+    <PackageVersion Include="Silk.NET.Windowing.Glfw" Version="2.23.0" />
+    <PackageVersion Include="TUnit" Version="1.68.17" />
   </ItemGroup>
 </Project>
