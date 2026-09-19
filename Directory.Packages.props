@@ -83,10 +83,12 @@
     <PackageVersion Include="Novolis.Video.Rtc" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Video.Capture.Windows" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Video.Edit" Version="2026.1.*" />
-    <PackageVersion Include="SIPSorcery" Version="10.0.9" />
-    <PackageVersion Include="SIPSorceryMedia.Abstractions" Version="10.0.13" />
-    <PackageVersion Include="SIPSorceryMedia.Windows" Version="10.0.13" />
+    <PackageVersion Include="SIPSorcery" Version="10.0.16" />
+    <PackageVersion Include="SIPSorceryMedia.Abstractions" Version="10.0.16" />
+    <PackageVersion Include="SIPSorceryMedia.Windows" Version="10.0.16" />
     <PackageVersion Include="SIPSorceryMedia.Encoders" Version="10.0.4" />
+    <!-- Pin away from vulnerable SQLitePCLRaw.lib.e_sqlite3 2.1.11 (NU1903 / GHSA-2m69-gcr7-jv3q). -->
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.13" />
     <PackageVersion Include="Novolis.IO.Git" Version="2026.1.*" />
     <PackageVersion Include="Novolis.IO.GitHub" Version="2026.1.*" />
     <PackageVersion Include="Novolis.IO.Mobile.Android" Version="2026.1.*" />

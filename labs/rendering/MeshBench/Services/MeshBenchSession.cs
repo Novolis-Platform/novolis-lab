@@ -42,7 +42,7 @@ internal sealed class MeshBenchSession
             "MeshBench",
             "default-workspace");
 
-    public PhysicalWorkspace? Workspace { get; private set; }
+    public PhysicalProjectWorkspace? Workspace { get; private set; }
 
     public IProject? Project { get; private set; }
 

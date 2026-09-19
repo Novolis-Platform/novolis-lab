@@ -134,7 +134,6 @@ internal static class InternalsCadViewer
             var a = verts[inds[i]];
             var b = verts[inds[i + 1]];
             var c = verts[inds[i + 2]];
-            World.DrawTriangle(a, b, c, mesh.Color);
             var edge = Color.FromArgb(
                 180,
                 Math.Clamp(mesh.Color.R - 40, 0, 255),
