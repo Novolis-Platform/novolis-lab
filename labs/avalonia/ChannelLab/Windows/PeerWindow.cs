@@ -39,17 +39,23 @@ internal sealed class PeerWindow : Window
     };
     readonly ListBox _channels = new();
     readonly ListBox _roster = new();
+    readonly ListBox _groups = new();
     readonly ItemsControl _buffer = new();
     readonly TextBox _composer = new() { PlaceholderText = "Select and trust a peer", IsEnabled = false };
+    readonly TextBox _groupNameBox = new() { PlaceholderText = "group name", Width = 120 };
+    readonly TextBox _groupMembersBox = new() { PlaceholderText = "members: alice, bob" };
     readonly Button _connectButton;
     readonly Button _trustButton;
     readonly Button _videoButton;
+    readonly Button _createGroupButton;
+    readonly Button _approveGroupButton;
     readonly ScrollViewer _bufferScroll = new() { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
     readonly VideoSurface _localSurface = new() { Label = "you", MinHeight = 120, MinWidth = 160 };
     readonly StackPanel _videoStrip = new() { Orientation = Orientation.Horizontal, Spacing = 8 };
     readonly Border _videoHost;
     MeshVideoController? _video;
     string? _selectedPeer;
+    SecureTextGroup? _selectedGroup;
 
     public PeerWindow(string? suggestedNick = null)
     {
@@ -67,8 +73,13 @@ internal sealed class PeerWindow : Window
         _trustButton.IsEnabled = false;
         _videoButton = PrimaryButton("Video", OnVideoClicked);
         _videoButton.IsEnabled = false;
+        _createGroupButton = PrimaryButton("Create group", OnCreateGroupClicked);
+        _createGroupButton.IsEnabled = false;
+        _approveGroupButton = PrimaryButton("Approve group", OnApproveGroupClicked);
+        _approveGroupButton.IsEnabled = false;
         _composer.KeyDown += OnComposerKeyDown;
         _roster.SelectionChanged += OnRosterSelectionChanged;
+        _groups.SelectionChanged += OnGroupSelectionChanged;
 
         _channels.ItemsSource = new[] { "#lobby" };
         _channels.SelectedIndex = 0;
@@ -105,6 +116,17 @@ internal sealed class PeerWindow : Window
         _session.RosterChanged += nicks => Dispatcher.UIThread.Post(() =>
         {
             _roster.ItemsSource = nicks.ToList();
+        });
+        _session.GroupsChanged += groups => Dispatcher.UIThread.Post(() =>
+        {
+            _groups.ItemsSource = groups;
+            if (_selectedGroup is { } selected)
+                _groups.SelectedItem = groups.SingleOrDefault(group => group.GroupId == selected.GroupId);
+        });
+        _session.GroupHistoryReceived += messages => Dispatcher.UIThread.Post(() =>
+        {
+            foreach (var message in messages)
+                AppendMessage(message);
         });
     }
 
@@ -168,9 +190,29 @@ internal sealed class PeerWindow : Window
         Grid.SetColumn(center, 1);
         center.Margin = new Thickness(8, 0);
         body.Children.Add(center);
-        var names = Panel("Names", _roster);
-        Grid.SetColumn(names, 2);
-        body.Children.Add(names);
+        var groups = new StackPanel
+        {
+            Spacing = 6,
+            Children =
+            {
+                _groupNameBox,
+                _groupMembersBox,
+                new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 6,
+                    Children = { _createGroupButton, _approveGroupButton },
+                },
+                _groups,
+            },
+        };
+        var right = new StackPanel
+        {
+            Spacing = 8,
+            Children = { Panel("Names", _roster), Panel("Protected groups", groups) },
+        };
+        Grid.SetColumn(right, 2);
+        body.Children.Add(right);
 
         var headerBorder = new Border
         {
@@ -229,6 +271,7 @@ internal sealed class PeerWindow : Window
             _nickBox.IsEnabled = false;
             _connectButton.Content = "Connected";
             _videoButton.IsEnabled = true;
+            _createGroupButton.IsEnabled = true;
             _localSurface.Label = nick;
         }
         catch (Exception ex)
@@ -240,6 +283,8 @@ internal sealed class PeerWindow : Window
 
     async void OnRosterSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
+        _selectedGroup = null;
+        _groups.SelectedItem = null;
         _selectedPeer = _roster.SelectedItem as string;
         _trustButton.IsEnabled = false;
         _composer.IsEnabled = false;
@@ -287,10 +332,65 @@ internal sealed class PeerWindow : Window
             ? $"Trusted {peer.Nick} device fingerprint: {peer.Fingerprint}"
             : $"Compare {peer.Nick} device fingerprint independently: {peer.Fingerprint}";
         _trustButton.IsEnabled = !peer.IsTrusted;
+        if (_selectedGroup is not null)
+            return;
+
         _composer.IsEnabled = peer.IsTrusted && _session.IsConnected;
         _composer.PlaceholderText = peer.IsTrusted
             ? $"Private message to {peer.Nick}"
             : "Confirm the selected peer before sending";
+    }
+
+    void OnGroupSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        _selectedGroup = _groups.SelectedItem as SecureTextGroup;
+        _approveGroupButton.IsEnabled = _selectedGroup is { IsActive: false } && _session.IsConnected;
+        _composer.IsEnabled = _selectedGroup is { IsActive: true } && _session.IsConnected;
+        _composer.PlaceholderText = _selectedGroup switch
+        {
+            { IsActive: true } group => $"Encrypted group text to {group.Name}",
+            { } group => $"Approve {group.Name} after verifying every member",
+            _ => "Select and trust a peer",
+        };
+    }
+
+    async void OnCreateGroupClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var name = _groupNameBox.Text?.Trim() ?? string.Empty;
+        var members = (_groupMembersBox.Text ?? string.Empty)
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        try
+        {
+            _createGroupButton.IsEnabled = false;
+            await _session.CreateSecureTextGroupAsync(name, members).ConfigureAwait(true);
+            _groupNameBox.Text = string.Empty;
+            _groupMembersBox.Text = string.Empty;
+        }
+        catch (Exception exception)
+        {
+            _status.Text = exception.Message;
+        }
+        finally
+        {
+            _createGroupButton.IsEnabled = _session.IsConnected;
+        }
+    }
+
+    async void OnApproveGroupClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_selectedGroup is null)
+            return;
+
+        try
+        {
+            _approveGroupButton.IsEnabled = false;
+            await _session.ApproveSecureTextGroupAsync(_selectedGroup.GroupId).ConfigureAwait(true);
+        }
+        catch (Exception exception)
+        {
+            _status.Text = exception.Message;
+            _approveGroupButton.IsEnabled = true;
+        }
     }
 
     async void OnVideoClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -353,12 +453,18 @@ internal sealed class PeerWindow : Window
             return;
         e.Handled = true;
         var body = _composer.Text?.Trim() ?? string.Empty;
-        if (body.Length == 0 || !_session.IsConnected || string.IsNullOrWhiteSpace(_selectedPeer))
+        if (body.Length == 0 || !_session.IsConnected)
             return;
+        if (_selectedGroup is null && string.IsNullOrWhiteSpace(_selectedPeer))
+            return;
+
         _composer.Text = string.Empty;
         try
         {
-            await _session.SayAsync(_selectedPeer, body).ConfigureAwait(true);
+            if (_selectedGroup is { IsActive: true } group)
+                await _session.SayToSecureTextGroupAsync(group.GroupId, body).ConfigureAwait(true);
+            else if (_selectedPeer is not null)
+                await _session.SayAsync(_selectedPeer, body).ConfigureAwait(true);
         }
         catch (Exception ex)
         {

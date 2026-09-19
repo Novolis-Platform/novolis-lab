@@ -17,23 +17,31 @@ Console.WriteLine("health ok");
 
 await using var alice = await ConnectAsync("alice");
 await using var bob = await ConnectAsync("bob");
+await using var carol = await ConnectAsync("carol");
 
 await alice.InvokeAsync("Join", "#lobby");
 await bob.InvokeAsync("Join", "#lobby");
+await carol.InvokeAsync("Join", "#lobby");
 
 var aliceIdentity = SecureTextDeviceIdentity.Create();
 var bobIdentity = SecureTextDeviceIdentity.Create();
+var carolIdentity = SecureTextDeviceIdentity.Create();
 var aliceBundle = SecureTextPublicBundle.Create(aliceIdentity);
 var bobBundle = SecureTextPublicBundle.Create(bobIdentity);
+var carolBundle = SecureTextPublicBundle.Create(carolIdentity);
 await alice.InvokeAsync("RegisterDevice", "#lobby", ToDto(aliceBundle));
 await bob.InvokeAsync("RegisterDevice", "#lobby", ToDto(bobBundle));
+await carol.InvokeAsync("RegisterDevice", "#lobby", ToDto(carolBundle));
 
 var aliceFromRelay = await bob.InvokeAsync<DeviceBundleDto?>("GetDeviceBundle", "#lobby", "alice")
                      ?? throw new Exception("alice bundle was not returned");
 var bobFromRelay = await alice.InvokeAsync<DeviceBundleDto?>("GetDeviceBundle", "#lobby", "bob")
                    ?? throw new Exception("bob bundle was not returned");
+var carolFromRelay = await alice.InvokeAsync<DeviceBundleDto?>("GetDeviceBundle", "#lobby", "carol")
+                     ?? throw new Exception("carol bundle was not returned");
 var trustedAlice = ToBundle(aliceFromRelay);
 var trustedBob = ToBundle(bobFromRelay);
+var trustedCarol = ToBundle(carolFromRelay);
 var conversation = SecureTextConversationId.DeriveForPair(
     SecureTextDeviceId.FromGuid(aliceIdentity.DeviceId),
     SecureTextDeviceId.FromGuid(bobIdentity.DeviceId));
@@ -114,6 +122,123 @@ catch (CryptographicException)
 await AssertStoredCiphertextAsync(protectedEnvelope.Header.MessageId, marker);
 Console.WriteLine("e2e text ok: recipient decrypted the marker and relay storage held ciphertext only");
 
+var groupId = SecureTextGroupId.New();
+var groupMembers = new[]
+{
+    new SecureTextGroupMemberDto("alice", aliceIdentity.DeviceId),
+    new SecureTextGroupMemberDto("bob", bobIdentity.DeviceId),
+    new SecureTextGroupMemberDto("carol", carolIdentity.DeviceId),
+};
+await alice.InvokeAsync("CreateSecureTextGroup", "#lobby", groupId.Value, "crew", groupMembers);
+
+try
+{
+    await alice.InvokeAsync("SendSecureTextGroup", "#lobby", groupId.Value, Array.Empty<SecureTextGroupEnvelopeInputDto>());
+    throw new Exception("the relay accepted group text before every member approved.");
+}
+catch (Exception exception) when (exception.Message.Contains("explicitly approve", StringComparison.OrdinalIgnoreCase))
+{
+}
+
+await bob.InvokeAsync("ApproveSecureTextGroup", "#lobby", groupId.Value);
+await carol.InvokeAsync("ApproveSecureTextGroup", "#lobby", groupId.Value);
+
+var aliceDevice = SecureTextDeviceId.FromGuid(aliceIdentity.DeviceId);
+var bobDevice = SecureTextDeviceId.FromGuid(bobIdentity.DeviceId);
+var carolDevice = SecureTextDeviceId.FromGuid(carolIdentity.DeviceId);
+using var aliceToBobGroup = new SecureTextSession(
+    aliceIdentity,
+    aliceBundle,
+    trustedBob,
+    new SecureTextTrustedPeer(trustedBob),
+    SecureTextConversationId.DeriveForGroupMember(groupId, aliceDevice, bobDevice));
+using var bobFromAliceGroup = new SecureTextSession(
+    bobIdentity,
+    bobBundle,
+    trustedAlice,
+    new SecureTextTrustedPeer(trustedAlice),
+    SecureTextConversationId.DeriveForGroupMember(groupId, bobDevice, aliceDevice));
+using var aliceToCarolGroup = new SecureTextSession(
+    aliceIdentity,
+    aliceBundle,
+    trustedCarol,
+    new SecureTextTrustedPeer(trustedCarol),
+    SecureTextConversationId.DeriveForGroupMember(groupId, aliceDevice, carolDevice));
+using var carolFromAliceGroup = new SecureTextSession(
+    carolIdentity,
+    carolBundle,
+    trustedAlice,
+    new SecureTextTrustedPeer(trustedAlice),
+    SecureTextConversationId.DeriveForGroupMember(groupId, carolDevice, aliceDevice));
+
+var bobGroupGot = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+bob.On<SecureTextGroupRelayEnvelopeDto>("SecureTextGroup", dto =>
+{
+    if (dto.GroupId != groupId.Value)
+        return;
+    try
+    {
+        bobGroupGot.TrySetResult(bobFromAliceGroup.Open(SecureTextEnvelopeCodec.Deserialize(dto.Envelope)).Text);
+    }
+    catch (Exception exception)
+    {
+        bobGroupGot.TrySetException(exception);
+    }
+});
+var carolGroupGot = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+carol.On<SecureTextGroupRelayEnvelopeDto>("SecureTextGroup", dto =>
+{
+    if (dto.GroupId != groupId.Value)
+        return;
+    try
+    {
+        carolGroupGot.TrySetResult(carolFromAliceGroup.Open(SecureTextEnvelopeCodec.Deserialize(dto.Envelope)).Text);
+    }
+    catch (Exception exception)
+    {
+        carolGroupGot.TrySetException(exception);
+    }
+});
+
+const string groupMarker = "group-proof-世界-✓";
+var bobEnvelope = aliceToBobGroup.Protect(groupMarker);
+var carolEnvelope = aliceToCarolGroup.Protect(groupMarker);
+var bobEncoded = SecureTextEnvelopeCodec.Serialize(bobEnvelope);
+var carolEncoded = SecureTextEnvelopeCodec.Serialize(carolEnvelope);
+if (bobEncoded.AsSpan().IndexOf(Encoding.UTF8.GetBytes(groupMarker)) >= 0
+    || carolEncoded.AsSpan().IndexOf(Encoding.UTF8.GetBytes(groupMarker)) >= 0)
+{
+    throw new Exception("plaintext marker appeared in a group relay envelope.");
+}
+
+await alice.InvokeAsync(
+    "SendSecureTextGroup",
+    "#lobby",
+    groupId.Value,
+    new[]
+    {
+        new SecureTextGroupEnvelopeInputDto(bobIdentity.DeviceId, bobEncoded),
+        new SecureTextGroupEnvelopeInputDto(carolIdentity.DeviceId, carolEncoded),
+    });
+if (await bobGroupGot.Task.WaitAsync(TimeSpan.FromSeconds(5)) != groupMarker
+    || await carolGroupGot.Task.WaitAsync(TimeSpan.FromSeconds(5)) != groupMarker)
+{
+    throw new Exception("the approved group members did not decrypt the group text.");
+}
+
+var groupHistory = await bob.InvokeAsync<List<SecureTextGroupRelayEnvelopeDto>>(
+    "GetSecureTextGroupHistory",
+    "#lobby",
+    groupId.Value);
+var groupHistoryEnvelope = groupHistory.SingleOrDefault(item =>
+        SecureTextEnvelopeCodec.Deserialize(item.Envelope).Header.MessageId == bobEnvelope.Header.MessageId)
+    ?? throw new Exception("protected group history did not contain bob's recipient copy.");
+if (bobFromAliceGroup.OpenHistory(SecureTextEnvelopeCodec.Deserialize(groupHistoryEnvelope.Envelope)).Text != groupMarker)
+    throw new Exception("protected group history did not decrypt at the recipient.");
+
+await AssertStoredGroupCiphertextAsync(bobEnvelope.Header.MessageId, groupMarker);
+Console.WriteLine("group e2e text ok: explicit membership approval and ciphertext-only pairwise fan-out verified");
+
 await alice.InvokeAsync("Signal", "#lobby", "video-join", string.Empty, null);
 await alice.InvokeAsync("Signal", "#lobby", "offer", "v=fake-sdp-offer", "bob");
 var payload = await bobOffer.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -176,6 +301,24 @@ static async Task AssertStoredCiphertextAsync(Guid messageId, string marker)
         throw new Exception("plaintext marker appeared in SQLite.");
 }
 
+static async Task AssertStoredGroupCiphertextAsync(Guid messageId, string marker)
+{
+    var path = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "Novolis",
+        "ChannelLab",
+        "messages.db");
+    await using var connection = new SqliteConnection($"Data Source={path}");
+    await connection.OpenAsync();
+    await using var command = connection.CreateCommand();
+    command.CommandText = "SELECT envelope FROM secure_group_messages WHERE id = $id;";
+    command.Parameters.AddWithValue("$id", messageId.ToString("D"));
+    var payload = (byte[]?)await command.ExecuteScalarAsync()
+                  ?? throw new Exception("protected group envelope was not found in SQLite.");
+    if (payload.AsSpan().IndexOf(Encoding.UTF8.GetBytes(marker)) >= 0)
+        throw new Exception("plaintext marker appeared in group SQLite storage.");
+}
+
 sealed record Guest(string AccessToken, string Nick, Guid PlayerId, DateTimeOffset ExpiresAtUtc);
 sealed record DeviceBundleDto(
     int ProtocolVersion,
@@ -186,3 +329,12 @@ sealed record DeviceBundleDto(
     DateTimeOffset ExpiresAtUtc,
     byte[] Signature);
 sealed record SecureTextRelayEnvelopeDto(string Channel, string FromNick, string ToNick, byte[] Envelope);
+sealed record SecureTextGroupMemberDto(string Nick, Guid DeviceId);
+sealed record SecureTextGroupEnvelopeInputDto(Guid RecipientDeviceId, byte[] Envelope);
+sealed record SecureTextGroupRelayEnvelopeDto(
+    string Channel,
+    Guid GroupId,
+    string GroupName,
+    string FromNick,
+    string ToNick,
+    byte[] Envelope);

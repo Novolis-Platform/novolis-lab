@@ -10,6 +10,8 @@ namespace ChannelLab.Services;
 
 internal sealed class ChannelSession : IAsyncDisposable
 {
+    const int MaxSecureTextGroupMembers = 8;
+
     static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -17,7 +19,8 @@ internal sealed class ChannelSession : IAsyncDisposable
 
     readonly HttpClient _http = new();
     readonly ChannelLabSecureTextStore _secureTextStore = new();
-    readonly Dictionary<string, PeerSession> _peerSessions = new(StringComparer.OrdinalIgnoreCase);
+    readonly Dictionary<PeerSessionKey, PeerSession> _peerSessions = [];
+    readonly Dictionary<Guid, SecureTextGroup> _secureTextGroups = [];
     HubConnection? _hub;
     SecureTextDeviceIdentity? _identity;
     SecureTextPublicBundle? _publicBundle;
@@ -34,6 +37,8 @@ internal sealed class ChannelSession : IAsyncDisposable
     public event Action<string>? StatusChanged;
     public event Action<string>? DeviceFingerprintAvailable;
     public event Action<PeerFingerprint>? PeerFingerprintAvailable;
+    public event Action<IReadOnlyList<SecureTextGroup>>? GroupsChanged;
+    public event Action<IReadOnlyList<ChannelMessage>>? GroupHistoryReceived;
 
     public async Task ConnectAsync(string nick, CancellationToken cancellationToken = default)
     {
@@ -64,6 +69,8 @@ internal sealed class ChannelSession : IAsyncDisposable
             .Build();
 
         _hub.On<SecureTextRelayEnvelopeDto>("SecureText", HandleSecureTextAsync);
+        _hub.On<SecureTextGroupRelayEnvelopeDto>("SecureTextGroup", HandleSecureTextGroupAsync);
+        _hub.On<SecureTextGroupDto>("SecureTextGroupMembership", HandleSecureTextGroupMembershipAsync);
 
         _hub.On<RosterDto>("Roster", dto =>
             RosterChanged?.Invoke(dto.Nicks));
@@ -82,6 +89,7 @@ internal sealed class ChannelSession : IAsyncDisposable
             await JoinAsync(Channel, CancellationToken.None).ConfigureAwait(false);
             await RegisterDeviceAsync(CancellationToken.None).ConfigureAwait(false);
             await LoadSecureHistoryAsync(CancellationToken.None).ConfigureAwait(false);
+            await LoadSecureTextGroupsAsync(CancellationToken.None).ConfigureAwait(false);
         };
         _hub.Closed += error =>
         {
@@ -95,6 +103,7 @@ internal sealed class ChannelSession : IAsyncDisposable
         await RegisterDeviceAsync(cancellationToken).ConfigureAwait(false);
         DeviceFingerprintAvailable?.Invoke(_publicBundle!.GetFingerprint());
         await LoadSecureHistoryAsync(cancellationToken).ConfigureAwait(false);
+        await LoadSecureTextGroupsAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task JoinAsync(string channel, CancellationToken cancellationToken = default)
@@ -131,8 +140,13 @@ internal sealed class ChannelSession : IAsyncDisposable
         var bundle = await GetPeerBundleAsync(nick, cancellationToken).ConfigureAwait(false);
         var trusted = new SecureTextTrustedPeer(bundle);
         await _secureTextStore.StoreTrustedPeerAsync(RequireNick(), nick, trusted, cancellationToken).ConfigureAwait(false);
-        if (_peerSessions.Remove(nick, out var old))
-            old.Dispose();
+        foreach (var key in _peerSessions.Keys
+                     .Where(key => string.Equals(key.Nick, nick, StringComparison.OrdinalIgnoreCase))
+                     .ToArray())
+        {
+            if (_peerSessions.Remove(key, out var session))
+                session.Dispose();
+        }
 
         PeerFingerprintAvailable?.Invoke(new PeerFingerprint(nick, trusted.GetFingerprint(), true));
         RaiseStatus($"Trusted {nick}'s secure-text device.");
@@ -159,6 +173,126 @@ internal sealed class ChannelSession : IAsyncDisposable
         var encoded = SecureTextEnvelopeCodec.Serialize(envelope);
         await _hub!.InvokeAsync("SendSecureText", Channel, toNick, encoded, cancellationToken).ConfigureAwait(false);
         MessageReceived?.Invoke(new ChannelMessage(Channel, RequireNick(), body, envelope.Header.SentAtUtc));
+    }
+
+    public async Task<SecureTextGroupId> CreateSecureTextGroupAsync(
+        string name,
+        IReadOnlyList<string> peerNicks,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureHub();
+        name = name?.Trim() ?? string.Empty;
+        if (name.Length is < 1 or > 48)
+            throw new ArgumentException("A protected group name of 1–48 characters is required.", nameof(name));
+
+        var peers = peerNicks
+            .Where(peer => !string.IsNullOrWhiteSpace(peer)
+                           && !string.Equals(peer, RequireNick(), StringComparison.OrdinalIgnoreCase))
+            .Select(peer => peer.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (peers.Length is < 1 or >= MaxSecureTextGroupMembers)
+            throw new ArgumentException("Choose between one and seven distinct trusted peers.", nameof(peerNicks));
+
+        var members = new List<SecureTextGroupMemberDto>
+        {
+            new(RequireNick(), _identity?.DeviceId ?? throw new InvalidOperationException("A local secure-text device is not available.")),
+        };
+        foreach (var peerNick in peers)
+        {
+            var peer = await GetPeerSessionAsync(peerNick, cancellationToken).ConfigureAwait(false);
+            members.Add(new SecureTextGroupMemberDto(peerNick, peer.Session.PeerDeviceId.Value));
+        }
+
+        var groupId = SecureTextGroupId.New();
+        await _secureTextStore.StoreGroupApprovalAsync(
+                RequireNick(),
+                groupId,
+                members.Select(member => SecureTextDeviceId.FromGuid(member.DeviceId)).ToArray(),
+                cancellationToken)
+            .ConfigureAwait(false);
+        await _hub!.InvokeAsync(
+                "CreateSecureTextGroup",
+                Channel,
+                groupId.Value,
+                name,
+                members,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return groupId;
+    }
+
+    public async Task ApproveSecureTextGroupAsync(
+        SecureTextGroupId groupId,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureHub();
+        if (!_secureTextGroups.TryGetValue(groupId.Value, out var group))
+            throw new InvalidOperationException("The protected group proposal is not available.");
+        var localGroupDeviceId = _identity?.DeviceId
+            ?? throw new InvalidOperationException("A local secure-text device is not available.");
+        if (!group.Members.Any(member => member.DeviceId.Value == localGroupDeviceId))
+            throw new InvalidOperationException("The local device is not a protected group member.");
+
+        foreach (var member in group.Members.Where(member => member.DeviceId.Value != localGroupDeviceId))
+        {
+            await GetPeerSessionAsync(
+                    member.Nick,
+                    cancellationToken,
+                    groupId,
+                    member.DeviceId)
+                .ConfigureAwait(false);
+        }
+
+        await _secureTextStore.StoreGroupApprovalAsync(
+                RequireNick(),
+                groupId,
+                group.Members.Select(member => member.DeviceId).ToArray(),
+                cancellationToken)
+            .ConfigureAwait(false);
+        await _hub!.InvokeAsync("ApproveSecureTextGroup", Channel, groupId.Value, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SayToSecureTextGroupAsync(
+        SecureTextGroupId groupId,
+        string body,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureHub();
+        body = body?.Trim() ?? string.Empty;
+        if (body.Length == 0)
+            throw new ArgumentException("Protected text cannot be empty.", nameof(body));
+        if (!_secureTextGroups.TryGetValue(groupId.Value, out var group) || !group.IsActive)
+            throw new InvalidOperationException("Every group device must approve the current membership before messaging.");
+
+        var localDeviceId = SecureTextDeviceId.FromGuid(_identity?.DeviceId
+            ?? throw new InvalidOperationException("A local secure-text device is not available."));
+        var envelopes = new List<SecureTextGroupEnvelopeInputDto>();
+        DateTimeOffset? sentAtUtc = null;
+        foreach (var member in group.Members.Where(member => member.DeviceId != localDeviceId))
+        {
+            var peer = await GetPeerSessionAsync(
+                    member.Nick,
+                    cancellationToken,
+                    groupId,
+                    member.DeviceId)
+                .ConfigureAwait(false);
+            var envelope = peer.Session.Protect(body);
+            sentAtUtc ??= envelope.Header.SentAtUtc;
+            await StoreConversationStateAsync(peer, cancellationToken).ConfigureAwait(false);
+            envelopes.Add(new SecureTextGroupEnvelopeInputDto(
+                member.DeviceId.Value,
+                SecureTextEnvelopeCodec.Serialize(envelope)));
+        }
+
+        await _hub!.InvokeAsync(
+                "SendSecureTextGroup",
+                Channel,
+                groupId.Value,
+                envelopes,
+                cancellationToken)
+            .ConfigureAwait(false);
+        MessageReceived?.Invoke(new ChannelMessage(GroupContext(group), RequireNick(), body, sentAtUtc ?? DateTimeOffset.UtcNow));
     }
 
     public async Task SendSignalAsync(
@@ -202,6 +336,7 @@ internal sealed class ChannelSession : IAsyncDisposable
         foreach (var peer in _peerSessions.Values)
             peer.Dispose();
         _peerSessions.Clear();
+        _secureTextGroups.Clear();
     }
 
     public async ValueTask DisposeAsync()
@@ -220,6 +355,21 @@ internal sealed class ChannelSession : IAsyncDisposable
         DateTimeOffset ExpiresAtUtc,
         byte[] Signature);
     sealed record SecureTextRelayEnvelopeDto(string Channel, string FromNick, string ToNick, byte[] Envelope);
+    sealed record SecureTextGroupMemberDto(string Nick, Guid DeviceId);
+    sealed record SecureTextGroupDto(
+        Guid GroupId,
+        string Name,
+        string InitiatorNick,
+        IReadOnlyList<SecureTextGroupMemberDto> Members,
+        IReadOnlyList<Guid> ApprovedDeviceIds);
+    sealed record SecureTextGroupEnvelopeInputDto(Guid RecipientDeviceId, byte[] Envelope);
+    sealed record SecureTextGroupRelayEnvelopeDto(
+        string Channel,
+        Guid GroupId,
+        string GroupName,
+        string FromNick,
+        string ToNick,
+        byte[] Envelope);
     sealed record RosterDto(string Channel, [property: JsonPropertyName("nicks")] IReadOnlyList<string> Nicks);
     sealed record SignalEnvelopeDto(string Channel, string FromNick, string Kind, string? Payload, string? ToNick);
 
@@ -294,16 +444,172 @@ internal sealed class ChannelSession : IAsyncDisposable
         }
     }
 
-    async Task<PeerSession> GetPeerSessionAsync(string nick, CancellationToken cancellationToken)
+    async Task LoadSecureTextGroupsAsync(CancellationToken cancellationToken)
+    {
+        EnsureHub();
+        var groups = await _hub!.InvokeAsync<List<SecureTextGroupDto>>(
+                "GetSecureTextGroups",
+                Channel,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (groups is null)
+            return;
+
+        foreach (var group in groups)
+            await HandleSecureTextGroupMembershipAsync(group).ConfigureAwait(false);
+    }
+
+    async Task HandleSecureTextGroupMembershipAsync(SecureTextGroupDto dto)
+    {
+        SecureTextGroup group;
+        try
+        {
+            group = ToSecureTextGroup(dto);
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidDataException)
+        {
+            RaiseStatus("Ignored an invalid protected group membership update.");
+            return;
+        }
+
+        var localDeviceId = _identity?.DeviceId;
+        if (localDeviceId is null || !group.Members.Any(member => member.DeviceId.Value == localDeviceId.Value))
+            return;
+
+        if (_secureTextGroups.TryGetValue(group.GroupId.Value, out var previous)
+            && !HasSameRoster(previous, group))
+        {
+            RaiseStatus("Ignored a protected group update that attempted to change its approved roster.");
+            return;
+        }
+
+        group = group with
+        {
+            IsLocallyApproved = await _secureTextStore.HasGroupApprovalAsync(
+                    RequireNick(),
+                    group.GroupId,
+                    group.Members.Select(member => member.DeviceId).ToArray(),
+                    CancellationToken.None)
+                .ConfigureAwait(false),
+        };
+        var wasActive = previous is { IsActive: true };
+        _secureTextGroups[group.GroupId.Value] = group;
+        GroupsChanged?.Invoke(_secureTextGroups.Values.OrderBy(value => value.Name, StringComparer.OrdinalIgnoreCase).ToArray());
+
+        if (group.IsActive && !wasActive)
+        {
+            try
+            {
+                await LoadSecureTextGroupHistoryAsync(group, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (exception is CryptographicException or InvalidDataException or InvalidOperationException)
+            {
+                RaiseStatus("Protected group history needs verified peer trust.");
+            }
+        }
+    }
+
+    async Task HandleSecureTextGroupAsync(SecureTextGroupRelayEnvelopeDto relay)
+    {
+        if (!string.Equals(relay.ToNick, Nick, StringComparison.OrdinalIgnoreCase)
+            || !_secureTextGroups.TryGetValue(relay.GroupId, out var group)
+            || !group.IsActive)
+        {
+            return;
+        }
+
+        try
+        {
+            var sender = group.Members.SingleOrDefault(member =>
+                string.Equals(member.Nick, relay.FromNick, StringComparison.OrdinalIgnoreCase));
+            if (sender is null)
+                throw new InvalidDataException("The sender is not in the protected group membership.");
+
+            var envelope = SecureTextEnvelopeCodec.Deserialize(relay.Envelope);
+            var peer = await GetPeerSessionAsync(
+                    sender.Nick,
+                    CancellationToken.None,
+                    group.GroupId,
+                    sender.DeviceId)
+                .ConfigureAwait(false);
+            var received = peer.Session.Open(envelope);
+            await StoreConversationStateAsync(peer, CancellationToken.None).ConfigureAwait(false);
+            MessageReceived?.Invoke(new ChannelMessage(GroupContext(group), relay.FromNick, received.Text, received.SentAtUtc));
+        }
+        catch (Exception exception) when (exception is CryptographicException or InvalidDataException or InvalidOperationException)
+        {
+            RaiseStatus($"Protected group text from {relay.FromNick} needs verified group membership.");
+        }
+    }
+
+    async Task LoadSecureTextGroupHistoryAsync(SecureTextGroup group, CancellationToken cancellationToken)
+    {
+        EnsureHub();
+        var history = await _hub!.InvokeAsync<List<SecureTextGroupRelayEnvelopeDto>>(
+                "GetSecureTextGroupHistory",
+                Channel,
+                group.GroupId.Value,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (history is null || history.Count == 0)
+            return;
+
+        var localDeviceId = SecureTextDeviceId.FromGuid(_identity?.DeviceId
+            ?? throw new InvalidOperationException("A local secure-text device is not available."));
+        var messages = new List<ChannelMessage>();
+        var displayedOwnMessages = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var relay in history)
+        {
+            try
+            {
+                var envelope = SecureTextEnvelopeCodec.Deserialize(relay.Envelope);
+                var senderIsLocal = envelope.Header.SenderDeviceId == localDeviceId;
+                var peerNick = senderIsLocal ? relay.ToNick : relay.FromNick;
+                var peerMember = group.Members.SingleOrDefault(member =>
+                    string.Equals(member.Nick, peerNick, StringComparison.OrdinalIgnoreCase))
+                    ?? throw new InvalidDataException("The history peer is not in the protected group membership.");
+                var peer = await GetPeerSessionAsync(
+                        peerMember.Nick,
+                        cancellationToken,
+                        group.GroupId,
+                        peerMember.DeviceId)
+                    .ConfigureAwait(false);
+                var received = peer.Session.OpenHistory(envelope);
+                var senderNick = senderIsLocal ? RequireNick() : relay.FromNick;
+                var ownMessageKey = $"{received.SenderDeviceId.Value:N}:{received.SentAtUtc.UtcDateTime.Ticks}:{received.Text}";
+                if (senderIsLocal && !displayedOwnMessages.Add(ownMessageKey))
+                    continue;
+
+                messages.Add(new ChannelMessage(GroupContext(group), senderNick, received.Text, received.SentAtUtc));
+            }
+            catch (Exception exception) when (exception is CryptographicException or InvalidDataException or InvalidOperationException)
+            {
+                RaiseStatus("Skipped an untrusted or invalid protected group history entry.");
+            }
+        }
+
+        if (messages.Count > 0)
+            GroupHistoryReceived?.Invoke(messages);
+    }
+
+    async Task<PeerSession> GetPeerSessionAsync(
+        string nick,
+        CancellationToken cancellationToken,
+        SecureTextGroupId? groupId = null,
+        SecureTextDeviceId? expectedPeerDeviceId = null)
     {
         var bundle = await GetPeerBundleAsync(nick, cancellationToken).ConfigureAwait(false);
-        if (_peerSessions.TryGetValue(nick, out var current)
+        if (expectedPeerDeviceId is { } expected && bundle.DeviceId != expected.Value)
+            throw new CryptographicException($"Peer '{nick}' no longer has the device approved for this protected group.");
+
+        var key = PeerSessionKey.Create(nick, groupId);
+        if (_peerSessions.TryGetValue(key, out var current)
             && string.Equals(current.Fingerprint, bundle.GetFingerprint(), StringComparison.Ordinal))
         {
             return current;
         }
 
-        if (_peerSessions.Remove(nick, out var prior))
+        if (_peerSessions.Remove(key, out var prior))
             prior.Dispose();
 
         var trusted = await _secureTextStore.LoadTrustedPeerAsync(RequireNick(), nick, cancellationToken).ConfigureAwait(false);
@@ -327,21 +633,31 @@ internal sealed class ChannelSession : IAsyncDisposable
         var localBundle = _publicBundle ?? throw new InvalidOperationException("A local public bundle is not available.");
         var localDeviceId = SecureTextDeviceId.FromGuid(localIdentity.DeviceId);
         var peerDeviceId = SecureTextDeviceId.FromGuid(bundle.DeviceId);
-        var state = await _secureTextStore.LoadConversationStateAsync(
-                RequireNick(),
-                localDeviceId,
-                peerDeviceId,
-                cancellationToken)
-            .ConfigureAwait(false);
+        var state = groupId is { } group
+            ? await _secureTextStore.LoadGroupConversationStateAsync(
+                    RequireNick(),
+                    group,
+                    localDeviceId,
+                    peerDeviceId,
+                    cancellationToken)
+                .ConfigureAwait(false)
+            : await _secureTextStore.LoadConversationStateAsync(
+                    RequireNick(),
+                    localDeviceId,
+                    peerDeviceId,
+                    cancellationToken)
+                .ConfigureAwait(false);
         var session = new SecureTextSession(
             localIdentity,
             localBundle,
             bundle,
             trusted,
-            SecureTextConversationId.DeriveForPair(localDeviceId, peerDeviceId),
+            groupId is { } groupConversation
+                ? SecureTextConversationId.DeriveForGroupMember(groupConversation, localDeviceId, peerDeviceId)
+                : SecureTextConversationId.DeriveForPair(localDeviceId, peerDeviceId),
             state);
-        var created = new PeerSession(bundle.GetFingerprint(), session);
-        _peerSessions[nick] = created;
+        var created = new PeerSession(bundle.GetFingerprint(), session, groupId);
+        _peerSessions[key] = created;
         return created;
     }
 
@@ -358,6 +674,69 @@ internal sealed class ChannelSession : IAsyncDisposable
 
         return ToPublicBundle(dto);
     }
+
+    async Task StoreConversationStateAsync(PeerSession peer, CancellationToken cancellationToken)
+    {
+        if (peer.GroupId is { } groupId)
+        {
+            await _secureTextStore.StoreGroupConversationStateAsync(
+                    RequireNick(),
+                    groupId,
+                    peer.Session.LocalDeviceId,
+                    peer.Session.PeerDeviceId,
+                    peer.Session.State,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        await _secureTextStore.StoreConversationStateAsync(
+                RequireNick(),
+                peer.Session.LocalDeviceId,
+                peer.Session.PeerDeviceId,
+                peer.Session.State,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    static SecureTextGroup ToSecureTextGroup(SecureTextGroupDto dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+        var groupId = SecureTextGroupId.FromGuid(dto.GroupId);
+        var name = dto.Name?.Trim() ?? string.Empty;
+        if (name.Length is < 1 or > 48
+            || string.IsNullOrWhiteSpace(dto.InitiatorNick)
+            || dto.Members is null
+            || dto.Members.Count is < 2 or > MaxSecureTextGroupMembers)
+        {
+            throw new InvalidDataException("The protected group membership is invalid.");
+        }
+
+        var members = dto.Members
+            .Select(member => new SecureTextGroupMember(
+                member.Nick?.Trim() ?? string.Empty,
+                SecureTextDeviceId.FromGuid(member.DeviceId)))
+            .ToArray();
+        if (members.Any(member => string.IsNullOrWhiteSpace(member.Nick))
+            || members.Select(member => member.DeviceId).Distinct().Count() != members.Length
+            || members.Select(member => member.Nick).Distinct(StringComparer.OrdinalIgnoreCase).Count() != members.Length
+            || dto.ApprovedDeviceIds is null
+            || dto.ApprovedDeviceIds.Distinct().Count() != dto.ApprovedDeviceIds.Count
+            || dto.ApprovedDeviceIds.Any(deviceId => members.All(member => member.DeviceId.Value != deviceId)))
+        {
+            throw new InvalidDataException("The protected group membership is invalid.");
+        }
+
+        return new SecureTextGroup(groupId, name, dto.InitiatorNick.Trim(), members, dto.ApprovedDeviceIds.ToArray(), false);
+    }
+
+    static bool HasSameRoster(SecureTextGroup first, SecureTextGroup second) =>
+        first.Members.Count == second.Members.Count
+        && first.Members.All(member => second.Members.Any(candidate =>
+            candidate.DeviceId == member.DeviceId
+            && string.Equals(candidate.Nick, member.Nick, StringComparison.OrdinalIgnoreCase)));
+
+    static string GroupContext(SecureTextGroup group) => $"@{group.Name}";
 
     string RequireNick() => Nick ?? throw new InvalidOperationException("No signed-in nick is available.");
 
@@ -381,10 +760,17 @@ internal sealed class ChannelSession : IAsyncDisposable
             dto.ExpiresAtUtc,
             dto.Signature);
 
-    sealed class PeerSession(string fingerprint, SecureTextSession session) : IDisposable
+    readonly record struct PeerSessionKey(string Nick, Guid? GroupId)
+    {
+        public static PeerSessionKey Create(string nick, SecureTextGroupId? groupId) =>
+            new(nick.Trim().ToUpperInvariant(), groupId?.Value);
+    }
+
+    sealed class PeerSession(string fingerprint, SecureTextSession session, SecureTextGroupId? groupId) : IDisposable
     {
         public string Fingerprint { get; } = fingerprint;
         public SecureTextSession Session { get; } = session;
+        public SecureTextGroupId? GroupId { get; } = groupId;
 
         public void Dispose() => Session.Dispose();
     }
@@ -395,3 +781,25 @@ internal sealed record ChannelMessage(string Channel, string Nick, string Body, 
 internal sealed record SignalMessage(string Channel, string FromNick, string Kind, string Payload, string? ToNick);
 
 internal sealed record PeerFingerprint(string Nick, string Fingerprint, bool IsTrusted);
+
+internal sealed record SecureTextGroupMember(string Nick, SecureTextDeviceId DeviceId);
+
+internal sealed record SecureTextGroup(
+    SecureTextGroupId GroupId,
+    string Name,
+    string InitiatorNick,
+    IReadOnlyList<SecureTextGroupMember> Members,
+    IReadOnlyList<Guid> ApprovedDeviceIds,
+    bool IsLocallyApproved)
+{
+    public bool IsActive =>
+        IsLocallyApproved
+        && Members.Count == ApprovedDeviceIds.Count
+        && Members.All(member => ApprovedDeviceIds.Contains(member.DeviceId.Value));
+
+    public override string ToString()
+    {
+        var roster = string.Join(", ", Members.Select(member => member.Nick));
+        return IsActive ? $"{Name} ({roster}) · active" : $"{Name} ({roster}) · approval pending";
+    }
+}

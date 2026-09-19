@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>ChannelSmoke</RootNamespace>
-    <Description>Headless two-client end-to-end secure-text proof for ChannelHost.</Description>
+    <Description>Headless direct and explicitly approved group end-to-end secure-text proof for ChannelHost.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />

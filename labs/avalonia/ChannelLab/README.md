@@ -12,6 +12,7 @@ decrypt text locally. Media remains native Avalonia + `Novolis.Video.Rtc` mesh (
 | Channel | `#lobby` only |
 | Device | P-256 public bundle registration and an independently compared fingerprint |
 | Protected text | Direct AES-GCM envelope relay + ciphertext-only SQLite history |
+| Protected group text | Explicitly approved roster + one AES-GCM encrypted copy per recipient + ciphertext-only SQLite history |
 | Presence | `Roster` on join/part |
 | MediaSession | Avalonia `VideoSurface` tiles + `Novolis.Video.Rtc` mesh (max **4** peers). SignalR relays `video-join` / `video-part` / `offer` / `answer` / `ice` only. No SFU, LiveKit, Coturn, or WebView. |
 
@@ -40,9 +41,10 @@ dotnet run --project d:\novolis\novolis-lab\labs\avalonia\ChannelLab\ChannelHost
 dotnet run --project d:\novolis\novolis-lab\labs\avalonia\ChannelLab\ChannelSmoke\ChannelSmoke.csproj
 ```
 
-Smoke enrolls two devices, validates public-bundle retrieval, relays and decrypts a Unicode marker,
-rejects altered ciphertext, confirms the marker is absent from SQLite, and covers signaling
-(`video-join` + fake `offer`). No camera in CI.
+Smoke enrolls three devices, validates public-bundle retrieval, relays and decrypts Unicode
+markers, rejects altered ciphertext, confirms direct and group markers are absent from SQLite,
+requires every group device to approve the roster, and covers signaling (`video-join` + fake
+`offer`). No camera in CI.
 
 UI:
 
@@ -51,8 +53,11 @@ UI:
 3. Select the other nick in each peer window. Compare each displayed device fingerprint through an
    independent channel, then click **Trust peer** on both sides.
 4. Type in alice; bob should see the decrypted line. Roster lists both nicks.
-5. Toggle **Video** on both peers (Windows camera permission) — local + remote `VideoSurface` tiles.
-6. Reconnect a peer — SQLite scrollback (under `%LocalAppData%\Novolis\ChannelLab\messages.db`) replays recent encrypted envelopes.
+5. For a group, alice first trusts every invited peer, enters a group name and comma-separated nicks,
+   and clicks **Create group**. Every invited peer selects the pending group, independently verifies
+   and trusts every listed device, then clicks **Approve group**. Text is enabled after every device approves.
+6. Toggle **Video** on both peers (Windows camera permission) — local + remote `VideoSurface` tiles.
+7. Reconnect a peer — SQLite scrollback (under `%LocalAppData%\Novolis\ChannelLab\messages.db`) replays recent encrypted envelopes.
 
 ## Stack
 
@@ -65,5 +70,14 @@ UI:
 
 ## Non-goals
 
-Group text, offline prekeys, multi-device synchronization, ratcheting, forward secrecy, post-compromise security,
-Voxa microservices, RavenDB, Duende, Aspire SQL Edge, YARP, LiveKit, Coturn, browser WebView media, workspaces/admin portal.
+Group roster changes, offline prekeys, multi-device synchronization, ratcheting, forward secrecy,
+post-compromise security, Voxa microservices, RavenDB, Duende, Aspire SQL Edge, YARP, LiveKit,
+Coturn, browser WebView media, workspaces/admin portal.
+
+## Group security limits
+
+ChannelLab groups use pairwise fan-out: the sender encrypts a separate message for every approved
+device. Each client persists its own approval for the immutable roster and rejects a same-id update
+that changes that roster. This retains the direct-text security boundary but has linear sender work
+and relay storage. Changing membership requires a new group instead of changing an active roster.
+The relay can see the roster, delivery timing, and ciphertext sizes, but never group plaintext.
