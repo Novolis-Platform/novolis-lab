@@ -8,10 +8,13 @@ API walkthroughs (`HelloGame`, `HelloRuntime`, …) live under `labs/raylib/Hell
 
 ## Typed Solution Intelligence
 
-Console walkthrough for the layered solution model: a typed directory root, SLNX topology, optional
-MSBuild evaluation, optional Roslyn semantic facts, and immutable solution catalogs.
+Console walkthrough of `Novolis.Workspaces.DotNet.*`: typed directory root, Git relation, SLNX
+topology, optional MSBuild evaluation, Roslyn facts, then dynamic compilation of a typed
+exploration façade (`solution.Projects.<Project>.<Namespace>.<Type>`). No arguments
+runs a generated two-project fixture through every layer.
 
 ```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\workspaces\TypedSolutionIntelligence\TypedSolutionIntelligence.csproj -p:NovolisUseProjectReferences=true
 dotnet run --project d:\novolis\novolis-lab\labs\workspaces\TypedSolutionIntelligence\TypedSolutionIntelligence.csproj -p:NovolisUseProjectReferences=true -- d:\novolis\novolis-workspaces\Novolis.Workspaces.slnx --semantic --framework net10.0
 ```
 

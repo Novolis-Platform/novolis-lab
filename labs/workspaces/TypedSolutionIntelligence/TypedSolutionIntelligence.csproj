@@ -2,12 +2,14 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>TypedSolutionIntelligence</RootNamespace>
-    <Description>Demonstrates typed SLNX topology, MSBuild evaluation, and Roslyn solution catalogs.</Description>
+    <Description>Walks Novolis.Workspaces.DotNet: solution workspace, Git relation, SLNX, MSBuild, Roslyn, and catalog queries.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="Novolis.IO.Git" />
     <PackageReference Include="Novolis.IO.Workspace.Abstractions" />
     <PackageReference Include="Novolis.Workspaces.DotNet.Abstractions" />
+    <PackageReference Include="Novolis.Workspaces.DotNet.Git" />
     <PackageReference Include="Novolis.Workspaces.DotNet.Slnx" />
     <PackageReference Include="Novolis.Workspaces.DotNet.MSBuild" />
     <PackageReference Include="Novolis.Workspaces.DotNet.Roslyn" />

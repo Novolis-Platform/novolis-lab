@@ -106,6 +106,7 @@
     <PackageVersion Include="Novolis.Workspaces.Snapshots" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.Timeline" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.DotNet.Abstractions" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Workspaces.DotNet.Git" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.DotNet.Slnx" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.DotNet.MSBuild" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.DotNet.Roslyn" Version="2026.1.*" />

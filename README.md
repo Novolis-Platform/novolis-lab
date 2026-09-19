@@ -89,7 +89,7 @@ Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new ex
 | `MusicMakerLab` | `labs/avalonia/MusicMakerLab` | Audio.Edit multi-track (library/waveforms/fades/export) |
 | `MinimalWorkspaceTimeline` | `labs/workspaces/MinimalWorkspaceTimeline` | Workspaces + Timeline |
 | `ProjectTimelineBench` | `labs/workspaces/ProjectTimelineBench` | Workspaces.Projects.Timeline |
-| `TypedSolutionIntelligence` | `labs/workspaces/TypedSolutionIntelligence` | Typed SLNX topology, MSBuild evaluation, Roslyn facts, SolutionCatalog |
+| `TypedSolutionIntelligence` | `labs/workspaces/TypedSolutionIntelligence` | Workspaces.DotNet catalog → generated typed project/namespace/type façade |
 | `XFighter` | `labs/raylib/XFighter` | Raylib, Audio (Core, Effects, Playback, Voice) |
 | `ArtillerySimulator` | `labs/ArtillerySimulator` | Raylib, Physics.Ballistics, Physics.Collision, Simulation |
 | `BouncingBall` | `labs/BouncingBall` | Raylib, Math.Arrays, Simulation, Physics.Collision |
