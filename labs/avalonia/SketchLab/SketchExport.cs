@@ -111,7 +111,7 @@ internal static class SketchExport
         using var bitmap = new RenderTargetBitmap(new PixelSize(pixelW, pixelH), new Vector(96, 96));
         bitmap.Render(surface);
         using var ms = new MemoryStream();
-        bitmap.Save(ms);
+        bitmap.Save(ms, PngBitmapEncoderOptions.Default);
         return ms.ToArray();
     }
 
@@ -152,7 +152,7 @@ internal static class SketchExport
         using var bitmap = new RenderTargetBitmap(new PixelSize(1, 1), new Vector(96, 96));
         bitmap.Render(surface);
         using var ms = new MemoryStream();
-        bitmap.Save(ms);
+        bitmap.Save(ms, PngBitmapEncoderOptions.Default);
         return ms.ToArray();
     }
 
