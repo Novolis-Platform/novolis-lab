@@ -12,6 +12,10 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <PackageReference Include="Novolis.Avalonia.Mobile" />
+    <PackageReference Include="Novolis.Avalonia.Mobile.Desktop" />
+    <PackageReference Include="Novolis.Messaging.SecureText" />
+    <PackageReference Include="Novolis.Security.SecureText" />
     <PackageReference Include="Novolis.Avalonia.Video" />
     <PackageReference Include="Novolis.Video.Rtc.Abstractions" />
     <PackageReference Include="Novolis.Video.Rtc" />

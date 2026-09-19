@@ -7,6 +7,8 @@
     <PackageReference Include="Novolis.Game.Identity" />
     <PackageReference Include="Novolis.Game.Identity.Abstractions" />
     <PackageReference Include="Novolis.Game.Identity.AspNetCore" />
+    <PackageReference Include="Novolis.Messaging.SecureText" />
+    <PackageReference Include="Novolis.Security.SecureText" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />

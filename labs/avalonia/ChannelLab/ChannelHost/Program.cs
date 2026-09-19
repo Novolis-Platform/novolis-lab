@@ -3,14 +3,17 @@ using ChannelHost.Contracts;
 using ChannelHost.Hubs;
 using ChannelHost.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Logging;
 using Novolis.Game.Identity;
 using Novolis.Game.Identity.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
+var urls = builder.Configuration["Urls"] ?? "http://127.0.0.1:5177";
+var requiresHttps = ValidateListenUrls(urls);
+builder.WebHost.UseUrls(urls);
+IdentityModelEventSource.ShowPII = false;
 
-builder.WebHost.UseUrls(builder.Configuration["Urls"] ?? "http://127.0.0.1:5177");
-
-var tokenService = new TokenService(builder.Configuration);
+var tokenService = new TokenService(builder.Configuration, builder.Environment);
 builder.Services.AddSingleton(tokenService);
 builder.Services.AddSingleton<IPlayerDirectory, InMemoryPlayerDirectory>();
 builder.Services.AddSingleton<ChannelDirectory>();
@@ -35,15 +38,21 @@ builder.Services
     });
 builder.Services.AddAuthorization();
 builder.Services.AddSignalR();
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
-        policy.AllowAnyHeader().AllowAnyMethod().AllowCredentials().SetIsOriginAllowed(_ => true));
+    {
+        if (allowedOrigins.Length > 0)
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+    });
 });
 
 var app = builder.Build();
 
 app.UseCors();
+if (requiresHttps)
+    app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -75,6 +84,29 @@ static string? NormalizeNick(string? nick)
     if (!Regex.IsMatch(nick, "^[A-Za-z0-9_-]+$"))
         return null;
     return nick;
+}
+
+static bool ValidateListenUrls(string urls)
+{
+    var requiresHttps = false;
+    foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+            throw new InvalidOperationException($"Urls contains an invalid absolute URI: '{value}'.");
+        if (uri.Scheme is not ("http" or "https"))
+            throw new InvalidOperationException("ChannelHost supports only HTTP or HTTPS listen URLs.");
+
+        var loopback = uri.IsLoopback
+                       || string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase);
+        if (!loopback)
+        {
+            if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Non-loopback ChannelHost URLs must use HTTPS.");
+            requiresHttps = true;
+        }
+    }
+
+    return requiresHttps;
 }
 
 public partial class Program;

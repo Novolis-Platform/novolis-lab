@@ -51,15 +51,16 @@ internal sealed class ControlWindow : Window
                 },
                 new TextBlock
                 {
-                    Text = "IRC · Avalonia · #lobby",
+                    Text = "Avalonia · protected 1:1 text · #lobby",
                     FontFamily = ChannelPalette.Body,
                     FontSize = 14,
                     Foreground = ChannelPalette.CopperBrush,
                 },
                 new TextBlock
                 {
-                    Text = "Open two peer windows, connect with different nicks, and prove fan-out. " +
-                           "Toggle Video for Avalonia mesh tiles (max 4) — chat keeps working if capture fails.",
+                    Text = "Open two peer windows, connect with different nicks, select each other, " +
+                           "compare fingerprints independently, and confirm trust before sending text. " +
+                           "Toggle Video for Avalonia mesh tiles (max 4) — protected text keeps working if capture fails.",
                     FontFamily = ChannelPalette.Body,
                     FontSize = 13,
                     Foreground = ChannelPalette.InkMutedBrush,

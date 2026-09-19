@@ -1,5 +1,6 @@
 using ChannelHost.Contracts;
 using Microsoft.Data.Sqlite;
+using Novolis.Messaging.SecureText;
 
 namespace ChannelHost.Services;
 
@@ -24,8 +25,10 @@ public sealed class SqliteMessageStore : IAsyncDisposable
         EnsureSchema();
     }
 
-    public async Task AppendAsync(ChannelMessageDto message, CancellationToken cancellationToken = default)
+    public async Task AppendAsync(SecureTextRelayEnvelopeDto message, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(message);
+        var envelope = SecureTextEnvelopeCodec.Deserialize(message.Envelope);
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -34,14 +37,15 @@ public sealed class SqliteMessageStore : IAsyncDisposable
             await using var cmd = connection.CreateCommand();
             cmd.CommandText =
                 """
-                INSERT INTO messages (id, channel, nick, body, at_utc)
-                VALUES ($id, $channel, $nick, $body, $at);
+                INSERT INTO secure_messages (id, channel, from_nick, to_nick, envelope, at_utc)
+                VALUES ($id, $channel, $fromNick, $toNick, $envelope, $at);
                 """;
-            cmd.Parameters.AddWithValue("$id", Guid.CreateVersion7().ToString("D"));
+            cmd.Parameters.AddWithValue("$id", envelope.Header.MessageId.ToString("D"));
             cmd.Parameters.AddWithValue("$channel", message.Channel);
-            cmd.Parameters.AddWithValue("$nick", message.Nick);
-            cmd.Parameters.AddWithValue("$body", message.Body);
-            cmd.Parameters.AddWithValue("$at", message.At.UtcDateTime.ToString("O"));
+            cmd.Parameters.AddWithValue("$fromNick", message.FromNick);
+            cmd.Parameters.AddWithValue("$toNick", message.ToNick);
+            cmd.Parameters.Add("$envelope", SqliteType.Blob).Value = message.Envelope;
+            cmd.Parameters.AddWithValue("$at", envelope.Header.SentAtUtc.UtcDateTime.ToString("O"));
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -50,8 +54,9 @@ public sealed class SqliteMessageStore : IAsyncDisposable
         }
     }
 
-    public async Task<IReadOnlyList<ChannelMessageDto>> GetRecentAsync(
+    public async Task<IReadOnlyList<SecureTextRelayEnvelopeDto>> GetRecentAsync(
         string channel,
+        string nick,
         int take = 100,
         CancellationToken cancellationToken = default)
     {
@@ -63,24 +68,25 @@ public sealed class SqliteMessageStore : IAsyncDisposable
             await using var cmd = connection.CreateCommand();
             cmd.CommandText =
                 """
-                SELECT channel, nick, body, at_utc
-                FROM messages
-                WHERE channel = $channel
+                SELECT channel, from_nick, to_nick, envelope
+                FROM secure_messages
+                WHERE channel = $channel AND (from_nick = $nick OR to_nick = $nick)
                 ORDER BY at_utc DESC
                 LIMIT $take;
                 """;
             cmd.Parameters.AddWithValue("$channel", channel);
+            cmd.Parameters.AddWithValue("$nick", nick);
             cmd.Parameters.AddWithValue("$take", take);
 
-            var rows = new List<ChannelMessageDto>();
+            var rows = new List<SecureTextRelayEnvelopeDto>();
             await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                rows.Add(new ChannelMessageDto(
+                rows.Add(new SecureTextRelayEnvelopeDto(
                     reader.GetString(0),
                     reader.GetString(1),
                     reader.GetString(2),
-                    DateTimeOffset.Parse(reader.GetString(3), null, System.Globalization.DateTimeStyles.RoundtripKind)));
+                    reader.GetFieldValue<byte[]>(3)));
             }
 
             rows.Reverse();
@@ -99,14 +105,15 @@ public sealed class SqliteMessageStore : IAsyncDisposable
         using var cmd = connection.CreateCommand();
         cmd.CommandText =
             """
-            CREATE TABLE IF NOT EXISTS messages (
+            CREATE TABLE IF NOT EXISTS secure_messages (
                 id TEXT PRIMARY KEY,
                 channel TEXT NOT NULL,
-                nick TEXT NOT NULL,
-                body TEXT NOT NULL,
+                from_nick TEXT NOT NULL,
+                to_nick TEXT NOT NULL,
+                envelope BLOB NOT NULL,
                 at_utc TEXT NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS ix_messages_channel_at ON messages(channel, at_utc);
+            CREATE INDEX IF NOT EXISTS ix_secure_messages_channel_at ON secure_messages(channel, at_utc);
             """;
         cmd.ExecuteNonQuery();
     }

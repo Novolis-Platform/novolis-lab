@@ -138,6 +138,10 @@
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+    <PackageVersion Include="Novolis.Security.SecureText" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Messaging.SecureText" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.Mobile" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.Mobile.Desktop" Version="2026.1.*" />
     <PackageVersion Include="Novolis.MachineLearning.Neural" Version="2026.1.*" />
     <PackageVersion Include="Novolis.MachineLearning.Neural.Abstractions" Version="2026.1.*" />
         <PackageVersion Include="Novolis.Manuscript" Version="2026.1.*" />

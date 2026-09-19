@@ -1,3 +1,4 @@
 namespace ChannelHost.Contracts;
 
-public sealed record ChannelMessageDto(string Channel, string Nick, string Body, DateTimeOffset At);
+/// <summary>Opaque direct envelope relayed without access to protected text.</summary>
+public sealed record SecureTextRelayEnvelopeDto(string Channel, string FromNick, string ToNick, byte[] Envelope);

@@ -21,17 +21,35 @@ internal sealed class PeerWindow : Window
         Foreground = ChannelPalette.InkMutedBrush,
         Text = "Disconnected",
     };
+    readonly TextBlock _fingerprint = new()
+    {
+        FontFamily = ChannelPalette.Mono,
+        FontSize = 11,
+        Foreground = ChannelPalette.CopperBrush,
+        TextWrapping = TextWrapping.Wrap,
+        MaxWidth = 420,
+    };
+    readonly TextBlock _peerFingerprint = new()
+    {
+        FontFamily = ChannelPalette.Mono,
+        FontSize = 11,
+        Foreground = ChannelPalette.InkMutedBrush,
+        TextWrapping = TextWrapping.Wrap,
+        MaxWidth = 420,
+    };
     readonly ListBox _channels = new();
     readonly ListBox _roster = new();
     readonly ItemsControl _buffer = new();
-    readonly TextBox _composer = new() { PlaceholderText = "Message #lobby", IsEnabled = false };
+    readonly TextBox _composer = new() { PlaceholderText = "Select and trust a peer", IsEnabled = false };
     readonly Button _connectButton;
+    readonly Button _trustButton;
     readonly Button _videoButton;
     readonly ScrollViewer _bufferScroll = new() { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
     readonly VideoSurface _localSurface = new() { Label = "you", MinHeight = 120, MinWidth = 160 };
     readonly StackPanel _videoStrip = new() { Orientation = Orientation.Horizontal, Spacing = 8 };
     readonly Border _videoHost;
     MeshVideoController? _video;
+    string? _selectedPeer;
 
     public PeerWindow(string? suggestedNick = null)
     {
@@ -45,9 +63,12 @@ internal sealed class PeerWindow : Window
             _nickBox.Text = suggestedNick;
 
         _connectButton = PrimaryButton("Connect", OnConnectClicked);
+        _trustButton = PrimaryButton("Trust peer", OnTrustClicked);
+        _trustButton.IsEnabled = false;
         _videoButton = PrimaryButton("Video", OnVideoClicked);
         _videoButton.IsEnabled = false;
         _composer.KeyDown += OnComposerKeyDown;
+        _roster.SelectionChanged += OnRosterSelectionChanged;
 
         _channels.ItemsSource = new[] { "#lobby" };
         _channels.SelectedIndex = 0;
@@ -78,6 +99,9 @@ internal sealed class PeerWindow : Window
         _session.StatusChanged += s => Dispatcher.UIThread.Post(() => _status.Text = s);
         _session.MessageReceived += m => Dispatcher.UIThread.Post(() => AppendMessage(m));
         _session.HistoryReceived += list => Dispatcher.UIThread.Post(() => ReplaceHistory(list));
+        _session.DeviceFingerprintAvailable += fingerprint => Dispatcher.UIThread.Post(() =>
+            _fingerprint.Text = $"Your device fingerprint: {fingerprint}");
+        _session.PeerFingerprintAvailable += peer => Dispatcher.UIThread.Post(() => UpdatePeerTrust(peer));
         _session.RosterChanged += nicks => Dispatcher.UIThread.Post(() =>
         {
             _roster.ItemsSource = nicks.ToList();
@@ -105,6 +129,8 @@ internal sealed class PeerWindow : Window
                     Foreground = ChannelPalette.MistSoftBrush,
                 },
                 _status,
+                _fingerprint,
+                _peerFingerprint,
             },
         });
         var nickRow = new StackPanel
@@ -112,7 +138,7 @@ internal sealed class PeerWindow : Window
             Orientation = Orientation.Horizontal,
             Spacing = 8,
             VerticalAlignment = VerticalAlignment.Center,
-            Children = { _nickBox, _connectButton, _videoButton },
+            Children = { _nickBox, _connectButton, _trustButton, _videoButton },
         };
         Grid.SetColumn(nickRow, 1);
         header.Children.Add(nickRow);
@@ -199,7 +225,7 @@ internal sealed class PeerWindow : Window
         {
             await _session.ConnectAsync(nick).ConfigureAwait(true);
             Title = $"ChannelLab — {nick}";
-            _composer.IsEnabled = true;
+            _composer.IsEnabled = false;
             _nickBox.IsEnabled = false;
             _connectButton.Content = "Connected";
             _videoButton.IsEnabled = true;
@@ -210,6 +236,61 @@ internal sealed class PeerWindow : Window
             _status.Text = ex.Message;
             _connectButton.IsEnabled = true;
         }
+    }
+
+    async void OnRosterSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        _selectedPeer = _roster.SelectedItem as string;
+        _trustButton.IsEnabled = false;
+        _composer.IsEnabled = false;
+        if (string.IsNullOrWhiteSpace(_selectedPeer)
+            || string.Equals(_selectedPeer, _session.Nick, StringComparison.OrdinalIgnoreCase)
+            || !_session.IsConnected)
+        {
+            _selectedPeer = null;
+            _peerFingerprint.Text = "Select a connected peer, then compare and confirm the displayed fingerprint.";
+            return;
+        }
+
+        try
+        {
+            await _session.PreparePeerTrustAsync(_selectedPeer).ConfigureAwait(true);
+        }
+        catch (Exception exception)
+        {
+            _status.Text = exception.Message;
+        }
+    }
+
+    async void OnTrustClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_selectedPeer))
+            return;
+
+        _trustButton.IsEnabled = false;
+        try
+        {
+            await _session.ConfirmPeerTrustAsync(_selectedPeer).ConfigureAwait(true);
+        }
+        catch (Exception exception)
+        {
+            _status.Text = exception.Message;
+        }
+    }
+
+    void UpdatePeerTrust(PeerFingerprint peer)
+    {
+        if (!string.Equals(peer.Nick, _selectedPeer, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _peerFingerprint.Text = peer.IsTrusted
+            ? $"Trusted {peer.Nick} device fingerprint: {peer.Fingerprint}"
+            : $"Compare {peer.Nick} device fingerprint independently: {peer.Fingerprint}";
+        _trustButton.IsEnabled = !peer.IsTrusted;
+        _composer.IsEnabled = peer.IsTrusted && _session.IsConnected;
+        _composer.PlaceholderText = peer.IsTrusted
+            ? $"Private message to {peer.Nick}"
+            : "Confirm the selected peer before sending";
     }
 
     async void OnVideoClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -272,12 +353,12 @@ internal sealed class PeerWindow : Window
             return;
         e.Handled = true;
         var body = _composer.Text?.Trim() ?? string.Empty;
-        if (body.Length == 0 || !_session.IsConnected)
+        if (body.Length == 0 || !_session.IsConnected || string.IsNullOrWhiteSpace(_selectedPeer))
             return;
         _composer.Text = string.Empty;
         try
         {
-            await _session.SayAsync(body).ConfigureAwait(true);
+            await _session.SayAsync(_selectedPeer, body).ConfigureAwait(true);
         }
         catch (Exception ex)
         {

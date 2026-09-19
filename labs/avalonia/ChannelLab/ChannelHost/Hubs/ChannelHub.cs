@@ -3,6 +3,8 @@ using ChannelHost.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Novolis.Game.Identity.AspNetCore;
+using Novolis.Messaging.SecureText;
+using Novolis.Security.SecureText;
 
 namespace ChannelHost.Hubs;
 
@@ -42,11 +44,6 @@ public sealed class ChannelHub : Hub
         var roster = _directory.Join(channel, player, nick, Context.ConnectionId);
         await Groups.AddToGroupAsync(Context.ConnectionId, channel).ConfigureAwait(false);
 
-        var history = await _store.GetRecentAsync(channel).ConfigureAwait(false);
-        if (history.Count == 0)
-            history = _directory.Recent(channel);
-
-        await Clients.Caller.SendAsync("History", history).ConfigureAwait(false);
         await Clients.Group(channel).SendAsync("Roster", new RosterDto(channel, roster)).ConfigureAwait(false);
         _logger.LogInformation("{Nick} joined {Channel}", nick, channel);
     }
@@ -67,29 +64,87 @@ public sealed class ChannelHub : Hub
             await Clients.Group(channel).SendAsync("Roster", new RosterDto(channel, roster)).ConfigureAwait(false);
     }
 
-    public async Task Say(string channel, string body)
+    public Task RegisterDevice(string channel, DeviceBundleDto bundle)
     {
         channel = NormalizeChannel(channel);
         if (!_directory.IsKnownChannel(channel))
             throw new HubException($"Unknown channel '{channel}'.");
-
         if (!Context.User!.TryGetPlayerRef(out _))
             throw new HubException("Missing player claim.");
 
         var current = _directory.FindChannelForConnection(Context.ConnectionId);
         if (!string.Equals(current, channel, StringComparison.OrdinalIgnoreCase))
-            throw new HubException("Join the channel before speaking.");
+            throw new HubException("Join the channel before registering a device.");
 
-        body = (body ?? string.Empty).Trim();
-        if (body.Length == 0)
-            throw new HubException("Empty message.");
-        if (body.Length > ChannelDirectory.MaxBodyLength)
-            body = body[..ChannelDirectory.MaxBodyLength];
+        var publicBundle = ToPublicBundle(bundle);
+        if (!publicBundle.Verify())
+            throw new HubException("The device bundle signature or validity window is invalid.");
+        if (!_directory.TryRegisterDevice(channel, ResolveNick(), Context.ConnectionId, publicBundle))
+            throw new HubException("The device cannot be registered for this connection.");
 
-        var message = new ChannelMessageDto(channel, ResolveNick(), body, DateTimeOffset.UtcNow);
-        _directory.Remember(message);
-        await _store.AppendAsync(message).ConfigureAwait(false);
-        await Clients.Group(channel).SendAsync("Message", message).ConfigureAwait(false);
+        _logger.LogInformation("Registered secure-text device {DeviceId} for {Nick}", publicBundle.DeviceId, ResolveNick());
+        return Task.CompletedTask;
+    }
+
+    public Task<DeviceBundleDto?> GetDeviceBundle(string channel, string nick)
+    {
+        channel = NormalizeChannel(channel);
+        if (!_directory.IsKnownChannel(channel))
+            throw new HubException($"Unknown channel '{channel}'.");
+        var current = _directory.FindChannelForConnection(Context.ConnectionId);
+        if (!string.Equals(current, channel, StringComparison.OrdinalIgnoreCase))
+            throw new HubException("Join the channel before resolving a peer.");
+
+        var bundle = _directory.TryGetDeviceBundle(channel, nick);
+        return Task.FromResult(bundle is null ? null : ToDto(bundle));
+    }
+
+    public async Task<IReadOnlyList<SecureTextRelayEnvelopeDto>> GetSecureHistory(string channel)
+    {
+        channel = NormalizeChannel(channel);
+        var current = _directory.FindChannelForConnection(Context.ConnectionId);
+        if (!string.Equals(current, channel, StringComparison.OrdinalIgnoreCase))
+            throw new HubException("Join the channel before reading protected history.");
+
+        return await _store.GetRecentAsync(channel, ResolveNick()).ConfigureAwait(false);
+    }
+
+    public async Task SendSecureText(string channel, string toNick, byte[] envelope)
+    {
+        channel = NormalizeChannel(channel);
+        if (!_directory.IsKnownChannel(channel))
+            throw new HubException($"Unknown channel '{channel}'.");
+        var current = _directory.FindChannelForConnection(Context.ConnectionId);
+        if (!string.Equals(current, channel, StringComparison.OrdinalIgnoreCase))
+            throw new HubException("Join the channel before sending protected text.");
+        if (string.IsNullOrWhiteSpace(toNick))
+            throw new HubException("A recipient is required.");
+        if (envelope is null || envelope.Length > SecureTextEnvelopeCodec.GetMaximumSerializedBytes())
+            throw new HubException("The protected envelope length is invalid.");
+
+        SecureTextEnvelope protectedEnvelope;
+        try
+        {
+            protectedEnvelope = SecureTextEnvelopeCodec.Deserialize(envelope);
+        }
+        catch (Exception exception) when (exception is InvalidDataException or EndOfStreamException or NotSupportedException or ArgumentException)
+        {
+            throw new HubException("The protected envelope is invalid.");
+        }
+
+        var fromNick = ResolveNick();
+        if (!_directory.IsRegisteredDevice(channel, fromNick, protectedEnvelope.Header.SenderDeviceId.Value))
+            throw new HubException("The protected envelope sender device is not registered for this connection.");
+        var targetBundle = _directory.TryGetDeviceBundle(channel, toNick);
+        if (targetBundle is null || targetBundle.DeviceId != protectedEnvelope.Header.RecipientDeviceId.Value)
+            throw new HubException("The protected envelope recipient does not match the selected peer.");
+        var targetConnection = _directory.FindConnectionForDevice(channel, targetBundle.DeviceId);
+        if (targetConnection is null)
+            throw new HubException("The selected peer is not connected.");
+
+        var relay = new SecureTextRelayEnvelopeDto(channel, fromNick, toNick.Trim(), envelope);
+        await _store.AppendAsync(relay).ConfigureAwait(false);
+        await Clients.Client(targetConnection).SendAsync("SecureText", relay).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -179,4 +234,27 @@ public sealed class ChannelHub : Hub
             channel = "#" + channel;
         return channel;
     }
+
+    static SecureTextPublicBundle ToPublicBundle(DeviceBundleDto bundle)
+    {
+        ArgumentNullException.ThrowIfNull(bundle);
+        return new SecureTextPublicBundle(
+            bundle.ProtocolVersion,
+            bundle.DeviceId,
+            bundle.SigningPublicKey,
+            bundle.AgreementPublicKey,
+            bundle.IssuedAtUtc,
+            bundle.ExpiresAtUtc,
+            bundle.Signature);
+    }
+
+    static DeviceBundleDto ToDto(SecureTextPublicBundle bundle) =>
+        new(
+            bundle.ProtocolVersion,
+            bundle.DeviceId,
+            bundle.ExportSigningPublicKey(),
+            bundle.ExportAgreementPublicKey(),
+            bundle.IssuedAtUtc,
+            bundle.ExpiresAtUtc,
+            bundle.ExportSignature());
 }

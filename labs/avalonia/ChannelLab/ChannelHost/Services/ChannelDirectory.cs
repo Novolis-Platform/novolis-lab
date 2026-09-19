@@ -1,14 +1,12 @@
 using System.Collections.Concurrent;
-using ChannelHost.Contracts;
 using Novolis.Game.Identity.Abstractions;
+using Novolis.Security.SecureText;
 
 namespace ChannelHost.Services;
 
 public sealed class ChannelDirectory
 {
     public const string Lobby = "#lobby";
-    public const int MaxBodyLength = 2048;
-    public const int RingCapacity = 100;
     public const int MaxVideoParticipants = 4;
 
     readonly ConcurrentDictionary<string, ChannelState> _channels = new(StringComparer.OrdinalIgnoreCase);
@@ -52,7 +50,7 @@ public sealed class ChannelDirectory
         {
             lock (pair.Value.Gate)
             {
-                if (pair.Value.Members.Remove(connectionId))
+                if (pair.Value.Members.Remove(connectionId, out _))
                 {
                     pair.Value.VideoMembers.Remove(connectionId);
                     channel = pair.Key;
@@ -133,22 +131,78 @@ public sealed class ChannelDirectory
         return null;
     }
 
-    public void Remember(ChannelMessageDto message)
+    public bool TryRegisterDevice(
+        string channel,
+        string nick,
+        string connectionId,
+        SecureTextPublicBundle bundle)
     {
-        var state = GetOrThrow(message.Channel);
+        ArgumentNullException.ThrowIfNull(bundle);
+        var state = GetOrThrow(channel);
         lock (state.Gate)
         {
-            state.Ring.AddLast(message);
-            while (state.Ring.Count > RingCapacity)
-                state.Ring.RemoveFirst();
+            if (!state.Members.TryGetValue(connectionId, out var member)
+                || !string.Equals(member.Nick, nick, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (state.Devices.TryGetValue(bundle.DeviceId, out var existing)
+                && !string.Equals(existing.Nick, nick, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var replacedDeviceIds = state.Devices
+                .Where(pair => string.Equals(pair.Value.Nick, nick, StringComparison.OrdinalIgnoreCase)
+                               && pair.Key != bundle.DeviceId)
+                .Select(pair => pair.Key)
+                .ToArray();
+            foreach (var deviceId in replacedDeviceIds)
+                state.Devices.Remove(deviceId);
+
+            state.Devices[bundle.DeviceId] = new Device(nick, bundle);
+            return true;
         }
     }
 
-    public IReadOnlyList<ChannelMessageDto> Recent(string channel)
+    public SecureTextPublicBundle? TryGetDeviceBundle(string channel, string nick)
     {
         var state = GetOrThrow(channel);
         lock (state.Gate)
-            return state.Ring.ToList();
+        {
+            foreach (var device in state.Devices.Values)
+            {
+                if (string.Equals(device.Nick, nick, StringComparison.OrdinalIgnoreCase))
+                    return device.Bundle;
+            }
+
+            return null;
+        }
+    }
+
+    public bool IsRegisteredDevice(string channel, string nick, Guid deviceId)
+    {
+        var state = GetOrThrow(channel);
+        lock (state.Gate)
+        {
+            return state.Devices.TryGetValue(deviceId, out var device)
+                   && string.Equals(device.Nick, nick, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    public string? FindConnectionForDevice(string channel, Guid deviceId)
+    {
+        var state = GetOrThrow(channel);
+        lock (state.Gate)
+        {
+            if (!state.Devices.TryGetValue(deviceId, out var device))
+                return null;
+
+            return state.Members
+                .FirstOrDefault(pair => string.Equals(pair.Value.Nick, device.Nick, StringComparison.OrdinalIgnoreCase))
+                .Key;
+        }
     }
 
     ChannelState GetOrThrow(string channel)
@@ -171,8 +225,9 @@ public sealed class ChannelDirectory
         public object Gate { get; } = new();
         public Dictionary<string, Member> Members { get; } = new(StringComparer.Ordinal);
         public HashSet<string> VideoMembers { get; } = new(StringComparer.Ordinal);
-        public LinkedList<ChannelMessageDto> Ring { get; } = new();
+        public Dictionary<Guid, Device> Devices { get; } = [];
     }
 
     readonly record struct Member(PlayerRef Player, string Nick);
+    readonly record struct Device(string Nick, SecureTextPublicBundle Bundle);
 }

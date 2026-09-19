@@ -32,6 +32,7 @@ internal sealed class HostProcessGuard : IAsyncDisposable
             CreateNoWindow = true,
             WorkingDirectory = Path.GetDirectoryName(project)!,
         };
+        start.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
 
         _process = Process.Start(start);
         if (_process is null)
