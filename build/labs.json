@@ -299,6 +299,18 @@
       ]
     },
     {
+      "Key": "codegen-TinyExprBindings",
+      "DisplayName": "codegen Tiny Expr Bindings",
+      "Projects": [
+        "labs/codegen/TinyExprBindings/TinyExprBindings.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/codegen/TinyExprBindings/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "documents-HelloDocument",
       "DisplayName": "documents Hello Document",
       "Projects": [

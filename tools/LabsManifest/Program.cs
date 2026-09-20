@@ -22,6 +22,7 @@ internal static class Program
             "avalonia",
             "cad",
             "civics",
+            "codegen",
             "documents",
             "economy",
             "gaming",
