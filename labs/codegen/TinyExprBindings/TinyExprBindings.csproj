@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>TinyExprBindings</RootNamespace>
+    <AssemblyName>TinyExprBindings</AssemblyName>
+    <Description>Minimal C-ABI binding-emitter walkthrough using TinyExpr.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Novolis.CodeGen.Bindings" />
+    <PackageReference Include="Novolis.CodeGen.Bindings.Roslyn" />
+  </ItemGroup>
+
+</Project>

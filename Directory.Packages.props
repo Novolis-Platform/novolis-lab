@@ -66,6 +66,8 @@
     <PackageVersion Include="Novolis.Avalonia.Cad" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Cad.Primitives" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Cad.SceneBridge" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.CodeGen.Bindings" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.CodeGen.Bindings.Roslyn" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Ship.Primitives" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Ship.Topology" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Ship.Validation" Version="2026.1.*" />
