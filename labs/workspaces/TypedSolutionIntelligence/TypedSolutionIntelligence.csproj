@@ -3,7 +3,11 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>TypedSolutionIntelligence</RootNamespace>
     <Description>Walks Novolis.Workspaces.DotNet: solution workspace, Git relation, SLNX, MSBuild, Roslyn, and catalog queries.</Description>
+    <DefaultItemExcludes>$(DefaultItemExcludes);fixture\**\*</DefaultItemExcludes>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="fixture\**\*" CopyToOutputDirectory="PreserveNewest" Link="fixture\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="Novolis.IO.Git" />

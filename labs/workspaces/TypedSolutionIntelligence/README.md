@@ -1,6 +1,6 @@
 # Typed Solution Intelligence
 
-Console walkthrough of the `Novolis.Workspaces.DotNet.*` stack against either a generated
+Console walkthrough of the `Novolis.Workspaces.DotNet.*` stack against either the committed
 fixture or a real `.slnx` file:
 
 ```text
@@ -12,20 +12,23 @@ GitRepositoryWorkspace is a sibling discovery (SolutionRepositoryRelation), not 
 collapsing a directory, Git repository, solution, evaluated project, and C# semantic model
 into one abstraction.
 
-With `--semantic` (the no-argument fixture path), the catalog is compiled into a C# façade
-whose members are the solution's named projects, namespaces, and types:
+The no-argument path compiles `Generated/FixtureExploration.g.cs` into this lab, so the
+consumer is ordinary C#:
 
 ```csharp
-solution.Projects.DemoLib.Novolis.Sample.Widget
+var solution = new GeneratedSolution(catalog);
+SemanticType identityService = solution.Projects.DemoLib.Services.IdentityService;
+SemanticType widget = solution.Projects.DemoLib.Novolis.Sample.Widget;
 ```
 
-That source is emitted, compiled in memory, and executed — not printed as a string dump of
-the catalog.
+Those members are generated properties of type `SemanticType`. There is no `dynamic`.
+Against an arbitrary `.slnx`, `--semantic` still emits a façade and compiles it with Roslyn
+so member access is type-checked in that compilation.
 
 ## Run
 
-With no arguments the lab writes a tiny two-project fixture to temp and walks every layer,
-including Git relation, MSBuild, Roslyn, and catalog queries:
+With no arguments the lab opens `fixture/src/Fixture.slnx` and walks every layer,
+including Git relation, MSBuild, Roslyn, catalog queries, and the typed consumer:
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\workspaces\TypedSolutionIntelligence\TypedSolutionIntelligence.csproj -p:NovolisUseProjectReferences=true

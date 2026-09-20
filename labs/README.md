@@ -9,9 +9,10 @@ API walkthroughs (`HelloGame`, `HelloRuntime`, …) live under `labs/raylib/Hell
 ## Typed Solution Intelligence
 
 Console walkthrough of `Novolis.Workspaces.DotNet.*`: typed directory root, Git relation, SLNX
-topology, optional MSBuild evaluation, Roslyn facts, then dynamic compilation of a typed
-exploration façade (`solution.Projects.<Project>.<Namespace>.<Type>`). No arguments
-runs a generated two-project fixture through every layer.
+topology, optional MSBuild evaluation, Roslyn facts, then a **compile-time** typed
+exploration façade (`solution.Projects.<Project>.<Namespace>.<Type>` as `SemanticType`).
+No arguments opens the committed two-project fixture and binds
+`solution.Projects.DemoLib.Services.IdentityService` without `dynamic`.
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\workspaces\TypedSolutionIntelligence\TypedSolutionIntelligence.csproj -p:NovolisUseProjectReferences=true
