@@ -3,10 +3,12 @@ using Novolis.CodeGen.Bindings.Roslyn;
 
 namespace TinyExprBindings;
 
+/// <summary>
+/// TinyExpr host — the happy path without custom phases or Roslyn hooks.
+/// Audio/Raylib add verifiers, companions, and hooks on top of this same shape.
+/// </summary>
 internal static class TinyExprBindingCodegen
 {
-    private const string ManifestPath = "labs/codegen/TinyExprBindings/TinyExprManifest.cs";
-
     public static IReadOnlyList<string> GeneratedFiles { get; } =
     [
         "labs/codegen/TinyExprBindings/Generated/TinyExprNative.g.cs",
@@ -21,59 +23,26 @@ internal static class TinyExprBindingCodegen
             "dotnet run --project labs/codegen/TinyExprBindings -- generate");
 
         var project = BindingProject.Create("TinyExpr")
-            .RequireCompanion(ManifestPath, "the TinyExpr typed C-ABI manifest")
             .AddJob(
-                new BindingEmitJob(
+                BindingEmitJob.LibraryImport(
                     "tinyexpr interop",
-                    FragmentKind.InteropExports,
-                    "tinyexpr",
-                    new LibraryImportEmitter(),
-                    new EmitTarget(
-                        "TinyExprNative",
-                        EmitStrategy.LibraryImport,
-                        GeneratedFiles[0],
-                        "TinyExprBindings.Generated",
-                        "TinyExprBindings",
-                        "TinyExprDll",
-                        "Low-level TinyExpr C entry points.",
-                        null,
-                        null)))
+                    TinyExprManifest.Interop.Id,
+                    "TinyExprNative",
+                    GeneratedFiles[0],
+                    "TinyExprBindings.Generated",
+                    "TinyExprBindings",
+                    libraryConstantName: "TinyExprDll",
+                    typeSummary: "Low-level TinyExpr C entry points."))
             .AddJob(
-                new BindingEmitJob(
+                BindingEmitJob.FacadeForward(
                     "tinyexpr facade",
-                    FragmentKind.FacadeTypes,
-                    "tinyexpr-facade",
-                    new FacadeForwardEmitter(),
-                    new EmitTarget(
-                        "TinyExpr",
-                        EmitStrategy.FacadeForward,
-                        GeneratedFiles[1],
-                        "TinyExprBindings",
-                        "TinyExprBindings",
-                        FacadeMethodImpl: "AggressiveInlining"),
-                    FormatPolicy: BindingFormatPolicy.NormalizeWhitespace,
-                    Slice: "TinyExpr"));
+                    TinyExprManifest.Facades.Id,
+                    "TinyExpr",
+                    GeneratedFiles[1],
+                    "TinyExprBindings",
+                    "TinyExprBindings",
+                    facadeMethodImpl: TinyExprManifest.Interop.Policy.FacadeMethodImpl));
 
-        var run = new BindingCodegenRun<TinyExprCodegenPhase, BindingEmitContext>
-        {
-            Project = project,
-            Options = options,
-            SelectPhase = _ => TinyExprCodegenPhase.Emit,
-            CreateContext = (_, fragment, outputPath, fingerprint) => new BindingEmitContext
-            {
-                Environment = options.Environment,
-                OutputPath = outputPath,
-                Fragment = fragment,
-                ManifestSha256 = fingerprint,
-                RegenerateHint = options.RegenerateHint,
-            },
-        };
-
-        return new BindingCodegenHost<TinyExprCodegenPhase, BindingEmitContext>().Generate(run, log);
+        return BindingCodegen.Generate(project, options, log);
     }
-}
-
-internal enum TinyExprCodegenPhase
-{
-    Emit,
 }

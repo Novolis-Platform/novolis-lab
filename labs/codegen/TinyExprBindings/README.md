@@ -1,12 +1,15 @@
 # TinyExpr C-ABI binding walkthrough
 
-This is the smallest complete consumer of `Novolis.CodeGen.Bindings`:
+This is the smallest complete consumer of `Novolis.CodeGen.Bindings` — the same pieces Audio and Raylib use, without verifiers, companions, or Roslyn hooks.
 
-- a typed `NativeSignature` manifest for four functions from [TinyExpr](https://github.com/codeplea/tinyexpr);
-- one standard `BindingCodegenHost` run with no custom Roslyn hooks;
-- generated `LibraryImport` declarations plus a small public façade.
+| Piece | TinyExpr | Audio / Raylib |
+|-------|----------|----------------|
+| Typed signatures | `TinyExprNativeSignatures.cs` | `AudioNativeSignatures` / `RaylibNativeSignatures` |
+| Manifest fragments | `TinyExprManifest.cs` | `*InteropManifest` + façade manifests |
+| Jobs | `BindingEmitJob.LibraryImport` + `FacadeForward` | same factories (plus shims/debug for Raylib) |
+| Run | `BindingCodegen.Generate` | same, or generic host when hooks are required |
 
-TinyExpr is a zlib-licensed C99 expression evaluator contained in `tinyexpr.c` and `tinyexpr.h`. Its public API is deliberately small:
+TinyExpr is a zlib-licensed C99 expression evaluator (`tinyexpr.c` / `tinyexpr.h`):
 
 ```c
 double te_interp(const char *expression, int *error);
@@ -17,19 +20,16 @@ void te_free(te_expr *expression);
 
 ## Run it
 
-Generate and inspect the bindings:
-
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\codegen\TinyExprBindings\TinyExprBindings.csproj -- generate
 dotnet run --project d:\novolis\novolis-lab\labs\codegen\TinyExprBindings\TinyExprBindings.csproj -- show
 ```
 
-The source of truth is `TinyExprManifest.cs`. Each ABI parameter has an explicit name and `NativeType`; the only host setup is two `BindingEmitJob` declarations in `TinyExprBindingCodegen.cs`.
-`LibraryImport` uses generated unsafe code, so the lab project deliberately includes `<AllowUnsafeBlocks>true</AllowUnsafeBlocks>`.
+`LibraryImport` needs generated unsafe code, so the project sets `<AllowUnsafeBlocks>true</AllowUnsafeBlocks>`.
 
 ## Calling TinyExpr
 
-The lab compiles and regenerates without a native binary. It intentionally does not bundle TinyExpr or prescribe a C toolchain. To call it at runtime, provide a TinyExpr native library under the loader name `tinyexpr` (`tinyexpr.dll` on Windows) and invoke the generated façade:
+The lab regenerates and compiles without a native binary. To call it at runtime, provide a TinyExpr native library named `tinyexpr` (`tinyexpr.dll` on Windows):
 
 ```csharp
 var value = TinyExpr.Interpret("sqrt(3^2 + 4^2)", out var error);
@@ -37,4 +37,4 @@ if (error != 0)
     throw new InvalidOperationException($"TinyExpr parse error at {error}.");
 ```
 
-`te_compile` returns an opaque `nint` because `te_expr` is a native-owned structure. `TinyExpr.Free` must be called for every successful compile. The lab keeps ownership policy visible in the façade rather than pretending this generic C-ABI emitter can infer it.
+`te_compile` returns an opaque `nint` because `te_expr` is native-owned. Call `TinyExpr.Free` for every successful compile — ownership stays explicit in the façade.

@@ -20,7 +20,7 @@ internal static class Program
         if (exitCode == 0)
         {
             Console.WriteLine();
-            Console.WriteLine("Open TinyExprManifest.cs to see the typed C ABI.");
+            Console.WriteLine("Open TinyExprManifest.cs / TinyExprNativeSignatures.cs for the typed C ABI.");
             Console.WriteLine("Run with 'show' to print the generated interop and façade files.");
         }
 
