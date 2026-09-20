@@ -25,6 +25,7 @@ dotnet run --project d:\novolis\novolis-lab\labs\codegen\TinyExprBindings\TinyEx
 ```
 
 The source of truth is `TinyExprManifest.cs`. Each ABI parameter has an explicit name and `NativeType`; the only host setup is two `BindingEmitJob` declarations in `TinyExprBindingCodegen.cs`.
+`LibraryImport` uses generated unsafe code, so the lab project deliberately includes `<AllowUnsafeBlocks>true</AllowUnsafeBlocks>`.
 
 ## Calling TinyExpr
 
