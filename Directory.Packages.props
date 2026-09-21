@@ -165,7 +165,10 @@
     <PackageVersion Include="SkiaSharp" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="3.116.1" />
     <PackageVersion Include="Novolis.Messaging.Channels" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.WorkflowEngine.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.WorkflowEngine" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.WorkflowEngine.Channels" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.WorkflowEngine.Hosting" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Physics.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Physics.Astro" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Physics.Ballistics" Version="2026.1.*" />

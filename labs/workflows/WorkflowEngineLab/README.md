@@ -1,10 +1,10 @@
 # WorkflowEngineLab
 
-Small host-started workflow that passes a value through a start step, a
-transform step, and an end step:
+Small channel-triggered workflow that passes a value through a typed
+transformation and terminal sink:
 
 ```text
-ReadStep → NormalizeStep → PrintStep
+ChannelWorkflowTrigger → NormalizeStep → PrintSink
 ```
 
 Run it from the workspace with:
@@ -13,5 +13,5 @@ Run it from the workspace with:
 dotnet run --project d:\novolis\novolis-lab\labs\workflows\WorkflowEngineLab\WorkflowEngineLab.csproj -p:NovolisUseProjectReferences=true
 ```
 
-The sample prints `WORKFLOW ENGINE` and exits after the end step receives the
+The sample prints `WORKFLOW ENGINE` and exits after the sink receives the
 result.

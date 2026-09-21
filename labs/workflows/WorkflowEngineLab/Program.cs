@@ -1,41 +1,47 @@
 using System.Threading.Channels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Novolis.WorkflowEngine;
+using Novolis.WorkflowEngine.Channels;
+using Novolis.WorkflowEngine.Hosting;
 
 var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddWorkflowChannelTrigger<RawMessage>();
+builder.Services.AddWorkflow("normalize", workflow => workflow
+    .TriggeredBy<ChannelWorkflowTrigger<RawMessage>, RawMessage>()
+    .Then<NormalizeStep, RawMessage, WorkflowResult>()
+    .EndWith<PrintSink, WorkflowResult>());
+builder.Services.AddWorkflowHosting();
 
-builder.Services.AddWorkflow(workflow =>
-{
-    workflow
-        .StartWith<ReadStep, RawMessage>()
-        .Then<NormalizeStep, RawMessage, WorkflowResult>()
-        .ThenEndWith<PrintStep, WorkflowResult>();
-});
-
-await builder.Build().RunAsync();
+using var host = builder.Build();
+await host.StartAsync();
+await host.Services
+    .GetRequiredService<ChannelWriter<RawMessage>>()
+    .WriteAsync(new RawMessage("workflow engine"));
+await host.WaitForShutdownAsync();
 
 public sealed record RawMessage(string Value);
 
 public sealed record WorkflowResult(string Value);
 
-public sealed class ReadStep(ChannelWriter<RawMessage> writer) : IStartStep<RawMessage>
+public sealed class NormalizeStep : IWorkflowStep<RawMessage, WorkflowResult>
 {
-    public Task RunAsync(CancellationToken cancellationToken) =>
-        writer.WriteAsync(new RawMessage("workflow engine"), cancellationToken).AsTask();
+    public ValueTask<WorkflowResult> ExecuteAsync(
+        RawMessage input,
+        WorkflowContext context,
+        CancellationToken cancellationToken = default) =>
+        ValueTask.FromResult(new WorkflowResult(input.Value.ToUpperInvariant()));
 }
 
-public sealed class NormalizeStep : IStep<RawMessage, WorkflowResult>
+public sealed class PrintSink(IHostApplicationLifetime lifetime) : IWorkflowSink<WorkflowResult>
 {
-    public Task<WorkflowResult> ExecuteAsync(RawMessage input) =>
-        Task.FromResult(new WorkflowResult(input.Value.ToUpperInvariant()));
-}
-
-public sealed class PrintStep(IHostApplicationLifetime lifetime) : IEndStep<WorkflowResult>
-{
-    public Task ExecuteAsync(WorkflowResult result)
+    public ValueTask HandleAsync(
+        WorkflowResult payload,
+        WorkflowContext context,
+        CancellationToken cancellationToken = default)
     {
-        Console.WriteLine(result.Value);
+        Console.WriteLine(payload.Value);
         lifetime.StopApplication();
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

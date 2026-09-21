@@ -134,8 +134,8 @@ dotnet run --project d:\novolis\novolis-lab\labs\raylib\PulseStrip -p:NovolisUse
 
 ## WorkflowEngineLab
 
-Deterministic generic-host workflow showing a start step, a transform step,
-and an end step backed by `Novolis.WorkflowEngine`.
+Deterministic generic-host workflow showing a channel trigger, typed transform,
+and terminal sink backed by `Novolis.WorkflowEngine`.
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\workflows\WorkflowEngineLab\WorkflowEngineLab.csproj -p:NovolisUseProjectReferences=true

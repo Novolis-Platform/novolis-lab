@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.WorkflowEngine" />
+    <PackageReference Include="Novolis.WorkflowEngine.Channels" />
+    <PackageReference Include="Novolis.WorkflowEngine.Hosting" />
   </ItemGroup>
 </Project>
