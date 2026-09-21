@@ -20,6 +20,9 @@
   <Folder Name="/codegen/">
     <Project Path="labs/codegen/TinyExprBindings/TinyExprBindings.csproj" />
   </Folder>
+  <Folder Name="/workflows/">
+    <Project Path="labs/workflows/WorkflowEngineLab/WorkflowEngineLab.csproj" />
+  </Folder>
   <Folder Name="/raylib/">
     <Project Path="labs/RaylibHello/RaylibHello.csproj" />
     <Project Path="labs/raylib/HelloGame/HelloGame.csproj" />

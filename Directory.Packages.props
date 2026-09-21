@@ -142,6 +142,11 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
     <PackageVersion Include="Novolis.Security.SecureText" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Messaging.SecureText" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Chat.Abstractions" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Chat.Directory" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Chat.Live" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Chat.Hosting.AspNetCore" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.Chat" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Mobile" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Mobile.Desktop" Version="2026.1.*" />
     <PackageVersion Include="Novolis.MachineLearning.Neural" Version="2026.1.*" />
@@ -160,6 +165,7 @@
     <PackageVersion Include="SkiaSharp" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="3.116.1" />
     <PackageVersion Include="Novolis.Messaging.Channels" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.WorkflowEngine" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Physics.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Physics.Astro" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Physics.Ballistics" Version="2026.1.*" />

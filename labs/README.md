@@ -131,3 +131,12 @@ Anti-grav spline-circuit racer (Wipeout homage): weapons/boost, procedural FX/SF
 dotnet run --project d:\novolis\novolis-lab\labs\raylib\PulseStrip -p:NovolisUseProjectReferences=true
 dotnet run --project d:\novolis\novolis-lab\labs\raylib\PulseStrip -p:NovolisUseProjectReferences=true -- --smoke
 ```
+
+## WorkflowEngineLab
+
+Deterministic generic-host workflow showing a start step, a transform step,
+and an end step backed by `Novolis.WorkflowEngine`.
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\workflows\WorkflowEngineLab\WorkflowEngineLab.csproj -p:NovolisUseProjectReferences=true
+```
