@@ -81,7 +81,13 @@ internal sealed class ChannelSession : IAsyncDisposable
             RosterChanged?.Invoke(dto.Nicks));
 
         _hub.On<ChatSignalEnvelope>("Signal", dto =>
-            SignalReceived?.Invoke(new SignalMessage(dto.Channel, dto.FromNick, dto.Kind, dto.Payload, dto.ToNick)));
+            SignalReceived?.Invoke(new SignalMessage(
+                dto.Channel,
+                dto.FromNick,
+                dto.Kind,
+                dto.Payload,
+                dto.ToNick,
+                dto.Conversation)));
         _hub.On<List<ChatPresence>>("Presence", values =>
             PresenceChanged?.Invoke(values));
         _hub.On<List<ChatTyping>>("Typing", values =>
@@ -387,10 +393,15 @@ internal sealed class ChannelSession : IAsyncDisposable
         string kind,
         string payload,
         string? toNick = null,
+        string? conversation = null,
         CancellationToken cancellationToken = default)
     {
         EnsureHub();
-        await _hub!.InvokeAsync("Signal", Channel, kind, payload, toNick, cancellationToken).ConfigureAwait(false);
+        await _hub!.InvokeAsync(
+                "Signal",
+                new object?[] { Channel, kind, payload, toNick, conversation },
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async Task SetTypingAsync(
@@ -888,7 +899,13 @@ internal sealed record ChannelMessage(
     DateTimeOffset At,
     ChatFrame? Frame = null);
 
-internal sealed record SignalMessage(string Channel, string FromNick, string Kind, string Payload, string? ToNick);
+internal sealed record SignalMessage(
+    string Channel,
+    string FromNick,
+    string Kind,
+    string Payload,
+    string? ToNick,
+    string? Conversation);
 
 internal sealed record PeerFingerprint(string Nick, string Fingerprint, bool IsTrusted);
 

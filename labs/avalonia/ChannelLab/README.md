@@ -9,12 +9,12 @@ decrypt text locally. Media remains native Avalonia + `Novolis.Video.Rtc` mesh (
 | Primitive | Role |
 |-----------|------|
 | Nick | Guest JWT via `POST /api/guest` (`PlayerRef`) for relay access only |
-| Channel | `#lobby` only |
+| Channel | Default `#lobby`; the Chat host supports named channels through `CreateChannel` |
 | Device | P-256 public bundle registration and an independently compared fingerprint |
 | Protected text | Direct AES-GCM envelope relay + ciphertext-only SQLite history |
 | Protected group text | Explicitly approved roster + one AES-GCM encrypted copy per recipient + ciphertext-only SQLite history |
 | Presence | `Roster` on join/part |
-| MediaSession | Avalonia `VideoSurface` tiles + `Novolis.Video.Rtc` mesh (max **4** peers). SignalR relays `video-join` / `video-part` / `offer` / `answer` / `ice` only. No SFU, LiveKit, Coturn, or WebView. |
+| MediaSession | Avalonia `VideoSurface` tiles + `Novolis.Video.Rtc` mesh (max **4** peers per conversation). SignalR relays `video-join` / `video-part` / `offer` / `answer` / `ice` only. Windows webcam and microphone audio use SIPSorcery; local mute keeps receiving audio. No SFU, LiveKit, Coturn, or WebView. |
 
 ## Run
 
@@ -29,6 +29,19 @@ Host alone:
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\avalonia\ChannelLab\ChannelHost\ChannelHost.csproj -p:NovolisUseProjectReferences=true
 ```
+
+LAN host:
+
+1. On the host machine, set `Urls` in `ChannelHost\appsettings.json` to
+   `http://0.0.0.0:5177` and allow TCP 5177 through the private-network firewall.
+2. On each peer machine, set `CHANNEL_HOST_URL` to the host's LAN URL, for example
+   `http://192.168.1.20:5177`, before starting ChannelLab.
+3. The peer app health-checks the remote host and does not start a second local
+   ChannelHost when `CHANNEL_HOST_URL` is non-loopback.
+
+LAN mode uses guest JWTs and HTTP for a trusted private network. It remains a
+four-peer mesh with STUN only; public internet calls still require a TURN/SFU
+design that is outside this lab.
 
 Media packages (`Novolis.Avalonia.Video`, `Novolis.Video.Rtc*`, `Novolis.Video.Capture.Windows`) are on GitHub Packages. For local sibling iteration, pass `-p:NovolisUseProjectReferences=true` (or build via `d:\novolis\Novolis.Platform.slnx`).
 
@@ -56,8 +69,10 @@ UI:
 5. For a group, alice first trusts every invited peer, enters a group name and comma-separated nicks,
    and clicks **Create group**. Every invited peer selects the pending group, independently verifies
    and trusts every listed device, then clicks **Approve group**. Text is enabled after every device approves.
-6. Toggle **Video** on both peers (Windows camera permission) — local + remote `VideoSurface` tiles.
-7. Reconnect a peer — SQLite scrollback (under `%LocalAppData%\Novolis\ChannelLab\messages.db`) replays recent encrypted envelopes.
+6. Toggle **Video** on both peers (Windows camera and microphone permission) — local + remote
+   `VideoSurface` tiles and peer audio.
+7. Toggle **Mute** to stop sending local microphone audio while continuing to receive peers.
+8. Reconnect a peer — SQLite scrollback (under `%LocalAppData%\Novolis\ChannelLab\messages.db`) replays recent encrypted envelopes.
 
 ## Stack
 

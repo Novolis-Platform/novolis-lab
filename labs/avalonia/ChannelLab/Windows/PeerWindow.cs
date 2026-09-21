@@ -50,6 +50,7 @@ internal sealed class PeerWindow : Window
     readonly Button _connectButton;
     readonly Button _trustButton;
     readonly Button _videoButton;
+    readonly Button _muteButton;
     readonly Button _createGroupButton;
     readonly Button _approveGroupButton;
     readonly VideoSurface _localSurface = new() { Label = "you", MinHeight = 120, MinWidth = 160 };
@@ -75,6 +76,8 @@ internal sealed class PeerWindow : Window
         _trustButton.IsEnabled = false;
         _videoButton = PrimaryButton("Video", OnVideoClicked);
         _videoButton.IsEnabled = false;
+        _muteButton = PrimaryButton("Mute", OnMuteClicked);
+        _muteButton.IsEnabled = false;
         _createGroupButton = PrimaryButton("Create group", OnCreateGroupClicked);
         _createGroupButton.IsEnabled = false;
         _approveGroupButton = PrimaryButton("Approve group", OnApproveGroupClicked);
@@ -170,7 +173,7 @@ internal sealed class PeerWindow : Window
             Orientation = Orientation.Horizontal,
             Spacing = 8,
             VerticalAlignment = VerticalAlignment.Center,
-            Children = { _nickBox, _connectButton, _trustButton, _videoButton },
+            Children = { _nickBox, _connectButton, _trustButton, _videoButton, _muteButton },
         };
         Grid.SetColumn(nickRow, 1);
         header.Children.Add(nickRow);
@@ -273,6 +276,17 @@ internal sealed class PeerWindow : Window
 
         try
         {
+            if (_video is not null)
+            {
+                await _video.DisposeAsync().ConfigureAwait(true);
+                _video = null;
+                _videoHost.IsVisible = false;
+                _videoButton.Content = "Video";
+                _muteButton.Content = "Mute";
+                _muteButton.IsEnabled = false;
+                RebuildVideoStrip();
+            }
+
             await _session.SwitchChannelAsync(item.Channel.NormalizedName).ConfigureAwait(true);
             _selectedPeer = null;
             _composer.IsEnabled = false;
@@ -301,6 +315,7 @@ internal sealed class PeerWindow : Window
             _nickBox.IsEnabled = false;
             _connectButton.Content = "Connected";
             _videoButton.IsEnabled = true;
+            _muteButton.IsEnabled = false;
             _createGroupButton.IsEnabled = true;
             _localSurface.Label = nick;
         }
@@ -438,15 +453,20 @@ internal sealed class PeerWindow : Window
                 _video = null;
                 _videoHost.IsVisible = false;
                 _videoButton.Content = "Video";
+                _muteButton.Content = "Mute";
+                _muteButton.IsEnabled = false;
                 RebuildVideoStrip();
                 return;
             }
 
             _video = new MeshVideoController(_session, _localSurface);
             _video.SurfacesChanged += () => Dispatcher.UIThread.Post(RebuildVideoStrip);
+            _video.AudioError += exception =>
+                Dispatcher.UIThread.Post(() => _status.Text = $"Audio unavailable: {exception.Message}");
             await _video.StartAsync().ConfigureAwait(true);
             _videoHost.IsVisible = true;
             _videoButton.Content = "Video off";
+            _muteButton.IsEnabled = true;
             RebuildVideoStrip();
         }
         catch (Exception ex)
@@ -460,11 +480,22 @@ internal sealed class PeerWindow : Window
 
             _videoHost.IsVisible = false;
             _videoButton.Content = "Video";
+            _muteButton.Content = "Mute";
+            _muteButton.IsEnabled = false;
         }
         finally
         {
             _videoButton.IsEnabled = _session.IsConnected;
         }
+    }
+
+    void OnMuteClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_video is null || !_video.IsVideoOn)
+            return;
+
+        _video.SetMuted(!_video.IsMuted);
+        _muteButton.Content = _video.IsMuted ? "Unmute" : "Mute";
     }
 
     void RebuildVideoStrip()

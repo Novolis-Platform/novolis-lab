@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.RegularExpressions;
 using ChannelHost.Contracts;
 using ChannelHost.Services;
@@ -97,15 +98,41 @@ static bool ValidateListenUrls(string urls)
 
         var loopback = uri.IsLoopback
                        || string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase);
-        if (!loopback)
+        if (!loopback && !IsLanListenAddress(uri.Host))
         {
             if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Non-loopback ChannelHost URLs must use HTTPS.");
             requiresHttps = true;
         }
+        else if (!loopback
+                 && string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            requiresHttps = true;
+        }
     }
 
     return requiresHttps;
+}
+
+static bool IsLanListenAddress(string host)
+{
+    if (string.Equals(host, "0.0.0.0", StringComparison.Ordinal)
+        || string.Equals(host, "::", StringComparison.Ordinal))
+    {
+        return true;
+    }
+
+    if (!IPAddress.TryParse(host, out var address))
+        return false;
+
+    if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+        return address.IsIPv6LinkLocal || address.IsIPv6UniqueLocal;
+
+    var bytes = address.GetAddressBytes();
+    return bytes.Length == 4
+           && (bytes[0] == 10
+               || (bytes[0] == 172 && bytes[1] is >= 16 and <= 31)
+               || (bytes[0] == 192 && bytes[1] == 168));
 }
 
 public partial class Program;

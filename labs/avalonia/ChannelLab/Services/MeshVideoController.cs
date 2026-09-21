@@ -8,6 +8,7 @@ namespace ChannelLab.Services;
 internal sealed class MeshVideoController : IAsyncDisposable
 {
     readonly ChannelSession _session;
+    readonly string _conversation;
     readonly VideoSurface _localSurface;
     readonly Dictionary<string, VideoSurface> _remoteSurfaces = new(StringComparer.OrdinalIgnoreCase);
     readonly object _gate = new();
@@ -17,6 +18,7 @@ internal sealed class MeshVideoController : IAsyncDisposable
     public MeshVideoController(ChannelSession session, VideoSurface localSurface)
     {
         _session = session;
+        _conversation = session.Channel;
         _localSurface = localSurface;
     }
 
@@ -30,8 +32,10 @@ internal sealed class MeshVideoController : IAsyncDisposable
     }
 
     public event Action? SurfacesChanged;
+    public event Action<Exception>? AudioError;
 
     public bool IsVideoOn => _mesh?.IsInVideo == true;
+    public bool IsMuted => _mesh?.IsMuted == true;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -49,7 +53,11 @@ internal sealed class MeshVideoController : IAsyncDisposable
         {
             await mesh.JoinVideoAsync(cancellationToken).ConfigureAwait(false);
             // Hub admits + fans out after local capture is ready (avoids dropped offers).
-            await _session.SendSignalAsync("video-join", string.Empty, cancellationToken: cancellationToken)
+            await _session.SendSignalAsync(
+                    "video-join",
+                    string.Empty,
+                    conversation: _conversation,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
         catch
@@ -64,6 +72,8 @@ internal sealed class MeshVideoController : IAsyncDisposable
         await StopCoreAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public void SetMuted(bool muted) => _mesh?.SetMuted(muted);
+
     void Wire(IRtcMeshSession mesh)
     {
         if (_wired)
@@ -73,6 +83,7 @@ internal sealed class MeshVideoController : IAsyncDisposable
         mesh.LocalSignal += OnLocalSignal;
         mesh.LocalFrame += OnLocalFrame;
         mesh.RemoteFrame += OnRemoteFrame;
+        mesh.AudioError += OnAudioError;
         _session.SignalReceived += OnSignalReceived;
     }
 
@@ -84,6 +95,7 @@ internal sealed class MeshVideoController : IAsyncDisposable
         _mesh.LocalSignal -= OnLocalSignal;
         _mesh.LocalFrame -= OnLocalFrame;
         _mesh.RemoteFrame -= OnRemoteFrame;
+        _mesh.AudioError -= OnAudioError;
         _session.SignalReceived -= OnSignalReceived;
     }
 
@@ -100,7 +112,8 @@ internal sealed class MeshVideoController : IAsyncDisposable
                 await _session.SendSignalAsync(
                     ToHubKind(message.Kind),
                     message.Payload,
-                    message.ToNick).ConfigureAwait(false);
+                    message.ToNick,
+                    _conversation).ConfigureAwait(false);
             }
             catch
             {
@@ -114,6 +127,8 @@ internal sealed class MeshVideoController : IAsyncDisposable
         var mesh = _mesh;
         if (mesh is null || !mesh.IsInVideo)
             return;
+        if (!string.Equals(signal.Conversation, _conversation, StringComparison.OrdinalIgnoreCase))
+            return;
 
         var kind = FromHubKind(signal.Kind);
         if (kind is null)
@@ -125,6 +140,8 @@ internal sealed class MeshVideoController : IAsyncDisposable
         var msg = new RtcSignalMessage(kind.Value, signal.FromNick, signal.Payload, signal.ToNick);
         _ = mesh.HandleSignalAsync(msg);
     }
+
+    void OnAudioError(Exception exception) => AudioError?.Invoke(exception);
 
     void OnLocalFrame(VideoFrame frame) => _localSurface.Present(frame);
 
@@ -179,7 +196,11 @@ internal sealed class MeshVideoController : IAsyncDisposable
 
             try
             {
-                await _session.SendSignalAsync("video-part", string.Empty, cancellationToken: cancellationToken)
+                await _session.SendSignalAsync(
+                        "video-part",
+                        string.Empty,
+                        conversation: _conversation,
+                        cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
             }
             catch

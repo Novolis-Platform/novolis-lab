@@ -14,6 +14,9 @@ internal sealed class HostProcessGuard : IAsyncDisposable
         if (await IsHealthyAsync(cancellationToken).ConfigureAwait(false))
             return true;
 
+        if (!HostEndpoints.IsLocalHost)
+            return false;
+
         var project = ResolveHostProjectPath();
         if (project is null)
             return false;
