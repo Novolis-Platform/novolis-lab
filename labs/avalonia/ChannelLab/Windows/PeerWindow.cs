@@ -6,7 +6,9 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using ChannelLab.Services;
 using ChannelLab.Ui;
+using Novolis.Avalonia.Chat;
 using Novolis.Avalonia.Video;
+using Novolis.Chat.Abstractions;
 
 namespace ChannelLab.Windows;
 
@@ -37,10 +39,11 @@ internal sealed class PeerWindow : Window
         TextWrapping = TextWrapping.Wrap,
         MaxWidth = 420,
     };
-    readonly ListBox _channels = new();
-    readonly ListBox _roster = new();
+    readonly ChatRail _chatRail = new();
+    readonly ChatPresenceList _presence = new();
+    readonly ChatThreadPanel _thread = new();
     readonly ListBox _groups = new();
-    readonly ItemsControl _buffer = new();
+    readonly List<ChatMessageDto> _messages = [];
     readonly TextBox _composer = new() { PlaceholderText = "Select and trust a peer", IsEnabled = false };
     readonly TextBox _groupNameBox = new() { PlaceholderText = "group name", Width = 120 };
     readonly TextBox _groupMembersBox = new() { PlaceholderText = "members: alice, bob" };
@@ -49,7 +52,6 @@ internal sealed class PeerWindow : Window
     readonly Button _videoButton;
     readonly Button _createGroupButton;
     readonly Button _approveGroupButton;
-    readonly ScrollViewer _bufferScroll = new() { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
     readonly VideoSurface _localSurface = new() { Label = "you", MinHeight = 120, MinWidth = 160 };
     readonly StackPanel _videoStrip = new() { Orientation = Orientation.Horizontal, Spacing = 8 };
     readonly Border _videoHost;
@@ -78,14 +80,17 @@ internal sealed class PeerWindow : Window
         _approveGroupButton = PrimaryButton("Approve group", OnApproveGroupClicked);
         _approveGroupButton.IsEnabled = false;
         _composer.KeyDown += OnComposerKeyDown;
-        _roster.SelectionChanged += OnRosterSelectionChanged;
         _groups.SelectionChanged += OnGroupSelectionChanged;
+        _presence.NickSelected += OnPresenceSelected;
 
-        _channels.ItemsSource = new[] { "#lobby" };
-        _channels.SelectedIndex = 0;
-
-        _buffer.ItemsSource = new List<Control>();
-        _bufferScroll.Content = _buffer;
+        _chatRail.Items =
+        [
+            new ChatRailItem(
+                SpaceId.Default,
+                "Default",
+                ChannelId.Parse("#lobby")),
+        ];
+        _chatRail.ChannelSelected += OnChannelSelected;
 
         _videoStrip.Children.Add(_localSurface);
         _videoHost = new Border
@@ -113,10 +118,15 @@ internal sealed class PeerWindow : Window
         _session.DeviceFingerprintAvailable += fingerprint => Dispatcher.UIThread.Post(() =>
             _fingerprint.Text = $"Your device fingerprint: {fingerprint}");
         _session.PeerFingerprintAvailable += peer => Dispatcher.UIThread.Post(() => UpdatePeerTrust(peer));
-        _session.RosterChanged += nicks => Dispatcher.UIThread.Post(() =>
+        _session.PresenceChanged += presence => Dispatcher.UIThread.Post(() =>
+            _presence.Presence = presence);
+        _session.TypingChanged += typing => Dispatcher.UIThread.Post(() =>
         {
-            _roster.ItemsSource = nicks.ToList();
+            var nicks = string.Join(", ", typing.Select(value => value.Nick));
+            _status.Text = nicks.Length == 0 ? "Connected" : $"{nicks} typing…";
         });
+        _session.ReceiptReceived += receipt => Dispatcher.UIThread.Post(() =>
+            _status.Text = $"Read receipt from {receipt.Nick}");
         _session.GroupsChanged += groups => Dispatcher.UIThread.Post(() =>
         {
             _groups.ItemsSource = groups;
@@ -172,7 +182,7 @@ internal sealed class PeerWindow : Window
             RowDefinitions = RowDefinitions.Parse("*"),
         };
 
-        body.Children.Add(Panel("Channels", _channels));
+        body.Children.Add(_chatRail);
         var center = new DockPanel { LastChildFill = true };
         DockPanel.SetDock(_composer, Dock.Bottom);
         DockPanel.SetDock(_videoHost, Dock.Top);
@@ -185,7 +195,7 @@ internal sealed class PeerWindow : Window
             BorderBrush = ChannelPalette.EdgeBrush,
             BorderThickness = new Thickness(1),
             Padding = new Thickness(10),
-            Child = _bufferScroll,
+            Child = _thread,
         });
         Grid.SetColumn(center, 1);
         center.Margin = new Thickness(8, 0);
@@ -209,7 +219,7 @@ internal sealed class PeerWindow : Window
         var right = new StackPanel
         {
             Spacing = 8,
-            Children = { Panel("Names", _roster), Panel("Protected groups", groups) },
+            Children = { Panel("Presence", _presence), Panel("Protected groups", groups) },
         };
         Grid.SetColumn(right, 2);
         body.Children.Add(right);
@@ -253,6 +263,26 @@ internal sealed class PeerWindow : Window
         };
     }
 
+    async void OnChannelSelected(object? sender, ChatRailItem item)
+    {
+        if (!_session.IsConnected
+            || string.Equals(_session.Channel, item.Channel.NormalizedName, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        try
+        {
+            await _session.SwitchChannelAsync(item.Channel.NormalizedName).ConfigureAwait(true);
+            _selectedPeer = null;
+            _composer.IsEnabled = false;
+        }
+        catch (Exception exception)
+        {
+            _status.Text = exception.Message;
+        }
+    }
+
     async void OnConnectClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var nick = _nickBox.Text?.Trim() ?? string.Empty;
@@ -281,11 +311,11 @@ internal sealed class PeerWindow : Window
         }
     }
 
-    async void OnRosterSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    async void OnPresenceSelected(object? sender, string nick)
     {
         _selectedGroup = null;
         _groups.SelectedItem = null;
-        _selectedPeer = _roster.SelectedItem as string;
+        _selectedPeer = nick;
         _trustButton.IsEnabled = false;
         _composer.IsEnabled = false;
         if (string.IsNullOrWhiteSpace(_selectedPeer)
@@ -452,8 +482,8 @@ internal sealed class PeerWindow : Window
         if (e.Key != Key.Enter || e.KeyModifiers != KeyModifiers.None)
             return;
         e.Handled = true;
-        var body = _composer.Text?.Trim() ?? string.Empty;
-        if (body.Length == 0 || !_session.IsConnected)
+        var body = _composer.Text ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(body) || !_session.IsConnected)
             return;
         if (_selectedGroup is null && string.IsNullOrWhiteSpace(_selectedPeer))
             return;
@@ -474,34 +504,28 @@ internal sealed class PeerWindow : Window
 
     void ReplaceHistory(IReadOnlyList<ChannelMessage> messages)
     {
-        var items = new List<Control>();
+        _messages.Clear();
         foreach (var message in messages)
-            items.Add(FormatLine(message));
-        _buffer.ItemsSource = items;
-        ScrollToEnd();
+            _messages.Add(ToChatMessage(message));
+        _thread.Messages = _messages.ToArray();
     }
 
     void AppendMessage(ChannelMessage message)
     {
-        var items = (_buffer.ItemsSource as List<Control>) ?? [];
-        items.Add(FormatLine(message));
-        _buffer.ItemsSource = null;
-        _buffer.ItemsSource = items;
-        ScrollToEnd();
+        _messages.Add(ToChatMessage(message));
+        _thread.Messages = _messages.ToArray();
     }
 
-    static TextBlock FormatLine(ChannelMessage message) => new()
+    static ChatMessageDto ToChatMessage(ChannelMessage message)
     {
-        Text = $"[{message.At.ToLocalTime():HH:mm}] <{message.Nick}> {message.Body}",
-        FontFamily = ChannelPalette.Mono,
-        FontSize = 13,
-        Foreground = ChannelPalette.MistBrush,
-        TextWrapping = TextWrapping.Wrap,
-        Margin = new Thickness(0, 0, 0, 4),
-    };
-
-    void ScrollToEnd() =>
-        Dispatcher.UIThread.Post(() => _bufferScroll.ScrollToEnd(), DispatcherPriority.Background);
+        var frame = message.Frame ?? ChatFrame.Create(
+            message.Channel,
+            Guid.NewGuid(),
+            message.Nick,
+            message.Channel,
+            message.At);
+        return new ChatMessageDto(frame, message.Body);
+    }
 
     static Button PrimaryButton(string label, EventHandler<Avalonia.Interactivity.RoutedEventArgs> handler)
     {

@@ -4,10 +4,14 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Data.Sqlite;
+using Novolis.Chat.Abstractions;
+using Novolis.Chat.Directory;
+using Novolis.Chat.Hosting.AspNetCore;
 using Novolis.Messaging.SecureText;
 using Novolis.Security.SecureText;
 
-const string baseUrl = "http://127.0.0.1:5177";
+var baseUrl = Environment.GetEnvironmentVariable("CHANNEL_HOST_URL")
+              ?? "http://127.0.0.1:5177";
 var json = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
 using var http = new HttpClient { BaseAddress = new Uri(baseUrl) };
@@ -18,10 +22,23 @@ Console.WriteLine("health ok");
 await using var alice = await ConnectAsync("alice");
 await using var bob = await ConnectAsync("bob");
 await using var carol = await ConnectAsync("carol");
+await using var dave = await ConnectAsync("dave");
+await using var eve = await ConnectAsync("eve");
 
 await alice.InvokeAsync("Join", "#lobby");
 await bob.InvokeAsync("Join", "#lobby");
 await carol.InvokeAsync("Join", "#lobby");
+await dave.InvokeAsync("Join", "#lobby");
+await eve.InvokeAsync("Join", "#lobby");
+
+var namedChannel = await alice.InvokeAsync<ChatChannelInfo>("CreateChannel", "crew");
+if (!string.Equals(namedChannel.Name, "#crew", StringComparison.Ordinal))
+    throw new Exception("named channel creation did not normalize the channel name.");
+await bob.InvokeAsync("Join", "#crew");
+await alice.InvokeAsync("Join", "#crew");
+await bob.InvokeAsync("Join", "#lobby");
+await alice.InvokeAsync("Join", "#lobby");
+Console.WriteLine("named channel ok: alice and bob joined #crew, then returned to #lobby");
 
 var aliceIdentity = SecureTextDeviceIdentity.Create();
 var bobIdentity = SecureTextDeviceIdentity.Create();
@@ -74,6 +91,23 @@ bob.On<SecureTextRelayEnvelopeDto>("SecureText", dto =>
     }
 });
 
+var bobTyping = new TaskCompletionSource<IReadOnlyList<ChatTyping>>(
+    TaskCreationOptions.RunContinuationsAsynchronously);
+bob.On<List<ChatTyping>>("Typing", values =>
+{
+    if (values.Any(value => string.Equals(value.Nick, "alice", StringComparison.OrdinalIgnoreCase)))
+        bobTyping.TrySetResult(values);
+});
+
+var firstMessageId = Guid.Empty;
+var bobReceipt = new TaskCompletionSource<ChatReceipt>(
+    TaskCreationOptions.RunContinuationsAsynchronously);
+bob.On<ChatReceipt>("Receipt", receipt =>
+{
+    if (receipt.Message.Value == firstMessageId)
+        bobReceipt.TrySetResult(receipt);
+});
+
 var bobOffer = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 bob.On<JsonElement>("Signal", dto =>
 {
@@ -84,8 +118,9 @@ bob.On<JsonElement>("Signal", dto =>
         bobOffer.TrySetResult(dto.GetProperty("payload").GetString() ?? string.Empty);
 });
 
-const string marker = "e2e-proof-世界-✓";
+const string marker = "**e2e-proof-世界-✓**";
 var protectedEnvelope = aliceSession.Protect(marker);
+firstMessageId = protectedEnvelope.Header.MessageId;
 var encodedEnvelope = SecureTextEnvelopeCodec.Serialize(protectedEnvelope);
 if (encodedEnvelope.AsSpan().IndexOf(Encoding.UTF8.GetBytes(marker)) >= 0)
     throw new Exception("plaintext marker appeared in the relay envelope.");
@@ -94,6 +129,17 @@ await alice.InvokeAsync("SendSecureText", "#lobby", "bob", encodedEnvelope);
 var received = await bobGot.Task.WaitAsync(TimeSpan.FromSeconds(5));
 if (!string.Equals(received, marker, StringComparison.Ordinal))
     throw new Exception($"Expected '{marker}', got '{received}'.");
+
+await alice.InvokeAsync("Typing", "#lobby", true, "markdown-thread");
+var typingSnapshot = await bobTyping.Task.WaitAsync(TimeSpan.FromSeconds(5));
+if (!typingSnapshot.Any(value => value.Conversation == "markdown-thread"))
+    throw new Exception("typing snapshot did not preserve the conversation key.");
+await alice.InvokeAsync("Typing", "#lobby", false, "markdown-thread");
+
+await bob.InvokeAsync("Receipt", "#lobby", protectedEnvelope.Header.MessageId);
+var receipt = await bobReceipt.Task.WaitAsync(TimeSpan.FromSeconds(5));
+if (!string.Equals(receipt.Nick, "bob", StringComparison.OrdinalIgnoreCase))
+    throw new Exception("receipt did not identify the acknowledging nick.");
 
 var history = await bob.InvokeAsync<List<SecureTextRelayEnvelopeDto>>("GetSecureHistory", "#lobby");
 var storedEnvelope = history.SingleOrDefault(item =>
@@ -121,6 +167,32 @@ catch (CryptographicException)
 
 await AssertStoredCiphertextAsync(protectedEnvelope.Header.MessageId, marker);
 Console.WriteLine("e2e text ok: recipient decrypted the marker and relay storage held ciphertext only");
+
+const string threadMarker = "_thread-proof_";
+var threadId = ThreadId.New();
+var threadEnvelope = aliceSession.Protect(threadMarker);
+var threadAnnotations = new ChatFrameAnnotations(
+    threadId,
+    MessageRef.FromGuid(protectedEnvelope.Header.MessageId));
+await alice.InvokeAsync(
+    "SendSecureTextWithAnnotations",
+    "#lobby",
+    "bob",
+    SecureTextEnvelopeCodec.Serialize(threadEnvelope),
+    threadAnnotations);
+var threadHistory = await bob.InvokeAsync<List<SecureTextRelayEnvelopeDto>>(
+    "GetSecureHistory",
+    "#lobby");
+var threaded = threadHistory.SingleOrDefault(item =>
+                     item.Frame.MessageId == threadEnvelope.Header.MessageId)
+               ?? throw new Exception("threaded message was not found in protected history.");
+if (threaded.Frame.Thread?.Value != threadId.Value
+    || threaded.Frame.Parent?.Value != protectedEnvelope.Header.MessageId
+    || threaded.Frame.BodyFormat != ChatBodyFormat.Markdown)
+{
+    throw new Exception("ChatFrame did not preserve Markdown and thread metadata beside the envelope.");
+}
+Console.WriteLine("thread metadata ok: ChatFrame preserved Markdown format and parent reference");
 
 var groupId = SecureTextGroupId.New();
 var groupMembers = new[]
@@ -239,13 +311,46 @@ if (bobFromAliceGroup.OpenHistory(SecureTextEnvelopeCodec.Deserialize(groupHisto
 await AssertStoredGroupCiphertextAsync(bobEnvelope.Header.MessageId, groupMarker);
 Console.WriteLine("group e2e text ok: explicit membership approval and ciphertext-only pairwise fan-out verified");
 
-await alice.InvokeAsync("Signal", "#lobby", "video-join", string.Empty, null);
-await alice.InvokeAsync("Signal", "#lobby", "offer", "v=fake-sdp-offer", "bob");
+foreach (var peer in new[] { alice, bob, carol, dave })
+{
+    await peer.InvokeAsync(
+        "Signal",
+        "#lobby",
+        "video-join",
+        string.Empty,
+        null,
+        "call-a");
+}
+
+try
+{
+    await eve.InvokeAsync(
+        "Signal",
+        "#lobby",
+        "video-join",
+        string.Empty,
+        null,
+        "call-a");
+    throw new Exception("the fifth participant joined a full conversation mesh.");
+}
+catch (Exception exception) when (
+    exception.Message.Contains("mesh full", StringComparison.OrdinalIgnoreCase))
+{
+}
+
+await eve.InvokeAsync(
+    "Signal",
+    "#lobby",
+    "video-join",
+    string.Empty,
+    null,
+    "call-b");
+await alice.InvokeAsync("Signal", "#lobby", "offer", "v=fake-sdp-offer", "bob", "call-a");
 var payload = await bobOffer.Task.WaitAsync(TimeSpan.FromSeconds(5));
 if (!string.Equals(payload, "v=fake-sdp-offer", StringComparison.Ordinal))
     throw new Exception($"Expected fake SDP payload, got '{payload}'.");
 
-Console.WriteLine("signaling ok: bob received alice offer fan-out");
+Console.WriteLine("signaling ok: conversation-scoped mesh capacity and bob offer fan-out verified");
 return 0;
 
 async Task<HubConnection> ConnectAsync(string nick)
@@ -320,21 +425,3 @@ static async Task AssertStoredGroupCiphertextAsync(Guid messageId, string marker
 }
 
 sealed record Guest(string AccessToken, string Nick, Guid PlayerId, DateTimeOffset ExpiresAtUtc);
-sealed record DeviceBundleDto(
-    int ProtocolVersion,
-    Guid DeviceId,
-    byte[] SigningPublicKey,
-    byte[] AgreementPublicKey,
-    DateTimeOffset IssuedAtUtc,
-    DateTimeOffset ExpiresAtUtc,
-    byte[] Signature);
-sealed record SecureTextRelayEnvelopeDto(string Channel, string FromNick, string ToNick, byte[] Envelope);
-sealed record SecureTextGroupMemberDto(string Nick, Guid DeviceId);
-sealed record SecureTextGroupEnvelopeInputDto(Guid RecipientDeviceId, byte[] Envelope);
-sealed record SecureTextGroupRelayEnvelopeDto(
-    string Channel,
-    Guid GroupId,
-    string GroupName,
-    string FromNick,
-    string ToNick,
-    byte[] Envelope);

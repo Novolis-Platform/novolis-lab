@@ -1,9 +1,9 @@
 using System.Text.RegularExpressions;
 using ChannelHost.Contracts;
-using ChannelHost.Hubs;
 using ChannelHost.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Logging;
+using Novolis.Chat.Hosting.AspNetCore;
 using Novolis.Game.Identity;
 using Novolis.Game.Identity.Abstractions;
 
@@ -16,8 +16,8 @@ IdentityModelEventSource.ShowPII = false;
 var tokenService = new TokenService(builder.Configuration, builder.Environment);
 builder.Services.AddSingleton(tokenService);
 builder.Services.AddSingleton<IPlayerDirectory, InMemoryPlayerDirectory>();
-builder.Services.AddSingleton<ChannelDirectory>();
-builder.Services.AddSingleton<SqliteMessageStore>();
+builder.Services.AddSingleton<IChatHistoryStore, SqliteMessageStore>();
+builder.Services.AddChatHost();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -37,7 +37,6 @@ builder.Services
         };
     });
 builder.Services.AddAuthorization();
-builder.Services.AddSignalR();
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
@@ -72,7 +71,7 @@ app.MapPost("/api/guest", (GuestLoginRequest request, IPlayerDirectory directory
     return Results.Ok(new GuestLoginResponse(token, nick, player.Value, expires));
 });
 
-app.MapHub<ChannelHub>("/hubs/channel");
+app.MapChatHub("/hubs/channel");
 
 app.Run();
 

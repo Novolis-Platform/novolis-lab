@@ -1,8 +1,10 @@
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SignalR.Client;
+using Novolis.Chat.Abstractions;
+using Novolis.Chat.Directory;
+using Novolis.Chat.Hosting.AspNetCore;
 using Novolis.Messaging.SecureText;
 using Novolis.Security.SecureText;
 
@@ -39,6 +41,9 @@ internal sealed class ChannelSession : IAsyncDisposable
     public event Action<PeerFingerprint>? PeerFingerprintAvailable;
     public event Action<IReadOnlyList<SecureTextGroup>>? GroupsChanged;
     public event Action<IReadOnlyList<ChannelMessage>>? GroupHistoryReceived;
+    public event Action<IReadOnlyList<ChatPresence>>? PresenceChanged;
+    public event Action<IReadOnlyList<ChatTyping>>? TypingChanged;
+    public event Action<ChatReceipt>? ReceiptReceived;
 
     public async Task ConnectAsync(string nick, CancellationToken cancellationToken = default)
     {
@@ -72,11 +77,17 @@ internal sealed class ChannelSession : IAsyncDisposable
         _hub.On<SecureTextGroupRelayEnvelopeDto>("SecureTextGroup", HandleSecureTextGroupAsync);
         _hub.On<SecureTextGroupDto>("SecureTextGroupMembership", HandleSecureTextGroupMembershipAsync);
 
-        _hub.On<RosterDto>("Roster", dto =>
+        _hub.On<ChatRosterDto>("Roster", dto =>
             RosterChanged?.Invoke(dto.Nicks));
 
-        _hub.On<SignalEnvelopeDto>("Signal", dto =>
-            SignalReceived?.Invoke(new SignalMessage(dto.Channel, dto.FromNick, dto.Kind, dto.Payload ?? string.Empty, dto.ToNick)));
+        _hub.On<ChatSignalEnvelope>("Signal", dto =>
+            SignalReceived?.Invoke(new SignalMessage(dto.Channel, dto.FromNick, dto.Kind, dto.Payload, dto.ToNick)));
+        _hub.On<List<ChatPresence>>("Presence", values =>
+            PresenceChanged?.Invoke(values));
+        _hub.On<List<ChatTyping>>("Typing", values =>
+            TypingChanged?.Invoke(values));
+        _hub.On<ChatReceipt>("Receipt", receipt =>
+            ReceiptReceived?.Invoke(receipt));
 
         _hub.Reconnecting += _ =>
         {
@@ -112,6 +123,16 @@ internal sealed class ChannelSession : IAsyncDisposable
         Channel = channel.StartsWith('#') ? channel : "#" + channel;
         await _hub!.InvokeAsync("Join", Channel, cancellationToken).ConfigureAwait(false);
         RaiseStatus($"Joined {Channel}");
+    }
+
+    public async Task SwitchChannelAsync(
+        string channel,
+        CancellationToken cancellationToken = default)
+    {
+        await JoinAsync(channel, cancellationToken).ConfigureAwait(false);
+        await RegisterDeviceAsync(cancellationToken).ConfigureAwait(false);
+        await LoadSecureHistoryAsync(cancellationToken).ConfigureAwait(false);
+        await LoadSecureTextGroupsAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task PreparePeerTrustAsync(string nick, CancellationToken cancellationToken = default)
@@ -152,17 +173,35 @@ internal sealed class ChannelSession : IAsyncDisposable
         RaiseStatus($"Trusted {nick}'s secure-text device.");
     }
 
-    public async Task SayAsync(string toNick, string body, CancellationToken cancellationToken = default)
+    public async Task SayAsync(
+        string toNick,
+        string body,
+        ChatFrameAnnotations? annotations = null,
+        CancellationToken cancellationToken = default)
+    {
+        body ??= string.Empty;
+        await SayAsync(
+                toNick,
+                MarkdownBody.FromRaw(body),
+                annotations,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task SayAsync(
+        string toNick,
+        MarkdownBody body,
+        ChatFrameAnnotations? annotations = null,
+        CancellationToken cancellationToken = default)
     {
         EnsureHub();
-        body = body?.Trim() ?? string.Empty;
-        if (body.Length == 0)
+        if (body.IsEmpty)
             throw new ArgumentException("Protected text cannot be empty.", nameof(body));
         if (string.Equals(toNick, RequireNick(), StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Choose a different peer.", nameof(toNick));
 
         var peer = await GetPeerSessionAsync(toNick, cancellationToken).ConfigureAwait(false);
-        var envelope = peer.Session.Protect(body);
+        var envelope = peer.Session.Protect(body.Source);
         await _secureTextStore.StoreConversationStateAsync(
                 RequireNick(),
                 peer.Session.LocalDeviceId,
@@ -171,8 +210,41 @@ internal sealed class ChannelSession : IAsyncDisposable
                 cancellationToken)
             .ConfigureAwait(false);
         var encoded = SecureTextEnvelopeCodec.Serialize(envelope);
-        await _hub!.InvokeAsync("SendSecureText", Channel, toNick, encoded, cancellationToken).ConfigureAwait(false);
-        MessageReceived?.Invoke(new ChannelMessage(Channel, RequireNick(), body, envelope.Header.SentAtUtc));
+        if (annotations is null)
+        {
+            await _hub!.InvokeAsync(
+                    "SendSecureText",
+                    Channel,
+                    toNick,
+                    encoded,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            await _hub!.InvokeAsync(
+                    "SendSecureTextWithAnnotations",
+                    Channel,
+                    toNick,
+                    encoded,
+                    annotations,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        MessageReceived?.Invoke(new ChannelMessage(
+            Channel,
+            RequireNick(),
+            body,
+            envelope.Header.SentAtUtc,
+            ChatFrame.Create(
+                Channel,
+                envelope.Header.MessageId,
+                RequireNick(),
+                toNick,
+                envelope.Header.SentAtUtc,
+                annotations?.Thread,
+                annotations?.Parent,
+                annotations?.Reaction)));
     }
 
     public async Task<SecureTextGroupId> CreateSecureTextGroupAsync(
@@ -258,9 +330,21 @@ internal sealed class ChannelSession : IAsyncDisposable
         string body,
         CancellationToken cancellationToken = default)
     {
+        body ??= string.Empty;
+        await SayToSecureTextGroupAsync(
+                groupId,
+                MarkdownBody.FromRaw(body),
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task SayToSecureTextGroupAsync(
+        SecureTextGroupId groupId,
+        MarkdownBody body,
+        CancellationToken cancellationToken = default)
+    {
         EnsureHub();
-        body = body?.Trim() ?? string.Empty;
-        if (body.Length == 0)
+        if (body.IsEmpty)
             throw new ArgumentException("Protected text cannot be empty.", nameof(body));
         if (!_secureTextGroups.TryGetValue(groupId.Value, out var group) || !group.IsActive)
             throw new InvalidOperationException("Every group device must approve the current membership before messaging.");
@@ -277,7 +361,7 @@ internal sealed class ChannelSession : IAsyncDisposable
                     groupId,
                     member.DeviceId)
                 .ConfigureAwait(false);
-            var envelope = peer.Session.Protect(body);
+            var envelope = peer.Session.Protect(body.Source);
             sentAtUtc ??= envelope.Header.SentAtUtc;
             await StoreConversationStateAsync(peer, cancellationToken).ConfigureAwait(false);
             envelopes.Add(new SecureTextGroupEnvelopeInputDto(
@@ -292,7 +376,11 @@ internal sealed class ChannelSession : IAsyncDisposable
                 envelopes,
                 cancellationToken)
             .ConfigureAwait(false);
-        MessageReceived?.Invoke(new ChannelMessage(GroupContext(group), RequireNick(), body, sentAtUtc ?? DateTimeOffset.UtcNow));
+        MessageReceived?.Invoke(new ChannelMessage(
+            GroupContext(group),
+            RequireNick(),
+            body,
+            sentAtUtc ?? DateTimeOffset.UtcNow));
     }
 
     public async Task SendSignalAsync(
@@ -303,6 +391,29 @@ internal sealed class ChannelSession : IAsyncDisposable
     {
         EnsureHub();
         await _hub!.InvokeAsync("Signal", Channel, kind, payload, toNick, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SetTypingAsync(
+        bool isTyping,
+        string? conversation = null,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureHub();
+        await _hub!.InvokeAsync(
+                "Typing",
+                Channel,
+                isTyping,
+                conversation,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task AcknowledgeAsync(
+        Guid messageId,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureHub();
+        await _hub!.InvokeAsync("Receipt", Channel, messageId, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task PartAsync(CancellationToken cancellationToken = default)
@@ -346,32 +457,6 @@ internal sealed class ChannelSession : IAsyncDisposable
     }
 
     sealed record GuestLoginResponse(string AccessToken, string Nick, Guid PlayerId, DateTimeOffset ExpiresAtUtc);
-    sealed record DeviceBundleDto(
-        int ProtocolVersion,
-        Guid DeviceId,
-        byte[] SigningPublicKey,
-        byte[] AgreementPublicKey,
-        DateTimeOffset IssuedAtUtc,
-        DateTimeOffset ExpiresAtUtc,
-        byte[] Signature);
-    sealed record SecureTextRelayEnvelopeDto(string Channel, string FromNick, string ToNick, byte[] Envelope);
-    sealed record SecureTextGroupMemberDto(string Nick, Guid DeviceId);
-    sealed record SecureTextGroupDto(
-        Guid GroupId,
-        string Name,
-        string InitiatorNick,
-        IReadOnlyList<SecureTextGroupMemberDto> Members,
-        IReadOnlyList<Guid> ApprovedDeviceIds);
-    sealed record SecureTextGroupEnvelopeInputDto(Guid RecipientDeviceId, byte[] Envelope);
-    sealed record SecureTextGroupRelayEnvelopeDto(
-        string Channel,
-        Guid GroupId,
-        string GroupName,
-        string FromNick,
-        string ToNick,
-        byte[] Envelope);
-    sealed record RosterDto(string Channel, [property: JsonPropertyName("nicks")] IReadOnlyList<string> Nicks);
-    sealed record SignalEnvelopeDto(string Channel, string FromNick, string Kind, string? Payload, string? ToNick);
 
     async Task RegisterDeviceAsync(CancellationToken cancellationToken)
     {
@@ -408,7 +493,12 @@ internal sealed class ChannelSession : IAsyncDisposable
                 var peer = await GetPeerSessionAsync(peerNick, cancellationToken).ConfigureAwait(false);
                 var received = peer.Session.OpenHistory(envelope);
                 var nick = received.SenderDeviceId == ownDeviceId ? RequireNick() : relay.FromNick;
-                messages.Add(new ChannelMessage(relay.Channel, nick, received.Text, received.SentAtUtc));
+                messages.Add(new ChannelMessage(
+                    relay.Channel,
+                    nick,
+                    MarkdownBody.FromRaw(received.Text),
+                    received.SentAtUtc,
+                    relay.Frame));
             }
             catch (Exception exception) when (exception is CryptographicException or InvalidDataException or InvalidOperationException)
             {
@@ -436,7 +526,12 @@ internal sealed class ChannelSession : IAsyncDisposable
                     peer.Session.State,
                     CancellationToken.None)
                 .ConfigureAwait(false);
-            MessageReceived?.Invoke(new ChannelMessage(relay.Channel, relay.FromNick, received.Text, received.SentAtUtc));
+            MessageReceived?.Invoke(new ChannelMessage(
+                relay.Channel,
+                relay.FromNick,
+                MarkdownBody.FromRaw(received.Text),
+                received.SentAtUtc,
+                relay.Frame));
         }
         catch (Exception exception) when (exception is CryptographicException or InvalidDataException or InvalidOperationException)
         {
@@ -534,7 +629,12 @@ internal sealed class ChannelSession : IAsyncDisposable
                 .ConfigureAwait(false);
             var received = peer.Session.Open(envelope);
             await StoreConversationStateAsync(peer, CancellationToken.None).ConfigureAwait(false);
-            MessageReceived?.Invoke(new ChannelMessage(GroupContext(group), relay.FromNick, received.Text, received.SentAtUtc));
+            MessageReceived?.Invoke(new ChannelMessage(
+                GroupContext(group),
+                relay.FromNick,
+                MarkdownBody.FromRaw(received.Text),
+                received.SentAtUtc,
+                relay.Frame));
         }
         catch (Exception exception) when (exception is CryptographicException or InvalidDataException or InvalidOperationException)
         {
@@ -580,7 +680,12 @@ internal sealed class ChannelSession : IAsyncDisposable
                 if (senderIsLocal && !displayedOwnMessages.Add(ownMessageKey))
                     continue;
 
-                messages.Add(new ChannelMessage(GroupContext(group), senderNick, received.Text, received.SentAtUtc));
+                messages.Add(new ChannelMessage(
+                    GroupContext(group),
+                    senderNick,
+                    MarkdownBody.FromRaw(received.Text),
+                    received.SentAtUtc,
+                    relay.Frame));
             }
             catch (Exception exception) when (exception is CryptographicException or InvalidDataException or InvalidOperationException)
             {
@@ -776,7 +881,12 @@ internal sealed class ChannelSession : IAsyncDisposable
     }
 }
 
-internal sealed record ChannelMessage(string Channel, string Nick, string Body, DateTimeOffset At);
+internal sealed record ChannelMessage(
+    string Channel,
+    string Nick,
+    MarkdownBody Body,
+    DateTimeOffset At,
+    ChatFrame? Frame = null);
 
 internal sealed record SignalMessage(string Channel, string FromNick, string Kind, string Payload, string? ToNick);
 

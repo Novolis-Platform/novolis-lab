@@ -17,6 +17,9 @@
     <PackageReference Include="Novolis.Messaging.SecureText" />
     <PackageReference Include="Novolis.Security.SecureText" />
     <PackageReference Include="Novolis.Avalonia.Video" />
+    <PackageReference Include="Novolis.Avalonia.Chat" />
+    <PackageReference Include="Novolis.Chat.Hosting.AspNetCore" />
+    <PackageReference Include="Novolis.Chat.Abstractions" />
     <PackageReference Include="Novolis.Video.Rtc.Abstractions" />
     <PackageReference Include="Novolis.Video.Rtc" />
     <PackageReference Include="Novolis.Video.Capture.Windows" />
