@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>ScarcityRationingLab.Tests</RootNamespace>
+    <AssemblyName>ScarcityRationingLab.Tests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TUnit" />
+    <PackageReference Include="Novolis.Economy.Core" />
+    <ProjectReference Include="..\ScarcityRationingLab\ScarcityRationingLab.csproj" />
+  </ItemGroup>
+</Project>

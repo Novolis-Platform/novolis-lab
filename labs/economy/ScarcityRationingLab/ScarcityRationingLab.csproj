@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ScarcityRationingLab</RootNamespace>
+    <AssemblyName>ScarcityRationingLab</AssemblyName>
+    <Description>Core-only fixed-price scarcity and quantity-rationing lab.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Novolis.Economy.Core" />
+  </ItemGroup>
+</Project>

@@ -105,6 +105,8 @@
     <Project Path="labs/economy/TrampFreighterPlay/TrampFreighterPlay.csproj" />
     <Project Path="labs/economy/TrampFreighterSim/TrampFreighterSim.csproj" />
     <Project Path="labs/economy/NearSolPolity/NearSolPolity.csproj" />
+    <Project Path="labs/economy/ScarcityRationingLab/ScarcityRationingLab.csproj" />
+    <Project Path="labs/economy/ScarcityRationingLab.Tests/ScarcityRationingLab.Tests.csproj" />
   </Folder>
   <Folder Name="/civics/">
     <Project Path="labs/civics/PolityTriad/PolityTriad.csproj" />
