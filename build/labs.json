@@ -787,18 +787,6 @@
       ]
     },
     {
-      "Key": "workflows",
-      "DisplayName": "workflows",
-      "Projects": [
-        "labs/workflows/WorkflowEngineLab/WorkflowEngineLab.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/workflows/**",
-        "labs/shared/**"
-      ]
-    },
-    {
       "Key": "workspaces-MinimalWorkspaceTimeline",
       "DisplayName": "workspaces Minimal Workspace Timeline",
       "Projects": [
@@ -826,8 +814,6 @@
       "Key": "workspaces-TypedSolutionIntelligence",
       "DisplayName": "workspaces Typed Solution Intelligence",
       "Projects": [
-        "labs/workspaces/TypedSolutionIntelligence/fixture/src/DemoApp/DemoApp.csproj",
-        "labs/workspaces/TypedSolutionIntelligence/fixture/src/DemoLib/DemoLib.csproj",
         "labs/workspaces/TypedSolutionIntelligence/TypedSolutionIntelligence.csproj"
       ],
       "Tests": [],
