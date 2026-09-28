@@ -4,12 +4,13 @@ using Novolis.Civics.EconomyBridge;
 using Novolis.Economy.Core;
 using Novolis.Economy.Core.Holdings;
 using Novolis.Economy.Core.Steps;
+using Novolis.Economy.Primitives;
 using Novolis.Geopolitics.Conflict;
 using Novolis.Geopolitics.Core;
 using CivicsGov = Novolis.Civics.Core.GovernmentType;
 using GeoGov = Novolis.Geopolitics.Core.GovernmentType;
 using GeoResourceKind = Novolis.Geopolitics.Core.ResourceKind;
-using CoreMoney = Novolis.Economy.Core.Money;
+using CoreMoney = Novolis.Economy.Primitives.Money;
 using CoreEntity = Novolis.Economy.Core.LegalEntity;
 using CoreEntityKind = Novolis.Economy.Core.LegalEntityKind;
 
