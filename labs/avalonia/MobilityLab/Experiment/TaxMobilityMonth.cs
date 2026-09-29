@@ -2,6 +2,7 @@ using Novolis.Civics.Core;
 using Novolis.Civics.EconomyBridge;
 using Novolis.Economy.Core;
 using Novolis.Economy.Core.Holdings;
+using Novolis.Economy.Simulation.Bounded;
 using Novolis.Geopolitics.Core;
 using Novolis.Geopolitics.Diplomacy;
 using Novolis.Geopolitics.Trade;
@@ -250,7 +251,7 @@ static class TaxMobilityMonth
                 firmTaxRate: economy.Policy.FirmTaxRate),
         };
 
-        economy = model.Engine.Advance(economy);
+        economy = model.Engine.Advance(new BoundedPeriodState(economy)).Economy;
 
         var facts = new PeriodContext
         {

@@ -105,7 +105,13 @@ internal static class TrampScenario
         area));
 
     var ids = new Ids(tramp, locF, locW, locC, locR, hubF, hubW, hubC, hubR, hull, facility, ore, parts, fuel);
-    return (new EconomySimulation(77, builder.Build()), ids);
+    var world = builder.Build();
+    return (
+      new EconomySimulation(
+        77,
+        world,
+        new LegacySimulationModel(world.Specification)),
+      ids);
   }
 
   internal static void SeedStarterCargo(EconomySimulation sim, Ids ids)

@@ -407,7 +407,11 @@ internal static class PolityWorld
       RoleSummary = roleSummary,
     };
 
-    var sim = new EconomySimulation(seed, builder.Build());
+    var world = builder.Build();
+    var sim = new EconomySimulation(
+      seed,
+      world,
+      new LegacySimulationModel(world.Specification));
     SeedInventory(sim, ids);
     ApplyStoreLimits(sim, ids);
     SeedInvariants.Assert(ids, sim);

@@ -81,7 +81,11 @@ internal static class ChainScenario
         area));
 
     var ids = new Ids(firm, facility, storage, retail, routeId, raw, mid, fin);
-    var sim = new EconomySimulation(seed, builder.Build());
+    var world = builder.Build();
+    var sim = new EconomySimulation(
+      seed,
+      world,
+      new LegacySimulationModel(world.Specification));
     sim.Enqueue(new SetProductionPlan(firm, facility, mid, Quantity.From(10m)));
     sim.Enqueue(new SetProductionPlan(firm, facility, fin, Quantity.From(8m)));
     sim.Enqueue(new SetRetailPrice(firm, facility, fin, Money.From(5m)));

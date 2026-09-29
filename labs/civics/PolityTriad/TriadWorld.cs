@@ -3,8 +3,8 @@ using Novolis.Civics.Core;
 using Novolis.Civics.EconomyBridge;
 using Novolis.Economy.Core;
 using Novolis.Economy.Core.Holdings;
-using Novolis.Economy.Core.Steps;
 using Novolis.Economy.Primitives;
+using Novolis.Economy.Simulation.Bounded;
 using Novolis.Geopolitics.Conflict;
 using Novolis.Geopolitics.Core;
 using CivicsGov = Novolis.Civics.Core.GovernmentType;
@@ -45,7 +45,7 @@ static class TriadWorld
         public required NationState BetaNation { get; init; }
         public required EconomyState AlphaEconomy { get; set; }
         public required EconomyState BetaEconomy { get; set; }
-        public required EconomyEngine Engine { get; init; }
+        public required BoundedPeriodEngine Engine { get; init; }
         public required WorldTelemetry Telemetry { get; init; }
         public required ConflictResolver Conflict { get; init; }
         public required HeuristicFiscalAgent FiscalAgent { get; init; }
@@ -77,7 +77,7 @@ static class TriadWorld
             BetaNation = betaNation,
             AlphaEconomy = alphaEco,
             BetaEconomy = betaEco,
-            Engine = DefaultPeriodPipeline.CreateEngine(),
+            Engine = DefaultBoundedPeriodPipeline.CreateEngine(),
             Telemetry = new WorldTelemetry(),
             Conflict = new ConflictResolver(new Random(seed)),
             FiscalAgent = new HeuristicFiscalAgent(),
@@ -242,8 +242,16 @@ static class TriadWorld
             Cohorts = new Dictionary<CohortId, HouseholdCohort> { [cohort.Id] = cohort },
             Resources = new Dictionary<ResourceId, Novolis.Economy.Core.Resource>
             {
-                [OreId] = new Novolis.Economy.Core.Resource(OreId, "Ore", Novolis.Economy.Core.ResourceKind.IntermediateGood),
-                [WidgetId] = new Novolis.Economy.Core.Resource(WidgetId, "Widget", Novolis.Economy.Core.ResourceKind.ConsumerGood),
+                [OreId] = new Novolis.Economy.Core.Resource(
+                    OreId,
+                    "Ore",
+                    Novolis.Economy.Core.ResourceKind.IntermediateGood,
+                    EconomicAssetId.From(OreId.Value)),
+                [WidgetId] = new Novolis.Economy.Core.Resource(
+                    WidgetId,
+                    "Widget",
+                    Novolis.Economy.Core.ResourceKind.ConsumerGood,
+                    EconomicAssetId.From(WidgetId.Value)),
             },
             Activities = new Dictionary<ActivityId, Activity> { [act] = activity },
             PostedPrices = new Dictionary<string, PostedPrice>

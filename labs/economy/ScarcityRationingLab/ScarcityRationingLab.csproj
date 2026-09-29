@@ -7,5 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <LibraryReference Include="Novolis.Economy.Core" />
+    <LibraryReference Include="Novolis.Economy.Simulation" />
   </ItemGroup>
 </Project>

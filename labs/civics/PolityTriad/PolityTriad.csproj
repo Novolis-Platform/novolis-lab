@@ -13,6 +13,7 @@
     <LibraryReference Include="Novolis.Civics.Core" />
     <LibraryReference Include="Novolis.Civics.EconomyBridge" />
     <LibraryReference Include="Novolis.Economy.Core" />
+    <LibraryReference Include="Novolis.Economy.Simulation" />
     <LibraryReference Include="Novolis.Geopolitics.Conflict" />
     <LibraryReference Include="Novolis.Geopolitics.Core" />
     <LibraryReference Include="Novolis.Geopolitics.Diplomacy" />

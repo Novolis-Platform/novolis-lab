@@ -3,9 +3,9 @@ using Novolis.Economy.Core;
 using Novolis.Economy.Core.Finance;
 using Novolis.Economy.Core.Holdings;
 using Novolis.Economy.Core.Invariants;
-using Novolis.Economy.Core.Steps;
 using Novolis.Economy.Core.Transactions;
 using Novolis.Economy.Primitives;
+using Novolis.Economy.Simulation.Bounded;
 
 namespace ScarcityRationingLab;
 

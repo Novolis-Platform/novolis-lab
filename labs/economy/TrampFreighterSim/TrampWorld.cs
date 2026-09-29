@@ -129,7 +129,11 @@ internal static class TrampWorld
     var ids = new Ids(
       tramp, locF, locW, locC, locR, hubF, hubW, hubC, hubR, hullId,
       coreFacility, frontierFacility, ore, parts, fuel, vehicle);
-    var sim = new EconomySimulation(seed, builder.Build());
+    var world = builder.Build();
+    var sim = new EconomySimulation(
+      seed,
+      world,
+      new LegacySimulationModel(world.Specification));
     Seed(sim, ids);
     return (sim, ids);
   }
