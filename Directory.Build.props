@@ -63,4 +63,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.OneTypePerFile.props" Condition="Exists('$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.OneTypePerFile.props')" />
 </Project>
