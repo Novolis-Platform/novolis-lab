@@ -5,11 +5,11 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Simulation.SpaceCombat" />
-    <PackageReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Simulation.SpaceCombat" />
+    <LibraryReference Include="Novolis.Simulation.View" />
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Raylib.Game" />
+    <LibraryReference Include="Novolis.Raylib.Game" />
   </ItemGroup>
 </Project>

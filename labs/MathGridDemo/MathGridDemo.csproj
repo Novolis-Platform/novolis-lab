@@ -4,6 +4,6 @@
     <RootNamespace>MathGridDemo</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Math.Arrays" />
+    <LibraryReference Include="Novolis.Math.Arrays" />
   </ItemGroup>
 </Project>

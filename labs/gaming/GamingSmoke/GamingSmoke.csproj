@@ -4,8 +4,8 @@
     <RootNamespace>GamingSmoke</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Game.Identity" />
-    <PackageReference Include="Novolis.Game.MenuFlows" />
-    <PackageReference Include="Novolis.Game.Multiplayer.Abstractions" />
+    <LibraryReference Include="Novolis.Game.Identity" />
+    <LibraryReference Include="Novolis.Game.MenuFlows" />
+    <LibraryReference Include="Novolis.Game.Multiplayer.Abstractions" />
   </ItemGroup>
 </Project>

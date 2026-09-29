@@ -7,11 +7,11 @@
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Math.Arrays" />
-    <PackageReference Include="Novolis.Simulation.World" />
-    <PackageReference Include="Novolis.Simulation.World.Builders" />
-    <PackageReference Include="Novolis.Simulation.View" />
-    <PackageReference Include="Novolis.Physics.Collision.Simple" />
-    <PackageReference Include="Novolis.Physics.Joints" />
+    <LibraryReference Include="Novolis.Math.Arrays" />
+    <LibraryReference Include="Novolis.Simulation.World" />
+    <LibraryReference Include="Novolis.Simulation.World.Builders" />
+    <LibraryReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Physics.Collision.Simple" />
+    <LibraryReference Include="Novolis.Physics.Joints" />
   </ItemGroup>
 </Project>

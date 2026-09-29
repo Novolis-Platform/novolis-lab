@@ -12,7 +12,7 @@
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Avalonia.Controls.Sketch" />
+    <LibraryReference Include="Novolis.Avalonia.Controls.Sketch" />
     <PackageReference Include="Optris.Icons.Avalonia" />
     <PackageReference Include="Optris.Icons.Avalonia.FontAwesome" />
   </ItemGroup>

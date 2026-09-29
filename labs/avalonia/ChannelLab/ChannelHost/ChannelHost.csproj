@@ -4,13 +4,13 @@
     <Description>ChannelLab SignalR host — guest nicks, #lobby chat, SQLite scrollback.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Game.Identity" />
-    <PackageReference Include="Novolis.Game.Identity.Abstractions" />
-    <PackageReference Include="Novolis.Game.Identity.AspNetCore" />
-    <PackageReference Include="Novolis.Chat.Hosting.AspNetCore" />
-    <PackageReference Include="Novolis.Chat.Abstractions" />
-    <PackageReference Include="Novolis.Messaging.SecureText" />
-    <PackageReference Include="Novolis.Security.SecureText" />
+    <LibraryReference Include="Novolis.Game.Identity" />
+    <LibraryReference Include="Novolis.Game.Identity.Abstractions" />
+    <LibraryReference Include="Novolis.Game.Identity.AspNetCore" />
+    <LibraryReference Include="Novolis.Chat.Hosting.AspNetCore" />
+    <LibraryReference Include="Novolis.Chat.Abstractions" />
+    <LibraryReference Include="Novolis.Messaging.SecureText" />
+    <LibraryReference Include="Novolis.Security.SecureText" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />

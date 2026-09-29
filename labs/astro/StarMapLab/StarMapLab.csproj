@@ -12,13 +12,13 @@
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Astro.Abstractions" />
-    <PackageReference Include="Novolis.Astro.Assessment" />
-    <PackageReference Include="Novolis.Astro.Catalog" />
-    <PackageReference Include="Novolis.Astro.Overlay" />
-    <PackageReference Include="Novolis.Astro.Routing" />
-    <PackageReference Include="Novolis.Avalonia.StarMap" />
-    <PackageReference Include="Novolis.Avalonia.Studio" />
-    <PackageReference Include="Novolis.Physics.Astro" />
+    <LibraryReference Include="Novolis.Astro.Abstractions" />
+    <LibraryReference Include="Novolis.Astro.Assessment" />
+    <LibraryReference Include="Novolis.Astro.Catalog" />
+    <LibraryReference Include="Novolis.Astro.Overlay" />
+    <LibraryReference Include="Novolis.Astro.Routing" />
+    <LibraryReference Include="Novolis.Avalonia.StarMap" />
+    <LibraryReference Include="Novolis.Avalonia.Studio" />
+    <LibraryReference Include="Novolis.Physics.Astro" />
   </ItemGroup>
 </Project>

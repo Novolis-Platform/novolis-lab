@@ -8,16 +8,16 @@
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs. -->
-    <PackageReference Include="Novolis.Raylib.Game" />
-    <PackageReference Include="Novolis.Raylib.Bindings" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
-    <PackageReference Include="Novolis.Math.Arrays" />
-    <PackageReference Include="Novolis.Math.Geometry" />
-    <PackageReference Include="Novolis.Simulation.World" />
-    <PackageReference Include="Novolis.Simulation.World.Builders" />
-    <PackageReference Include="Novolis.Simulation.View" />
-    <PackageReference Include="Novolis.Physics.Collision.Simple" />
-    <PackageReference Include="Novolis.Physics.Joints" />
-    <PackageReference Include="Novolis.Physics.Cloth" />
+    <LibraryReference Include="Novolis.Raylib.Game" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Math.Arrays" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.Simulation.World" />
+    <LibraryReference Include="Novolis.Simulation.World.Builders" />
+    <LibraryReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Physics.Collision.Simple" />
+    <LibraryReference Include="Novolis.Physics.Joints" />
+    <LibraryReference Include="Novolis.Physics.Cloth" />
   </ItemGroup>
 </Project>

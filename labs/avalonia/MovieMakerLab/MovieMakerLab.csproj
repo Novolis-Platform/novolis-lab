@@ -10,8 +10,8 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
-    <PackageReference Include="Novolis.Avalonia.Video" />
-    <PackageReference Include="Novolis.Video.Edit" />
-    <PackageReference Include="Novolis.Video.Rtc.Abstractions" />
+    <LibraryReference Include="Novolis.Avalonia.Video" />
+    <LibraryReference Include="Novolis.Video.Edit" />
+    <LibraryReference Include="Novolis.Video.Rtc.Abstractions" />
   </ItemGroup>
 </Project>

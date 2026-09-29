@@ -11,12 +11,12 @@
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
     <!-- Explicit facets: ProjectRef mode is non-transitive for NuGet graphs. -->
-    <PackageReference Include="Novolis.Raylib.Bindings" />
-    <PackageReference Include="Novolis.Raylib.Game" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
-    <PackageReference Include="Novolis.Math.Arrays" />
-    <PackageReference Include="Novolis.Simulation.Kinematics" />
-    <PackageReference Include="Novolis.Simulation.View" />
-    <PackageReference Include="Novolis.Simulation.World" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Game" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Math.Arrays" />
+    <LibraryReference Include="Novolis.Simulation.Kinematics" />
+    <LibraryReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Simulation.World" />
   </ItemGroup>
 </Project>

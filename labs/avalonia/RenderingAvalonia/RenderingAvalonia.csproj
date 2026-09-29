@@ -10,15 +10,15 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
-    <PackageReference Include="Novolis.Avalonia.Rendering" />
-    <PackageReference Include="Novolis.Avalonia.Raylib" />
-    <PackageReference Include="Novolis.Math.Geometry" />
-    <PackageReference Include="Novolis.Math.Topology" />
-    <PackageReference Include="Novolis.Rendering.TwoD" />
+    <LibraryReference Include="Novolis.Avalonia.Rendering" />
+    <LibraryReference Include="Novolis.Avalonia.Raylib" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.Math.Topology" />
+    <LibraryReference Include="Novolis.Rendering.TwoD" />
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Raylib.Abstractions" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Raylib.Abstractions" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
   </ItemGroup>
 </Project>

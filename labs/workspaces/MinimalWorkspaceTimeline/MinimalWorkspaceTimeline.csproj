@@ -6,13 +6,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
-    <PackageReference Include="Novolis.Snapshots.Abstractions" />
-    <PackageReference Include="Novolis.Timeline.Abstractions" />
-    <PackageReference Include="Novolis.Timeline.FileSystem" />
-    <PackageReference Include="Novolis.Timeline.Presentation" />
-    <PackageReference Include="Novolis.Workspaces.Abstractions" />
-    <PackageReference Include="Novolis.Workspaces.FileSystem" />
-    <PackageReference Include="Novolis.Workspaces.Snapshots" />
-    <PackageReference Include="Novolis.Workspaces.Timeline" />
+    <LibraryReference Include="Novolis.Snapshots.Abstractions" />
+    <LibraryReference Include="Novolis.Timeline.Abstractions" />
+    <LibraryReference Include="Novolis.Timeline.FileSystem" />
+    <LibraryReference Include="Novolis.Timeline.Presentation" />
+    <LibraryReference Include="Novolis.Workspaces.Abstractions" />
+    <LibraryReference Include="Novolis.Workspaces.FileSystem" />
+    <LibraryReference Include="Novolis.Workspaces.Snapshots" />
+    <LibraryReference Include="Novolis.Workspaces.Timeline" />
   </ItemGroup>
 </Project>

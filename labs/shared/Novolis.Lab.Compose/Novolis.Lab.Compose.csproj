@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Rendering.Runtime" />
-    <PackageReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Rendering.Runtime" />
+    <LibraryReference Include="Novolis.Simulation.View" />
   </ItemGroup>
 </Project>

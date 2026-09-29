@@ -9,9 +9,9 @@
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Raylib.Abstractions" />
-    <PackageReference Include="Novolis.Raylib.Hosting" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
-    <PackageReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Abstractions" />
+    <LibraryReference Include="Novolis.Raylib.Hosting" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
   </ItemGroup>
 </Project>

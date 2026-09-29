@@ -4,19 +4,19 @@
     <RootNamespace>FreightWing</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Audio.Core" />
-    <PackageReference Include="Novolis.Audio.Effects" />
-    <PackageReference Include="Novolis.Audio.Playback" />
-    <PackageReference Include="Novolis.Game.MenuFlows" />
-    <PackageReference Include="Novolis.MachineLearning.Neural" />
-    <PackageReference Include="Novolis.Simulation.SpaceCombat" />
-    <PackageReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Audio.Core" />
+    <LibraryReference Include="Novolis.Audio.Effects" />
+    <LibraryReference Include="Novolis.Audio.Playback" />
+    <LibraryReference Include="Novolis.Game.MenuFlows" />
+    <LibraryReference Include="Novolis.MachineLearning.Neural" />
+    <LibraryReference Include="Novolis.Simulation.SpaceCombat" />
+    <LibraryReference Include="Novolis.Simulation.View" />
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Raylib.Game" />
-    <PackageReference Include="Novolis.Raylib.Bindings" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Raylib.Game" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
 
     <ProjectReference Include="..\..\shared\Novolis.Lab.SpaceCombat\Novolis.Lab.SpaceCombat.csproj" />
   </ItemGroup>

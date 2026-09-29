@@ -9,8 +9,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AssimpNet" />
-    <PackageReference Include="Novolis.ThreeD.Import.Assimp" />
-    <PackageReference Include="Novolis.ThreeD.Scene" />
-    <PackageReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.ThreeD.Import.Assimp" />
+    <LibraryReference Include="Novolis.ThreeD.Scene" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
   </ItemGroup>
 </Project>

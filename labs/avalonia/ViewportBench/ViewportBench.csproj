@@ -12,16 +12,16 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Avalonia.ThreeD" />
-    <PackageReference Include="Novolis.Agent.Surface" />
-    <PackageReference Include="Novolis.ThreeD.Scene" />
-    <PackageReference Include="Novolis.Avalonia.Raylib" />
+    <LibraryReference Include="Novolis.Avalonia.ThreeD" />
+    <LibraryReference Include="Novolis.Agent.Surface" />
+    <LibraryReference Include="Novolis.ThreeD.Scene" />
+    <LibraryReference Include="Novolis.Avalonia.Raylib" />
     <PackageReference Include="Novolis.Raylib" />
-    <PackageReference Include="Novolis.Raylib.Abstractions" />
-    <PackageReference Include="Novolis.Raylib.Bindings" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
-    <PackageReference Include="Novolis.Avalonia.Rendering" />
-    <PackageReference Include="Novolis.Rendering.Backends.Vulkan" />
+    <LibraryReference Include="Novolis.Raylib.Abstractions" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Avalonia.Rendering" />
+    <LibraryReference Include="Novolis.Rendering.Backends.Vulkan" />
     <!-- ProjectRef non-transitive: Silk natives for OpenGL / Vulkan wire presenters. -->
     <PackageReference Include="Silk.NET.OpenGL" />
     <PackageReference Include="Silk.NET.Vulkan" />

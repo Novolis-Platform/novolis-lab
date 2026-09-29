@@ -6,6 +6,6 @@
     <Description>Core-only fixed-price scarcity and quantity-rationing lab.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Economy.Core" />
+    <LibraryReference Include="Novolis.Economy.Core" />
   </ItemGroup>
 </Project>

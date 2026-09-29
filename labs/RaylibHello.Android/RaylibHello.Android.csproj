@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Novolis.Raylib.Native" />
+    <LibraryReference Include="Novolis.Raylib.Native" />
   </ItemGroup>
 
   <!-- Sibling checkout / ProjectRef: Native ProjectReference does not flow buildTransitive from the nupkg. -->

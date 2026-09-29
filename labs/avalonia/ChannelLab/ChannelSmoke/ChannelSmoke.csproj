@@ -7,9 +7,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
-    <PackageReference Include="Novolis.Chat.Hosting.AspNetCore" />
-    <PackageReference Include="Novolis.Chat.Abstractions" />
-    <PackageReference Include="Novolis.Messaging.SecureText" />
-    <PackageReference Include="Novolis.Security.SecureText" />
+    <LibraryReference Include="Novolis.Chat.Hosting.AspNetCore" />
+    <LibraryReference Include="Novolis.Chat.Abstractions" />
+    <LibraryReference Include="Novolis.Messaging.SecureText" />
+    <LibraryReference Include="Novolis.Security.SecureText" />
   </ItemGroup>
 </Project>

@@ -11,20 +11,20 @@
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Avalonia.Cad" />
-    <PackageReference Include="Novolis.Avalonia.Cad.Ship" />
-    <PackageReference Include="Novolis.Avalonia.Raylib" />
-    <PackageReference Include="Novolis.Avalonia.Studio" />
-    <PackageReference Include="Novolis.Cad.Primitives" />
-    <PackageReference Include="Novolis.Ship.Primitives" />
-    <PackageReference Include="Novolis.Ship.Topology" />
-    <PackageReference Include="Novolis.Ship.Validation" />
-    <PackageReference Include="Novolis.Ship.Structure" />
+    <LibraryReference Include="Novolis.Avalonia.Cad" />
+    <LibraryReference Include="Novolis.Avalonia.Cad.Ship" />
+    <LibraryReference Include="Novolis.Avalonia.Raylib" />
+    <LibraryReference Include="Novolis.Avalonia.Studio" />
+    <LibraryReference Include="Novolis.Cad.Primitives" />
+    <LibraryReference Include="Novolis.Ship.Primitives" />
+    <LibraryReference Include="Novolis.Ship.Topology" />
+    <LibraryReference Include="Novolis.Ship.Validation" />
+    <LibraryReference Include="Novolis.Ship.Structure" />
     <PackageReference Include="Novolis.Raylib" />
-    <PackageReference Include="Novolis.Raylib.Bindings" />
-    <PackageReference Include="Novolis.Raylib.Capture" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
-    <PackageReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Capture" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Simulation.View" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="docs\internals\CAL-INT-GA-001.json" Link="lock\CAL-INT-GA-001.json" CopyToOutputDirectory="PreserveNewest" />

@@ -6,9 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" />
-    <PackageReference Include="Novolis.MachineLearning.Neural" />
-    <PackageReference Include="Novolis.MachineLearning.Neural.Abstractions" />
-    <PackageReference Include="Novolis.Simulation.Racing" />
+    <LibraryReference Include="Novolis.MachineLearning.Neural" />
+    <LibraryReference Include="Novolis.MachineLearning.Neural.Abstractions" />
+    <LibraryReference Include="Novolis.Simulation.Racing" />
     <ProjectReference Include="..\PulseStrip.Core\PulseStrip.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -5,8 +5,8 @@
     <Description>Headless anti-grav race sim, spline circuits, and evolutionary ML opponents for PulseStrip.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.MachineLearning.Neural" />
-    <PackageReference Include="Novolis.MachineLearning.Neural.Abstractions" />
-    <PackageReference Include="Novolis.Simulation.Racing" />
+    <LibraryReference Include="Novolis.MachineLearning.Neural" />
+    <LibraryReference Include="Novolis.MachineLearning.Neural.Abstractions" />
+    <LibraryReference Include="Novolis.Simulation.Racing" />
   </ItemGroup>
 </Project>

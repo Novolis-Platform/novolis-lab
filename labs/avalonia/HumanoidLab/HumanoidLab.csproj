@@ -11,15 +11,15 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Game.Humanoid" />
-    <PackageReference Include="Novolis.Math.Arrays" />
-    <PackageReference Include="Novolis.Math.Geometry" />
-    <PackageReference Include="Novolis.Physics.Collision.Simple" />
-    <PackageReference Include="Novolis.Physics.Joints" />
-    <PackageReference Include="Novolis.Simulation.Humanoid" />
-    <PackageReference Include="Novolis.Simulation.Humanoid.Physics" />
-    <PackageReference Include="Novolis.Simulation.Humanoid.Skinning" />
-    <PackageReference Include="Novolis.Simulation.World" />
-    <PackageReference Include="Novolis.Simulation.World.Builders" />
+    <LibraryReference Include="Novolis.Game.Humanoid" />
+    <LibraryReference Include="Novolis.Math.Arrays" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.Physics.Collision.Simple" />
+    <LibraryReference Include="Novolis.Physics.Joints" />
+    <LibraryReference Include="Novolis.Simulation.Humanoid" />
+    <LibraryReference Include="Novolis.Simulation.Humanoid.Physics" />
+    <LibraryReference Include="Novolis.Simulation.Humanoid.Skinning" />
+    <LibraryReference Include="Novolis.Simulation.World" />
+    <LibraryReference Include="Novolis.Simulation.World.Builders" />
   </ItemGroup>
 </Project>

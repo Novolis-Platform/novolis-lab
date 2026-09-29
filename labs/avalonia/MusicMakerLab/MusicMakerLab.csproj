@@ -12,10 +12,10 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="NAudio" />
     <PackageReference Include="MeltySynth" />
-    <PackageReference Include="Novolis.Avalonia.Audio" />
-    <PackageReference Include="Novolis.Audio.Catalog" />
-    <PackageReference Include="Novolis.Audio.Edit" />
-    <PackageReference Include="Novolis.Audio.Midi" />
-    <PackageReference Include="Novolis.Audio.Core" />
+    <LibraryReference Include="Novolis.Avalonia.Audio" />
+    <LibraryReference Include="Novolis.Audio.Catalog" />
+    <LibraryReference Include="Novolis.Audio.Edit" />
+    <LibraryReference Include="Novolis.Audio.Midi" />
+    <LibraryReference Include="Novolis.Audio.Core" />
   </ItemGroup>
 </Project>

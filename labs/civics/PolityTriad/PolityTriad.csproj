@@ -9,13 +9,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Spectre.Console" />
-    <PackageReference Include="Novolis.Civics.Agents" />
-    <PackageReference Include="Novolis.Civics.Core" />
-    <PackageReference Include="Novolis.Civics.EconomyBridge" />
-    <PackageReference Include="Novolis.Economy.Core" />
-    <PackageReference Include="Novolis.Geopolitics.Conflict" />
-    <PackageReference Include="Novolis.Geopolitics.Core" />
-    <PackageReference Include="Novolis.Geopolitics.Diplomacy" />
-    <PackageReference Include="Novolis.Geopolitics.Trade" />
+    <LibraryReference Include="Novolis.Civics.Agents" />
+    <LibraryReference Include="Novolis.Civics.Core" />
+    <LibraryReference Include="Novolis.Civics.EconomyBridge" />
+    <LibraryReference Include="Novolis.Economy.Core" />
+    <LibraryReference Include="Novolis.Geopolitics.Conflict" />
+    <LibraryReference Include="Novolis.Geopolitics.Core" />
+    <LibraryReference Include="Novolis.Geopolitics.Diplomacy" />
+    <LibraryReference Include="Novolis.Geopolitics.Trade" />
   </ItemGroup>
 </Project>

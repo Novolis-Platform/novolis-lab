@@ -8,9 +8,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="ModelContextProtocol" />
     <PackageReference Include="MessagePack" />
-    <PackageReference Include="Novolis.Avalonia.Agent.Protocol" />
-    <PackageReference Include="Novolis.Transports.LocalIpc" />
-    <PackageReference Include="Novolis.Agent.Core" />
-    <PackageReference Include="Novolis.Agent.Surface" />
+    <LibraryReference Include="Novolis.Avalonia.Agent.Protocol" />
+    <LibraryReference Include="Novolis.Transports.LocalIpc" />
+    <LibraryReference Include="Novolis.Agent.Core" />
+    <LibraryReference Include="Novolis.Agent.Surface" />
   </ItemGroup>
 </Project>

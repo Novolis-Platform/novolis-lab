@@ -6,12 +6,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Spectre.Console" />
-    <PackageReference Include="Novolis.Economy.Core" />
-    <PackageReference Include="Novolis.Economy.Production" />
-    <PackageReference Include="Novolis.Economy.Markets" />
-    <PackageReference Include="Novolis.Economy.Accounting" />
-    <PackageReference Include="Novolis.Economy.Logistics" />
-    <PackageReference Include="Novolis.Economy.Population" />
-    <PackageReference Include="Novolis.Economy.Simulation" />
+    <LibraryReference Include="Novolis.Economy.Core" />
+    <LibraryReference Include="Novolis.Economy.Production" />
+    <LibraryReference Include="Novolis.Economy.Markets" />
+    <LibraryReference Include="Novolis.Economy.Accounting" />
+    <LibraryReference Include="Novolis.Economy.Logistics" />
+    <LibraryReference Include="Novolis.Economy.Population" />
+    <LibraryReference Include="Novolis.Economy.Simulation" />
   </ItemGroup>
 </Project>

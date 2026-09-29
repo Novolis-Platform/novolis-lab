@@ -4,7 +4,7 @@
     <RootNamespace>NeuralRacing</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.MachineLearning.Neural" />
-    <PackageReference Include="Novolis.Simulation.Racing" />
+    <LibraryReference Include="Novolis.MachineLearning.Neural" />
+    <LibraryReference Include="Novolis.Simulation.Racing" />
   </ItemGroup>
 </Project>

@@ -3,12 +3,12 @@
     <RootNamespace>Novolis.Lab.Voice.Unit</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Audio.Core" />
-    <PackageReference Include="Novolis.Audio.Effects" />
-    <PackageReference Include="Novolis.Audio.Voice" />
-    <PackageReference Include="Novolis.Audio.Voice.Abstractions" />
-    <PackageReference Include="Novolis.Audio.Voice.Design" />
-    <PackageReference Include="Novolis.Audio.Voice.Profiles" />
+    <LibraryReference Include="Novolis.Audio.Core" />
+    <LibraryReference Include="Novolis.Audio.Effects" />
+    <LibraryReference Include="Novolis.Audio.Voice" />
+    <LibraryReference Include="Novolis.Audio.Voice.Abstractions" />
+    <LibraryReference Include="Novolis.Audio.Voice.Design" />
+    <LibraryReference Include="Novolis.Audio.Voice.Profiles" />
     <PackageReference Include="TUnit" />
   </ItemGroup>
   <ItemGroup>

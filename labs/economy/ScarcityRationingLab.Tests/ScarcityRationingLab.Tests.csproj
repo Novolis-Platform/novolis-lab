@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" />
-    <PackageReference Include="Novolis.Economy.Core" />
+    <LibraryReference Include="Novolis.Economy.Core" />
     <ProjectReference Include="..\ScarcityRationingLab\ScarcityRationingLab.csproj" />
   </ItemGroup>
 </Project>

@@ -8,9 +8,9 @@
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Raylib.Game" />
-    <PackageReference Include="Novolis.Raylib.Raygui" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
-    <PackageReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Game" />
+    <LibraryReference Include="Novolis.Raylib.Raygui" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
   </ItemGroup>
 </Project>

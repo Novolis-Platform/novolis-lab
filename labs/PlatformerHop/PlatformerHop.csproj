@@ -7,8 +7,8 @@
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Math.Arrays" />
-    <PackageReference Include="Novolis.Simulation.Kinematics" />
-    <PackageReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Math.Arrays" />
+    <LibraryReference Include="Novolis.Simulation.Kinematics" />
+    <LibraryReference Include="Novolis.Simulation.View" />
   </ItemGroup>
 </Project>

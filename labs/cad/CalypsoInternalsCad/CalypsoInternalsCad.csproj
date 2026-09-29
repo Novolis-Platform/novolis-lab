@@ -14,17 +14,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Novolis.Avalonia.Cad.Ship" />
-    <PackageReference Include="Novolis.Cad.Primitives" />
-    <PackageReference Include="Novolis.Cad.SceneBridge" />
-    <PackageReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.Avalonia.Cad.Ship" />
+    <LibraryReference Include="Novolis.Cad.Primitives" />
+    <LibraryReference Include="Novolis.Cad.SceneBridge" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
     <PackageReference Include="Novolis.Raylib" />
-    <PackageReference Include="Novolis.Raylib.Bindings" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
-    <PackageReference Include="Novolis.Ship.Primitives" />
-    <PackageReference Include="Novolis.Ship.Structure" />
-    <PackageReference Include="Novolis.Ship.Topology" />
-    <PackageReference Include="Novolis.Ship.Validation" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Ship.Primitives" />
+    <LibraryReference Include="Novolis.Ship.Structure" />
+    <LibraryReference Include="Novolis.Ship.Topology" />
+    <LibraryReference Include="Novolis.Ship.Validation" />
   </ItemGroup>
 
   <ItemGroup>

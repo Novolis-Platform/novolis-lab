@@ -6,14 +6,14 @@
   <ItemGroup>
     <Compile Include="..\PlatformerHop\Game\SideLevel.cs" Link="Shared\SideLevel.cs" />
     <ProjectReference Include="..\shared\Novolis.Lab.TwoD\Novolis.Lab.TwoD.csproj" />
-    <PackageReference Include="Novolis.Math.Arrays" />
-    <PackageReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.Math.Arrays" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs. -->
-    <PackageReference Include="Novolis.Physics.Abstractions" />
-    <PackageReference Include="Novolis.Rendering.TwoD" />
-    <PackageReference Include="Novolis.Rendering.Backends.TwoD.Silk" />
-    <PackageReference Include="Novolis.Rendering.Presentation.Abstractions" />
-    <PackageReference Include="Novolis.Simulation.Kinematics" />
-    <PackageReference Include="Novolis.Simulation.World" />
+    <LibraryReference Include="Novolis.Physics.Abstractions" />
+    <LibraryReference Include="Novolis.Rendering.TwoD" />
+    <LibraryReference Include="Novolis.Rendering.Backends.TwoD.Silk" />
+    <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
+    <LibraryReference Include="Novolis.Simulation.Kinematics" />
+    <LibraryReference Include="Novolis.Simulation.World" />
   </ItemGroup>
 </Project>

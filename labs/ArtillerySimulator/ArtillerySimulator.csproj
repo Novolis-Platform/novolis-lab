@@ -5,10 +5,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Novolis.Raylib" />
-    <PackageReference Include="Novolis.Physics.Ballistics" />
-    <PackageReference Include="Novolis.Physics.Collision.Simple" />
-    <PackageReference Include="Novolis.Simulation.World" />
-    <PackageReference Include="Novolis.Simulation.World.Builders" />
-    <PackageReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Physics.Ballistics" />
+    <LibraryReference Include="Novolis.Physics.Collision.Simple" />
+    <LibraryReference Include="Novolis.Simulation.World" />
+    <LibraryReference Include="Novolis.Simulation.World.Builders" />
+    <LibraryReference Include="Novolis.Simulation.View" />
   </ItemGroup>
 </Project>

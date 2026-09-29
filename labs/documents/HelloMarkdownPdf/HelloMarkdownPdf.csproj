@@ -5,9 +5,9 @@
     <Description>Dogfood Novolis.Markup.Markdown.Documents — fluent Markdown to Skia PDF.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Documents" />
-    <PackageReference Include="Novolis.Markup.Markdown" />
-    <PackageReference Include="Novolis.Markup.Markdown.Documents" />
+    <LibraryReference Include="Novolis.Documents" />
+    <LibraryReference Include="Novolis.Markup.Markdown" />
+    <LibraryReference Include="Novolis.Markup.Markdown.Documents" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" />
   </ItemGroup>

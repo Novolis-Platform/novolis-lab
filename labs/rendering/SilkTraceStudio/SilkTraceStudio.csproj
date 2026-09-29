@@ -4,14 +4,14 @@
     <RootNamespace>SilkTraceStudio</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Rendering.Backends.Cpu" />
-    <PackageReference Include="Novolis.Rendering.Backends.Igpu" />
-    <PackageReference Include="Novolis.Rendering.Backends.Vulkan" />
-    <PackageReference Include="Novolis.Rendering.PathTrace.Demos" />
-    <PackageReference Include="Novolis.Rendering.Presentation.Abstractions" />
-    <PackageReference Include="Novolis.Rendering.Presentation.Abstractions" />
-    <PackageReference Include="Novolis.Rendering.Presentation.Silk" />
-    <PackageReference Include="Novolis.Rendering.Runtime" />
-    <PackageReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Rendering.Backends.Cpu" />
+    <LibraryReference Include="Novolis.Rendering.Backends.Igpu" />
+    <LibraryReference Include="Novolis.Rendering.Backends.Vulkan" />
+    <LibraryReference Include="Novolis.Rendering.PathTrace.Demos" />
+    <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
+    <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
+    <LibraryReference Include="Novolis.Rendering.Presentation.Silk" />
+    <LibraryReference Include="Novolis.Rendering.Runtime" />
+    <LibraryReference Include="Novolis.Simulation.View" />
   </ItemGroup>
 </Project>

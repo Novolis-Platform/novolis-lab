@@ -6,21 +6,21 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AssimpNet" />
-    <PackageReference Include="Novolis.Audio" />
-    <PackageReference Include="Novolis.Audio.Abstractions" />
-    <PackageReference Include="Novolis.Audio.Runtime" />
-    <PackageReference Include="Novolis.Game.MenuFlows" />
-    <PackageReference Include="Novolis.MachineLearning.Neural" />
-    <PackageReference Include="Novolis.MachineLearning.Neural.Abstractions" />
-    <PackageReference Include="Novolis.Math.Geometry" />
-    <PackageReference Include="Novolis.ThreeD.Import.Assimp" />
-    <PackageReference Include="Novolis.Simulation.Racing" />
+    <LibraryReference Include="Novolis.Audio" />
+    <LibraryReference Include="Novolis.Audio.Abstractions" />
+    <LibraryReference Include="Novolis.Audio.Runtime" />
+    <LibraryReference Include="Novolis.Game.MenuFlows" />
+    <LibraryReference Include="Novolis.MachineLearning.Neural" />
+    <LibraryReference Include="Novolis.MachineLearning.Neural.Abstractions" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.ThreeD.Import.Assimp" />
+    <LibraryReference Include="Novolis.Simulation.Racing" />
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Raylib.Game" />
-    <PackageReference Include="Novolis.Raylib.Bindings" />
-    <PackageReference Include="Novolis.Raylib.Runtime" />
+    <LibraryReference Include="Novolis.Raylib.Game" />
+    <LibraryReference Include="Novolis.Raylib.Bindings" />
+    <LibraryReference Include="Novolis.Raylib.Runtime" />
     <ProjectReference Include="..\PulseStrip.Core\PulseStrip.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

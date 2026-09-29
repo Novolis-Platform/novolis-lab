@@ -7,9 +7,9 @@
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Novolis.Math.Arrays" />
-    <PackageReference Include="Novolis.Simulation.World" />
-    <PackageReference Include="Novolis.Simulation.World.Builders" />
-    <PackageReference Include="Novolis.Physics.Collision.Simple" />
+    <LibraryReference Include="Novolis.Math.Arrays" />
+    <LibraryReference Include="Novolis.Simulation.World" />
+    <LibraryReference Include="Novolis.Simulation.World.Builders" />
+    <LibraryReference Include="Novolis.Physics.Collision.Simple" />
   </ItemGroup>
 </Project>

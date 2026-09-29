@@ -12,14 +12,14 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Agent.Core" />
-    <PackageReference Include="Novolis.Agent.Surface" />
-    <PackageReference Include="Novolis.Avalonia.ThreeD" />
-    <PackageReference Include="Novolis.Game.Humanoid" />
-    <PackageReference Include="Novolis.Math.Geometry" />
-    <PackageReference Include="Novolis.ThreeD.Scene" />
-    <PackageReference Include="Novolis.Simulation.Humanoid" />
-    <PackageReference Include="Novolis.Simulation.Humanoid.Import" />
+    <LibraryReference Include="Novolis.Agent.Core" />
+    <LibraryReference Include="Novolis.Agent.Surface" />
+    <LibraryReference Include="Novolis.Avalonia.ThreeD" />
+    <LibraryReference Include="Novolis.Game.Humanoid" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.ThreeD.Scene" />
+    <LibraryReference Include="Novolis.Simulation.Humanoid" />
+    <LibraryReference Include="Novolis.Simulation.Humanoid.Import" />
     <PackageReference Include="Silk.NET.OpenGL" />
   </ItemGroup>
   <ItemGroup>

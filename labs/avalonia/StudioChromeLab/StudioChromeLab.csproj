@@ -12,11 +12,11 @@
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Avalonia.Controls" />
-    <PackageReference Include="Novolis.Avalonia.Studio" />
+    <LibraryReference Include="Novolis.Avalonia.Controls" />
+    <LibraryReference Include="Novolis.Avalonia.Studio" />
     <PackageReference Include="MessagePack" />
-    <PackageReference Include="Novolis.Avalonia.Agent" />
-    <PackageReference Include="Novolis.Avalonia.Agent.Protocol" />
-    <PackageReference Include="Novolis.IO.Processes" />
+    <LibraryReference Include="Novolis.Avalonia.Agent" />
+    <LibraryReference Include="Novolis.Avalonia.Agent.Protocol" />
+    <LibraryReference Include="Novolis.IO.Processes" />
   </ItemGroup>
 </Project>

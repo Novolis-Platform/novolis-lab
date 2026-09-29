@@ -7,6 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" />
-    <PackageReference Include="Novolis.Raylib.Testing" />
+    <LibraryReference Include="Novolis.Raylib.Testing" />
   </ItemGroup>
 </Project>

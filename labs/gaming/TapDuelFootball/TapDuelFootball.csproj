@@ -5,13 +5,13 @@
     <Description>Portrait hotseat tap-duel football — recreation of frankhaugen/tap-duel-football on Novolis Rendering.TwoD + Game.MenuFlows.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Game.MenuFlows" />
-    <PackageReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.Game.MenuFlows" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs. -->
-    <PackageReference Include="Novolis.Math.Topology" />
-    <PackageReference Include="Novolis.Rendering.TwoD" />
-    <PackageReference Include="Novolis.Rendering.Backends.TwoD.Silk" />
-    <PackageReference Include="Novolis.Rendering.Presentation.Abstractions" />
+    <LibraryReference Include="Novolis.Math.Topology" />
+    <LibraryReference Include="Novolis.Rendering.TwoD" />
+    <LibraryReference Include="Novolis.Rendering.Backends.TwoD.Silk" />
+    <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
     <!-- ProjectRef non-transitive: Silk windowing/input for Backends.TwoD.Silk. -->
     <PackageReference Include="Silk.NET.GLFW" />
     <PackageReference Include="Silk.NET.Input" />
