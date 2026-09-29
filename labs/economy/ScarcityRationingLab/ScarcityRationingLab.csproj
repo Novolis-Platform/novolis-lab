@@ -8,5 +8,6 @@
   <ItemGroup>
     <LibraryReference Include="Novolis.Economy.Core" />
     <LibraryReference Include="Novolis.Economy.Simulation" />
+    <LibraryReference Include="Novolis.Economy.Models.DeterministicBounded" />
   </ItemGroup>
 </Project>

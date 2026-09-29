@@ -107,10 +107,7 @@ internal static class TrampScenario
     var ids = new Ids(tramp, locF, locW, locC, locR, hubF, hubW, hubC, hubR, hull, facility, ore, parts, fuel);
     var world = builder.Build();
     return (
-      new EconomySimulation(
-        77,
-        world,
-        new LegacySimulationModel(world.Specification)),
+      new EconomySimulation(77, world),
       ids);
   }
 

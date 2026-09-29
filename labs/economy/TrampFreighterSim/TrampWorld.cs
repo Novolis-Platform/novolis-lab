@@ -130,10 +130,7 @@ internal static class TrampWorld
       tramp, locF, locW, locC, locR, hubF, hubW, hubC, hubR, hullId,
       coreFacility, frontierFacility, ore, parts, fuel, vehicle);
     var world = builder.Build();
-    var sim = new EconomySimulation(
-      seed,
-      world,
-      new LegacySimulationModel(world.Specification));
+    var sim = new EconomySimulation(seed, world);
     Seed(sim, ids);
     return (sim, ids);
   }

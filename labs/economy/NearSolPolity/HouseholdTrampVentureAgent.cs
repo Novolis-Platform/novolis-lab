@@ -117,7 +117,7 @@ internal sealed class HouseholdTrampVentureAgent : IEconomicAgent
     var n = _nextVenture + 1;
     var trampId = FirmId.From(Guid.Parse($"00000000-0000-4000-8000-00000000{(0xc0 + _nextVenture):x4}"));
     var name = $"MV Prospect {n}";
-    world.EnsureFirm(trampId, name);
+    context.Enqueue(new RegisterFirm(trampId, name));
 
     // Seed a little bunker at Sol so the hull can leave dock.
     if (_ids.Sites.TryGetValue("sol", out var sol))

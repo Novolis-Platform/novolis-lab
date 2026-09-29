@@ -1,18 +1,20 @@
 using ScarcityRationingLab;
-using Novolis.Economy;
+using Novolis.Economy.Models.DeterministicBounded;
 using Novolis.Economy.Simulation;
-using Novolis.Economy.Simulation.Models;
 
 Console.WriteLine("Fixed-price scarcity and quantity rationing");
 Console.WriteLine("Posted price: $10; affordable demand: 100 units");
-var modelRun = await SimulationRunner.RunAsync(
-    new SimulationRunRequest(
-        SimulationModels.DeterministicBounded(),
+var modelRun = EconomicModelRunner.Run(
+    new EconomicModelRunRequest(
+        new DeterministicBoundedModel(),
+        DeterministicBoundedScenario.Baseline,
         Seed: 7,
-        Duration: SimulationDuration.OneDay));
+        Ticks: 24));
 Console.WriteLine(
-    $"Selected model: {modelRun.Manifest.ModelId} v{modelRun.Manifest.ModelVersion}; " +
-    $"bounded output: {modelRun.Metrics.Get("physical-production"):0.####}");
+    $"Selected model: {modelRun.Manifest.Model.Id} v{modelRun.Manifest.Model.Version}; " +
+    $"bounded output: {modelRun.Observations
+        .Where(observation => observation.Name == "food-produced")
+        .Sum(observation => observation.Value):0.####}");
 Console.WriteLine();
 
 Print("abundant supply", ScarcityScenario.Run(100m));
