@@ -154,6 +154,7 @@
     <PackageVersion Include="Novolis.Avalonia.Mobile" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Mobile.Desktop" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Maui.GraphicalProfile" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Maui.Agent.Protocol" Version="2026.1.*" />
     <PackageVersion Include="Novolis.MachineLearning.Neural" Version="2026.1.*" />
     <PackageVersion Include="Novolis.MachineLearning.Neural.Abstractions" Version="2026.1.*" />
         <PackageVersion Include="Novolis.Manuscript" Version="2026.1.*" />

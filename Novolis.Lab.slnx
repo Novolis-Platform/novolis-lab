@@ -68,6 +68,7 @@
   <Folder Name="/commands/">
     <Project Path="labs/BridgeCommander/BridgeCommander.csproj" />
     <Project Path="labs/AvaloniaAgentMcp/AvaloniaAgentMcp.csproj" />
+    <Project Path="labs/MauiAgentMcp/MauiAgentMcp.csproj" />
   </Folder>
   <Folder Name="/machine-learning/">
     <Project Path="labs/NeuralRacing/NeuralRacing.csproj" />

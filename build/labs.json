@@ -227,6 +227,18 @@
       ]
     },
     {
+      "Key": "MauiAgentMcp",
+      "DisplayName": "MAUI Agent Mcp",
+      "Projects": [
+        "labs/MauiAgentMcp/MauiAgentMcp.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/MauiAgentMcp/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "BouncingBall",
       "DisplayName": "Bouncing Ball",
       "Projects": [

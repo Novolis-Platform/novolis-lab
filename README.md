@@ -120,6 +120,7 @@ Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new ex
 | `VoiceSmoke` | `labs/audio/VoiceSmoke` | Audio.Voice, Voice.Atc (Sherpa Piper TTS) |
 | `StudioChromeLab` | `labs/avalonia/StudioChromeLab` | Controls dialogs/lists/jobs + Studio focus/dirty chrome |
 | `AvaloniaAgentMcp` | `labs/AvaloniaAgentMcp` | Avalonia.Agent.Protocol, Transports.LocalIpc, Agent.Core/Surface |
+| `MauiAgentMcp` | `labs/MauiAgentMcp` | Maui.Agent.Protocol, Transports.LocalIpc (`ui.*` sidecar) |
 | `SketchLab` | `labs/avalonia/SketchLab` | SketchControl freehand canvas + PNG/SVG export |
 | `ViewportBench` | `labs/avalonia/ViewportBench` | Shared-camera CAD wireframe (OpenGL/CPU/Vulkan/Raylib) |
 | `SceneLab` | `labs/avalonia/SceneLab` | Avalonia 3D scene lab |
