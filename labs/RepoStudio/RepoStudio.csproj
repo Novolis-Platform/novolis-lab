@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>RepoStudio</RootNamespace>
+    <AssemblyName>RepoStudio</AssemblyName>
+    <ApplicationTitle>Repo Studio</ApplicationTitle>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <Description>Hybrid CLI + Avalonia multi-repo Git studio over Novolis.IO.Git and Novolis.Avalonia.Git.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
+    <PackageReference Include="Spectre.Console" />
+    <LibraryReference Include="Novolis.Avalonia.Git" />
+    <LibraryReference Include="Novolis.Avalonia.Studio" />
+    <LibraryReference Include="Novolis.IO.Git" />
+  </ItemGroup>
+</Project>

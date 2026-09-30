@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>GeoPolity.Unit</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TUnit" />
+    <PackageReference Include="MessagePack" />
+    <LibraryReference Include="Novolis.Agent.Core" />
+    <LibraryReference Include="Novolis.Agent.Surface" />
+    <LibraryReference Include="Novolis.Avalonia.StarMap" />
+    <LibraryReference Include="Novolis.Geopolitics.Core" />
+    <LibraryReference Include="Novolis.Geopolitics.Scenarios" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\GeoPolity.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,22 @@
+[
+  { "productId": "iron", "quality": 0.55, "monthlySupply": 800, "unitCost": 9 },
+  { "productId": "coal", "quality": 0.5, "monthlySupply": 900, "unitCost": 7 },
+  { "productId": "timber", "quality": 0.6, "monthlySupply": 700, "unitCost": 8 },
+  { "productId": "oil", "quality": 0.55, "monthlySupply": 600, "unitCost": 13 },
+  { "productId": "silica", "quality": 0.5, "monthlySupply": 400, "unitCost": 10 },
+  { "productId": "chemical", "quality": 0.55, "monthlySupply": 500, "unitCost": 11 },
+  { "productId": "bread", "quality": 0.45, "monthlySupply": 4000, "unitCost": 2.5 },
+  { "productId": "milk", "quality": 0.5, "monthlySupply": 3000, "unitCost": 3.5 },
+  { "productId": "soda", "quality": 0.4, "monthlySupply": 3000, "unitCost": 2.2 },
+  { "productId": "shirt", "quality": 0.4, "monthlySupply": 400, "unitCost": 18 },
+  { "productId": "phone", "quality": 0.5, "monthlySupply": 200, "unitCost": 380 },
+  { "productId": "laptop", "quality": 0.55, "monthlySupply": 120, "unitCost": 780 },
+  { "productId": "aspirin", "quality": 0.5, "monthlySupply": 600, "unitCost": 6 },
+  { "productId": "tv", "quality": 0.45, "monthlySupply": 150, "unitCost": 320 },
+  { "productId": "wine", "quality": 0.4, "monthlySupply": 300, "unitCost": 22 },
+  { "productId": "frozen_meat", "quality": 0.45, "monthlySupply": 500, "unitCost": 11 },
+  { "productId": "auto_car", "quality": 0.5, "monthlySupply": 40, "unitCost": 12000 },
+  { "productId": "jeans", "quality": 0.4, "monthlySupply": 350, "unitCost": 40 },
+  { "productId": "toothpaste", "quality": 0.5, "monthlySupply": 700, "unitCost": 3 },
+  { "productId": "game_console", "quality": 0.55, "monthlySupply": 100, "unitCost": 300 }
+]

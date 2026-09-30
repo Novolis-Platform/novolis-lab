@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="CapitalistSimulator.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CapitalistSimulator.Unit/CapitalistSimulator.Unit.csproj" />
+  </Folder>
+</Solution>

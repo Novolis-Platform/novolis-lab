@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/SpaceFleetSurveyTeam.Desktop/">
+    <Project Path="SpaceFleetSurveyTeam.Desktop/SpaceFleetSurveyTeam.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/SpaceFleetSurveyTeam/">
+    <Project Path="SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.csproj" />
+  </Folder>
+</Solution>

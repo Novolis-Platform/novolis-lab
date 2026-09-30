@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>SpaceFleetSurveyTeam.Desktop</RootNamespace>
+    <AssemblyName>SpaceFleetSurveyTeam.Desktop</AssemblyName>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SpaceFleetSurveyTeam\SpaceFleetSurveyTeam.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <LibraryReference Include="Novolis.Avalonia.Mobile.Desktop" />
+  </ItemGroup>
+</Project>

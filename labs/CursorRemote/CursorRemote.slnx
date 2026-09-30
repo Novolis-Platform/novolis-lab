@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/CursorRemote.Android/">
+    <Project Path="CursorRemote.Android/CursorRemote.Android.csproj" />
+  </Folder>
+  <Folder Name="/CursorRemote.Desktop/">
+    <Project Path="CursorRemote.Desktop/CursorRemote.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/CursorRemote/">
+    <Project Path="CursorRemote/CursorRemote.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CursorRemote.Unit/CursorRemote.Unit.csproj" />
+  </Folder>
+</Solution>

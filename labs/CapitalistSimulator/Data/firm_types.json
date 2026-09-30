@@ -1,0 +1,17 @@
+[
+  { "id": "retail_dept", "kind": "Retail", "retailFamily": "Department", "name": "Department Store", "setupCost": 120000, "monthlyCost": 8000, "width": 3, "height": 3, "layoutW": 4, "layoutH": 3, "allowedClasses": ["Apparel", "Electronics", "Computer", "Jewelry", "Sport", "Toy", "Furniture", "Drug"] },
+  { "id": "retail_super", "kind": "Retail", "retailFamily": "Supermarket", "name": "Supermarket", "setupCost": 90000, "monthlyCost": 900, "width": 3, "height": 2, "layoutW": 4, "layoutH": 3, "allowedClasses": ["Food", "Beverage", "Wine", "Drug"] },
+  { "id": "retail_conven", "kind": "Retail", "retailFamily": "Convenience", "name": "Convenience Store", "setupCost": 35000, "monthlyCost": 900, "width": 2, "height": 2, "layoutW": 3, "layoutH": 2, "allowedClasses": ["Food", "Beverage", "Drug"] },
+  { "id": "retail_specialty", "kind": "Retail", "retailFamily": "SpecialtyGoods", "name": "Specialty Goods", "setupCost": 70000, "monthlyCost": 4500, "width": 2, "height": 2, "layoutW": 3, "layoutH": 3, "allowedClasses": ["Apparel", "Jewelry", "Sport", "Toy", "Furniture"] },
+  { "id": "retail_auto", "kind": "Retail", "retailFamily": "Auto", "name": "Auto Dealership", "setupCost": 200000, "monthlyCost": 12000, "width": 3, "height": 3, "layoutW": 4, "layoutH": 3, "allowedClasses": ["Auto"] },
+  { "id": "retail_elec", "kind": "Retail", "retailFamily": "Electronics", "name": "Electronics Store", "setupCost": 100000, "monthlyCost": 7000, "width": 2, "height": 2, "layoutW": 3, "layoutH": 3, "allowedClasses": ["Electronics", "Computer"] },
+  { "id": "factory_s", "kind": "Factory", "name": "Factory (Small)", "setupCost": 150000, "monthlyCost": 10000, "width": 3, "height": 2, "layoutW": 4, "layoutH": 3, "size": 1 },
+  { "id": "factory_m", "kind": "Factory", "name": "Factory (Medium)", "setupCost": 280000, "monthlyCost": 18000, "width": 3, "height": 3, "layoutW": 5, "layoutH": 4, "size": 2 },
+  { "id": "factory_l", "kind": "Factory", "name": "Factory (Large)", "setupCost": 450000, "monthlyCost": 30000, "width": 4, "height": 3, "layoutW": 6, "layoutH": 4, "size": 3 },
+  { "id": "farm", "kind": "Farm", "name": "Farm", "setupCost": 80000, "monthlyCost": 4000, "width": 3, "height": 3, "layoutW": 4, "layoutH": 3 },
+  { "id": "extract_mine", "kind": "Extract", "extractKind": "Mine", "name": "Mine", "setupCost": 180000, "monthlyCost": 9000, "width": 3, "height": 2, "layoutW": 3, "layoutH": 3 },
+  { "id": "extract_forest", "kind": "Extract", "extractKind": "Forest", "name": "Forest", "setupCost": 100000, "monthlyCost": 5000, "width": 3, "height": 3, "layoutW": 3, "layoutH": 3 },
+  { "id": "extract_oil", "kind": "Extract", "extractKind": "Oil", "name": "Oil Well", "setupCost": 220000, "monthlyCost": 11000, "width": 2, "height": 2, "layoutW": 3, "layoutH": 3 },
+  { "id": "rd", "kind": "Rd", "name": "R&D Center", "setupCost": 160000, "monthlyCost": 12000, "width": 2, "height": 2, "layoutW": 3, "layoutH": 3 },
+  { "id": "hq", "kind": "Hq", "name": "Headquarters", "setupCost": 250000, "monthlyCost": 15000, "width": 3, "height": 3, "layoutW": 4, "layoutH": 3 }
+]

@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>GeoPolity</RootNamespace>
+    <AssemblyName>GeoPolity</AssemblyName>
+    <ApplicationTitle>GeoPolity</ApplicationTitle>
+    <Description>Avalonia / Spectre UI for Novolis.Geopolitics full-world tick.</Description>
+    <NovolisStackAnalyzers>false</NovolisStackAnalyzers>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="GeoPolity.Unit" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
+    <PackageReference Include="MessagePack" />
+    <LibraryReference Include="Novolis.Agent.Core" />
+    <LibraryReference Include="Novolis.Agent.Surface" />
+    <LibraryReference Include="Novolis.Avalonia.Agent" />
+    <LibraryReference Include="Novolis.Avalonia.Agent.Protocol" />
+    <LibraryReference Include="Novolis.Avalonia.Briefing" />
+    <LibraryReference Include="Novolis.Avalonia.Controls" />
+    <LibraryReference Include="Novolis.Avalonia.StarMap" />
+    <LibraryReference Include="Novolis.Avalonia.Studio" />
+    <LibraryReference Include="Novolis.Geopolitics.Core" />
+    <LibraryReference Include="Novolis.Geopolitics.Scenarios" />
+    <LibraryReference Include="Novolis.Geopolitics.Simulation" />
+    <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+</Project>

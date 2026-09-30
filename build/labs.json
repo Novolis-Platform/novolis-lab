@@ -275,6 +275,20 @@
       ]
     },
     {
+      "Key": "CapitalistSimulator",
+      "DisplayName": "Capitalist Simulator",
+      "Projects": [
+        "labs/CapitalistSimulator/CapitalistSimulator.csproj"
+      ],
+      "Tests": [
+        "labs/CapitalistSimulator/tests/CapitalistSimulator.Unit/CapitalistSimulator.Unit.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/CapitalistSimulator/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "civics-PolityTriad",
       "DisplayName": "civics Polity Triad",
       "Projects": [
@@ -307,6 +321,33 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/codegen/TinyExprBindings/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "CoverageStudio",
+      "DisplayName": "Coverage Studio",
+      "Projects": [
+        "labs/CoverageStudio/CoverageStudio.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/CoverageStudio/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "CursorRemote",
+      "DisplayName": "Cursor Remote",
+      "Projects": [
+        "labs/CursorRemote/CursorRemote.Desktop/CursorRemote.Desktop.csproj",
+        "labs/CursorRemote/CursorRemote/CursorRemote.csproj"
+      ],
+      "Tests": [
+        "labs/CursorRemote/tests/CursorRemote.Unit/CursorRemote.Unit.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/CursorRemote/**",
         "labs/shared/**"
       ]
     },
@@ -441,6 +482,20 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/gaming/TopDownDoom/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "GeoPolity",
+      "DisplayName": "Geo Polity",
+      "Projects": [
+        "labs/GeoPolity/GeoPolity.csproj"
+      ],
+      "Tests": [
+        "labs/GeoPolity/tests/GeoPolity.Unit/GeoPolity.Unit.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/GeoPolity/**",
         "labs/shared/**"
       ]
     },
@@ -763,6 +818,18 @@
       ]
     },
     {
+      "Key": "RepoStudio",
+      "DisplayName": "Repo Studio",
+      "Projects": [
+        "labs/RepoStudio/RepoStudio.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/RepoStudio/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "RtsLite",
       "DisplayName": "Rts Lite",
       "Projects": [
@@ -783,6 +850,19 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/RtsLiteTwoD/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "SpaceFleetSurveyTeam",
+      "DisplayName": "Space Fleet Survey Team",
+      "Projects": [
+        "labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Desktop/SpaceFleetSurveyTeam.Desktop.csproj",
+        "labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/SpaceFleetSurveyTeam/**",
         "labs/shared/**"
       ]
     },

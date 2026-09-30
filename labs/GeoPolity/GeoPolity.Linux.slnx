@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="GeoPolity.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GeoPolity.Unit/GeoPolity.Unit.csproj" />
+  </Folder>
+</Solution>
