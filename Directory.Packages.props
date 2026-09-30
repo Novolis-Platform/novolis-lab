@@ -166,10 +166,15 @@
     <PackageVersion Include="Novolis.Documents" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Documents.Layout" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Documents.Skia" Version="2026.1.*" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Android" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.macOS" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="3.119.4" />
+    <PackageVersion Include="Svg.Skia" Version="4.9.1" />
     <PackageVersion Include="Novolis.Markup.Markdown" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Markup.Markdown.Documents" Version="2026.1.*" />
-    <PackageVersion Include="SkiaSharp" Version="3.119.4" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="3.119.4" />
     <PackageVersion Include="Novolis.Messaging.Channels" Version="2026.1.*" />
     <PackageVersion Include="Novolis.WorkflowEngine.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.WorkflowEngine" Version="2026.1.*" />
