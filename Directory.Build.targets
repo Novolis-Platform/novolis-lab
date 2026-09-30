@@ -8,7 +8,7 @@
     <_NovolisLabProjectText Condition="Exists('$(MSBuildProjectFullPath)')">$([System.IO.File]::ReadAllText('$(MSBuildProjectFullPath)'))</_NovolisLabProjectText>
   </PropertyGroup>
 
-  <ItemGroup Condition="$(_NovolisLabProjectText.Contains('Avalonia'))">
+  <ItemGroup Condition="$(_NovolisLabProjectText.Contains('Include=&quot;Avalonia'))">
     <Compile Include="$(MSBuildThisFileDirectory)labs\shared\Novolis.Lab.Branding\NovolisLabBranding.cs"
              Link="NovolisLabBranding.cs"
              Visible="false" />

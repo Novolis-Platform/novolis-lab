@@ -15,7 +15,7 @@ using Novolis.Physics.Astro;
 
 namespace StarMapLab;
 
-file static class DemoCatalog
+static class DemoCatalog
 {
     public static StarCatalog Create()
     {

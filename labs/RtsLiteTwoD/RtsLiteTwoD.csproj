@@ -10,6 +10,9 @@
     <Compile Include="..\RtsLite\Game\RtsBuildingType.cs" Link="Shared\RtsBuildingType.cs" />
     <Compile Include="..\RtsLite\Game\RtsSelection.cs" Link="Shared\RtsSelection.cs" />
     <Compile Include="..\RtsLite\Game\RtsBuildPlacer.cs" Link="Shared\RtsBuildPlacer.cs" />
+    <Compile Include="..\RtsLite\Game\UnitTeam.cs" Link="Shared\UnitTeam.cs" />
+    <Compile Include="..\RtsLite\Game\ScreenRect.cs" Link="Shared\ScreenRect.cs" />
+    <Compile Include="..\RtsLite\Game\RtsBuildingDefs.cs" Link="Shared\RtsBuildingDefs.cs" />
     <ProjectReference Include="..\shared\Novolis.Lab.TwoD\Novolis.Lab.TwoD.csproj" />
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs. -->
     <LibraryReference Include="Novolis.Math.Arrays" />

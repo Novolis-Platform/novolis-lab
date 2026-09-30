@@ -9,7 +9,7 @@ using TopDownDoom.Design;
 
 namespace TopDownDoom.Game;
 
-file sealed class TopDownPauseScreen : PauseScreenBase
+sealed class TopDownPauseScreen : PauseScreenBase
 {
     public override string ScreenId => "top-down-doom-pause";
 }
