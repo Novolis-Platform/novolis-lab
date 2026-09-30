@@ -5,6 +5,7 @@ using GeoPolity.Session;
 using Novolis.Avalonia.Agent;
 using Novolis.Avalonia.Agent.Protocol;
 using Novolis.Avalonia.Briefing;
+using Novolis.Avalonia.GraphicalProfile;
 
 namespace GeoPolity.AvaloniaUi.Views;
 
@@ -14,13 +15,13 @@ internal sealed class HeadlinePanel : UserControl
 
     public HeadlinePanel()
     {
-        Background = new SolidColorBrush(Color.Parse("#0e2030"));
+        Background = GraphicalProfile.RaisedBrush;
         Padding = new Thickness(8);
         var root = new DockPanel();
         var title = new TextBlock
         {
             Text = "HEADLINES",
-            Foreground = new SolidColorBrush(Color.Parse("#c47b3a")),
+            Foreground = GraphicalProfile.WarningBrush,
             FontWeight = FontWeight.Bold,
             FontSize = 13,
             Margin = new Thickness(4, 0, 0, 6),

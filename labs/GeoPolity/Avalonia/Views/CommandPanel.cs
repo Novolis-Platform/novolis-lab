@@ -4,6 +4,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using GeoPolity.Session;
 using Novolis.Avalonia.Briefing;
+using Novolis.Avalonia.GraphicalProfile;
 using Novolis.Geopolitics.Core;
 
 namespace GeoPolity.AvaloniaUi.Views;
@@ -11,10 +12,10 @@ namespace GeoPolity.AvaloniaUi.Views;
 /// <summary>Left rail: clock, campaign scorecard, cluster/power metrics.</summary>
 internal sealed class CommandPanel : UserControl
 {
-    private static readonly IBrush Navy = new SolidColorBrush(Color.Parse("#0b1c2c"));
-    private static readonly IBrush Teal = new SolidColorBrush(Color.Parse("#2a9d8f"));
-    private static readonly IBrush Copper = new SolidColorBrush(Color.Parse("#c47b3a"));
-    private static readonly IBrush Fog = new SolidColorBrush(Color.Parse("#c8d4dc"));
+    private static readonly IBrush Navy = GraphicalProfile.SurfaceBrush;
+    private static readonly IBrush Teal = GraphicalProfile.AccentBrush;
+    private static readonly IBrush Copper = GraphicalProfile.WarningBrush;
+    private static readonly IBrush Fog = GraphicalProfile.TextBrush;
 
     private readonly TextBlock _date = MakeValue();
     private readonly TextBlock _clock = MakeValue();
@@ -146,7 +147,7 @@ internal sealed class CommandPanel : UserControl
 
     private static TextBlock MakeMuted() => new()
     {
-        Foreground = new SolidColorBrush(Color.Parse("#7a8a96")),
+        Foreground = GraphicalProfile.MutedBrush,
         FontSize = 11,
     };
 

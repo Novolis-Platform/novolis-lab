@@ -28,6 +28,10 @@
     <NoWarn>$(NoWarn);CS1711</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Label="Graphical profile">
+    <NovolisGraphicalProfile Condition="'$(NovolisGraphicalProfile)' == ''">false</NovolisGraphicalProfile>
+  </PropertyGroup>
+
   <PropertyGroup Label="NuGet compatibility">
     <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1504;NU1510;NU1603;NU1605;NU1608;NU1901;NU1902;NU1903;NU1904;NU1701;NU1507</WarningsNotAsErrors>
   </PropertyGroup>
@@ -64,4 +68,6 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.OneTypePerFile.props" Condition="Exists('$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.OneTypePerFile.props')" />
+  <Import Project="$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.GraphicalProfile.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.GraphicalProfile.props')" />
 </Project>

@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <NovolisGraphicalProfile>true</NovolisGraphicalProfile>
     <OutputType>WinExe</OutputType>
     <RootNamespace>CoverageStudio</RootNamespace>
     <AssemblyName>CoverageStudio</AssemblyName>

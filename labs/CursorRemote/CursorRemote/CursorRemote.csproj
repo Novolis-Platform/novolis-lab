@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <NovolisGraphicalProfile>true</NovolisGraphicalProfile>
     <OutputType>Library</OutputType>
     <RootNamespace>CursorRemote</RootNamespace>
     <AssemblyName>CursorRemote.Shared</AssemblyName>

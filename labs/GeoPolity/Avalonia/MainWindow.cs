@@ -9,6 +9,7 @@ using GeoPolity.Session;
 using Novolis.Avalonia.Agent;
 using Novolis.Avalonia.Agent.Protocol;
 using Novolis.Avalonia.Briefing;
+using Novolis.Avalonia.GraphicalProfile;
 using Novolis.Avalonia.StarMap;
 using Novolis.Avalonia.Studio;
 
@@ -39,7 +40,7 @@ public sealed class MainWindow : Window
         Height = 860;
         MinWidth = 1100;
         MinHeight = 640;
-        Background = new SolidColorBrush(Color.Parse("#07131d"));
+        Background = GraphicalProfile.BackgroundBrush;
 
         _map.StarSelected += OnStarSelected;
         _detail.Changed += () => Refresh();
@@ -59,7 +60,7 @@ public sealed class MainWindow : Window
         var toolbar = BuildToolbar();
         var mapHost = new Border
         {
-            BorderBrush = new SolidColorBrush(Color.Parse("#1e3a4c")),
+            BorderBrush = GraphicalProfile.BorderBrush,
             BorderThickness = new Thickness(1),
             Child = _map,
             Margin = new Thickness(4),
@@ -116,9 +117,9 @@ public sealed class MainWindow : Window
 
         return new Border
         {
-            Background = new SolidColorBrush(Color.Parse("#0b1c2c")),
+            Background = GraphicalProfile.SurfaceBrush,
             Padding = new Thickness(10, 8),
-            BorderBrush = new SolidColorBrush(Color.Parse("#1e3a4c")),
+            BorderBrush = GraphicalProfile.BorderBrush,
             BorderThickness = new Thickness(0, 0, 0, 1),
             Child = new DockPanel
             {
@@ -130,7 +131,7 @@ public sealed class MainWindow : Window
                         Text = "GEOPOLITY",
                         FontSize = 20,
                         FontWeight = FontWeight.Bold,
-                        Foreground = new SolidColorBrush(Color.Parse("#2a9d8f")),
+                        Foreground = GraphicalProfile.AccentBrush,
                         VerticalAlignment = VerticalAlignment.Center,
                         Margin = new Thickness(0, 0, 16, 0),
                         [DockPanel.DockProperty] = Dock.Left,
@@ -263,9 +264,9 @@ public sealed class MainWindow : Window
         {
             Content = label,
             Padding = new Thickness(10, 6),
-            Background = new SolidColorBrush(Color.Parse("#163447")),
-            Foreground = new SolidColorBrush(Color.Parse("#e8f1f4")),
-            BorderBrush = new SolidColorBrush(Color.Parse("#2a9d8f")),
+            Background = GraphicalProfile.RaisedBrush,
+            Foreground = GraphicalProfile.TextBrush,
+            BorderBrush = GraphicalProfile.AccentBrush,
             BorderThickness = new Thickness(1),
         };
         btn.Click += (_, _) => onClick();

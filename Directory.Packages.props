@@ -61,6 +61,7 @@
     <PackageVersion Include="Novolis.Avalonia.Voice" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Controls" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Controls.Sketch" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Avalonia.GraphicalProfile" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Torrent" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Cad.Ship" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Layout" Version="2026.1.*" />
@@ -152,6 +153,7 @@
     <PackageVersion Include="Novolis.Avalonia.Chat" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Mobile" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Avalonia.Mobile.Desktop" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Maui.GraphicalProfile" Version="2026.1.*" />
     <PackageVersion Include="Novolis.MachineLearning.Neural" Version="2026.1.*" />
     <PackageVersion Include="Novolis.MachineLearning.Neural.Abstractions" Version="2026.1.*" />
         <PackageVersion Include="Novolis.Manuscript" Version="2026.1.*" />

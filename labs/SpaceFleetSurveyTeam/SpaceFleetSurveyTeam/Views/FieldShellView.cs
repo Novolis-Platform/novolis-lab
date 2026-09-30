@@ -103,9 +103,9 @@ public sealed class FieldShellView : UserControl
                 EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
                 GradientStops =
                 [
-                    new GradientStop(Color.Parse("#061018"), 0),
-                    new GradientStop(Color.Parse("#0a2430"), 0.45),
-                    new GradientStop(Color.Parse("#0c1c28"), 1),
+                    new GradientStop(SurveyPalette.Window, 0),
+                    new GradientStop(SurveyPalette.Panel, 0.45),
+                    new GradientStop(SurveyPalette.PanelRaised, 1),
                 ],
             },
             Child = stack,

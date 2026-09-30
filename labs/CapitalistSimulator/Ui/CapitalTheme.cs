@@ -72,10 +72,10 @@ internal static class CapitalTheme
         {
             case CapitalButtonKind.Primary:
                 btn.Background = CapitalPalette.AccentBrush;
-                btn.Foreground = new SolidColorBrush(Color.Parse("#1a1810"));
+                btn.Foreground = GraphicalProfile.OnActionBrush;
                 break;
             case CapitalButtonKind.Danger:
-                btn.Background = new SolidColorBrush(Color.Parse("#3a2220"));
+                btn.Background = CapitalPalette.PanelRaisedBrush;
                 btn.Foreground = CapitalPalette.DangerBrush;
                 break;
             case CapitalButtonKind.Quiet:

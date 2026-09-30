@@ -9,6 +9,7 @@ using Novolis.Avalonia.Agent;
 using Novolis.Avalonia.Agent.Protocol;
 using Novolis.Avalonia.Briefing;
 using Novolis.Avalonia.Controls;
+using Novolis.Avalonia.GraphicalProfile;
 using Novolis.Geopolitics.Core;
 
 namespace GeoPolity.AvaloniaUi.Views;
@@ -16,10 +17,10 @@ namespace GeoPolity.AvaloniaUi.Views;
 /// <summary>Right rail: selected system, habitats, force, player build controls.</summary>
 internal sealed class SystemDetailPanel : UserControl
 {
-    private static readonly IBrush PanelBg = new SolidColorBrush(Color.Parse("#122636"));
-    private static readonly IBrush Copper = new SolidColorBrush(Color.Parse("#c47b3a"));
-    private static readonly IBrush Fog = new SolidColorBrush(Color.Parse("#c8d4dc"));
-    private static readonly IBrush Teal = new SolidColorBrush(Color.Parse("#2a9d8f"));
+    private static readonly IBrush PanelBg = GraphicalProfile.SurfaceBrush;
+    private static readonly IBrush Copper = GraphicalProfile.WarningBrush;
+    private static readonly IBrush Fog = GraphicalProfile.TextBrush;
+    private static readonly IBrush Teal = GraphicalProfile.AccentBrush;
 
     private readonly TextBlock _title = new() { FontSize = 16, FontWeight = FontWeight.Bold, Foreground = Teal };
     private readonly TextBlock _meta = new() { FontSize = 12, Foreground = Fog, TextWrapping = TextWrapping.Wrap };
@@ -164,7 +165,7 @@ internal sealed class SystemDetailPanel : UserControl
         {
             Content = label,
             Padding = new Thickness(8, 4),
-            Background = new SolidColorBrush(Color.Parse("#163447")),
+            Background = GraphicalProfile.RaisedBrush,
             Foreground = Fog,
             BorderBrush = Teal,
             BorderThickness = new Thickness(1),
