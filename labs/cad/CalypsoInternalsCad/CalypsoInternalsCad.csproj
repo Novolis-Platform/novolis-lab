@@ -9,8 +9,38 @@
   <!-- Lock → CAD SoT lives in CalypsoCad; this app owns CAD + 3D export / view for the internals pack. -->
   <ItemGroup>
     <Compile Include="..\CalypsoCad\Generation\CalypsoLockGenerator.cs" Link="Generation\CalypsoLockGenerator.cs" />
+    <Compile Include="..\CalypsoCad\Models\CadAppearanceExtension.cs">
+      <Link>Models\CadAppearanceExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\CalypsoCad\Models\CadCatalogLayer.cs">
+      <Link>Models\CadCatalogLayer.cs</Link>
+    </Compile>
+    <Compile Include="..\CalypsoCad\Models\CadFill.cs">
+      <Link>Models\CadFill.cs</Link>
+    </Compile>
+    <Compile Include="..\CalypsoCad\Models\CadLayersDocument.cs">
+      <Link>Models\CadLayersDocument.cs</Link>
+    </Compile>
+    <Compile Include="..\CalypsoCad\Models\CadMaterialExtension.cs">
+      <Link>Models\CadMaterialExtension.cs</Link>
+    </Compile>
     <Compile Include="..\CalypsoCad\Models\CadModels.cs" Link="Models\CadModels.cs" />
+    <Compile Include="..\CalypsoCad\Models\CadShape.cs">
+      <Link>Models\CadShape.cs</Link>
+    </Compile>
+    <Compile Include="..\CalypsoCad\Models\CadShapeExtensions.cs">
+      <Link>Models\CadShapeExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\CalypsoCad\Models\CadShapesDocument.cs">
+      <Link>Models\CadShapesDocument.cs</Link>
+    </Compile>
+    <Compile Include="..\CalypsoCad\Models\CadStroke.cs">
+      <Link>Models\CadStroke.cs</Link>
+    </Compile>
     <Compile Include="..\CalypsoCad\Services\CadDocumentStore.cs" Link="Services\CadDocumentStore.cs" />
+    <Compile Include="..\CalypsoCad\Services\SvgCoords.cs">
+      <Link>Services\SvgCoords.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

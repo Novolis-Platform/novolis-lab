@@ -403,8 +403,3 @@ internal sealed class TopDownDoomGame
             255);
     }
 }
-
-file sealed class TopDownPauseScreen : PauseScreenBase
-{
-    public override string ScreenId => "top-down-doom-pause";
-}

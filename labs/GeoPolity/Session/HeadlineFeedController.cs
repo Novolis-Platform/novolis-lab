@@ -2,8 +2,6 @@ using Novolis.Geopolitics.Core;
 
 namespace GeoPolity.Session;
 
-public sealed record Headline(string Tag, string Voice, string Text, int Day);
-
 /// <summary>Event cursor → capped headline queue (same kinds as Spectre UI).</summary>
 public sealed class HeadlineFeedController
 {

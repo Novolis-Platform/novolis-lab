@@ -337,9 +337,3 @@ internal sealed class PulseStripGame : IDisposable
         _audio.Dispose();
     }
 }
-
-internal sealed class NamedHoverController(string name, IHoverController inner) : IHoverController
-{
-    public string Name { get; } = name;
-    public HoverControlDecision Decide(in HoverObservation observation) => inner.Decide(in observation);
-}

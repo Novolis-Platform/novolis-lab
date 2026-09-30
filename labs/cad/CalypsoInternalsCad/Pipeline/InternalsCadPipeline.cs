@@ -78,8 +78,3 @@ internal static class InternalsCadPipeline
         return new PipelineResult(generated, cad, meshStats);
     }
 }
-
-internal sealed record PipelineResult(
-    string Directory,
-    CadDocument Cad,
-    WavefrontObjExporter.MeshExportStats Obj);

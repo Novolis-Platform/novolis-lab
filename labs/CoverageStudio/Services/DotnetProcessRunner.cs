@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 
 namespace CoverageStudio.Services;
 
-internal readonly record struct DotnetProcessResult(int ExitCode, string Output, bool TimedOut);
-
 /// <summary>Hidden <c>dotnet</c> child processes — no console window, redirected IO only.</summary>
 internal static class DotnetProcessRunner
 {

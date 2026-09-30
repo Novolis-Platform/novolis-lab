@@ -1,7 +1,5 @@
 namespace CapitalistSimulator.Sim;
 
-internal sealed record CoachStep(string Title, string Body, string PrimaryAction);
-
 internal static class TutorialCoach
 {
     public static CoachStep Next(GameWorld world)

@@ -1,10 +1,5 @@
 namespace CursorRemote.Services;
 
-public readonly record struct HostLogEntry(
-    DateTimeOffset Timestamp,
-    string Level,
-    string Message);
-
 /// <summary>
 /// Ring-buffer activity log for the Windows host UI (and export).
 /// </summary>

@@ -384,13 +384,3 @@ internal static class ProceduralDoomSprites
         DownRight,
     }
 }
-
-internal enum PickupArtKind
-{
-    Health,
-    Armor,
-    Ammo,
-    BlueKey,
-    Exit,
-    Barrel,
-}

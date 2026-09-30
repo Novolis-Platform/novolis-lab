@@ -7,13 +7,6 @@ using Novolis.Simulation.World.Builders;
 
 namespace ClothPlay.Game;
 
-internal enum ClothScenario
-{
-    Flag,
-    DropDrape,
-    DropCut,
-}
-
 /// <summary>Flag / falling cloth built from DistanceJoint grid primitives.</summary>
 internal sealed class ClothSheet
 {

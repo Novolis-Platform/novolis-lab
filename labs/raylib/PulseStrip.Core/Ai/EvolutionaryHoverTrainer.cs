@@ -130,9 +130,3 @@ public sealed class EvolutionaryHoverTrainer
         return bestIdx;
     }
 }
-
-public readonly record struct EvolutionaryHoverTrainerResult(
-    IMutableNeuralNetwork Champion,
-    double BestFitness,
-    int Generations,
-    IReadOnlyList<double> BestFitnessPerGeneration);

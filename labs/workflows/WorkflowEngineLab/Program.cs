@@ -21,27 +21,3 @@ await host.Services
 await host.WaitForShutdownAsync();
 
 public sealed record RawMessage(string Value);
-
-public sealed record WorkflowResult(string Value);
-
-public sealed class NormalizeStep : IWorkflowStep<RawMessage, WorkflowResult>
-{
-    public ValueTask<WorkflowResult> ExecuteAsync(
-        RawMessage input,
-        WorkflowContext context,
-        CancellationToken cancellationToken = default) =>
-        ValueTask.FromResult(new WorkflowResult(input.Value.ToUpperInvariant()));
-}
-
-public sealed class PrintSink(IHostApplicationLifetime lifetime) : IWorkflowSink<WorkflowResult>
-{
-    public ValueTask HandleAsync(
-        WorkflowResult payload,
-        WorkflowContext context,
-        CancellationToken cancellationToken = default)
-    {
-        Console.WriteLine(payload.Value);
-        lifetime.StopApplication();
-        return ValueTask.CompletedTask;
-    }
-}

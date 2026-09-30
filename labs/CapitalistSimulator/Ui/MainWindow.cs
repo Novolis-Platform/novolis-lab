@@ -1330,12 +1330,3 @@ internal sealed class MainWindow : Window
         public override string ToString() => Name;
     }
 }
-
-internal static class ControlTapExtensions
-{
-    public static T Tap<T>(this T control, Action<T> configure)
-    {
-        configure(control);
-        return control;
-    }
-}

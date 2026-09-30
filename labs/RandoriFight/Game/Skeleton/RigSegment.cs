@@ -12,11 +12,3 @@ internal readonly struct RigSegment(Vector3 start, Vector3 end, float radius, Co
     public Color Color { get; } = color;
     public RigSegmentKind Kind { get; } = kind;
 }
-
-internal enum RigSegmentKind
-{
-    Torso,
-    Limb,
-    Head,
-    Extremity,
-}

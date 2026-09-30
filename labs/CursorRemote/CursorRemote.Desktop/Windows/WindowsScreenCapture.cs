@@ -205,9 +205,3 @@ internal static class WindowsScreenCapture
         public int Bottom;
     }
 }
-
-internal readonly record struct CaptureRegion(
-    int OriginX,
-    int OriginY,
-    int Width,
-    int Height);

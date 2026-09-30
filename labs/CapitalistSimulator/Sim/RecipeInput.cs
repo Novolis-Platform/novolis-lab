@@ -1,0 +1,7 @@
+﻿using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace CapitalistSimulator.Sim;
+
+internal sealed record RecipeInput(string Id, decimal Qty);

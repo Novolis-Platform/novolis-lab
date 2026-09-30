@@ -9,25 +9,6 @@ using Novolis.Economy.Simulation.Bounded;
 
 namespace ScarcityRationingLab;
 
-/// <summary>One fixed-price quantity-rationing experiment.</summary>
-public sealed record ScarcityResult(
-    decimal AvailableSupply,
-    decimal AffordableDemand,
-    decimal UnitsSold,
-    decimal UnmetDemand,
-    Money AffordableDemandValue,
-    Money TradeValue,
-    Money BuyerSpending,
-    Money SellerRevenue,
-    Money UnmetDemandValue,
-    Money BuyerCash,
-    Money SellerCash,
-    decimal BuyerInventory,
-    decimal SellerInventory,
-    Money TotalCash,
-    decimal TotalGoods,
-    string Snapshot);
-
 /// <summary>
 /// Builds a minimal Core economy and applies only the posted-price transfer
 /// step. It intentionally does not invoke the full simulation pipeline.

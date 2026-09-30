@@ -5,8 +5,6 @@ using Novolis.Simulation.Humanoid.Import;
 
 namespace CharacterLab.Demo;
 
-internal readonly record struct MocapClipInfo(string Id, string Label, string Source, string? FileName);
-
 /// <summary>
 /// CMU BVH mocap player + optional hold-point rifle via <see cref="HumanoidFullBodyIk"/> / <see cref="HumanoidPoseSolver.BakeLocal"/>.
 /// </summary>

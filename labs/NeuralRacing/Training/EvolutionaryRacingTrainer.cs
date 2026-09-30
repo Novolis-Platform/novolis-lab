@@ -181,9 +181,3 @@ public sealed class EvolutionaryRacingTrainer
         return train + EvaluateEpisodeRewardSum(jointHoldoutTrack, network, rewardModel, maxTicks, cancellationToken);
     }
 }
-
-public readonly record struct EvolutionaryRacingTrainerProgress(
-    int Generation,
-    int TotalGenerations,
-    double GenerationBestFitness,
-    double BestFitnessSoFar);

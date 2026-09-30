@@ -362,17 +362,3 @@ internal sealed class RagdollDemo
         return collision;
     }
 }
-
-internal readonly record struct RagdollStatus(
-    float TimeSeconds,
-    bool Tipped,
-    float MaxSpeed,
-    float KineticEnergy,
-    float BoneError,
-    int Sleeping,
-    int SphereCount,
-    float MinY,
-    float MaxY,
-    Vector3 Hip,
-    float EntropyPerSecond,
-    bool AutoTipEnabled);

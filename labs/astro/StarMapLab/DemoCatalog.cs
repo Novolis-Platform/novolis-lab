@@ -1,0 +1,111 @@
+﻿using System.Globalization;
+using System.Text;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Novolis.Astro.Abstractions;
+using Novolis.Astro.Assessment;
+using Novolis.Astro.Catalog;
+using Novolis.Astro.Overlay;
+using Novolis.Astro.Routing;
+using Novolis.Avalonia.StarMap;
+using Novolis.Avalonia.Studio;
+using Novolis.Physics.Astro;
+
+namespace StarMapLab;
+
+file static class DemoCatalog
+{
+    public static StarCatalog Create()
+    {
+        // Real nearby stars ≤ ~20.5 ly. Galactic XYZ in ly from Johnston (2022):
+        // +X galactic center, +Y galactic rotation, +Z galactic north. Primaries only.
+        var catalog = new StarCatalog();
+        catalog.Add(new StarSystem("sol", "Sol", new StarCoords(0, 0, 0), SpectralClass.G, ["home"]));
+        catalog.Add(new StarSystem("proxima-centauri", "Proxima Centauri", new StarCoords(2.945, -3.056, -0.143), SpectralClass.M, ["nearest"]));
+        catalog.Add(new StarSystem("alpha-centauri", "Alpha Centauri", new StarCoords(3.126, -3.047, -0.052), SpectralClass.G, ["binary"]));
+        catalog.Add(new StarSystem("barnards-star", "Barnard's Star", new StarCoords(4.958, 2.98, 1.449), SpectralClass.M));
+        catalog.Add(new StarSystem("wolf-359", "Wolf 359", new StarCoords(-1.916, -3.938, 6.522), SpectralClass.M));
+        catalog.Add(new StarSystem("lalande-21185", "Lalande 21185", new StarCoords(-3.439, -0.308, 7.553), SpectralClass.M));
+        catalog.Add(new StarSystem("sirius", "Sirius", new StarCoords(-5.809, -6.28, -1.338), SpectralClass.A, ["bright"]));
+        catalog.Add(new StarSystem("luyten-726-8", "Luyten 726-8", new StarCoords(-2.171, 0.171, -8.544), SpectralClass.M));
+        catalog.Add(new StarSystem("ross-154", "Ross 154", new StarCoords(9.365, 1.873, -1.733), SpectralClass.M));
+        catalog.Add(new StarSystem("ross-248", "Ross 248", new StarCoords(-3.37, 9.265, -3.003), SpectralClass.M));
+        catalog.Add(new StarSystem("epsilon-eridani", "Epsilon Eridani", new StarCoords(-6.753, -1.917, -7.811), SpectralClass.K, ["planet-host"]));
+        catalog.Add(new StarSystem("lacaille-9352", "Lacaille 9352", new StarCoords(4.352, 0.388, -9.794), SpectralClass.M));
+        catalog.Add(new StarSystem("ross-128", "Ross 128", new StarCoords(0.014, -5.577, 9.49), SpectralClass.M, ["planet-host"]));
+        catalog.Add(new StarSystem("ez-aquarii", "EZ Aquarii", new StarCoords(4.123, 4.432, -9.315), SpectralClass.M));
+        catalog.Add(new StarSystem("61-cygni", "61 Cygni", new StarCoords(1.516, 11.244, -1.156), SpectralClass.K, ["binary"]));
+        catalog.Add(new StarSystem("procyon", "Procyon", new StarCoords(-9.27, -6.183, 2.577), SpectralClass.F, ["bright"]));
+        catalog.Add(new StarSystem("struve-2398", "Struve 2398", new StarCoords(0.13, 10.478, 4.716), SpectralClass.M, ["binary"]));
+        catalog.Add(new StarSystem("groombridge-34", "Groombridge 34", new StarCoords(-4.949, 9.849, -3.677), SpectralClass.M));
+        catalog.Add(new StarSystem("dx-cancri", "DX Cancri", new StarCoords(-9.428, -2.885, 6.262), SpectralClass.M));
+        catalog.Add(new StarSystem("epsilon-indi", "Epsilon Indi", new StarCoords(7.259, -3.203, -8.825), SpectralClass.K, ["planet-host"]));
+        catalog.Add(new StarSystem("tau-ceti", "Tau Ceti", new StarCoords(-3.369, 0.408, -11.412), SpectralClass.G, ["candidate"]));
+        catalog.Add(new StarSystem("luyten-372-58", "GJ 1061", new StarCoords(-2.249, -6.869, -9.559), SpectralClass.M));
+        catalog.Add(new StarSystem("yz-ceti", "YZ Ceti", new StarCoords(-2.04, 1.192, -11.89), SpectralClass.M));
+        catalog.Add(new StarSystem("luytens-star", "Luyten's Star", new StarCoords(-10.262, -6.499, 2.224), SpectralClass.M));
+        catalog.Add(new StarSystem("teegardens-star", "Teegarden's Star", new StarCoords(-9.391, 3.369, -7.526), SpectralClass.M, ["planet-host"]));
+        catalog.Add(new StarSystem("kapteyns-star", "Kapteyn's Star", new StarCoords(-3.46, -9.787, -7.542), SpectralClass.M));
+        catalog.Add(new StarSystem("lacaille-8760", "Lacaille 8760", new StarCoords(9.252, 0.631, -9.036), SpectralClass.K));
+        catalog.Add(new StarSystem("kruger-60", "Kruger 60", new StarCoords(-3.316, 12.651, -0.001), SpectralClass.M));
+        catalog.Add(new StarSystem("denis-j1048", "DENIS J1048-3956", new StarCoords(1.904, -12.468, 3.872), SpectralClass.M));
+        catalog.Add(new StarSystem("ross-614", "Ross 614", new StarCoords(-11.202, -7.255, -1.447), SpectralClass.M));
+        catalog.Add(new StarSystem("wolf-1061", "Wolf 1061", new StarCoords(12.845, 0.752, 5.643), SpectralClass.M, ["planet-host"]));
+        catalog.Add(new StarSystem("van-maanens-star", "van Maanen's Star", new StarCoords(-3.996, 6.424, -11.865), SpectralClass.Unknown, ["white-dwarf"]));
+        catalog.Add(new StarSystem("wolf-424", "Wolf 424", new StarCoords(1.448, -4.264, 13.375), SpectralClass.M));
+        catalog.Add(new StarSystem("hd-225213", "GJ 1", new StarCoords(3.311, -0.977, -13.748), SpectralClass.M));
+        catalog.Add(new StarSystem("tz-arietis", "TZ Arietis", new StarCoords(-8.48, 5.369, -10.573), SpectralClass.M));
+        catalog.Add(new StarSystem("bd-68-946", "BD+68 946", new StarCoords(-1.883, 12.448, 7.856), SpectralClass.M));
+        catalog.Add(new StarSystem("cd-46-11540", "CD-46 11540", new StarCoords(14.102, -4.31, -1.752), SpectralClass.M));
+        catalog.Add(new StarSystem("lhs-292", "LHS 292", new StarCoords(-1.749, -11.036, 9.813), SpectralClass.M));
+        catalog.Add(new StarSystem("luyten-145-141", "Luyten 145-141", new StarCoords(6.625, -13.574, -0.753), SpectralClass.Unknown, ["white-dwarf"]));
+        catalog.Add(new StarSystem("v1581-cygni", "V1581 Cygni", new StarCoords(2.905, 14.752, 2.25), SpectralClass.M));
+        catalog.Add(new StarSystem("ross-780", "Gliese 876", new StarCoords(4.743, 6.071, -13.148), SpectralClass.M, ["planet-host"]));
+        catalog.Add(new StarSystem("luyten-143-23", "Luyten 143-23", new StarCoords(4.928, -14.958, -0.555), SpectralClass.M));
+        catalog.Add(new StarSystem("lhs-2", "LHS 2", new StarCoords(-0.258, 5.986, -14.627), SpectralClass.M));
+        catalog.Add(new StarSystem("groombridge-1618", "Groombridge 1618", new StarCoords(-9.453, 2.38, 12.543), SpectralClass.K));
+        catalog.Add(new StarSystem("lalande-21258", "Lalande 21258", new StarCoords(-7.099, 1.444, 14.263), SpectralClass.M));
+        catalog.Add(new StarSystem("ad-leonis", "AD Leonis", new StarCoords(-7.549, -5.577, 13.197), SpectralClass.M));
+        catalog.Add(new StarSystem("hd-204961", "Gliese 832", new StarCoords(10.984, -2.101, -11.722), SpectralClass.M, ["planet-host"]));
+        catalog.Add(new StarSystem("cd-44-11909", "CD-44 11909", new StarCoords(15.741, -3.929, -1.887), SpectralClass.M));
+        catalog.Add(new StarSystem("omicron2-eridani", "40 Eridani", new StarCoords(-12.033, -4.56, -10.071), SpectralClass.K));
+        catalog.Add(new StarSystem("ev-lacertae", "EV Lacertae", new StarCoords(-2.954, 15.775, -3.726), SpectralClass.M));
+        catalog.Add(new StarSystem("70-ophiuchi", "70 Ophiuchi", new StarCoords(14.2, 8.163, 3.293), SpectralClass.K, ["binary"]));
+        catalog.Add(new StarSystem("altair", "Altair", new StarCoords(11.115, 12.234, -2.591), SpectralClass.A, ["bright"]));
+        catalog.Add(new StarSystem("ei-cancri", "EI Cancri", new StarCoords(-11.979, -6.249, 9.985), SpectralClass.M));
+        catalog.Add(new StarSystem("g-99-49", "G 99-49", new StarCoords(-15.208, -6.951, -2.991), SpectralClass.M));
+        catalog.Add(new StarSystem("lhs-2459", "LHS 2459", new StarCoords(-8.104, 10.814, 10.538), SpectralClass.M));
+        catalog.Add(new StarSystem("wisea-j1540", "WISEA J1540-5101", new StarCoords(14.713, -9.182, 1.032), SpectralClass.M));
+        catalog.Add(new StarSystem("lhs-1723", "LHS 1723", new StarCoords(-13.929, -6.923, -8.087), SpectralClass.M));
+        catalog.Add(new StarSystem("wolf-498", "Wolf 498", new StarCoords(5.298, -0.785, 16.898), SpectralClass.M));
+        catalog.Add(new StarSystem("stein-2051", "Stein 2051", new StarCoords(-15.151, 9.43, 2.29), SpectralClass.M));
+        catalog.Add(new StarSystem("wolf-294", "Wolf 294", new StarCoords(-17.56, -0.901, 4.756), SpectralClass.M));
+        catalog.Add(new StarSystem("lp-816-60", "LP 816-60", new StarCoords(13.106, 7.617, -10.308), SpectralClass.M));
+        catalog.Add(new StarSystem("wisea-j1835", "WISEA J1835+3259", new StarCoords(8.406, 15.577, 5.562), SpectralClass.M));
+        catalog.Add(new StarSystem("wolf-1453", "Wolf 1453", new StarCoords(-15.64, -7.947, -6.194), SpectralClass.M));
+        catalog.Add(new StarSystem("hd-42581", "Gliese 229", new StarCoords(-11.786, -13.374, -5.944), SpectralClass.M));
+        catalog.Add(new StarSystem("sigma-draconis", "Sigma Draconis", new StarCoords(-3.419, 17.107, 7.005), SpectralClass.G));
+        catalog.Add(new StarSystem("ross-47", "Ross 47", new StarCoords(-18.114, -4.418, -3.024), SpectralClass.M));
+        catalog.Add(new StarSystem("lalande-27173", "Gliese 570", new StarCoords(15.009, -5.99, 10.366), SpectralClass.K));
+        catalog.Add(new StarSystem("luyten-205-128", "Luyten 205-128", new StarCoords(16.899, -7.771, -4.794), SpectralClass.M));
+        catalog.Add(new StarSystem("luyten-347-14", "Luyten 347-14", new StarCoords(17.464, -2.343, -7.809), SpectralClass.M));
+        catalog.Add(new StarSystem("lalande-46650", "Lalande 46650", new StarCoords(-0.655, 10.511, -16.143), SpectralClass.M));
+        catalog.Add(new StarSystem("wolf-1055", "Wolf 1055", new StarCoords(14.658, 12.495, -1.105), SpectralClass.M));
+        catalog.Add(new StarSystem("cd-40-9712", "CD-40 9712", new StarCoords(16.764, -8.662, 4.055), SpectralClass.M));
+        catalog.Add(new StarSystem("eta-cassiopeiae", "Eta Cassiopeiae", new StarCoords(-10.379, 16.216, -1.703), SpectralClass.G));
+        catalog.Add(new StarSystem("luyten-722-22", "Luyten 722-22", new StarCoords(0.49, 4.595, -18.815), SpectralClass.M));
+        catalog.Add(new StarSystem("36-ophiuchi", "36 Ophiuchi", new StarCoords(19.266, -0.579, 2.325), SpectralClass.K));
+        catalog.Add(new StarSystem("ross-882", "Ross 882", new StarCoords(-15.397, -11.128, 4.546), SpectralClass.M));
+        catalog.Add(new StarSystem("hd-191408", "HD 191408", new StarCoords(16.752, 1.534, -10.078), SpectralClass.K));
+        catalog.Add(new StarSystem("82-eridani", "82 Eridani", new StarCoords(-3.626, -10.382, -16.351), SpectralClass.G));
+        catalog.Add(new StarSystem("ross-986", "Ross 986", new StarCoords(-18.559, 0.339, 6.721), SpectralClass.M));
+        catalog.Add(new StarSystem("delta-pavonis", "Delta Pavonis", new StarCoords(14.509, -8.456, -10.664), SpectralClass.G));
+        catalog.Add(new StarSystem("hd-191849", "HD 191849", new StarCoords(16.798, -1.527, -10.943), SpectralClass.M));
+        catalog.Add(new StarSystem("lhs-455", "LHS 455", new StarCoords(-3.453, 17.077, 10.339), SpectralClass.Unknown, ["white-dwarf"]));
+        catalog.Add(new StarSystem("wolf-1481", "Wolf 1481", new StarCoords(13.836, -5.472, 13.95), SpectralClass.M));
+        catalog.Add(new StarSystem("eq-pegasi", "EQ Pegasi", new StarCoords(-2.363, 15.667, -12.895), SpectralClass.M));
+        return catalog;
+    }
+}

@@ -2,12 +2,6 @@ using System.Numerics;
 
 namespace RtsLite.Game;
 
-internal enum UnitTeam
-{
-    Player,
-    Enemy,
-}
-
 internal sealed class RtsUnit
 {
     public const float Radius = 0.28f;

@@ -7,15 +7,6 @@ using Novolis.Simulation.Humanoid;
 
 namespace HumanoidLab.Ui;
 
-/// <summary>Which Reach effector is being dragged (FrontXy plane).</summary>
-internal enum ReachDragTarget
-{
-    None = 0,
-    LeftHand,
-    RightHand,
-    Head,
-}
-
 /// <summary>Avalonia viewport: capsule mannequin + optional debug sticks / overlays.</summary>
 internal sealed class StickFigurePane : Control
 {

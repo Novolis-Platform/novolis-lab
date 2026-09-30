@@ -4,14 +4,6 @@ using TopDownDoom.Art;
 
 namespace TopDownDoom.Game;
 
-internal enum ParticleSprite
-{
-    SoftGlow,
-    Spark,
-    Smoke,
-    Shell,
-}
-
 internal struct Particle
 {
     public Vector3 Position;

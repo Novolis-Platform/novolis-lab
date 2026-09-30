@@ -94,14 +94,3 @@ public static class BridgeQaScenarios
         return new BridgeQaStepResult(prompt, passed, result.StatusLine, result.Snapshot);
     }
 }
-
-public sealed record BridgeQaStepResult(
-    string Prompt,
-    bool Passed,
-    string StatusLine,
-    BridgeSnapshot Snapshot);
-
-public sealed record BridgeQaReport(
-    string Scenario,
-    bool Passed,
-    IReadOnlyList<BridgeQaStepResult> Steps);

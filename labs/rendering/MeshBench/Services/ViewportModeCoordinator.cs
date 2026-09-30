@@ -5,12 +5,6 @@ using Novolis.Simulation.View;
 
 namespace MeshBench.Services;
 
-internal enum ViewportDisplayMode
-{
-    FastPreview,
-    QualityRefine,
-}
-
 /// <summary>Coordinates fast Raylib preview vs path-traced quality (one GLFW host at a time).</summary>
 internal sealed class ViewportModeCoordinator
 {

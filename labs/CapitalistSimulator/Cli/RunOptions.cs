@@ -2,12 +2,6 @@ using CapitalistSimulator.Sim;
 
 namespace CapitalistSimulator.Cli;
 
-internal enum AppMode
-{
-    Headless,
-    Avalonia,
-}
-
 internal sealed class RunOptions
 {
     public AppMode Mode { get; init; } = AppMode.Avalonia;

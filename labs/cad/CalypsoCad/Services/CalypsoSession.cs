@@ -7,20 +7,6 @@ using Novolis.Cad.Primitives;
 
 namespace CalypsoCad.Services;
 
-internal enum CalypsoViewMode
-{
-    Plan,
-    Orbit,
-    Interior,
-}
-
-internal enum CalypsoWireMeshMode
-{
-    None,
-    Wire,
-    CutawayPartial,
-}
-
 internal sealed class CalypsoSession
 {
     public string GeneratedDirectory { get; private set; } = "";

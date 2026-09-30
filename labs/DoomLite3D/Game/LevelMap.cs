@@ -3,21 +3,6 @@ using Novolis.Math.Arrays;
 
 namespace DoomLite3D.Game;
 
-internal enum RoomKind
-{
-    Calm,
-    Pack,
-    Boss,
-}
-
-internal enum EnemyKind
-{
-    Grunt,
-    Boss,
-}
-
-internal readonly record struct RoomRect(int X, int Z, int Width, int Height, RoomKind Kind);
-
 internal sealed class LevelMap
 {
     public const float CellSize = 1f;
@@ -52,5 +37,3 @@ internal sealed class LevelMap
     public Vector3 CellToWorld(uint x, uint z, float y = 0f) =>
         new((x + 0.5f) * CellSize, y, (z + 0.5f) * CellSize);
 }
-
-internal readonly record struct EnemySpawn(GridIndex Cell, int SpriteIndex, EnemyKind Kind = EnemyKind.Grunt);

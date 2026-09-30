@@ -26,5 +26,3 @@ file sealed class SmokeScreen(string id) : IGameScreen
 
     public ValueTask OnExitAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
 }
-
-file sealed class SmokePauseScreen : PauseScreenBase;

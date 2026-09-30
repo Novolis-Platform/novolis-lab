@@ -3,8 +3,6 @@ using Novolis.Simulation.Humanoid;
 
 namespace CharacterLab.Ui;
 
-internal readonly record struct MannequinCapsule(Vector3 A, Vector3 B, float RadiusMeters);
-
 /// <summary>Painter-style capsules from a solved world pose (readable human shape over sticks).</summary>
 internal static class MannequinBuilder
 {

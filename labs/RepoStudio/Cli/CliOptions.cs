@@ -1,12 +1,5 @@
 namespace RepoStudio.Cli;
 
-internal enum UiMode
-{
-    Avalonia,
-    Spectre,
-    Daemon,
-}
-
 internal sealed class CliOptions
 {
     public UiMode Mode { get; init; } = UiMode.Avalonia;

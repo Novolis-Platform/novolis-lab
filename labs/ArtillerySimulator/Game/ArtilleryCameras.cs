@@ -7,12 +7,6 @@ using RayCamera = Novolis.Raylib.Rendering.Camera;
 
 namespace ArtillerySimulator.Game;
 
-internal enum CameraMode
-{
-    Freecam,
-    Orbit,
-}
-
 internal sealed class ArtilleryCameras
 {
     private const float MouseSensitivity = 0.0022f;
