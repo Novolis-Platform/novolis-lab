@@ -111,6 +111,12 @@ Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new ex
 | `TopDownDoom` | `labs/gaming/TopDownDoom` | Rendering.TwoD, Game flows |
 | `TapDuelFootball` | `labs/gaming/TapDuelFootball` | Rendering.TwoD, Game.MenuFlows — hotseat tap duel |
 | `NeuralRacing` | `labs/NeuralRacing` | Simulation.Racing, MachineLearning.Neural |
+| `CapitalistSimulator` | `labs/CapitalistSimulator` | Avalonia economy prototype |
+| `CoverageStudio` | `labs/CoverageStudio` | Avalonia coverage workflow |
+| `CursorRemote` | `labs/CursorRemote` | Avalonia remote-control prototype |
+| `GeoPolity` | `labs/GeoPolity` | Geopolitics theatre and session dogfood |
+| `RepoStudio` | `labs/RepoStudio` | Avalonia multi-repo Git workflow |
+| `SpaceFleetSurveyTeam` | `labs/SpaceFleetSurveyTeam` | Mobile survey-game prototype |
 | `VoiceSmoke` | `labs/audio/VoiceSmoke` | Audio.Voice, Voice.Atc (Sherpa Piper TTS) |
 | `StudioChromeLab` | `labs/avalonia/StudioChromeLab` | Controls dialogs/lists/jobs + Studio focus/dirty chrome |
 | `AvaloniaAgentMcp` | `labs/AvaloniaAgentMcp` | Avalonia.Agent.Protocol, Transports.LocalIpc, Agent.Core/Surface |

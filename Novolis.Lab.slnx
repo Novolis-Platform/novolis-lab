@@ -96,6 +96,19 @@
   <Folder Name="/audio/">
     <Project Path="labs/audio/VoiceSmoke/VoiceSmoke.csproj" />
   </Folder>
+  <Folder Name="/apps/">
+    <Project Path="labs/CapitalistSimulator/CapitalistSimulator.csproj" />
+    <Project Path="labs/CapitalistSimulator/tests/CapitalistSimulator.Unit/CapitalistSimulator.Unit.csproj" />
+    <Project Path="labs/CoverageStudio/CoverageStudio.csproj" />
+    <Project Path="labs/CursorRemote/CursorRemote.Desktop/CursorRemote.Desktop.csproj" />
+    <Project Path="labs/CursorRemote/CursorRemote/CursorRemote.csproj" />
+    <Project Path="labs/CursorRemote/tests/CursorRemote.Unit/CursorRemote.Unit.csproj" />
+    <Project Path="labs/GeoPolity/GeoPolity.csproj" />
+    <Project Path="labs/GeoPolity/tests/GeoPolity.Unit/GeoPolity.Unit.csproj" />
+    <Project Path="labs/RepoStudio/RepoStudio.csproj" />
+    <Project Path="labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Desktop/SpaceFleetSurveyTeam.Desktop.csproj" />
+    <Project Path="labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.csproj" />
+  </Folder>
   <Folder Name="/astro/">
     <Project Path="labs/astro/AstroSmoke/AstroSmoke.csproj" />
     <Project Path="labs/astro/StarMapLab/StarMapLab.csproj" />

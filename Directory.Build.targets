@@ -4,6 +4,16 @@
   <Import Project="$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.Packaging.targets"
           Condition="Exists('$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.Packaging.targets')" />
 
+  <PropertyGroup>
+    <_NovolisLabProjectText Condition="Exists('$(MSBuildProjectFullPath)')">$([System.IO.File]::ReadAllText('$(MSBuildProjectFullPath)'))</_NovolisLabProjectText>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(_NovolisLabProjectText.Contains('Avalonia'))">
+    <Compile Include="$(MSBuildThisFileDirectory)labs\shared\Novolis.Lab.Branding\NovolisLabBranding.cs"
+             Link="NovolisLabBranding.cs"
+             Visible="false" />
+  </ItemGroup>
+
   <!-- Android consumers need Native buildTransitive (AndroidNativeLibrary). Desktop keeps ExcludeAssets from Directory.Build.props. -->
   <ItemGroup Condition="$([System.String]::Copy('$(TargetFramework)').Contains('-android'))">
     <PackageReference Update="Novolis.Raylib">
