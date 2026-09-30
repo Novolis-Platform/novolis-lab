@@ -10,6 +10,7 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
     <LibraryReference Include="Novolis.Avalonia.Rendering" />
     <LibraryReference Include="Novolis.Avalonia.Raylib" />
     <LibraryReference Include="Novolis.Math.Geometry" />

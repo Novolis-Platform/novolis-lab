@@ -14,6 +14,7 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
     <LibraryReference Include="Novolis.Avalonia.Briefing" />
     <LibraryReference Include="Novolis.Civics.Agents" />
     <LibraryReference Include="Novolis.Civics.Core" />

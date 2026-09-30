@@ -10,6 +10,7 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="System.IO.Abstractions" />
     <LibraryReference Include="Novolis.Avalonia.Raylib" />

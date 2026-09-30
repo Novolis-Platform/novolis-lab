@@ -1,31 +1,32 @@
 using Avalonia.Media;
+using Profile = Novolis.Avalonia.GraphicalProfile.GraphicalProfile;
 
 namespace FriendLab.Ui;
 
 internal static class FriendPalette
 {
-    public static readonly Color Pine = Color.Parse("#1e3a2f");
-    public static readonly Color PineDeep = Color.Parse("#13261f");
-    public static readonly Color Mist = Color.Parse("#d7e3dc");
-    public static readonly Color MistSoft = Color.Parse("#eef4f0");
-    public static readonly Color Ink = Color.Parse("#14201b");
-    public static readonly Color InkMuted = Color.Parse("#3d5248");
-    public static readonly Color Signal = Color.Parse("#d4a012");
-    public static readonly Color SignalDeep = Color.Parse("#a67c00");
-    public static readonly Color Panel = Color.Parse("#f4f8f5");
-    public static readonly Color Edge = Color.Parse("#9bb5a6");
+    public static Color Pine => Profile.Surface;
+    public static Color PineDeep => Profile.Background;
+    public static Color Mist => Profile.Text;
+    public static Color MistSoft => Profile.OnAccentFill;
+    public static Color Ink => Profile.Text;
+    public static Color InkMuted => Profile.Muted;
+    public static Color Signal => Profile.Action;
+    public static Color SignalDeep => Profile.AccentFill;
+    public static Color Panel => Profile.Raised;
+    public static Color Edge => Profile.Border;
 
-    public static readonly IBrush PineBrush = new SolidColorBrush(Pine);
-    public static readonly IBrush PineDeepBrush = new SolidColorBrush(PineDeep);
-    public static readonly IBrush MistBrush = new SolidColorBrush(Mist);
-    public static readonly IBrush MistSoftBrush = new SolidColorBrush(MistSoft);
-    public static readonly IBrush InkBrush = new SolidColorBrush(Ink);
-    public static readonly IBrush InkMutedBrush = new SolidColorBrush(InkMuted);
-    public static readonly IBrush SignalBrush = new SolidColorBrush(Signal);
-    public static readonly IBrush SignalDeepBrush = new SolidColorBrush(SignalDeep);
-    public static readonly IBrush PanelBrush = new SolidColorBrush(Panel);
-    public static readonly IBrush EdgeBrush = new SolidColorBrush(Edge);
+    public static IBrush PineBrush => Profile.SurfaceBrush;
+    public static IBrush PineDeepBrush => Profile.BackgroundBrush;
+    public static IBrush MistBrush => Profile.TextBrush;
+    public static IBrush MistSoftBrush => Profile.OnAccentFillBrush;
+    public static IBrush InkBrush => Profile.TextBrush;
+    public static IBrush InkMutedBrush => Profile.MutedBrush;
+    public static IBrush SignalBrush => Profile.ActionBrush;
+    public static IBrush SignalDeepBrush => Profile.AccentFillBrush;
+    public static IBrush PanelBrush => Profile.RaisedBrush;
+    public static IBrush EdgeBrush => Profile.BorderBrush;
 
-    public static readonly FontFamily Display = new("Georgia, 'Palatino Linotype', Palatino, serif");
-    public static readonly FontFamily Body = new("Candara, Calibri, 'Segoe UI', sans-serif");
+    public static FontFamily Display => Profile.BodyFont;
+    public static FontFamily Body => Profile.BodyFont;
 }

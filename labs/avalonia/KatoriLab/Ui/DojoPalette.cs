@@ -1,27 +1,27 @@
 using Avalonia.Media;
+using Profile = Novolis.Avalonia.GraphicalProfile.GraphicalProfile;
 
 namespace KatoriLab.Ui;
 
-/// <summary>Dojo ink / lacquer / bamboo — not CharacterLab navy-teal, not purple SaaS.</summary>
 internal static class DojoPalette
 {
-    public static readonly Color InkFloor = Color.Parse("#12151A");
-    public static readonly Color Tatami = Color.Parse("#1C2420");
-    public static readonly Color Bamboo = Color.Parse("#3F6B4A");
-    public static readonly Color BambooBright = Color.Parse("#6FA87A");
-    public static readonly Color Lacquer = Color.Parse("#B33A2B");
-    public static readonly Color Gold = Color.Parse("#C9A24A");
-    public static readonly Color Washi = Color.Parse("#E8E2D6");
-    public static readonly Color Pane = Color.Parse("#1A1F24");
-    public static readonly Color PaneEdge = Color.Parse("#3A4540");
+    public static Color InkFloor => Profile.Background;
+    public static Color Tatami => Profile.Surface;
+    public static Color Bamboo => Profile.ActionSoft;
+    public static Color BambooBright => Profile.Accent;
+    public static Color Lacquer => Profile.Danger;
+    public static Color Gold => Profile.Warning;
+    public static Color Washi => Profile.Text;
+    public static Color Pane => Profile.Raised;
+    public static Color PaneEdge => Profile.Border;
 
-    public static readonly IBrush InkFloorBrush = new SolidColorBrush(InkFloor);
-    public static readonly IBrush TatamiBrush = new SolidColorBrush(Tatami);
-    public static readonly IBrush BambooBrush = new SolidColorBrush(Bamboo);
-    public static readonly IBrush BambooBrightBrush = new SolidColorBrush(BambooBright);
-    public static readonly IBrush LacquerBrush = new SolidColorBrush(Lacquer);
-    public static readonly IBrush GoldBrush = new SolidColorBrush(Gold);
-    public static readonly IBrush WashiBrush = new SolidColorBrush(Washi);
-    public static readonly IBrush PaneBrush = new SolidColorBrush(Pane);
-    public static readonly IBrush PaneEdgeBrush = new SolidColorBrush(PaneEdge);
+    public static IBrush InkFloorBrush => Profile.BackgroundBrush;
+    public static IBrush TatamiBrush => Profile.SurfaceBrush;
+    public static IBrush BambooBrush => Profile.ActionSoftBrush;
+    public static IBrush BambooBrightBrush => Profile.AccentBrush;
+    public static IBrush LacquerBrush => Profile.DangerBrush;
+    public static IBrush GoldBrush => Profile.WarningBrush;
+    public static IBrush WashiBrush => Profile.TextBrush;
+    public static IBrush PaneBrush => Profile.RaisedBrush;
+    public static IBrush PaneEdgeBrush => Profile.BorderBrush;
 }

@@ -1,24 +1,25 @@
 using Avalonia.Media;
+using Profile = Novolis.Avalonia.GraphicalProfile.GraphicalProfile;
 
 namespace CharacterLab.Ui;
 
 internal static class LabPalette
 {
-    public static readonly Color Navy = Color.Parse("#0B1C2C");
-    public static readonly Color Teal = Color.Parse("#1A6B6B");
-    public static readonly Color TealBright = Color.Parse("#2AA8A8");
-    public static readonly Color Copper = Color.Parse("#C47A3A");
-    public static readonly Color Amber = Color.Parse("#E0A04A");
-    public static readonly Color Ink = Color.Parse("#D6E4EE");
-    public static readonly Color Pane = Color.Parse("#122536");
-    public static readonly Color PaneEdge = Color.Parse("#2A4558");
+    public static Color Navy => Profile.Background;
+    public static Color Teal => Profile.AccentFill;
+    public static Color TealBright => Profile.Accent;
+    public static Color Copper => Profile.Warning;
+    public static Color Amber => Profile.Action;
+    public static Color Ink => Profile.Text;
+    public static Color Pane => Profile.Surface;
+    public static Color PaneEdge => Profile.Border;
 
-    public static readonly IBrush NavyBrush = new SolidColorBrush(Navy);
-    public static readonly IBrush TealBrush = new SolidColorBrush(Teal);
-    public static readonly IBrush TealBrightBrush = new SolidColorBrush(TealBright);
-    public static readonly IBrush CopperBrush = new SolidColorBrush(Copper);
-    public static readonly IBrush AmberBrush = new SolidColorBrush(Amber);
-    public static readonly IBrush InkBrush = new SolidColorBrush(Ink);
-    public static readonly IBrush PaneBrush = new SolidColorBrush(Pane);
-    public static readonly IBrush PaneEdgeBrush = new SolidColorBrush(PaneEdge);
+    public static IBrush NavyBrush => Profile.BackgroundBrush;
+    public static IBrush TealBrush => Profile.AccentFillBrush;
+    public static IBrush TealBrightBrush => Profile.AccentBrush;
+    public static IBrush CopperBrush => Profile.WarningBrush;
+    public static IBrush AmberBrush => Profile.ActionBrush;
+    public static IBrush InkBrush => Profile.TextBrush;
+    public static IBrush PaneBrush => Profile.SurfaceBrush;
+    public static IBrush PaneEdgeBrush => Profile.BorderBrush;
 }

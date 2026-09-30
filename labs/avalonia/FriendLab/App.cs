@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
+using Novolis.Avalonia.GraphicalProfile;
 using FriendLab.Windows;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,7 +14,7 @@ public sealed class App : Application
     public override void Initialize()
     {
         Styles.Add(new FluentTheme());
-        RequestedThemeVariant = ThemeVariant.Light;
+        GraphicalProfile.Install(this);
     }
 
     public override void OnFrameworkInitializationCompleted()

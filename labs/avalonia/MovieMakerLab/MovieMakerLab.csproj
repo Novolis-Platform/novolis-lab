@@ -10,6 +10,7 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
     <LibraryReference Include="Novolis.Avalonia.Video" />
     <LibraryReference Include="Novolis.Video.Edit" />
     <LibraryReference Include="Novolis.Video.Rtc.Abstractions" />
