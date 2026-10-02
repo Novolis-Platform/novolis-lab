@@ -913,6 +913,18 @@
         "labs/workspaces/TypedSolutionIntelligence/**",
         "labs/shared/**"
       ]
+    },
+    {
+      "Key": "maui-MapProvidersLab",
+      "DisplayName": "MAUI Map Providers Lab",
+      "Projects": [
+        "labs/maui/MapProvidersLab/MapProvidersLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/maui/MapProvidersLab/**",
+        "labs/shared/**"
+      ]
     }
   ]
 }

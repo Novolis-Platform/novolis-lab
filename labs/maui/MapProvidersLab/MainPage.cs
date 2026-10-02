@@ -11,13 +11,14 @@ namespace Novolis.Lab.MapProviders;
 /// Small provider comparison surface for the shared MAUI map control.
 /// Each tab uses the same viewport and raster adapter with a different preset.
 /// </summary>
-public sealed class MainPage : TabbedPage
+public sealed class MainPage : TabbedPage, IDisposable
 {
     static readonly GeoCoordinate DefaultCenter = new(58.14623, 7.99517);
 
     readonly HttpClient _httpClient;
-    readonly List<XyzMapSource> _sources = [];
+    readonly List<IDisposable> _sources = [];
     readonly string _cacheDirectory;
+    bool _disposed;
 
     /// <summary>Creates one tab for every keyless raster preset.</summary>
     public MainPage(HttpClient httpClient)
@@ -186,6 +187,18 @@ public sealed class MainPage : TabbedPage
         };
 
         return page;
+    }
+
+    /// <summary>Stops provider activity when the host window is destroyed.</summary>
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        foreach (var source in _sources)
+            source.Dispose();
+        _sources.Clear();
     }
 
     static Button ChromeButton(string text)

@@ -28,6 +28,7 @@ static class WindowsMapInput
         view.PointerReleased += state.OnPointerReleased;
         view.PointerCaptureLost += state.OnPointerCaptureLost;
         view.PointerWheelChanged += state.OnPointerWheelChanged;
+        view.Unloaded += state.OnUnloaded;
     }
 
     sealed class State(MapView map, FrameworkElement view)
@@ -114,6 +115,9 @@ static class WindowsMapInput
                 map.Viewport.Zoom + zoomDelta);
             args.Handled = true;
         }
+
+        public void OnUnloaded(object sender, RoutedEventArgs args) =>
+            EndDrag();
     }
 }
 #endif

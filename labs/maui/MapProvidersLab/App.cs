@@ -18,6 +18,10 @@ public sealed class App : Application
     }
 
     /// <inheritdoc />
-    protected override Window CreateWindow(IActivationState? activationState) =>
-        new(_mainPage);
+    protected override Window CreateWindow(IActivationState? activationState)
+    {
+        var window = new Window(_mainPage);
+        window.Destroying += (_, _) => _mainPage.Dispose();
+        return window;
+    }
 }
