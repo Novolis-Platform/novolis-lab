@@ -2,8 +2,12 @@
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Novolis.Maui.Map;
+using Novolis.Math.Geometry;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace Novolis.Lab.MapProviders;
 
@@ -12,29 +16,46 @@ static class WindowsMapInput
 {
     static readonly ConditionalWeakTable<FrameworkElement, State> Attached = new();
 
-    /// <summary>Attaches mouse drag and wheel handling once per native map view.</summary>
-    public static void Attach(MapView map)
+    /// <summary>Attaches native pointer, wheel, and keyboard handling once per native map view.</summary>
+    public static void Attach(MapView map, Action<string>? report = null)
     {
         if (map.Handler?.PlatformView is not FrameworkElement view
-            || Attached.TryGetValue(view, out _))
+            )
         {
             return;
         }
 
-        var state = new State(map, view);
-        Attached.Add(view, state);
-        view.PointerPressed += state.OnPointerPressed;
-        view.PointerMoved += state.OnPointerMoved;
-        view.PointerReleased += state.OnPointerReleased;
-        view.PointerCaptureLost += state.OnPointerCaptureLost;
-        view.PointerWheelChanged += state.OnPointerWheelChanged;
-        view.Unloaded += state.OnUnloaded;
+        if (!Attached.TryGetValue(view, out var state))
+        {
+            state = new State(map, view, report);
+            Attached.Add(view, state);
+        }
+
+        state.Attach();
     }
 
-    sealed class State(MapView map, FrameworkElement view)
+    sealed class State(MapView map, FrameworkElement view, Action<string>? report)
     {
         bool _dragging;
+        bool _attached;
         Windows.Foundation.Point _lastPosition;
+
+        public void Attach()
+        {
+            if (_attached)
+                return;
+
+            _attached = true;
+            view.PointerPressed += OnPointerPressed;
+            view.PointerMoved += OnPointerMoved;
+            view.PointerReleased += OnPointerReleased;
+            view.PointerCaptureLost += OnPointerCaptureLost;
+            view.PointerWheelChanged += OnPointerWheelChanged;
+            view.KeyDown += OnKeyDown;
+            view.Unloaded += OnUnloaded;
+            if (view is Control control)
+                control.IsTabStop = true;
+        }
 
         public void OnPointerPressed(
             object sender,
@@ -47,6 +68,8 @@ static class WindowsMapInput
             if (!point.Properties.IsLeftButtonPressed)
                 return;
 
+            if (view is Control control)
+                control.Focus(FocusState.Pointer);
             _dragging = true;
             _lastPosition = point.Position;
             map.BeginCameraInteraction();
@@ -116,8 +139,77 @@ static class WindowsMapInput
             args.Handled = true;
         }
 
+        public async void OnKeyDown(
+            object sender,
+            KeyRoutedEventArgs args)
+        {
+            var controlDown = IsKeyDown(VirtualKey.Control);
+            var shiftDown = IsKeyDown(VirtualKey.Shift);
+            MapKeyboardCommand? command = null;
+
+            if (controlDown && args.Key == VirtualKey.C)
+                command = shiftDown
+                    ? MapKeyboardCommand.CopyJson
+                    : MapKeyboardCommand.CopyCoordinate;
+            else
+            {
+                command = args.Key switch
+                {
+                    VirtualKey.Add => MapKeyboardCommand.ZoomIn,
+                    VirtualKey.Subtract => MapKeyboardCommand.ZoomOut,
+                    VirtualKey.Left => MapKeyboardCommand.PanLeft,
+                    VirtualKey.Right => MapKeyboardCommand.PanRight,
+                    VirtualKey.Up => MapKeyboardCommand.PanUp,
+                    VirtualKey.Down => MapKeyboardCommand.PanDown,
+                    VirtualKey.Enter => MapKeyboardCommand.CompleteDrawing,
+                    VirtualKey.Escape => MapKeyboardCommand.CancelDrawing,
+                    _ => null,
+                };
+            }
+
+            if (command is not { } selected
+                || !await map.ExecuteKeyboardCommandAsync(selected))
+            {
+                return;
+            }
+
+            report?.Invoke(selected switch
+            {
+                MapKeyboardCommand.CopyCoordinate =>
+                    "Copied the selected coordinate with Ctrl+C.",
+                MapKeyboardCommand.CopyJson =>
+                    "Copied the selected coordinate and metadata as JSON.",
+                MapKeyboardCommand.CompleteDrawing =>
+                    "Drawing completed from the keyboard.",
+                MapKeyboardCommand.CancelDrawing =>
+                    "Drawing canceled from the keyboard.",
+                _ => $"Keyboard command: {selected}.",
+            });
+            args.Handled = true;
+        }
+
+        static bool IsKeyDown(VirtualKey key) =>
+            (InputKeyboardSource.GetKeyStateForCurrentThread(key)
+                & CoreVirtualKeyStates.Down) != 0;
+
         public void OnUnloaded(object sender, RoutedEventArgs args) =>
+            Detach();
+
+        void Detach()
+        {
+            if (!_attached)
+                return;
+
             EndDrag();
+            view.PointerPressed -= OnPointerPressed;
+            view.PointerMoved -= OnPointerMoved;
+            view.PointerReleased -= OnPointerReleased;
+            view.PointerCaptureLost -= OnPointerCaptureLost;
+            view.PointerWheelChanged -= OnPointerWheelChanged;
+            view.KeyDown -= OnKeyDown;
+            view.Unloaded -= OnUnloaded;
+            _attached = false;
+        }
     }
 }
 #endif
