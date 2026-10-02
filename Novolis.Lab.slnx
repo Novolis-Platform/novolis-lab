@@ -70,6 +70,9 @@
     <Project Path="labs/AvaloniaAgentMcp/AvaloniaAgentMcp.csproj" />
     <Project Path="labs/MauiAgentMcp/MauiAgentMcp.csproj" />
   </Folder>
+  <Folder Name="/maui/">
+    <Project Path="labs/maui/MapProvidersLab/MapProvidersLab.csproj" />
+  </Folder>
   <Folder Name="/machine-learning/">
     <Project Path="labs/NeuralRacing/NeuralRacing.csproj" />
     <Project Path="labs/NeuralRacing.Tests/NeuralRacing.Tests.csproj" />
