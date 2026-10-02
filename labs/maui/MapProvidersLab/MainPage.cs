@@ -179,7 +179,10 @@ public sealed class MainPage : TabbedPage
         page.Disappearing += (_, _) =>
         {
             if (map is not null)
+            {
                 map.TileLoadingEnabled = false;
+                map.ClearTiles();
+            }
         };
 
         return page;
