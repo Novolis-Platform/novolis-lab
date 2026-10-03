@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>LanguagePipelineLab</RootNamespace>
+    <AssemblyName>LanguagePipelineLab</AssemblyName>
+    <Description>Dogfood the Novolis language pipeline from tokens through execution.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Language.RoboSharp" />
+  </ItemGroup>
+</Project>

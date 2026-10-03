@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>InspectionLab</RootNamespace>
+    <AssemblyName>InspectionLab</AssemblyName>
+    <Description>Exercise JSON, XML, HTTP, and object graph inspection.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Inspection.Json" />
+    <LibraryReference Include="Novolis.Inspection.Xml" />
+    <LibraryReference Include="Novolis.Inspection.Http" />
+    <LibraryReference Include="Novolis.Inspection.ObjectGraph" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>LocalInferenceLab</RootNamespace>
+    <AssemblyName>LocalInferenceLab</AssemblyName>
+    <Description>Exercise local chat providers through Novolis inference contracts.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Inference.Abstractions" />
+    <LibraryReference Include="Novolis.Inference.Ollama" />
+    <LibraryReference Include="Novolis.Inference.AgentFramework" />
+  </ItemGroup>
+</Project>

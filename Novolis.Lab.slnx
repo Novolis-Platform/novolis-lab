@@ -73,6 +73,23 @@
   <Folder Name="/maui/">
     <Project Path="labs/maui/MapProvidersLab/MapProvidersLab.csproj" />
   </Folder>
+  <Folder Name="/labs/" />
+  <Folder Name="/labs/blazor/">
+    <Project Path="labs/blazor/BlazorMarkupLab/BlazorMarkupLab.csproj" />
+  </Folder>
+  <Folder Name="/labs/inference/">
+    <Project Path="labs/inference/ImageInferenceLab/ImageInferenceLab.csproj" />
+    <Project Path="labs/inference/LocalInferenceLab/LocalInferenceLab.csproj" />
+  </Folder>
+  <Folder Name="/labs/inspection/">
+    <Project Path="labs/inspection/InspectionLab/InspectionLab.csproj" />
+  </Folder>
+  <Folder Name="/labs/language/">
+    <Project Path="labs/language/LanguagePipelineLab/LanguagePipelineLab.csproj" />
+  </Folder>
+  <Folder Name="/labs/scripting/">
+    <Project Path="labs/scripting/ScriptingLab/ScriptingLab.csproj" />
+  </Folder>
   <Folder Name="/machine-learning/">
     <Project Path="labs/NeuralRacing/NeuralRacing.csproj" />
     <Project Path="labs/NeuralRacing.Tests/NeuralRacing.Tests.csproj" />

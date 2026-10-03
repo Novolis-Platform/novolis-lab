@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>BlazorMarkupLab</RootNamespace>
+    <AssemblyName>BlazorMarkupLab</AssemblyName>
+    <Description>Dogfood Novolis Blazor Mermaid components and markup rendering.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Blazor.Mermaid" />
+  </ItemGroup>
+</Project>

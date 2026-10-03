@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ScriptingLab</RootNamespace>
+    <AssemblyName>ScriptingLab</AssemblyName>
+    <Description>Exercise C# scripting diagnostics and execution.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Scripting.Hosting" />
+  </ItemGroup>
+</Project>

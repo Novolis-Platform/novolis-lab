@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ImageInferenceLab</RootNamespace>
+    <AssemblyName>ImageInferenceLab</AssemblyName>
+    <Description>Compare ONNX image inference and safety policies.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Inference.Images" />
+    <LibraryReference Include="Novolis.Inference.Onnx" />
+    <LibraryReference Include="Novolis.Inference.Safety" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,19 @@
+@page "/"
+@using Novolis.Blazor.Mermaid
+@using Novolis.Markup.Mermaid
+
+<PageTitle>Blazor Markup Lab</PageTitle>
+
+<h1>Blazor Markup Lab</h1>
+<p>Mermaid rendering through Novolis.Markup.Mermaid and Novolis.Blazor.Mermaid.</p>
+<MermaidDiagram Mermaid="@Diagram" Theme="MermaidRenderTheme.GitHubLight" AriaLabel="Novolis package flow" />
+
+@code {
+    private const string Diagram = """
+        flowchart LR
+            source[Markdown or Mermaid source] --> builder[Novolis.Markup.Mermaid]
+            builder --> renderer[Headless SVG renderer]
+            renderer --> component[Novolis.Blazor.Mermaid]
+            component --> host[Blazor host]
+        """;
+}

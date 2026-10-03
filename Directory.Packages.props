@@ -176,6 +176,25 @@
     <PackageVersion Include="Svg.Skia" Version="4.9.1" />
     <PackageVersion Include="Novolis.Markup.Markdown" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Markup.Markdown.Documents" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Blazor.Mermaid" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Http.Client" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Http.Documents" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Http.Variables" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Language.RoboSharp" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inference.Abstractions" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inference.Ollama" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inference.Onnx" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inference.AgentFramework" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inference.Images" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inference.Safety" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Scripting.CSharp" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Scripting.Completion" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Scripting.Hosting" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inspection" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inspection.Json" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inspection.Xml" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inspection.Http" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Inspection.ObjectGraph" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Messaging.Channels" Version="2026.1.*" />
     <PackageVersion Include="Novolis.WorkflowEngine.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.WorkflowEngine" Version="2026.1.*" />
