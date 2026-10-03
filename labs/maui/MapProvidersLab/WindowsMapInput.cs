@@ -4,8 +4,8 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Novolis.IO.Maps;
 using Novolis.Maui.Map;
-using Novolis.Math.Geometry;
 using Windows.System;
 using Windows.UI.Core;
 
@@ -37,8 +37,11 @@ static class WindowsMapInput
     sealed class State(MapView map, FrameworkElement view, Action<string>? report)
     {
         bool _dragging;
+        bool _drawingInput;
+        bool _tapCandidate;
         bool _attached;
         Windows.Foundation.Point _lastPosition;
+        Windows.Foundation.Point _pressPosition;
 
         public void Attach()
         {
@@ -71,8 +74,12 @@ static class WindowsMapInput
             if (view is Control control)
                 control.Focus(FocusState.Pointer);
             _dragging = true;
+            _drawingInput = map.IsDrawing;
+            _tapCandidate = true;
+            _pressPosition = point.Position;
             _lastPosition = point.Position;
-            map.BeginCameraInteraction();
+            if (!_drawingInput)
+                map.BeginCameraInteraction();
             view.CapturePointer(args.Pointer);
             args.Handled = true;
         }
@@ -88,6 +95,17 @@ static class WindowsMapInput
             var deltaX = point.Position.X - _lastPosition.X;
             var deltaY = point.Position.Y - _lastPosition.Y;
             _lastPosition = point.Position;
+            var movedX = point.Position.X - _pressPosition.X;
+            var movedY = point.Position.Y - _pressPosition.Y;
+            if (_tapCandidate && movedX * movedX + movedY * movedY >= 36)
+                _tapCandidate = false;
+
+            if (_drawingInput || _tapCandidate)
+            {
+                args.Handled = true;
+                return;
+            }
+
             map.PanBy(deltaX, deltaY);
             args.Handled = true;
         }
@@ -99,9 +117,16 @@ static class WindowsMapInput
             if (!_dragging)
                 return;
 
+            var point = args.GetCurrentPoint(view);
+            var tap = _tapCandidate;
             _dragging = false;
-            map.EndCameraInteraction();
+            if (!_drawingInput)
+                map.EndCameraInteraction();
+            _drawingInput = false;
+            _tapCandidate = false;
             view.ReleasePointerCapture(args.Pointer);
+            if (tap)
+                map.HandleScreenTap(point.Position.X, point.Position.Y);
             args.Handled = true;
         }
 
@@ -116,7 +141,10 @@ static class WindowsMapInput
                 return;
 
             _dragging = false;
-            map.EndCameraInteraction();
+            if (!_drawingInput)
+                map.EndCameraInteraction();
+            _drawingInput = false;
+            _tapCandidate = false;
         }
 
         public void OnPointerWheelChanged(
@@ -163,6 +191,7 @@ static class WindowsMapInput
                     VirtualKey.Down => MapKeyboardCommand.PanDown,
                     VirtualKey.Enter => MapKeyboardCommand.CompleteDrawing,
                     VirtualKey.Escape => MapKeyboardCommand.CancelDrawing,
+                    VirtualKey.Delete or VirtualKey.Back => MapKeyboardCommand.EraseSelectedOverlay,
                     _ => null,
                 };
             }
@@ -183,6 +212,8 @@ static class WindowsMapInput
                     "Drawing completed from the keyboard.",
                 MapKeyboardCommand.CancelDrawing =>
                     "Drawing canceled from the keyboard.",
+                MapKeyboardCommand.EraseSelectedOverlay =>
+                    "Requested erasure of the selected overlay.",
                 _ => $"Keyboard command: {selected}.",
             });
             args.Handled = true;

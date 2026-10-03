@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.ApplicationModel;
@@ -86,9 +87,16 @@ public sealed class MainPage : TabbedPage, IDisposable
         var tracks = CreateSampleTracks().ToList();
         var polygons = CreateSamplePolygons().ToList();
         var circles = CreateSampleCircles().ToList();
+        var drawingOrigins = new Dictionary<MapOverlayKey, GeoDrawing>();
+        var shapeEntries = new ObservableCollection<ShapeCatalogEntry>();
         var drawingNumber = 0;
+        var synchronizingShapeSelection = false;
         Button? finish = null;
         Button? cancel = null;
+        Button? erase = null;
+        Button? select = null;
+        Button? clear = null;
+        CollectionView? shapeCatalog = null;
         Label? selectionMessage = null;
         Label? performanceMessage = null;
 
@@ -215,6 +223,10 @@ public sealed class MainPage : TabbedPage, IDisposable
         circle.IsEnabled = false;
         circle.Clicked += (_, _) => BeginDrawing(GeoDrawingKind.Circle);
 
+        var rectangle = ChromeButton("Draw rectangle");
+        rectangle.IsEnabled = false;
+        rectangle.Clicked += (_, _) => BeginDrawing(GeoDrawingKind.Rectangle);
+
         finish = ChromeButton("Finish drawing");
         finish.IsEnabled = false;
         finish.Clicked += (_, _) =>
@@ -236,8 +248,119 @@ public sealed class MainPage : TabbedPage, IDisposable
             distance,
             area,
             circle,
+            rectangle,
             finish,
             cancel);
+
+        select = ChromeButton("Select shape");
+        select.IsEnabled = false;
+        select.Clicked += (_, _) =>
+        {
+            if (map is null
+                || GetShapeCatalogSelectedKey() is not { } key
+                || !map.SelectOverlay(key))
+            {
+                UpdateStatus("Select a shape in the catalog first.");
+                return;
+            }
+
+            UpdateStatus($"Selected {key}.");
+        };
+
+        erase = ChromeButton("Erase selected");
+        erase.IsEnabled = false;
+        erase.Clicked += (_, _) =>
+        {
+            if (map?.RequestEraseSelectedOverlay() != true)
+                UpdateStatus("Select an overlay before erasing it.");
+        };
+
+        clear = ChromeButton("Clear shapes");
+        clear.IsEnabled = false;
+        clear.Clicked += (_, _) =>
+        {
+            ClearOverlays();
+            UpdateStatus("Cleared every host-owned shape. Reset overlays restores the sample set.");
+        };
+
+        var selectionControls = ToolRow(select, erase, clear);
+
+        var shapeCatalogTitle = new Label
+        {
+            Text = "Shape catalog",
+            FontSize = 14,
+            FontAttributes = FontAttributes.Bold,
+        };
+        shapeCatalogTitle.SetDynamicResource(
+            Label.TextColorProperty,
+            GraphicalProfile.TextResourceKey);
+
+        var shapeCatalogHint = new Label
+        {
+            Text = "Select a row or overlay. Delete/Backspace requests host erasure.",
+            FontSize = 11,
+            LineBreakMode = LineBreakMode.TailTruncation,
+        };
+        shapeCatalogHint.SetDynamicResource(
+            Label.TextColorProperty,
+            GraphicalProfile.MutedResourceKey);
+
+        shapeCatalog = new CollectionView
+        {
+            ItemsSource = shapeEntries,
+            SelectionMode = SelectionMode.Single,
+            HeightRequest = 172,
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var title = new Label
+                {
+                    FontSize = 12,
+                    FontAttributes = FontAttributes.Bold,
+                    LineBreakMode = LineBreakMode.TailTruncation,
+                };
+                title.SetDynamicResource(
+                    Label.TextColorProperty,
+                    GraphicalProfile.TextResourceKey);
+                title.SetBinding(Label.TextProperty, nameof(ShapeCatalogEntry.Title));
+
+                var details = new Label
+                {
+                    FontSize = 11,
+                    LineBreakMode = LineBreakMode.TailTruncation,
+                };
+                details.SetDynamicResource(
+                    Label.TextColorProperty,
+                    GraphicalProfile.MutedResourceKey);
+                details.SetBinding(Label.TextProperty, nameof(ShapeCatalogEntry.Details));
+
+                return new VerticalStackLayout
+                {
+                    Padding = new Thickness(12, 6),
+                    Spacing = 1,
+                    Children = { title, details },
+                };
+            }),
+            EmptyView = new Label
+            {
+                Text = "No shapes. Draw one or reset the sample overlays.",
+                HorizontalTextAlignment = TextAlignment.Center,
+                VerticalTextAlignment = TextAlignment.Center,
+                FontSize = 12,
+            },
+        };
+        shapeCatalog.SetDynamicResource(
+            VisualElement.BackgroundColorProperty,
+            GraphicalProfile.RaisedResourceKey);
+
+        var shapeCatalogHost = new VerticalStackLayout
+        {
+            Padding = new Thickness(16, 10, 16, 12),
+            Spacing = 4,
+            Children = { shapeCatalogTitle, shapeCatalogHint, shapeCatalog },
+        };
+        shapeCatalogHost.SetDynamicResource(
+            VisualElement.BackgroundColorProperty,
+            GraphicalProfile.SurfaceResourceKey);
 
         selectionMessage = new Label
         {
@@ -261,7 +384,7 @@ public sealed class MainPage : TabbedPage, IDisposable
 
         var shortcutMessage = new Label
         {
-            Text = "Windows shortcuts: Ctrl+C coordinate · Ctrl+Shift+C JSON · arrows pan · +/- zoom · Enter finish · Esc cancel",
+            Text = "Windows shortcuts: Ctrl+C coordinate · Ctrl+Shift+C JSON · arrows pan · +/- zoom · Enter finish · Esc cancel · Delete/Backspace erase",
             FontSize = 11,
             LineBreakMode = LineBreakMode.WordWrap,
         };
@@ -277,6 +400,7 @@ public sealed class MainPage : TabbedPage, IDisposable
                 cameraControls,
                 interactionControls,
                 drawingControls,
+                selectionControls,
                 selectionMessage,
                 performanceMessage,
                 shortcutMessage,
@@ -298,6 +422,18 @@ public sealed class MainPage : TabbedPage, IDisposable
             VisualElement.BackgroundColorProperty,
             GraphicalProfile.SurfaceResourceKey);
 
+        mapHost.MinimumHeightRequest = 240;
+        var mapAndCatalog = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Star),
+                new RowDefinition(GridLength.Auto),
+            },
+        };
+        mapAndCatalog.Add(mapHost, 0, 0);
+        mapAndCatalog.Add(shapeCatalogHost, 0, 1);
+
         var layout = new Grid
         {
             RowDefinitions =
@@ -307,7 +443,16 @@ public sealed class MainPage : TabbedPage, IDisposable
             },
         };
         layout.Add(header, 0, 0);
-        layout.Add(mapHost, 0, 1);
+        layout.Add(mapAndCatalog, 0, 1);
+        layout.SizeChanged += (_, _) =>
+        {
+            if (shapeCatalog is not null)
+            {
+                shapeCatalog.HeightRequest = layout.Height > layout.Width
+                    ? 132
+                    : 172;
+            }
+        };
 
         var page = new ContentPage
         {
@@ -343,8 +488,12 @@ public sealed class MainPage : TabbedPage, IDisposable
                 distance,
                 area,
                 circle,
+                rectangle,
                 finish!,
                 cancel!,
+                select!,
+                erase!,
+                clear!,
             })
             {
                 control.IsEnabled = enabled;
@@ -363,6 +512,9 @@ public sealed class MainPage : TabbedPage, IDisposable
                 $"redraws {counters.RedrawRequests} · canceled {counters.RefreshCancellations}";
             finish!.IsEnabled = map.IsDrawing;
             cancel!.IsEnabled = map.IsDrawing;
+            select!.IsEnabled = GetShapeCatalogSelectedKey() is not null;
+            erase!.IsEnabled = map.SelectedOverlay is not null;
+            clear!.IsEnabled = shapeEntries.Count > 0;
         }
 
         void UpdateStatus(string message)
@@ -370,6 +522,11 @@ public sealed class MainPage : TabbedPage, IDisposable
             selectionMessage!.Text = message;
             UpdateCounters();
         }
+
+        MapOverlayKey? GetShapeCatalogSelectedKey() =>
+            shapeCatalog?.SelectedItem is ShapeCatalogEntry entry
+                ? entry.Key
+                : null;
 
         void BeginDrawing(GeoDrawingKind kind)
         {
@@ -385,6 +542,8 @@ public sealed class MainPage : TabbedPage, IDisposable
                         ? "Area mode: click at least three points, then Finish drawing."
                         : kind == GeoDrawingKind.Circle
                             ? "Circle mode: click a center and an edge, then Finish drawing."
+                            : kind == GeoDrawingKind.Rectangle
+                                ? "Rectangle mode: click two opposite corners, then Finish drawing."
                             : "Point mode: click one location.");
         }
 
@@ -394,6 +553,8 @@ public sealed class MainPage : TabbedPage, IDisposable
             tracks = CreateSampleTracks().ToList();
             polygons = CreateSamplePolygons().ToList();
             circles = CreateSampleCircles().ToList();
+            drawingOrigins.Clear();
+            drawingNumber = 0;
             ApplyOverlays();
         }
 
@@ -406,11 +567,24 @@ public sealed class MainPage : TabbedPage, IDisposable
             map.Tracks = tracks.ToArray();
             map.Polygons = polygons.ToArray();
             map.Circles = circles.ToArray();
+            RefreshShapeCatalog(map.SelectedOverlay);
+        }
+
+        void ClearOverlays()
+        {
+            markers.Clear();
+            tracks.Clear();
+            polygons.Clear();
+            circles.Clear();
+            drawingOrigins.Clear();
+            map?.ClearSelection();
+            ApplyOverlays();
         }
 
         void AddDrawingOverlay(GeoDrawing drawing)
         {
             var id = $"drawing-{++drawingNumber}";
+            MapOverlayKey key;
             switch (drawing.Kind)
             {
                 case GeoDrawingKind.Point:
@@ -426,6 +600,7 @@ public sealed class MainPage : TabbedPage, IDisposable
                             ["kind"] = "point",
                         },
                         Tag: drawing));
+                    key = new MapOverlayKey(MapOverlayKind.Marker, id);
                     break;
                 case GeoDrawingKind.Polyline:
                     tracks.Add(new MapTrackOverlay(
@@ -434,6 +609,7 @@ public sealed class MainPage : TabbedPage, IDisposable
                         $"Distance · {GeoMeasurementText.FormatDistance(drawing.LengthMeters)}",
                         Colors.Gold,
                         Colors.OrangeRed));
+                    key = new MapOverlayKey(MapOverlayKind.Track, id);
                     break;
                 case GeoDrawingKind.Polygon:
                     polygons.Add(new MapPolygonOverlay(
@@ -442,6 +618,7 @@ public sealed class MainPage : TabbedPage, IDisposable
                         $"Area · {GeoMeasurementText.FormatArea(drawing.AreaSquareMeters)}",
                         Colors.Gold,
                         Colors.Gold.WithAlpha(0.2f)));
+                    key = new MapOverlayKey(MapOverlayKind.Polygon, id);
                     break;
                 case GeoDrawingKind.Circle:
                     circles.Add(new MapCircleOverlay(
@@ -451,12 +628,93 @@ public sealed class MainPage : TabbedPage, IDisposable
                             drawing.RadiusMeters.GetValueOrDefault()),
                         $"Radius · {GeoMeasurementText.FormatDistance(drawing.RadiusMeters.GetValueOrDefault())}",
                         Colors.Gold));
+                    key = new MapOverlayKey(MapOverlayKind.Circle, id);
                     break;
+                case GeoDrawingKind.Rectangle:
+                    polygons.Add(new MapPolygonOverlay(
+                        id,
+                        drawing.Rectangle!.Value.Corners,
+                        $"Rectangle · {GeoMeasurementText.FormatArea(drawing.AreaSquareMeters)}",
+                        Colors.Gold,
+                        Colors.Gold.WithAlpha(0.16f)));
+                    key = new MapOverlayKey(MapOverlayKind.Polygon, id);
+                    break;
+                default:
+                    return;
             }
 
+            drawingOrigins[key] = drawing;
             ApplyOverlays();
+            map?.SelectOverlay(key);
             UpdateStatus(DescribeDrawing(drawing));
         }
+
+        void RefreshShapeCatalog(MapOverlayKey? selectedOverlay)
+        {
+            synchronizingShapeSelection = true;
+            try
+            {
+                shapeEntries.Clear();
+                foreach (var entry in CreateShapeCatalog(
+                    markers,
+                    tracks,
+                    polygons,
+                    circles,
+                    drawingOrigins,
+                    selectedOverlay))
+                {
+                    shapeEntries.Add(entry);
+                }
+
+                shapeCatalog!.SelectedItem = selectedOverlay is { } selected
+                    ? shapeEntries.FirstOrDefault(entry => entry.Key == selected)
+                    : null;
+            }
+            finally
+            {
+                synchronizingShapeSelection = false;
+            }
+
+            UpdateCounters();
+        }
+
+        void RemoveOverlay(MapOverlayKey key)
+        {
+            var removed = key.Kind switch
+            {
+                MapOverlayKind.Marker => markers.RemoveAll(item => item.Id == key.Id),
+                MapOverlayKind.Track => tracks.RemoveAll(item => item.Id == key.Id),
+                MapOverlayKind.Polygon => polygons.RemoveAll(item => item.Id == key.Id),
+                MapOverlayKind.Circle => circles.RemoveAll(item => item.Id == key.Id),
+                _ => 0,
+            };
+            if (removed == 0)
+            {
+                UpdateStatus($"The selected {key.Kind} no longer exists.");
+                return;
+            }
+
+            drawingOrigins.Remove(key);
+            map?.ClearSelection();
+            ApplyOverlays();
+            UpdateStatus($"Erased {key}.");
+        }
+
+        shapeCatalog.SelectionChanged += (_, _) =>
+        {
+            if (synchronizingShapeSelection || map is null)
+                return;
+
+            if (GetShapeCatalogSelectedKey() is { } key)
+            {
+                if (!map.SelectOverlay(key))
+                    RefreshShapeCatalog(null);
+            }
+            else
+            {
+                map.ClearSelection();
+            }
+        };
 
         SetControlsEnabled(false);
         page.Appearing += (_, _) =>
@@ -477,6 +735,7 @@ public sealed class MainPage : TabbedPage, IDisposable
                         EnableClipboardShortcuts = true,
                         EnableKeyboardNavigation = true,
                         EnableDrawing = true,
+                        EnableOverlayErasure = true,
                         ShowMeasurementResults = true,
                     },
                     Markers = markers.ToArray(),
@@ -494,6 +753,13 @@ public sealed class MainPage : TabbedPage, IDisposable
                         $"POI {marker.Label ?? marker.Id} · {GeoCoordinateText.Format(marker.Position)} · " +
                         $"{marker.Metadata?.Count ?? 0} metadata fields · Ctrl+Shift+C copies JSON.");
                 map.DrawingCompleted += AddDrawingOverlay;
+                map.OverlaySelectionChanged += key =>
+                {
+                    RefreshShapeCatalog(key);
+                    if (key is { } selected)
+                        UpdateStatus($"Selected {selected}.");
+                };
+                map.OverlayEraseRequested += RemoveOverlay;
 #if WINDOWS
                 map.HandlerChanged += (_, _) =>
                     WindowsMapInput.Attach(map, UpdateStatus);
@@ -501,6 +767,7 @@ public sealed class MainPage : TabbedPage, IDisposable
                 mapHost.Children.Clear();
                 mapHost.Add(map);
                 SetControlsEnabled(true);
+                RefreshShapeCatalog(null);
                 UpdateStatus(
                     definition.Name == "procedural-starfield"
                         ? "Procedural starfield active: these tiles are generated locally, not downloaded."
@@ -617,8 +884,73 @@ public sealed class MainPage : TabbedPage, IDisposable
                 $"Area overlay added: {GeoMeasurementText.FormatArea(drawing.AreaSquareMeters)}.",
             GeoDrawingKind.Circle =>
                 $"Circle overlay added: radius {GeoMeasurementText.FormatDistance(drawing.RadiusMeters.GetValueOrDefault())}.",
+            GeoDrawingKind.Rectangle =>
+                $"Rectangle overlay added: {GeoMeasurementText.FormatArea(drawing.AreaSquareMeters)}.",
             _ => "Drawing overlay added.",
         };
+
+    static IEnumerable<ShapeCatalogEntry> CreateShapeCatalog(
+        IEnumerable<MapMarker> markers,
+        IEnumerable<MapTrackOverlay> tracks,
+        IEnumerable<MapPolygonOverlay> polygons,
+        IEnumerable<MapCircleOverlay> circles,
+        IReadOnlyDictionary<MapOverlayKey, GeoDrawing> drawingOrigins,
+        MapOverlayKey? selectedOverlay)
+    {
+        foreach (var marker in markers)
+        {
+            var key = new MapOverlayKey(MapOverlayKind.Marker, marker.Id);
+            yield return new ShapeCatalogEntry(
+                key,
+                CatalogTitle(key, marker.Label, drawingOrigins),
+                $"1 vertex · {GeoCoordinateText.Format(marker.Position, 4)} · {SelectionState(key, selectedOverlay)}");
+        }
+
+        foreach (var track in tracks)
+        {
+            var key = new MapOverlayKey(MapOverlayKind.Track, track.Id);
+            yield return new ShapeCatalogEntry(
+                key,
+                CatalogTitle(key, track.Label, drawingOrigins),
+                $"{track.Points.Count} vertices · distance {GeoMeasurementText.FormatDistance(
+                    GeoPathMetrics.PolylineLength(track.Points))} · {SelectionState(key, selectedOverlay)}");
+        }
+
+        foreach (var polygon in polygons)
+        {
+            var key = new MapOverlayKey(MapOverlayKind.Polygon, polygon.Id);
+            yield return new ShapeCatalogEntry(
+                key,
+                CatalogTitle(key, polygon.Label, drawingOrigins),
+                $"{polygon.Points.Count} vertices · perimeter {GeoMeasurementText.FormatDistance(
+                    GeoPathMetrics.PolylineLength(polygon.Points, close: true))} · area {GeoMeasurementText.FormatArea(
+                    GeoPathMetrics.PolygonAreaSquareMeters(polygon.Points))} · {SelectionState(key, selectedOverlay)}");
+        }
+
+        foreach (var circle in circles)
+        {
+            var key = new MapOverlayKey(MapOverlayKind.Circle, circle.Id);
+            yield return new ShapeCatalogEntry(
+                key,
+                CatalogTitle(key, circle.Label, drawingOrigins),
+                $"1 vertex · radius {GeoMeasurementText.FormatDistance(circle.Circle.RadiusMeters)} · circumference {GeoMeasurementText.FormatDistance(
+                    2 * global::System.Math.PI * circle.Circle.RadiusMeters)} · {SelectionState(key, selectedOverlay)}");
+        }
+    }
+
+    static string CatalogTitle(
+        MapOverlayKey key,
+        string? label,
+        IReadOnlyDictionary<MapOverlayKey, GeoDrawing> drawingOrigins)
+    {
+        var kind = drawingOrigins.TryGetValue(key, out var drawing)
+            ? $"Drawing / {drawing.Kind}"
+            : key.Kind.ToString();
+        return $"{kind} · {label ?? key.Id}";
+    }
+
+    static string SelectionState(MapOverlayKey key, MapOverlayKey? selectedOverlay) =>
+        key == selectedOverlay ? "selected" : "not selected";
 
     static ScrollView ToolRow(params View[] views)
     {
@@ -679,4 +1011,9 @@ public sealed class MainPage : TabbedPage, IDisposable
         string Name,
         string Description,
         Func<IMapRasterSource> Create);
+
+    sealed record ShapeCatalogEntry(
+        MapOverlayKey Key,
+        string Title,
+        string Details);
 }
