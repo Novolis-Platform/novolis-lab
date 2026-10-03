@@ -112,6 +112,7 @@ jobs:
         with:
           token: ${{ github.token }}
       - name: Restore and build changed lab
+        shell: bash
         env:
           PROJECTS_JSON: ${{ toJson(matrix.projects) }}
         run: |
@@ -122,6 +123,7 @@ jobs:
             dotnet build "$project" --no-restore -c Release
           done < <(jq -r '.[]' <<< "$PROJECTS_JSON")
       - name: Test changed lab scope
+        shell: bash
         env:
           TESTS_JSON: ${{ toJson(matrix.tests) }}
         run: |
