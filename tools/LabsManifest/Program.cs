@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -12,6 +13,7 @@ internal static class Program
         ReadCommentHandling = JsonCommentHandling.Skip,
         AllowTrailingCommas = true,
         WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
     private static readonly HashSet<string> CategoryDirectories =
@@ -28,6 +30,7 @@ internal static class Program
             "gaming",
             "io",
             "manuscript",
+            "maui",
             "raylib",
             "rendering",
             "workspaces",
@@ -119,6 +122,9 @@ internal static class Program
                 groups.Add(key, entry);
             }
 
+            if (RequiresWindowsMauiRunner(projectPath))
+                entry.Runner = "windows-latest";
+
             var isTest = Regex.IsMatch(
                 Path.GetFileNameWithoutExtension(projectPath),
                 @"(?i)(\.Tests|\.Unit)$")
@@ -157,6 +163,19 @@ internal static class Program
     private static string SplitWords(string value) =>
         Regex.Replace(value.Replace('-', ' '), @"(?<=[a-z])(?=[A-Z])", " ");
 
+    private static bool RequiresWindowsMauiRunner(string projectPath)
+    {
+        var project = File.ReadAllText(projectPath);
+        return Regex.IsMatch(
+                   project,
+                   @"<UseMaui>\s*true\s*</UseMaui>",
+                   RegexOptions.IgnoreCase)
+            && Regex.IsMatch(
+                project,
+                @"<TargetFrameworks?>\s*[^<]*-windows",
+                RegexOptions.IgnoreCase);
+    }
+
     private static int Validate(LabManifest manifest, string repo)
     {
         var errors = new List<string>();
@@ -170,6 +189,9 @@ internal static class Program
                 errors.Add($"{lab.Key}: no projects declared");
             if (!lab.ChangedPathGlobs.Any())
                 errors.Add($"{lab.Key}: changedPathGlobs must not be empty");
+            if (lab.Runner is not null
+                && lab.Runner is not ("ubuntu-latest" or "windows-latest"))
+                errors.Add($"{lab.Key}: unsupported CI runner '{lab.Runner}'");
 
             foreach (var project in lab.Projects.Concat(lab.Tests))
             {
@@ -232,6 +254,7 @@ internal static class Program
             include = selectedList.Select(lab => new
             {
                 key = lab.Key,
+                runner = lab.Runner ?? "ubuntu-latest",
                 projects = lab.Projects.Select(Normalize).ToArray(),
                 tests = lab.Tests.Select(Normalize).ToArray(),
             }).ToArray(),
@@ -337,6 +360,7 @@ internal static class Program
     {
         public string Key { get; init; } = string.Empty;
         public string DisplayName { get; init; } = string.Empty;
+        public string? Runner { get; set; }
         public List<string> Projects { get; init; } = [];
         public List<string> Tests { get; init; } = [];
         public List<string> ChangedPathGlobs { get; init; } = [];

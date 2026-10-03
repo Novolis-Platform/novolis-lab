@@ -60,7 +60,7 @@ jobs:
   build:
     needs: detect
     if: needs.detect.outputs.skip_build != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
@@ -83,21 +83,30 @@ jobs:
       - uses: Novolis-Platform/novolis-workflows/actions/setup-dotnet@main
         with:
           dotnet-version: 10.0.x
-      - name: Install Android workload
+      - name: Install required MAUI workloads
         shell: bash
         env:
           PROJECTS_JSON: ${{ toJson(matrix.projects) }}
         run: |
           set -euo pipefail
-          needs=0
+          needs_android=0
+          needs_windows=0
           while IFS= read -r project; do
             [ -n "$project" ] || continue
             if [[ "$project" == *[Aa]ndroid* ]] || { [ -f "$project" ] && grep -q -- '-android' "$project"; }; then
-              needs=1
+              needs_android=1
+            fi
+            if [ -f "$project" ] \
+              && grep -Eq '<UseMaui>[[:space:]]*true[[:space:]]*</UseMaui>' "$project" \
+              && grep -q -- '-windows' "$project"; then
+              needs_windows=1
             fi
           done < <(jq -r '.[]' <<< "$PROJECTS_JSON")
-          if [ "$needs" = 1 ]; then
+          if [ "$needs_android" = 1 ]; then
             dotnet workload install android
+          fi
+          if [ "$needs_windows" = 1 ]; then
+            dotnet workload install maui-windows
           fi
       - uses: Novolis-Platform/novolis-workflows/actions/authenticate-github-packages@main
         with:

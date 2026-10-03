@@ -917,6 +917,7 @@
     {
       "Key": "maui-MapProvidersLab",
       "DisplayName": "MAUI Map Providers Lab",
+      "Runner": "windows-latest",
       "Projects": [
         "labs/maui/MapProvidersLab/MapProvidersLab.csproj"
       ],
