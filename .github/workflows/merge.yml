@@ -101,7 +101,7 @@ jobs:
               && grep -q -- '-windows' "$project"; then
               needs_windows=1
             fi
-          done < <(jq -r '.[]' <<< "$PROJECTS_JSON")
+          done < <(jq -r '.[]' <<< "$PROJECTS_JSON" | tr -d '\r')
           if [ "$needs_android" = 1 ]; then
             dotnet workload install android
           fi
@@ -121,7 +121,7 @@ jobs:
             [ -n "$project" ] || continue
             dotnet restore "$project"
             dotnet build "$project" --no-restore -c Release
-          done < <(jq -r '.[]' <<< "$PROJECTS_JSON")
+          done < <(jq -r '.[]' <<< "$PROJECTS_JSON" | tr -d '\r')
       - name: Test changed lab scope
         shell: bash
         env:
@@ -131,4 +131,4 @@ jobs:
           while IFS= read -r test; do
             [ -n "$test" ] || continue
             dotnet test "$test" -c Release
-          done < <(jq -r '.[]' <<< "$TESTS_JSON")
+          done < <(jq -r '.[]' <<< "$TESTS_JSON" | tr -d '\r')
