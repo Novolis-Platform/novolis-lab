@@ -15,6 +15,7 @@ namespace Novolis.Lab.MapProviders;
 static class WindowsMapInput
 {
     static readonly ConditionalWeakTable<FrameworkElement, State> Attached = new();
+    static readonly ConditionalWeakTable<FrameworkElement, SceneState> SceneAttached = new();
 
     /// <summary>Attaches native pointer, wheel, and keyboard handling once per native map view.</summary>
     public static void Attach(MapView map, Action<string>? report = null)
@@ -32,6 +33,136 @@ static class WindowsMapInput
         }
 
         state.Attach();
+    }
+
+    /// <summary>Attaches native mouse pan, wheel zoom, and point selection to a projected scene.</summary>
+    public static void Attach(ProjectedSceneView scene)
+    {
+        if (scene.Handler?.PlatformView is not FrameworkElement view)
+            return;
+
+        if (!SceneAttached.TryGetValue(view, out var state))
+        {
+            state = new SceneState(scene, view);
+            SceneAttached.Add(view, state);
+        }
+
+        state.Attach();
+    }
+
+    sealed class SceneState(ProjectedSceneView scene, FrameworkElement view)
+    {
+        bool _dragging;
+        bool _tapCandidate;
+        bool _attached;
+        Windows.Foundation.Point _lastPosition;
+        Windows.Foundation.Point _pressPosition;
+
+        public void Attach()
+        {
+            if (_attached)
+                return;
+
+            _attached = true;
+            view.PointerPressed += OnPointerPressed;
+            view.PointerMoved += OnPointerMoved;
+            view.PointerReleased += OnPointerReleased;
+            view.PointerCaptureLost += OnPointerCaptureLost;
+            view.PointerWheelChanged += OnPointerWheelChanged;
+            view.Unloaded += OnUnloaded;
+        }
+
+        void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            if (args.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
+                return;
+
+            var point = args.GetCurrentPoint(view);
+            if (!point.Properties.IsLeftButtonPressed)
+                return;
+
+            if (view is Control control)
+                control.Focus(FocusState.Pointer);
+            _dragging = true;
+            _tapCandidate = true;
+            _pressPosition = point.Position;
+            _lastPosition = point.Position;
+            view.CapturePointer(args.Pointer);
+            args.Handled = true;
+        }
+
+        void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            if (!_dragging)
+                return;
+
+            var point = args.GetCurrentPoint(view);
+            var deltaX = point.Position.X - _lastPosition.X;
+            var deltaY = point.Position.Y - _lastPosition.Y;
+            _lastPosition = point.Position;
+            var movedX = point.Position.X - _pressPosition.X;
+            var movedY = point.Position.Y - _pressPosition.Y;
+            if (_tapCandidate && movedX * movedX + movedY * movedY >= 36)
+                _tapCandidate = false;
+
+            if (!_tapCandidate)
+                scene.PanBy(deltaX, deltaY);
+            args.Handled = true;
+        }
+
+        void OnPointerReleased(object sender, PointerRoutedEventArgs args)
+        {
+            if (!_dragging)
+                return;
+
+            var point = args.GetCurrentPoint(view);
+            var tap = _tapCandidate;
+            _dragging = false;
+            _tapCandidate = false;
+            view.ReleasePointerCapture(args.Pointer);
+            if (tap)
+                scene.HandleScreenTap(point.Position.X, point.Position.Y);
+            args.Handled = true;
+        }
+
+        void OnPointerCaptureLost(object sender, PointerRoutedEventArgs args)
+        {
+            _dragging = false;
+            _tapCandidate = false;
+        }
+
+        void OnPointerWheelChanged(object sender, PointerRoutedEventArgs args)
+        {
+            var point = args.GetCurrentPoint(view);
+            var delta = point.Properties.MouseWheelDelta;
+            if (delta == 0)
+                return;
+
+            var steps = global::System.Math.Clamp(delta / 120d, -4d, 4d);
+            scene.ZoomAt(
+                point.Position.X,
+                point.Position.Y,
+                scene.WorldScale * global::System.Math.Pow(1.18d, steps));
+            args.Handled = true;
+        }
+
+        void OnUnloaded(object sender, RoutedEventArgs args) => Detach();
+
+        void Detach()
+        {
+            if (!_attached)
+                return;
+
+            _dragging = false;
+            _tapCandidate = false;
+            view.PointerPressed -= OnPointerPressed;
+            view.PointerMoved -= OnPointerMoved;
+            view.PointerReleased -= OnPointerReleased;
+            view.PointerCaptureLost -= OnPointerCaptureLost;
+            view.PointerWheelChanged -= OnPointerWheelChanged;
+            view.Unloaded -= OnUnloaded;
+            _attached = false;
+        }
     }
 
     sealed class State(MapView map, FrameworkElement view, Action<string>? report)

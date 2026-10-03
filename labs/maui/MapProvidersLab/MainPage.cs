@@ -1,8 +1,15 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Storage;
+using Novolis.Astro.Abstractions;
+using Novolis.Astro.Catalog;
+using Novolis.Astro.Catalog.Data;
+using Novolis.IO.Ndjson;
 using Novolis.IO.Maps;
 using Novolis.Maui.GraphicalProfile;
 using Novolis.Maui.Map;
@@ -18,6 +25,11 @@ namespace Novolis.Lab.MapProviders;
 public sealed class MainPage : TabbedPage, IDisposable
 {
     static readonly GeoCoordinate DefaultCenter = new(58.14623, 7.99517);
+    static readonly JsonSerializerOptions CatalogSnapshotJson = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() },
+    };
 
     readonly HttpClient _httpClient;
     readonly List<IDisposable> _sources = [];
@@ -42,6 +54,8 @@ public sealed class MainPage : TabbedPage, IDisposable
 
         foreach (var definition in CreateSourceDefinitions())
             Children.Add(CreateSourcePage(definition));
+        Children.Add(CreateCelestialPage(CatalogPackId.NearSol100));
+        Children.Add(CreateCelestialPage(CatalogPackId.HygLocal1901));
     }
 
     IEnumerable<MapSourceDefinition> CreateSourceDefinitions()
@@ -63,6 +77,218 @@ public sealed class MainPage : TabbedPage, IDisposable
             "procedural-starfield",
             "Generated raster scene · no network · deterministic tiles",
             () => new ProceduralMapRasterSource(256));
+    }
+
+    ContentPage CreateCelestialPage(CatalogPackId pack)
+    {
+        var provenance = CatalogPacks.GetProvenance(pack);
+        var title = pack == CatalogPackId.NearSol100 ? "Near-Sol 100" : "HYG Local 1901";
+        var scene = new ProjectedSceneView
+        {
+            ShowLabels = pack == CatalogPackId.NearSol100,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+        };
+#if WINDOWS
+        scene.HandlerChanged += (_, _) => WindowsMapInput.Attach(scene);
+#endif
+        var sourceTitle = new Label
+        {
+            Text = title,
+            FontSize = 17,
+            FontAttributes = FontAttributes.Bold,
+        };
+        sourceTitle.SetDynamicResource(
+            Label.TextColorProperty,
+            GraphicalProfile.TextResourceKey);
+
+        var provenanceLabel = new Label
+        {
+            Text =
+                $"{provenance.SourceDescription} · {provenance.CartesianFrame} · " +
+                $"Sol origin normalized: {provenance.IsSolNormalized}",
+            FontSize = 12,
+            LineBreakMode = LineBreakMode.WordWrap,
+        };
+        provenanceLabel.SetDynamicResource(
+            Label.TextColorProperty,
+            GraphicalProfile.MutedResourceKey);
+
+        var projectionPicker = new Picker
+        {
+            Title = "Projection",
+            ItemsSource = Enum.GetValues<CelestialProjectionKind>().ToArray(),
+            SelectedItem = CelestialProjectionKind.SolCenteredCartesian,
+        };
+        projectionPicker.SetDynamicResource(
+            Picker.TextColorProperty,
+            GraphicalProfile.TextResourceKey);
+
+        var fit = ChromeButton("Fit stars");
+        var labels = ChromeButton(scene.ShowLabels ? "Hide labels" : "Show labels");
+        var selectedDetails = new Label
+        {
+            Text = "Load the generated catalog snapshot to inspect a real star.",
+            FontSize = 12,
+            LineBreakMode = LineBreakMode.WordWrap,
+        };
+        selectedDetails.SetDynamicResource(
+            Label.TextColorProperty,
+            GraphicalProfile.TextResourceKey);
+
+        var loadStatus = new Label
+        {
+            Text = "NDJSON snapshot waiting for this tab.",
+            FontSize = 11,
+            LineBreakMode = LineBreakMode.WordWrap,
+        };
+        loadStatus.SetDynamicResource(
+            Label.TextColorProperty,
+            GraphicalProfile.MutedResourceKey);
+
+        var header = new VerticalStackLayout
+        {
+            Padding = new Thickness(16, 14, 16, 10),
+            Spacing = 6,
+            Children =
+            {
+                sourceTitle,
+                provenanceLabel,
+                new FlexLayout
+                {
+                    Direction = FlexDirection.Row,
+                    Wrap = FlexWrap.Wrap,
+                    AlignItems = FlexAlignItems.Center,
+                    Children = { projectionPicker, fit, labels },
+                },
+                selectedDetails,
+                loadStatus,
+            },
+        };
+        FlexLayout.SetGrow(projectionPicker, 1);
+        projectionPicker.Margin = new Thickness(0, 0, 8, 4);
+        fit.Margin = new Thickness(0, 0, 8, 4);
+        labels.Margin = new Thickness(0, 0, 8, 4);
+        header.SetDynamicResource(
+            VisualElement.BackgroundColorProperty,
+            GraphicalProfile.SurfaceResourceKey);
+
+        var layout = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Star),
+            },
+        };
+        layout.Add(header, 0, 0);
+        layout.Add(scene, 0, 1);
+
+        var page = new ContentPage
+        {
+            Title = title,
+            Content = layout,
+            Padding = 0,
+        };
+        page.SetDynamicResource(
+            VisualElement.BackgroundColorProperty,
+            GraphicalProfile.BackgroundResourceKey);
+
+        IReadOnlyList<CelestialCatalogEntry>? entries = null;
+        var needsFit = false;
+        var loading = false;
+
+        CelestialProjectionKind GetSelectedProjection() =>
+            projectionPicker.SelectedItem is CelestialProjectionKind selected
+                ? selected
+                : CelestialProjectionKind.SolCenteredCartesian;
+
+        void ApplyProjection()
+        {
+            if (entries is null)
+                return;
+
+            var projection = GetSelectedProjection();
+            scene.Points = entries
+                .Select(entry =>
+                {
+                    var projected = CelestialProjections.ProjectStar(entry, projection);
+                    return new ProjectedScenePoint(
+                        projected.Id,
+                        projected.Coordinate.X,
+                        projected.Coordinate.Y,
+                        projected.Label,
+                        projected.RadiusPixels,
+                        projected.ApparentMagnitude,
+                        tag: projected);
+                })
+                .ToArray();
+            needsFit = true;
+            FitSceneIfReady();
+            loadStatus.Text =
+                $"Loaded {entries.Count:N0} NDJSON records · {projection} · " +
+                $"{provenance.CartesianFrame} source frame.";
+        }
+
+        void FitSceneIfReady()
+        {
+            if (!needsFit || scene.Width <= 0 || scene.Height <= 0)
+                return;
+
+            needsFit = false;
+            scene.FitToPoints();
+        }
+
+        projectionPicker.SelectedIndexChanged += (_, _) => ApplyProjection();
+        fit.Clicked += (_, _) =>
+        {
+            needsFit = true;
+            FitSceneIfReady();
+        };
+        labels.Clicked += (_, _) =>
+        {
+            scene.ShowLabels = !scene.ShowLabels;
+            labels.Text = scene.ShowLabels ? "Hide labels" : "Show labels";
+        };
+        scene.SizeChanged += (_, _) => FitSceneIfReady();
+        scene.PointSelected += point =>
+        {
+            if (point.Tag is not CelestialProjectedStar star)
+                return;
+
+            var entry = star.Entry;
+            selectedDetails.Text =
+                $"{entry.Name} · source {entry.SourceId} · RA {entry.Equatorial.RightAscensionDegrees:0.###}° · " +
+                $"Dec {entry.Equatorial.DeclinationDegrees:0.###}° · " +
+                $"distance {entry.Equatorial.DistanceLightYears:0.###} ly · " +
+                $"magnitude {(entry.ApparentMagnitude?.ToString("0.##") ?? "unknown")} · " +
+                $"Cartesian ({entry.SolRelativeCartesian.X:0.###}, " +
+                $"{entry.SolRelativeCartesian.Y:0.###}, {entry.SolRelativeCartesian.Z:0.###}) ly";
+        };
+
+        page.Appearing += async (_, _) =>
+        {
+            if (entries is not null || loading)
+                return;
+
+            loading = true;
+            loadStatus.Text = "Reading the packageable NDJSON snapshot…";
+            try
+            {
+                entries = await LoadCatalogSnapshotAsync(pack, _cacheDirectory);
+                ApplyProjection();
+            }
+            catch (Exception exception)
+            {
+                loadStatus.Text = $"Could not load the generated catalog: {exception.Message}";
+            }
+            finally
+            {
+                loading = false;
+            }
+        };
+
+        return page;
     }
 
     ContentPage CreateSourcePage(MapSourceDefinition definition)
@@ -888,6 +1114,72 @@ public sealed class MainPage : TabbedPage, IDisposable
                 $"Rectangle overlay added: {GeoMeasurementText.FormatArea(drawing.AreaSquareMeters)}.",
             _ => "Drawing overlay added.",
         };
+
+    static async Task<IReadOnlyList<CelestialCatalogEntry>> LoadCatalogSnapshotAsync(
+        CatalogPackId pack,
+        string cacheDirectory)
+    {
+        var provenance = CatalogPacks.GetProvenance(pack);
+        var packageVersion = typeof(CatalogPacks).Assembly.GetName().Version?.ToString()
+            ?? "current";
+        var buildId = typeof(CatalogPacks).Assembly.ManifestModule.ModuleVersionId
+            .ToString("N");
+        var directory = Path.Combine(cacheDirectory, "catalogs", packageVersion, buildId);
+        Directory.CreateDirectory(directory);
+        var snapshot = new FileInfo(Path.Combine(directory, $"{pack}.ndjson"));
+        if (!snapshot.Exists)
+        {
+            var temporary = snapshot.FullName + ".tmp";
+            try
+            {
+                await using var source = CatalogPacks.OpenNdjson(pack);
+                await using (var destination = new FileStream(
+                    temporary,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 64 * 1024,
+                    useAsync: true))
+                {
+                    await source.CopyToAsync(destination);
+                }
+
+                File.Move(temporary, snapshot.FullName, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(temporary))
+                    File.Delete(temporary);
+            }
+        }
+
+        var reader = new NdjsonFileReader(
+            new NdjsonOpenOptions(MaxTake: provenance.RecordCount));
+        await using var document = await reader.OpenAsync(snapshot);
+        var slice = await document.ReadAsync(take: provenance.RecordCount);
+        if (slice.Records.Count != provenance.RecordCount)
+        {
+            throw new InvalidOperationException(
+                $"The {pack} snapshot contained {slice.Records.Count} records; expected {provenance.RecordCount}.");
+        }
+
+        var entries = new List<CelestialCatalogEntry>(slice.Records.Count);
+        foreach (var record in slice.Records)
+        {
+            if (!record.IsValid || record.Json is not { } json)
+                throw new InvalidOperationException(
+                    $"The {pack} snapshot contains invalid record {record.Number}: {record.Error?.Message}");
+
+            var entry = JsonSerializer.Deserialize<CelestialCatalogEntry>(
+                json.GetRawText(),
+                CatalogSnapshotJson)
+                ?? throw new InvalidOperationException(
+                    $"The {pack} snapshot record {record.Number} was empty.");
+            entries.Add(entry);
+        }
+
+        return entries;
+    }
 
     static IEnumerable<ShapeCatalogEntry> CreateShapeCatalog(
         IEnumerable<MapMarker> markers,
