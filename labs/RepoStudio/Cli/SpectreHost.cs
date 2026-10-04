@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Novolis.IO.Git;
+using Novolis.IO.Paths;
 using Spectre.Console;
 
 namespace RepoStudio.Cli;
@@ -27,21 +28,25 @@ internal static class SpectreHost
                     return 0;
                 case "list":
                 {
-                    var repos = GitWorkspace.Discover(root);
+                    var repos = MultiGitRepositoryWorkspace.Discover(root).Members
+                        .Select(m => new { name = m.RepositoryName, path = m.Root.FullName, worktreeKind = m.WorktreeKind });
                     Write(options, repos);
                     return 0;
                 }
                 case "status":
                 {
                     var filter = ParseFilter(options.Args.Skip(1).ToArray());
-                    var matrix = GitWorkspace.GetStatusMatrix(root, git, filter, includeStashCount: false);
+                    var matrix = git.GetStatusMatrix(
+                        MultiGitRepositoryWorkspace.Discover(root).Select(filter),
+                        filter,
+                        includeStashCount: false);
                     Write(options, matrix);
                     return matrix.Summary.Behind > 0 && matrix.Summary.Dirty > 0 ? 1 : 0;
                 }
                 case "fetch":
                 {
                     var repos = SelectRepos(root, options.Args.Skip(1).ToArray());
-                    var batch = new GitWorkspaceBatch(git);
+                    var batch = new GitRepositoryBatch(git);
                     var result = await batch.FetchAsync(repos, new BatchOptions
                     {
                         WorkspaceRoot = root,
@@ -53,7 +58,7 @@ internal static class SpectreHost
                 case "pull":
                 {
                     var repos = SelectRepos(root, options.Args.Skip(1).ToArray());
-                    var batch = new GitWorkspaceBatch(git);
+                    var batch = new GitRepositoryBatch(git);
                     var result = await batch.PullFfOnlyAsync(repos, new BatchOptions
                     {
                         WorkspaceRoot = root,
@@ -169,12 +174,12 @@ internal static class SpectreHost
             AnsiConsole.WriteLine(JsonSerializer.Serialize(payload, payload.GetType(), JsonOpts));
     }
 
-    static string SafeRoot(string? root) => GitWorkspace.ResolveRoot(root);
+    static string SafeRoot(string? root) => CheckoutRoot.Resolve(root);
 
-    static IReadOnlyList<RepoEntry> SelectRepos(string root, string[] args)
+    static IReadOnlyList<GitRepositoryWorkspace> SelectRepos(string root, string[] args)
     {
         var filter = ParseFilter(args);
-        return GitWorkspace.SelectByNames(GitWorkspace.Discover(root), filter);
+        return MultiGitRepositoryWorkspace.Discover(root).Select(filter).Members;
     }
 
     static RepoFilter ParseFilter(string[] args)
@@ -199,12 +204,12 @@ internal static class SpectreHost
                    ?? args.FirstOrDefault(a => a.StartsWith("novolis-", StringComparison.OrdinalIgnoreCase));
         if (name is null)
             throw new InvalidOperationException("Pass --repo <name>.");
-        var entry = GitWorkspace.Discover(root)
-            .FirstOrDefault(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
-                                 || r.Name.Equals("novolis-" + name, StringComparison.OrdinalIgnoreCase));
+        var entry = MultiGitRepositoryWorkspace.Discover(root).Members
+            .FirstOrDefault(r => r.RepositoryName.Equals(name, StringComparison.OrdinalIgnoreCase)
+                                 || r.RepositoryName.Equals("novolis-" + name, StringComparison.OrdinalIgnoreCase));
         if (entry is null)
             throw new InvalidOperationException($"Repo not found: {name}");
-        return entry.Path;
+        return entry.Root.FullName;
     }
 
     static string? GetFlag(string[] args, string name)

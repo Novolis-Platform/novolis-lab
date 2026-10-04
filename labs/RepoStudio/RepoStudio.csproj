@@ -17,5 +17,6 @@
     <LibraryReference Include="Novolis.Avalonia.Git" />
     <LibraryReference Include="Novolis.Avalonia.Studio" />
     <LibraryReference Include="Novolis.IO.Git" />
+    <LibraryReference Include="Novolis.IO.Paths" />
   </ItemGroup>
 </Project>

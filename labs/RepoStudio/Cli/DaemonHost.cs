@@ -1,4 +1,5 @@
 using Novolis.IO.Git;
+using Novolis.IO.Paths;
 using Spectre.Console;
 
 namespace RepoStudio.Cli;
@@ -7,7 +8,7 @@ internal static class DaemonHost
 {
     public static async Task RunAsync(CliOptions options)
     {
-        var root = GitWorkspace.ResolveRoot(options.Root);
+        var root = CheckoutRoot.Resolve(options.Root);
         await using var scheduler = new FetchScheduler();
         scheduler.CycleCompleted += (_, result) =>
             AnsiConsole.MarkupLine($"[grey]{DateTimeOffset.UtcNow:HH:mm:ss}[/] fetch cycle ok={result.Ok} repos={result.Results.Count}");

@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Novolis.Avalonia.Git;
 using Novolis.IO.Git;
+using Novolis.IO.Paths;
 
 namespace RepoStudio;
 
@@ -79,7 +80,7 @@ internal sealed class MainWindow : Window
     {
         try
         {
-            _root = await Task.Run(() => GitWorkspace.ResolveRoot()).ConfigureAwait(true);
+            _root = await Task.Run(() => CheckoutRoot.Resolve()).ConfigureAwait(true);
             Title = $"Repo Studio — {_root}";
             Flash("Loading workspace…");
             _ = RefreshMatrixAsync(includeStashCount: false);
@@ -245,9 +246,9 @@ internal sealed class MainWindow : Window
         var gen = Interlocked.Increment(ref _matrixGen);
         try
         {
-            var matrix = await GitWorkspace.GetStatusMatrixAsync(
-                _root,
-                _git,
+            var forest = await Task.Run(() => MultiGitRepositoryWorkspace.Discover(_root)).ConfigureAwait(false);
+            var matrix = await _git.GetStatusMatrixAsync(
+                forest,
                 includeStashCount: includeStashCount,
                 parallel: 8,
                 liteStatus: true).ConfigureAwait(false);
@@ -285,9 +286,10 @@ internal sealed class MainWindow : Window
         }
     }
 
-    async Task OpenRepoAsync(RepoEntry repo)
+    async Task OpenRepoAsync(GitRepositoryWorkspace repo)
     {
-        if (string.Equals(_openRepoPath, repo.Path, StringComparison.OrdinalIgnoreCase)
+        var repoPath = repo.Root.FullName;
+        if (string.Equals(_openRepoPath, repoPath, StringComparison.OrdinalIgnoreCase)
             && _openGen > 0)
         {
             // Same repo re-selected after matrix refresh — keep panes, light refresh.
@@ -296,18 +298,18 @@ internal sealed class MainWindow : Window
         }
 
         var gen = Interlocked.Increment(ref _openGen);
-        _openRepoPath = repo.Path;
-        _openRepoName = repo.Name;
+        _openRepoPath = repoPath;
+        _openRepoName = repo.RepositoryName;
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            _repos.SelectRepo(repo.Path);
-            _openLabel.Text = repo.Name;
+            _repos.SelectRepo(repoPath);
+            _openLabel.Text = repo.RepositoryName;
             _openLabel.Foreground = Accent;
             _branches.ShowPlaceholder("Loading…");
             _graph.ShowPlaceholder("Loading history…");
             _working.ShowPlaceholder("Loading…");
-            Flash($"Opening {repo.Name}…");
+            Flash($"Opening {repo.RepositoryName}…");
         });
 
         await RefreshOpenRepoAsync(gen).ConfigureAwait(false);
@@ -443,9 +445,9 @@ internal sealed class MainWindow : Window
                     {
                         if (sel.Selected.Count > 0)
                             return sel.Selected;
-                        return GitWorkspace.SelectByNames(GitWorkspace.Discover(_root), null);
+                        return MultiGitRepositoryWorkspace.Discover(_root).Members;
                     }).ConfigureAwait(false);
-                    var batch = new GitWorkspaceBatch(_git);
+                    var batch = new GitRepositoryBatch(_git);
                     var result = await batch.FetchAsync(repos, new BatchOptions { WorkspaceRoot = _root })
                         .ConfigureAwait(false);
                     Flash($"Fetch ok={result.Ok}");
@@ -462,7 +464,7 @@ internal sealed class MainWindow : Window
                         break;
                     }
 
-                    var names = string.Join('\n', sel.Selected.Take(12).Select(r => $"• {r.Name}"));
+                    var names = string.Join('\n', sel.Selected.Take(12).Select(r => $"• {r.RepositoryName}"));
                     if (sel.Selected.Count > 12)
                         names += $"\n… +{sel.Selected.Count - 12} more";
 
@@ -481,7 +483,7 @@ internal sealed class MainWindow : Window
                     }
 
                     Flash("Pulling…");
-                    var batch = new GitWorkspaceBatch(_git);
+                    var batch = new GitRepositoryBatch(_git);
                     var result = await batch.PullFfOnlyAsync(sel.Selected, new BatchOptions { WorkspaceRoot = _root })
                         .ConfigureAwait(false);
                     Flash($"Pull failures={result.Results.Count(r => r.Outcome == "failed")}");
@@ -684,8 +686,8 @@ internal sealed class MainWindow : Window
             Summary = $"Create/checkout “{body.BranchName}” in {runnable} repo(s) (of {plan.Steps.Count} planned).",
             Detail = string.Join('\n', plan.Steps.Select(s =>
                 s.BlockReason is null
-                    ? $"APPLY  {s.Repo.Name}"
-                    : $"SKIP   {s.Repo.Name} — {s.BlockReason}")),
+                    ? $"APPLY  {s.Repo.RepositoryName}"
+                    : $"SKIP   {s.Repo.RepositoryName} — {s.BlockReason}")),
             ConfirmLabel = "Apply branch cut",
             RequireTypedPhrase = body.BranchName,
             TypedPhraseHint = $"Type the branch name ({body.BranchName}) to enable apply.",
