@@ -25,7 +25,7 @@
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.3" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     <PackageVersion Include="ModelContextProtocol" Version="0.8.0-preview.1" />
-    <PackageVersion Include="MessagePack" Version="3.1.10" />
+    <PackageVersion Include="MessagePack" Version="3.1.11" />
     <PackageVersion Include="NAudio" Version="3.0.0" />
     <PackageVersion Include="NAudio.Wasapi" Version="3.0.0" />
     <PackageVersion Include="MeltySynth" Version="2.4.1" />
@@ -91,9 +91,9 @@
     <PackageVersion Include="Novolis.Video.Rtc" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Video.Capture.Windows" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Video.Edit" Version="2026.1.*" />
-    <PackageVersion Include="SIPSorcery" Version="10.0.16" />
-    <PackageVersion Include="SIPSorceryMedia.Abstractions" Version="10.0.16" />
-    <PackageVersion Include="SIPSorceryMedia.Windows" Version="10.0.16" />
+    <PackageVersion Include="SIPSorcery" Version="10.0.17" />
+    <PackageVersion Include="SIPSorceryMedia.Abstractions" Version="10.0.17" />
+    <PackageVersion Include="SIPSorceryMedia.Windows" Version="10.0.17" />
     <PackageVersion Include="SIPSorceryMedia.Encoders" Version="10.0.4" />
     <!-- Pin away from vulnerable SQLitePCLRaw.lib.e_sqlite3 2.1.11 (NU1903 / GHSA-2m69-gcr7-jv3q). -->
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.13" />
@@ -257,6 +257,6 @@
     <PackageVersion Include="Silk.NET.Shaderc.Native" Version="2.23.0" />
     <PackageVersion Include="Silk.NET.Windowing" Version="2.23.0" />
     <PackageVersion Include="Silk.NET.Windowing.Glfw" Version="2.23.0" />
-    <PackageVersion Include="TUnit" Version="1.72.4" />
+    <PackageVersion Include="TUnit" Version="1.72.16" />
   </ItemGroup>
 </Project>
