@@ -227,14 +227,14 @@
       ]
     },
     {
-      "Key": "MauiAgentMcp",
-      "DisplayName": "MAUI Agent Mcp",
+      "Key": "blazor",
+      "DisplayName": "blazor",
       "Projects": [
-        "labs/MauiAgentMcp/MauiAgentMcp.csproj"
+        "labs/blazor/BlazorMarkupLab/BlazorMarkupLab.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/MauiAgentMcp/**",
+        "labs/blazor/**",
         "labs/shared/**"
       ]
     },
@@ -283,6 +283,18 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/cad/CalypsoInternalsCad/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "cad-ShipDesignerLab",
+      "DisplayName": "cad Ship Designer Lab",
+      "Projects": [
+        "labs/cad/ShipDesignerLab/ShipDesignerLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/cad/ShipDesignerLab/**",
         "labs/shared/**"
       ]
     },
@@ -352,6 +364,7 @@
       "Key": "CursorRemote",
       "DisplayName": "Cursor Remote",
       "Projects": [
+        "labs/CursorRemote/CursorRemote.Android/CursorRemote.Android.csproj",
         "labs/CursorRemote/CursorRemote.Desktop/CursorRemote.Desktop.csproj",
         "labs/CursorRemote/CursorRemote/CursorRemote.csproj"
       ],
@@ -512,6 +525,31 @@
       ]
     },
     {
+      "Key": "inference",
+      "DisplayName": "inference",
+      "Projects": [
+        "labs/inference/ImageInferenceLab/ImageInferenceLab.csproj",
+        "labs/inference/LocalInferenceLab/LocalInferenceLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/inference/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "inspection",
+      "DisplayName": "inspection",
+      "Projects": [
+        "labs/inspection/InspectionLab/InspectionLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/inspection/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "io-IoSmoke",
       "DisplayName": "io Io Smoke",
       "Projects": [
@@ -520,6 +558,18 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/io/IoSmoke/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "language",
+      "DisplayName": "language",
+      "Projects": [
+        "labs/language/LanguagePipelineLab/LanguagePipelineLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/language/**",
         "labs/shared/**"
       ]
     },
@@ -544,6 +594,31 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/MathGridDemo/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "maui-MapProvidersLab",
+      "DisplayName": "maui Map Providers Lab",
+      "Runner": "windows-latest",
+      "Projects": [
+        "labs/maui/MapProvidersLab/MapProvidersLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/maui/MapProvidersLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "MauiAgentMcp",
+      "DisplayName": "Maui Agent Mcp",
+      "Projects": [
+        "labs/MauiAgentMcp/MauiAgentMcp.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/MauiAgentMcp/**",
         "labs/shared/**"
       ]
     },
@@ -866,15 +941,40 @@
       ]
     },
     {
+      "Key": "scripting",
+      "DisplayName": "scripting",
+      "Projects": [
+        "labs/scripting/ScriptingLab/ScriptingLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/scripting/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "SpaceFleetSurveyTeam",
       "DisplayName": "Space Fleet Survey Team",
       "Projects": [
+        "labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Android/SpaceFleetSurveyTeam.Android.csproj",
         "labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Desktop/SpaceFleetSurveyTeam.Desktop.csproj",
         "labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/SpaceFleetSurveyTeam/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "workflows",
+      "DisplayName": "workflows",
+      "Projects": [
+        "labs/workflows/WorkflowEngineLab/WorkflowEngineLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/workflows/**",
         "labs/shared/**"
       ]
     },
@@ -906,24 +1006,13 @@
       "Key": "workspaces-TypedSolutionIntelligence",
       "DisplayName": "workspaces Typed Solution Intelligence",
       "Projects": [
+        "labs/workspaces/TypedSolutionIntelligence/fixture/src/DemoApp/DemoApp.csproj",
+        "labs/workspaces/TypedSolutionIntelligence/fixture/src/DemoLib/DemoLib.csproj",
         "labs/workspaces/TypedSolutionIntelligence/TypedSolutionIntelligence.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/workspaces/TypedSolutionIntelligence/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "maui-MapProvidersLab",
-      "DisplayName": "MAUI Map Providers Lab",
-      "Runner": "windows-latest",
-      "Projects": [
-        "labs/maui/MapProvidersLab/MapProvidersLab.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/maui/MapProvidersLab/**",
         "labs/shared/**"
       ]
     }

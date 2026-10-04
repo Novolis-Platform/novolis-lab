@@ -159,6 +159,7 @@
   <Folder Name="/cad/">
     <Project Path="labs/cad/CalypsoCad/CalypsoCad.csproj" />
     <Project Path="labs/cad/CalypsoInternalsCad/CalypsoInternalsCad.csproj" />
+    <Project Path="labs/cad/ShipDesignerLab/ShipDesignerLab.csproj" />
   </Folder>
   <Folder Name="/workspaces/">
     <Project Path="labs/workspaces/MinimalWorkspaceTimeline/MinimalWorkspaceTimeline.csproj" />

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ShipDesignerLab</RootNamespace>
+    <AssemblyName>Novolis.ShipDesignerLab</AssemblyName>
+    <ApplicationTitle>Novolis Ship Designer Lab</ApplicationTitle>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <LibraryReference Include="Novolis.Avalonia.Cad" />
+    <LibraryReference Include="Novolis.Avalonia.Cad.Ship" />
+    <LibraryReference Include="Novolis.Avalonia.Ship" />
+    <LibraryReference Include="Novolis.Avalonia.Ship.Design" />
+    <LibraryReference Include="Novolis.Avalonia.Agent" />
+    <LibraryReference Include="Novolis.Cad.Primitives" />
+    <LibraryReference Include="Novolis.Ship.Primitives" />
+    <LibraryReference Include="Novolis.Ship.Topology" />
+    <LibraryReference Include="Novolis.Ship.Validation" />
+    <LibraryReference Include="Novolis.Ship.Design" />
+    <LibraryReference Include="Novolis.Ship.Analysis" />
+    <LibraryReference Include="Novolis.Math.Measure" />
+    <LibraryReference Include="Novolis.Commands.Expressions" />
+    <LibraryReference Include="Novolis.ThreeD.Scene" />
+  </ItemGroup>
+</Project>
