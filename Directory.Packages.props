@@ -26,7 +26,8 @@
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     <PackageVersion Include="ModelContextProtocol" Version="0.8.0-preview.1" />
     <PackageVersion Include="MessagePack" Version="3.1.10" />
-    <PackageVersion Include="NAudio" Version="2.3.0" />
+    <PackageVersion Include="NAudio" Version="3.0.0" />
+    <PackageVersion Include="NAudio.Wasapi" Version="3.0.0" />
     <PackageVersion Include="MeltySynth" Version="2.4.1" />
     <PackageVersion Include="Novolis.Audio" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Audio.Abstractions" Version="2026.1.*" />
