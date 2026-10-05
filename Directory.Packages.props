@@ -224,6 +224,7 @@
     <PackageVersion Include="Novolis.Rendering.Compile" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Rendering.DependencyInjection" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Rendering.Materials" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Rendering.Appearance" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Rendering.PathTrace.Demos" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Rendering.Presentation.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Rendering.Presentation.Raylib" Version="2026.1.*" />

@@ -1,4 +1,5 @@
 using System.Numerics;
+using FrankMoat.Art;
 using FrankMoat.Levels;
 using Novolis.Math.Geometry;
 using Novolis.Math.Topology;
@@ -12,12 +13,12 @@ internal sealed class RaisedWallDrawer
 
     public IReadOnlyList<WallFaceSprite> Faces => _faces;
 
-    public void Build(TwoDScene scene, IReadOnlyList<RaisedWall> walls)
+    public void Build(TwoDScene scene, IReadOnlyList<RaisedWall> walls, RangeArt art)
     {
         _faces.Clear();
         foreach (var wall in walls)
         {
-            AddWall(scene, wall);
+            AddWall(scene, wall, art);
         }
     }
 
@@ -32,14 +33,14 @@ internal sealed class RaisedWallDrawer
             }
 
             var lit = muzzle > 0f ? 1.14f : 1f;
-            var color = Tint(face.Material, face.Occludes, lit, (byte)alpha);
-            face.Polygon.FillColor = color;
+            face.Polygon.FillColor = new Rgba32(Mul(255, lit), Mul(255, lit), Mul(255, lit), (byte)alpha);
         }
     }
 
-    private void AddWall(TwoDScene scene, RaisedWall wall)
+    private void AddWall(TwoDScene scene, RaisedWall wall, RangeArt art)
     {
         var ext = HeightProjection.Offset(wall.Height);
+        var texture = art.Wall(wall.Material);
         foreach (var segment in wall.Segments)
         {
             var edge = segment.End - segment.Start;
@@ -55,9 +56,11 @@ internal sealed class RaisedWallDrawer
             var a = segment.Start;
             var b = segment.End;
             var shape = new Polygon([a, b, b + ext, a + ext]);
-            var poly = new TwoDStaticPolygon(shape, Tint(wall.Material, occludes, 1f, 255))
+            var poly = new TwoDStaticPolygon(shape, Rgba32.White)
             {
                 DrawFilled = true,
+                Texture = texture,
+                TextureMeters = 2f,
                 SortKey = 40 + (int)(MathF.Min(a.Z, b.Z) * 4f),
             };
             scene.StaticPolygons.Add(poly);
@@ -72,10 +75,10 @@ internal sealed class RaisedWallDrawer
             });
         }
 
-        AddTop(scene, wall, ext);
+        AddTop(scene, wall, ext, texture);
     }
 
-    private static void AddTop(TwoDScene scene, RaisedWall wall, Vector3 ext)
+    private static void AddTop(TwoDScene scene, RaisedWall wall, Vector3 ext, TwoDTextureId texture)
     {
         if (wall.Footprint.Length < 3)
         {
@@ -90,22 +93,13 @@ internal sealed class RaisedWallDrawer
             minZ = MathF.Min(minZ, wall.Footprint[i].Z);
         }
 
-        scene.StaticPolygons.Add(new TwoDStaticPolygon(new Polygon(lifted), Tint(wall.Material, occludes: false, 1.08f, 255))
+        scene.StaticPolygons.Add(new TwoDStaticPolygon(new Polygon(lifted), Rgba32.White)
         {
             DrawFilled = true,
+            Texture = texture,
+            TextureMeters = 2f,
             SortKey = 20 + (int)(minZ * 4f),
         });
-    }
-
-    private static Rgba32 Tint(WallMaterial material, bool occludes, float lit, byte alpha)
-    {
-        var (r, g, b) = material switch
-        {
-            WallMaterial.Steel => occludes ? (72, 80, 90) : (124, 134, 144),
-            WallMaterial.Glass => occludes ? (70, 90, 104) : (140, 168, 180),
-            _ => occludes ? (54, 56, 60) : (96, 100, 106),
-        };
-        return new Rgba32(Mul(r, lit), Mul(g, lit), Mul(b, lit), alpha);
     }
 
     private static byte Mul(int channel, float lit) => (byte)Math.Clamp((int)(channel * lit), 0, 255);

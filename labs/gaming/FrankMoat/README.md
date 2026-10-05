@@ -24,10 +24,20 @@ dotnet run --project d:\novolis\novolis-lab\labs\gaming\FrankMoat\FrankMoat.cspr
 | E | Cycle weapon |
 | H | Inspect (pauses hostiles) |
 | + / - | Zoom |
+| F10 | Dump framebuffer (PPM) after bloom/vignette post |
 | Esc | Pause |
+
+## Capture
+
+Headless-ish dump (skips the menu, writes 6 bloomed PPM frames, then closes):
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\gaming\FrankMoat\FrankMoat.csproj -p:NovolisUseProjectReferences=true -- --capture $env:LOCALAPPDATA\Novolis\FrankMoat\capture
+```
 
 ## What it is proving
 
+- Appearance stacks (grey → steel / grime / emission / fog cone) baked to planar textures
 - Instant movement before anything else
 - 2D collision + ray-segment hits against wall footprints
 - Raised wall faces, tops, and occlusion fade
@@ -36,4 +46,4 @@ dotnet run --project d:\novolis\novolis-lab\labs\gaming\FrankMoat\FrankMoat.cspr
 
 ## Packages
 
-`Novolis.Rendering.TwoD`, `Novolis.Silk`, `Novolis.Game.MenuFlows`, `Novolis.Math.Geometry`, `Novolis.Math.Topology` — GPR `2026.1.*`.
+`Novolis.Rendering.TwoD`, `Novolis.Rendering.Appearance`, `Novolis.Silk`, `Novolis.Game.MenuFlows`, `Novolis.Math.Geometry`, `Novolis.Math.Topology` — GPR `2026.1.*`.

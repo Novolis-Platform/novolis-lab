@@ -16,6 +16,7 @@
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs. -->
     <LibraryReference Include="Novolis.Math.Topology" />
     <LibraryReference Include="Novolis.Rendering.TwoD" />
+    <LibraryReference Include="Novolis.Rendering.Appearance" />
     <LibraryReference Include="Novolis.Silk" />
     <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
     </ItemGroup>

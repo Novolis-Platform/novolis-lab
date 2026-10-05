@@ -24,12 +24,20 @@ internal sealed class FrankMoatGame
     private float _accum;
     private float _zoom = DefaultZoom;
 
+    public bool SkipMenu { get; init; }
+
     public void Initialize(SilkFrame frame, TwoDScene scene)
     {
         _art = RangeArt.Create(scene.Textures);
         _presenter = new RangePresenter(_art);
         scene.Camera.WorldUnitsPerPixel = _zoom;
         scene.Camera.ClearColor = new Rgba32(16, 18, 22);
+        if (SkipMenu)
+        {
+            StartRun(scene);
+            _playing = true;
+            return;
+        }
         scene.Menus.Push(new TwoDMenuScreen("FRANK MOAT", [
             new TwoDMenuItem("ENTER THE RANGE", Tag: "play", OnSelect: () =>
             {
@@ -120,7 +128,7 @@ internal sealed class FrankMoatGame
         _world.Reset();
         var walls = MinigunRange.Build(scene, _world);
         _presenter?.BuildStatic(scene);
-        _walls.Build(scene, walls);
+        _walls.Build(scene, walls, _art!);
         _ended = false;
         _paused = false;
         _accum = 0f;

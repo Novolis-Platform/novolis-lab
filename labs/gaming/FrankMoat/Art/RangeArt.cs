@@ -1,4 +1,6 @@
+using FrankMoat.Levels;
 using Novolis.Math.Geometry;
+using Novolis.Rendering.Appearance;
 using Novolis.Rendering.TwoD;
 
 namespace FrankMoat.Art;
@@ -17,6 +19,20 @@ internal sealed class RangeArt
     public required TwoDTextureId Tank { get; init; }
     public required TwoDTextureId Barrel { get; init; }
     public required TwoDTextureId Crate { get; init; }
+    public required TwoDTextureId Floor { get; init; }
+    public required TwoDTextureId Steel { get; init; }
+    public required TwoDTextureId Concrete { get; init; }
+    public required TwoDTextureId Glass { get; init; }
+    public required TwoDTextureId FilthyGlow { get; init; }
+    public required TwoDTextureId FlashCone { get; init; }
+
+    public TwoDTextureId Wall(WallMaterial material) => material switch
+    {
+        WallMaterial.Steel => Steel,
+        WallMaterial.Glass => Glass,
+        WallMaterial.FilthyGlow => FilthyGlow,
+        _ => Concrete,
+    };
 
     public static RangeArt Create(TwoDTextureRegistry registry) => new()
     {
@@ -32,7 +48,16 @@ internal sealed class RangeArt
         Tank = Actor(registry, 96, 88, 72, 60, 48, 40, "tank"),
         Barrel = Drum(registry),
         Crate = Box(registry),
+        Floor = Register(registry, AppearanceBaker.BakeSurface(AppearanceRecipes.RangeFloor(), 128, 128, 8f, 4), 128, "floor"),
+        Steel = Register(registry, AppearanceBaker.BakeSurface(AppearanceRecipes.SteelPanels(), 128, 128, 2f, 11), 128, "steel"),
+        Concrete = Register(registry, AppearanceBaker.BakeSurface(AppearanceRecipes.ConcreteGrime(), 128, 128, 2f, 21), 128, "concrete"),
+        Glass = Register(registry, AppearanceBaker.BakeSurface(AppearanceRecipes.GlassPane(), 64, 64, 1.5f, 3), 64, "glass"),
+        FilthyGlow = Register(registry, AppearanceBaker.BakeSurface(AppearanceRecipes.FilthyGlowWall(), 128, 128, 2f, 69), 128, "filthy"),
+        FlashCone = Register(registry, AppearanceBaker.BakeLightVolume(AppearanceRecipes.Flashlight(), AppearanceRecipes.IndoorFog(), 96, 96, 1), 96, "cone"),
     };
+
+    private static TwoDTextureId Register(TwoDTextureRegistry registry, Rgba32[] pixels, int size, string name) =>
+        registry.Register(pixels, size, size, name);
 
     private static TwoDTextureId Solid(TwoDTextureRegistry registry, byte r, byte g, byte b, byte a, string name)
     {

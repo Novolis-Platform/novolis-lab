@@ -16,6 +16,7 @@ internal sealed class RangePresenter
     private readonly List<TwoDSpriteInstance> _decals = [];
     private readonly List<TwoDSpriteInstance> _actors = [];
     private TwoDSpriteInstance? _frank;
+    private TwoDSpriteInstance? _cone;
     private int _decalCursor;
 
     public RangePresenter(RangeArt art) => _art = art;
@@ -25,8 +26,8 @@ internal sealed class RangePresenter
         var s = RangeBounds.Size;
         scene.Sprites.Add(new TwoDSpriteInstance
         {
-            Texture = _art.White,
-            Tint = new Rgba32(36, 38, 42),
+            Texture = _art.Floor,
+            Tint = Rgba32.White,
             SortKey = 0,
             Transform =
             {
@@ -66,6 +67,7 @@ internal sealed class RangePresenter
     public void Sync(TwoDScene scene, RangeWorld world)
     {
         SyncFrank(scene, world);
+        SyncCone(scene, world);
         SyncActors(scene, world);
         SyncDecals(scene, world);
         SyncParticles(scene, world);
@@ -77,6 +79,12 @@ internal sealed class RangePresenter
         {
             scene.Sprites.Remove(_frank);
             _frank = null;
+        }
+
+        if (_cone is not null)
+        {
+            scene.Sprites.Remove(_cone);
+            _cone = null;
         }
 
         foreach (var sprite in _actors)
@@ -111,6 +119,22 @@ internal sealed class RangePresenter
             ? new Rgba32(255, 180, 180)
             : Rgba32.White;
         _frank.SortKey = 50 + (int)(world.Frank.Position.Z * 2f);
+    }
+
+    private void SyncCone(TwoDScene scene, RangeWorld world)
+    {
+        _cone ??= Add(scene, _art.FlashCone, 12);
+        var aim = MathF.Atan2(world.Frank.Facing.Y, world.Frank.Facing.X);
+        var muzzle = world.Juice.MuzzleTimer > 0f ? 1.35f : 1f;
+        _cone.Texture = _art.FlashCone;
+        _cone.Transform.Position = HeightProjection.Elevate(
+            world.Frank.Position + new Vector3(world.Frank.Facing.X * 4.2f, 0f, world.Frank.Facing.Y * 4.2f),
+            0.35f);
+        _cone.Transform.Scale = new Vector3(6.4f, 1f, 9.2f);
+        _cone.Transform.RotationY = -aim + MathF.PI * 0.5f;
+        var a = (byte)Math.Clamp((int)(150 * muzzle), 40, 220);
+        _cone.Tint = new Rgba32(255, 236, 200, a);
+        _cone.SortKey = 12;
     }
 
     private void SyncActors(TwoDScene scene, RangeWorld world)

@@ -5,4 +5,5 @@ internal enum WallMaterial
     Concrete,
     Steel,
     Glass,
+    FilthyGlow,
 }

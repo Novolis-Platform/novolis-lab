@@ -32,11 +32,12 @@ internal static class MinigunRange
                 Vector3PlanarExtensions.Xz(9.2f, 25.2f),
             ],
             RangeBounds.BermHeight,
-            WallMaterial.Steel));
+            WallMaterial.FilthyGlow));
 
         walls.Add(WallFactory.Box(16.5f, 20.6f, 21.5f, 22.0f, 1.4f, WallMaterial.Steel));
         walls.Add(WallFactory.Box(31.2f, 15.4f, 34.6f, 16.3f, 1.1f, WallMaterial.Concrete));
         walls.Add(WallFactory.Box(38.4f, 41.6f, 46.4f, 43.2f, 2.2f, WallMaterial.Steel));
+        walls.Add(WallFactory.Box(28.2f, 8.6f, 30.4f, 9.4f, 1.6f, WallMaterial.Glass));
 
         foreach (var wall in walls)
         {
