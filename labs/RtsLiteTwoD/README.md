@@ -2,7 +2,7 @@
 
 Top-down RTS on orthographic **TwoD** — shared sim types with **RtsLite** (sand field, tiberium patches, tank markers).
 
-Dogfoods **Novolis.Rendering.TwoD**, **Novolis.Rendering.Backends.TwoD.Silk**, **Novolis.Rendering.Presentation.Abstractions**, **Novolis.Simulation.Kinematics**, **Novolis.Math.*** (Arrays, Geometry, Topology), and in-repo **Novolis.Lab.TwoD**.
+Dogfoods **Novolis.Rendering.TwoD**, **Novolis.Silk**, **Novolis.Rendering.Presentation.Abstractions**, **Novolis.Simulation.Kinematics**, **Novolis.Math.*** (Arrays, Geometry, Topology), and in-repo **Novolis.Lab.TwoD**.
 
 ## Run
 

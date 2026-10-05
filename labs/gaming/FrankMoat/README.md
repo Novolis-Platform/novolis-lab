@@ -36,4 +36,4 @@ dotnet run --project d:\novolis\novolis-lab\labs\gaming\FrankMoat\FrankMoat.cspr
 
 ## Packages
 
-`Novolis.Rendering.TwoD`, `Novolis.Rendering.Backends.TwoD.Silk`, `Novolis.Game.MenuFlows`, `Novolis.Math.Geometry`, `Novolis.Math.Topology` — GPR `2026.1.*`.
+`Novolis.Rendering.TwoD`, `Novolis.Silk`, `Novolis.Game.MenuFlows`, `Novolis.Math.Geometry`, `Novolis.Math.Topology` — GPR `2026.1.*`.

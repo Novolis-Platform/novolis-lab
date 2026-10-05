@@ -130,4 +130,4 @@ Walls carry **two-sided** `shapeId`s (side A = left of baseline with +Y up).
 
 ## Packages
 
-PackageReference only (`2026.1.*`): Avalonia, `Novolis.Avalonia.Raylib`, `Novolis.Raylib`, `Novolis.Raylib.Capture`, `Novolis.Rendering.Presentation.Silk`, `Novolis.Avalonia.Studio`.
+PackageReference only (`2026.1.*`): Avalonia, `Novolis.Avalonia.Raylib`, `Novolis.Raylib`, `Novolis.Raylib.Capture`, `Novolis.Avalonia.Studio`.

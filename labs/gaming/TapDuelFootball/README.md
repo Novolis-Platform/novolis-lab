@@ -24,6 +24,4 @@ dotnet run --project d:\novolis\novolis-lab\labs\gaming\TapDuelFootball -p:Novol
 
 ## Packages
 
-`Novolis.Rendering.TwoD`, `Novolis.Rendering.Backends.TwoD.Silk`, `Novolis.Rendering.Presentation.Abstractions`, `Novolis.Game.MenuFlows`, `Novolis.Math.Geometry`, `Novolis.Math.Topology` — GPR `2026.1.*`.
-
-Under `-p:NovolisUseProjectReferences=true`, Silk.NET windowing/input packages are PackageReferenced explicitly (ProjectRef mode does not flow NuGet deps from substituted projects).
+`Novolis.Rendering.TwoD`, `Novolis.Silk`, `Novolis.Rendering.Presentation.Abstractions`, `Novolis.Game.MenuFlows`, `Novolis.Math.Geometry`, `Novolis.Math.Topology` — GPR `2026.1.*`.

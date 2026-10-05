@@ -24,4 +24,4 @@ Flags: `--gallery` (default), `--lights`, `--edit`, `--array`, `--boolean`, `--s
 
 ## ProjectRef note
 
-`-p:NovolisUseProjectReferences=true` does not transitively copy NuGet graphs of substituted projects. ViewportBench therefore PackageReferences `Silk.NET.OpenGL` / `Silk.NET.Vulkan` / Shaderc explicitly so those natives land in the output (same pattern as Raylib on SceneLab). Without them, OpenGL and Vulkan panes stay black at ~0 fps.
+`-p:NovolisUseProjectReferences=true` does not transitively copy NuGet graphs of substituted projects. ViewportBench therefore LibraryReferences `Novolis.Silk` so OpenGL natives land in the output (same pattern as Raylib on SceneLab). Without them, OpenGL panes stay black at ~0 fps.

@@ -1,6 +1,6 @@
 # SilkTraceHello
 
-Path-traced hello scene on **Silk** lab **Novolis.Rendering.DependencyInjection** (env backend selection), **Novolis.Rendering.PathTrace.Demos**, and **Novolis.Rendering.Presentation.Silk**.
+Path-traced hello scene on **Silk** lab **Novolis.Rendering.DependencyInjection** (env backend selection), **Novolis.Rendering.PathTrace.Demos**, and **Novolis.Silk**.
 
 ## Run
 

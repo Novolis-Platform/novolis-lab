@@ -21,6 +21,7 @@
     <LibraryReference Include="Novolis.ThreeD.Scene" />
     <LibraryReference Include="Novolis.Simulation.Humanoid" />
     <LibraryReference Include="Novolis.Simulation.Humanoid.Import" />
+    <LibraryReference Include="Novolis.Silk" />
     </ItemGroup>
   <ItemGroup>
     <Content Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="assets" />

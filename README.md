@@ -99,13 +99,13 @@ Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new ex
 | `ClothPlay` | `labs/ClothPlay` | Raylib, Simulation, Physics.Joints cloth sheet, Physics.Collision |
 | `RandoriFight` | `labs/RandoriFight` | Raylib, Simulation.View, Simulation.Humanoid |
 | `PlatformerHop` | `labs/PlatformerHop` | Raylib, Simulation.Kinematics, Simulation.View |
-| `PlatformerTwoD` | `labs/PlatformerTwoD` | Rendering.TwoD, Backends.TwoD.Silk, Simulation |
+| `PlatformerTwoD` | `labs/PlatformerTwoD` | Rendering.TwoD, Novolis.Silk, Simulation |
 | `RtsLite` | `labs/RtsLite` | Raylib, Simulation (Kinematics, View, World) |
-| `RtsLiteTwoD` | `labs/RtsLiteTwoD` | Rendering.TwoD, Backends.TwoD.Silk, Simulation.Kinematics |
+| `RtsLiteTwoD` | `labs/RtsLiteTwoD` | Rendering.TwoD, Novolis.Silk, Simulation.Kinematics |
 | `RaytraceHello` | `labs/rendering/RaytraceHello` | Raylib.Game, Rendering (ILGPU + DI + Presentation.Raylib) |
-| `SilkTraceHello` | `labs/rendering/SilkTraceHello` | Rendering (env backend + PathTrace.Demos + Presentation.Silk) |
-| `SilkTraceStudio` | `labs/rendering/SilkTraceStudio` | Rendering backends + PathTrace.Demos + Presentation.Silk |
-| `SilkTwoDHello` | `labs/rendering/SilkTwoDHello` | Rendering.TwoD, Backends.TwoD.Silk |
+| `SilkTraceHello` | `labs/rendering/SilkTraceHello` | Rendering (env backend + PathTrace.Demos + Novolis.Silk) |
+| `SilkTraceStudio` | `labs/rendering/SilkTraceStudio` | Rendering backends + PathTrace.Demos + Novolis.Silk |
+| `SilkTwoDHello` | `labs/rendering/SilkTwoDHello` | Rendering.TwoD, Novolis.Silk |
 | `MeshBench` (Mesh Studio) | `labs/rendering/MeshBench` | Workspaces, Timeline, Snapshots, Rendering, Audio |
 | `GamingSmoke` | `labs/gaming/GamingSmoke` | Game.Identity, Game.MenuFlows, Game.Multiplayer.Abstractions |
 | `FrankMoat` | `labs/gaming/FrankMoat` | Loaded-style top-down range: Rendering.TwoD, raised walls, particles |

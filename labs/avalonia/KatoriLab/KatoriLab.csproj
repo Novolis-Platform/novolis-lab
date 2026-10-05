@@ -23,5 +23,6 @@
     <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.ThreeD.Scene" />
     <LibraryReference Include="Novolis.Simulation.Humanoid" />
+    <LibraryReference Include="Novolis.Silk" />
     </ItemGroup>
 </Project>

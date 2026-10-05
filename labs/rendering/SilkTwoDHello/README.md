@@ -1,6 +1,6 @@
 # SilkTwoDHello
 
-Orthographic 2D platformer sample lab **Novolis.Rendering.TwoD**, **Novolis.Rendering.Backends.TwoD.Silk**, **Novolis.Rendering.Presentation.Abstractions**, **Novolis.Math.Geometry**, and **Novolis.Math.Topology** (`TwoDCollisionWorld`, HUD, menus).
+Orthographic 2D platformer sample lab **Novolis.Rendering.TwoD**, **Novolis.Silk**, **Novolis.Rendering.Presentation.Abstractions**, **Novolis.Math.Geometry**, and **Novolis.Math.Topology** (`TwoDCollisionWorld`, HUD, menus).
 
 ## Run
 

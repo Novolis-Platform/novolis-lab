@@ -1,6 +1,6 @@
 # TwoD rendering + Simulation — dogfood gaps
 
-Orthographic 2D lives in **`Novolis.Rendering.TwoD`** (+ **`Backends.TwoD.Silk`**). Simulation stays **BCL `Vector3` / `Quaternion`** on the **XZ plane** (`Y = 0`). Do not add `Vector2`, suffix-3 types, or TwoD types to Math or Physics.
+Orthographic 2D lives in **`Novolis.Rendering.TwoD`**. Hosts tessellate the scene and submit through **`Novolis.Silk`**. Simulation stays **BCL `Vector3` / `Quaternion`** on the **XZ plane** (`Y = 0`). Do not add `Vector2`, suffix-3 types, or TwoD types to Math or Physics.
 
 ## Dogfood apps (new)
 
@@ -73,14 +73,14 @@ Package **`Novolis.Avalonia.Rendering`** (`novolis-avalonia`):
 
 | Control | Renders |
 |---------|---------|
-| `TwoDSceneControl` | `TwoDScene` via OpenGL (`SilkTwoDRenderer`) |
+| `TwoDSceneControl` | `TwoDScene` tessellated through `Novolis.Silk.Runtime` |
 | `Rgba32FrameControl` | CPU `Rgba32` frames (`IFramePresenter`) — path trace preview |
 
 Sample: `novolis-lab/labs/avalonia/RenderingAvalonia`. PackageReference `Novolis.Avalonia.Rendering` (no cross-repo `ProjectReference`).
 
 ## Dropped: TerraFX
 
-Low-level GPU interop (VMA, D3D12) was considered and **not** adopted — Novolis stays on **Silk.NET** for Vulkan/OpenGL presenters.
+Low-level GPU interop (VMA, D3D12) was considered and **not** adopted — OpenGL/Vulkan presenters live in **`novolis-silk`**.
 
 ## Rendering gaps (for follow-up)
 

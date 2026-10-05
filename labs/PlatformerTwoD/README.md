@@ -2,7 +2,7 @@
 
 Same tile demo as **PlatformerHop**, but planar XZ via `PlanarAgent` and **Silk TwoD** drawing.
 
-Dogfoods **Novolis.Rendering.TwoD**, **Novolis.Rendering.Backends.TwoD.Silk**, **Novolis.Rendering.Presentation.Abstractions**, **Novolis.Physics.Abstractions**, **Novolis.Simulation.Kinematics**, **Novolis.Simulation.World**, **Novolis.Math.*** (Arrays, Geometry), and in-repo **Novolis.Lab.TwoD**.
+Dogfoods **Novolis.Rendering.TwoD**, **Novolis.Silk**, **Novolis.Rendering.Presentation.Abstractions**, **Novolis.Physics.Abstractions**, **Novolis.Simulation.Kinematics**, **Novolis.Simulation.World**, **Novolis.Math.*** (Arrays, Geometry), and in-repo **Novolis.Lab.TwoD**.
 
 ## Run
 

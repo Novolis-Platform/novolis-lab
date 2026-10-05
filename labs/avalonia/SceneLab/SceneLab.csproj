@@ -27,7 +27,7 @@
     <LibraryReference Include="Novolis.Avalonia.Rendering" />
     <!-- Vulkan viewport: explicit under ProjectRef (non-transitive). -->
     <LibraryReference Include="Novolis.Rendering.Backends.Vulkan" />
-    <!-- ProjectRef non-transitive: Silk natives for OpenGL / Vulkan wire presenters. -->
+    <LibraryReference Include="Novolis.Silk" />
     </ItemGroup>
     <ItemGroup>
       <None Include="samples\spatial-smoke.nov3djson" CopyToOutputDirectory="PreserveNewest" Link="samples\spatial-smoke.nov3djson" />

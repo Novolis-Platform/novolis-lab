@@ -23,6 +23,7 @@
     <LibraryReference Include="Novolis.Raylib.Runtime" />
     <LibraryReference Include="Novolis.Avalonia.Rendering" />
     <LibraryReference Include="Novolis.Rendering.Backends.Vulkan" />
+    <LibraryReference Include="Novolis.Silk" />
   </ItemGroup>
 </Project>
 
