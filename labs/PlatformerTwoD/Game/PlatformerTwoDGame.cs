@@ -1,10 +1,9 @@
 using System.Numerics;
 using Novolis.Lab.TwoD;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.Backends.TwoD.Silk;
+using Novolis.Silk;
 using Novolis.Rendering.TwoD;
 using PlatformerHop.Game;
-using Novolis.Rendering.Presentation;
 
 namespace PlatformerTwoD.Game;
 
@@ -15,9 +14,8 @@ internal sealed class PlatformerTwoDGame
     private TwoDStaticPolygon? _playerMarker;
     private float _cameraX;
 
-    public void Initialize(SilkTwoDGameContext ctx)
+    public void Initialize(SilkFrame frame, TwoDScene scene)
     {
-        var scene = ctx.Scene;
         scene.Camera.ClearColor = new Rgba32(30, 36, 52);
         scene.Camera.WorldUnitsPerPixel = 1f / 32f;
         DenseGridPlatforms.AddSolidCells(scene, _level.Tiles, SideLevel.CellSize, new Rgba32(90, 110, 150));
@@ -25,34 +23,33 @@ internal sealed class PlatformerTwoDGame
         _cameraX = _player.Position.X;
     }
 
-    public void Update(SilkTwoDGameContext ctx)
+    public void Update(SilkFrame frame, TwoDScene scene)
     {
-        var scene = ctx.Scene;
         var move = 0f;
-        if (ctx.IsKeyDown(Key.A))
+        if (frame.IsKeyDown(Key.A))
         {
             move -= 1f;
         }
 
-        if (ctx.IsKeyDown(Key.D))
+        if (frame.IsKeyDown(Key.D))
         {
             move += 1f;
         }
 
-        var jump = ctx.IsKeyPressed(Key.Space) || ctx.IsKeyPressed(Key.W);
-        if (ctx.IsKeyPressed(Key.R))
+        var jump = frame.IsKeyPressed(Key.Space) || frame.IsKeyPressed(Key.W);
+        if (frame.IsKeyPressed(Key.R))
         {
             _player.Reset(_level);
         }
 
-        _player.Update(_level, move, jump, ctx.DeltaSeconds);
+        _player.Update(_level, move, jump, frame.DeltaSeconds);
 
         var targetX = _player.Position.X;
-        var t = 1f - MathF.Exp(-8f * ctx.DeltaSeconds);
+        var t = 1f - MathF.Exp(-8f * frame.DeltaSeconds);
         _cameraX = float.Lerp(_cameraX, targetX, t);
         scene.Camera.Position = Vector3PlanarExtensions.Xz(_cameraX, _player.Position.Z + 1.5f);
 
-        scene.Update(ctx.DeltaSeconds);
+        scene.Update(frame.DeltaSeconds);
         scene.Hud.Elements.Clear();
         scene.Hud.AddText("A/D move  |  Space/W jump  |  R reset", 12, 12, 2f, new Rgba32(210, 220, 235));
         scene.Hud.AddText(

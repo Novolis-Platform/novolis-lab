@@ -1,6 +1,0 @@
-<Project>
-  <ItemGroup>
-    <PackageReference Remove="Novolis.Rendering.Backends.TwoD.Silk" />
-    <ProjectReference Include="D:\novolis\novolis-rendering\src\Novolis.Rendering.Backends.TwoD.Silk\Novolis.Rendering.Backends.TwoD.Silk.csproj" />
-  </ItemGroup>
-</Project>

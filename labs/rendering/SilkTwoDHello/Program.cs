@@ -1,8 +1,7 @@
 using System.Numerics;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.Backends.TwoD.Silk;
 using Novolis.Rendering.TwoD;
-using Novolis.Rendering.Presentation;
+using Novolis.Silk;
 
 namespace SilkTwoDHello;
 
@@ -17,10 +16,10 @@ internal static class Program
         const float jumpSpeed = 8f;
         const float radius = 0.35f;
         TwoDStaticPolygon? playerMarker = null;
+        var scene = new TwoDScene();
 
-        SilkTwoDGame.Run("SilkTwoDHello — orthographic 2D", 800, 600, ctx =>
+        SilkGame.Run("SilkTwoDHello — orthographic 2D", 800, 600, frame =>
         {
-            var scene = ctx.Scene;
             scene.Camera.ClearColor = new Rgba32(30, 36, 52);
             scene.Camera.WorldUnitsPerPixel = 1f / 28f;
 
@@ -32,23 +31,24 @@ internal static class Program
                 new TwoDMenuItem("PLAY", Tag: "play", OnSelect: () => { scene.Menus.Pop(); return (object?)"play"; }),
                 new TwoDMenuItem("QUIT", Tag: "quit", OnSelect: () => { Environment.Exit(0); return (object?)"quit"; }),
             ]));
-        }, ctx =>
+        }, frame =>
         {
-            if (ctx.Scene.Menus.IsActive)
+            scene.Menus.HandleInput(frame.IsMenuUpPressed(), frame.IsMenuDownPressed(), frame.IsMenuConfirmPressed(), frame.IsMenuCancelPressed());
+            if (scene.Menus.IsActive)
             {
+                frame.Submit(scene.Tessellate(frame.Width, frame.Height));
                 return;
             }
 
-            var scene = ctx.Scene;
-            var dt = ctx.DeltaSeconds;
+            var dt = frame.DeltaSeconds;
 
             var move = 0f;
-            if (ctx.IsKeyDown(Key.A))
+            if (frame.IsKeyDown(Key.A))
             {
                 move -= 1f;
             }
 
-            if (ctx.IsKeyDown(Key.D))
+            if (frame.IsKeyDown(Key.D))
             {
                 move += 1f;
             }
@@ -58,7 +58,7 @@ internal static class Program
             pos = scene.Collision.MoveCircle(pos, horizontal, radius);
 
             var grounded = !scene.Collision.Overlaps(pos + new Vector3(0f, 0f, -(radius + 0.03f)), radius);
-            if (grounded && ctx.IsKeyPressed(Key.Space))
+            if (grounded && frame.IsKeyPressed(Key.Space))
             {
                 velocityZ = jumpSpeed;
                 grounded = false;
@@ -94,6 +94,7 @@ internal static class Program
 
             playerMarker = CreatePlayerMarker(pos, radius);
             scene.StaticPolygons.Add(playerMarker);
+            frame.Submit(scene.Tessellate(frame.Width, frame.Height));
         });
     }
 

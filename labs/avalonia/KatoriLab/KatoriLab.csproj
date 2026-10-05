@@ -23,6 +23,5 @@
     <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.ThreeD.Scene" />
     <LibraryReference Include="Novolis.Simulation.Humanoid" />
-    <PackageReference Include="Silk.NET.OpenGL" />
-  </ItemGroup>
+    </ItemGroup>
 </Project>

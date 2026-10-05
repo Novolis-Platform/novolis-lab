@@ -1,9 +1,8 @@
 using System.Numerics;
 using Novolis.Rendering.PathTrace.Demos;
-using Novolis.Rendering.Presentation.Silk;
-using Novolis.Simulation.View;
 using Novolis.Rendering.Runtime;
-using Novolis.Rendering.Presentation;
+using Novolis.Silk;
+using Novolis.Simulation.View;
 
 namespace SilkTraceStudio;
 
@@ -28,22 +27,21 @@ internal static class Program
         var autoOrbit = false;
         var autoOrbitAngle = 0f;
 
-        SilkGame.Run("SilkTraceStudio — path tracing", 1280, 720, ctx =>
+        SilkGame.Run("SilkTraceStudio — path tracing", 1280, 720, frame =>
         {
-            ctx.FramePresenter.ShowStatusStrip = true;
-            fps.Update(ctx.DeltaSeconds);
+            fps.Update(frame.DeltaSeconds);
 
-            if (ctx.Width != frameWidth || ctx.Height != frameHeight)
+            if (frame.Width != frameWidth || frame.Height != frameHeight)
             {
-                frameWidth = ctx.Width;
-                frameHeight = ctx.Height;
+                frameWidth = frame.Width;
+                frameHeight = frame.Height;
                 worker.WaitForIdle();
                 session.Resize(frameWidth, frameHeight);
                 display.Invalidate(frameWidth, frameHeight);
                 sample = 0;
             }
 
-            if (ctx.IsResetPressed())
+            if (frame.IsResetPressed())
             {
                 worker.WaitForIdle();
                 session.Backend.ResetAccumulation();
@@ -51,7 +49,7 @@ internal static class Program
                 sample = 0;
             }
 
-            if (ctx.IsOrbitTogglePressed())
+            if (frame.IsOrbitTogglePressed())
             {
                 autoOrbit = !autoOrbit;
                 worker.WaitForIdle();
@@ -60,7 +58,7 @@ internal static class Program
                 sample = 0;
             }
 
-            if (ctx.IsBackendCyclePressed())
+            if (frame.IsBackendCyclePressed())
             {
                 worker.WaitForIdle();
                 session.CycleBackend();
@@ -69,34 +67,34 @@ internal static class Program
                 sample = 0;
             }
 
-            if (ctx.IsDigitPressed(1))
+            if (frame.IsDigitPressed(1))
             {
                 SwitchBackend(worker, session, display, ref sample, frameWidth, frameHeight, PathTraceBackendKind.Ilgpu);
             }
-            else if (ctx.IsDigitPressed(2))
+            else if (frame.IsDigitPressed(2))
             {
                 SwitchBackend(worker, session, display, ref sample, frameWidth, frameHeight, PathTraceBackendKind.Vulkan);
             }
-            else if (ctx.IsDigitPressed(3))
+            else if (frame.IsDigitPressed(3))
             {
                 SwitchBackend(worker, session, display, ref sample, frameWidth, frameHeight, PathTraceBackendKind.Cpu);
             }
 
             if (!autoOrbit)
             {
-                if (ctx.IsMouseButtonDown(MouseButton.Left))
+                if (frame.IsMouseButtonDown(MouseButton.Left))
                 {
-                    orbit.AddLookDelta(ctx.MouseDelta.X * MouseLookSensitivity, -ctx.MouseDelta.Y * MouseLookSensitivity);
+                    orbit.AddLookDelta(frame.MouseDelta.X * MouseLookSensitivity, -frame.MouseDelta.Y * MouseLookSensitivity);
                 }
 
-                if (MathF.Abs(ctx.ScrollDelta) > 1e-4f)
+                if (MathF.Abs(frame.ScrollDelta) > 1e-4f)
                 {
-                    orbit.AdjustDistance(-ctx.ScrollDelta * ScrollZoomSensitivity);
+                    orbit.AdjustDistance(-frame.ScrollDelta * ScrollZoomSensitivity);
                 }
             }
             else
             {
-                autoOrbitAngle += ctx.DeltaSeconds * 0.35f;
+                autoOrbitAngle += frame.DeltaSeconds * 0.35f;
                 orbit.Yaw = autoOrbitAngle;
             }
 
@@ -117,8 +115,12 @@ internal static class Program
                 worker.TryEnqueueAccumulate(camera, ref sample, AccumulateSamplesPerBatch);
             }
 
-            display.TryPresent(ctx.FramePresenter);
-            ctx.SetTitle(PathTraceStatusTitle.Format(
+            if (display.TryCopyFrame(out var pixels, out var blitWidth, out var blitHeight))
+            {
+                frame.Blit(pixels, blitWidth, blitHeight);
+            }
+
+            frame.SetTitle(PathTraceStatusTitle.Format(
                 session.Backend,
                 display.DisplayedSampleCount,
                 autoOrbit,

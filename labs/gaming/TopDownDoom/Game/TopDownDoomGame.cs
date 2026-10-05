@@ -1,9 +1,8 @@
 using System.Numerics;
 using Novolis.Game.MenuFlows;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.Backends.TwoD.Silk;
+using Novolis.Silk;
 using Novolis.Rendering.TwoD;
-using Novolis.Rendering.Presentation;
 using TopDownDoom.Art;
 using TopDownDoom.Design;
 
@@ -26,40 +25,40 @@ internal sealed class TopDownDoomGame
     private bool _paused;
     private float _combatZoom;
 
-    public void Initialize(SilkTwoDGameContext ctx)
+    public void Initialize(SilkFrame frame, TwoDScene scene)
     {
         var contentRoot = AppContext.BaseDirectory;
-        _art.Initialize(ctx.Scene.Textures, contentRoot);
+        _art.Initialize(scene.Textures, contentRoot);
         _sprites = new SpriteScenePresenter(_art);
         _fx = new FxPresenter(_art);
-        BuildLevel(ctx.Scene);
-        ctx.SetTitle($"Top-Down Doom — {_art.SourceLabel}");
+        BuildLevel(scene);
+        frame.SetTitle($"Top-Down Doom — {_art.SourceLabel}");
 
-        ctx.Scene.Camera.WorldUnitsPerPixel = 1f / 30f;
-        ctx.Scene.Menus.Push(new TwoDMenuScreen("TOP-DOWN DOOM", [
+        scene.Camera.WorldUnitsPerPixel = 1f / 30f;
+        scene.Menus.Push(new TwoDMenuScreen("TOP-DOWN DOOM", [
             new TwoDMenuItem("FIGHT", Tag: "play", OnSelect: () =>
             {
                 _playing = true;
-                ctx.Scene.Menus.Pop();
+                scene.Menus.Pop();
                 return (object?)"play";
             }),
             new TwoDMenuItem("QUIT", Tag: "quit", OnSelect: () => { Environment.Exit(0); return null; }),
         ]));
     }
 
-    public void Update(SilkTwoDGameContext ctx)
+    public void Update(SilkFrame frame, TwoDScene scene)
     {
-        if (ctx.IsKeyPressed(Key.Escape))
+        if (frame.IsKeyPressed(Key.Escape))
         {
             if (_playing && !_paused)
             {
                 _paused = true;
                 _ = _menuFlows.PushAsync(new TopDownPauseScreen());
-                ctx.Scene.Menus.Push(new TwoDMenuScreen("PAUSED", [
+                scene.Menus.Push(new TwoDMenuScreen("PAUSED", [
                     new TwoDMenuItem("RESUME", OnSelect: () =>
                     {
                         _paused = false;
-                        ctx.Scene.Menus.Pop();
+                        scene.Menus.Pop();
                         return null;
                     }),
                     new TwoDMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),
@@ -67,48 +66,47 @@ internal sealed class TopDownDoomGame
             }
         }
 
-        if (!_playing || _paused || ctx.Scene.Menus.IsActive)
+        if (!_playing || _paused || scene.Menus.IsActive)
         {
             return;
         }
 
         if (_world.Health <= 0)
         {
-            ShowDeathMenu(ctx);
+            ShowDeathMenu(frame, scene);
             return;
         }
 
         if (_world.ExitUnlocked)
         {
-            ShowVictoryMenu(ctx);
+            ShowVictoryMenu(frame, scene);
             return;
         }
 
-        var scene = ctx.Scene;
-        var move = ReadMove(ctx);
-        var aimWorld = ReadAimWorld(ctx, scene);
-        var shoot = ctx.IsMouseButtonDown(MouseButton.Left);
-        var dash = ctx.IsKeyPressed(Key.ShiftLeft) || ctx.IsKeyPressed(Key.ShiftRight);
-        var interact = ctx.IsKeyPressed(Key.E);
+        var move = ReadMove(frame, scene);
+        var aimWorld = ReadAimWorld(frame, scene);
+        var shoot = frame.IsMouseButtonDown(MouseButton.Left);
+        var dash = frame.IsKeyPressed(Key.ShiftLeft) || frame.IsKeyPressed(Key.ShiftRight);
+        var interact = frame.IsKeyPressed(Key.E);
 
         if (interact)
         {
             CycleWeapon();
         }
 
-        _world.Tick(ctx.DeltaSeconds, move, aimWorld, shoot, dash);
+        _world.Tick(frame.DeltaSeconds, move, aimWorld, shoot, dash);
         _world.PlayerPosition = scene.Collision.MoveCircle(
             _world.PlayerPosition,
-            new Vector3(_world.PlayerVelocity.X * ctx.DeltaSeconds, 0f, _world.PlayerVelocity.Y * ctx.DeltaSeconds),
+            new Vector3(_world.PlayerVelocity.X * frame.DeltaSeconds, 0f, _world.PlayerVelocity.Y * frame.DeltaSeconds),
             PlayerRadius);
 
         ApplyLevelScript(scene);
 
-        _combatZoom = float.Lerp(_combatZoom, _world.Monsters.Count > 0 ? CombatZoomFactor : ExploreZoomFactor, 1f - MathF.Exp(-6f * ctx.DeltaSeconds));
+        _combatZoom = float.Lerp(_combatZoom, _world.Monsters.Count > 0 ? CombatZoomFactor : ExploreZoomFactor, 1f - MathF.Exp(-6f * frame.DeltaSeconds));
         scene.Camera.WorldUnitsPerPixel = (1f / 30f) * _combatZoom;
 
         var camTarget = _world.PlayerPosition + new Vector3(0f, 0f, 1.2f);
-        var t = 1f - MathF.Exp(-10f * ctx.DeltaSeconds);
+        var t = 1f - MathF.Exp(-10f * frame.DeltaSeconds);
         var shake = _world.Juice.Shake;
         var shakeOffset = shake > 0.01f
             ? new Vector3(
@@ -122,13 +120,13 @@ internal sealed class TopDownDoomGame
             new Rgba32(28, 12, 14),
             MathF.Min(1f, shake * 0.6f + (_world.Monsters.Count > 0 ? 0.15f : 0f)));
 
-        EmitAmbientParticles(ctx.DeltaSeconds);
+        EmitAmbientParticles(frame.DeltaSeconds);
 
-        scene.Update(ctx.DeltaSeconds);
-        _sprites?.Sync(scene, _world, ctx.DeltaSeconds);
+        scene.Update(frame.DeltaSeconds);
+        _sprites?.Sync(scene, _world, frame.DeltaSeconds);
         _fx?.Sync(scene, _world.Juice);
         DrawCombatHints(scene);
-        DrawHud(scene, ctx);
+        DrawHud(scene, frame);
     }
 
     private void ApplyLevelScript(TwoDScene scene)
@@ -183,26 +181,26 @@ internal sealed class TopDownDoomGame
         _world.ActiveWeapon = list[(idx + 1) % list.Count];
     }
 
-    private static Vector2 ReadMove(SilkTwoDGameContext ctx)
+    private static Vector2 ReadMove(SilkFrame frame, TwoDScene scene)
     {
         var x = 0f;
         var z = 0f;
-        if (ctx.IsKeyDown(Key.W))
+        if (frame.IsKeyDown(Key.W))
         {
             z += 1f;
         }
 
-        if (ctx.IsKeyDown(Key.S))
+        if (frame.IsKeyDown(Key.S))
         {
             z -= 1f;
         }
 
-        if (ctx.IsKeyDown(Key.A))
+        if (frame.IsKeyDown(Key.A))
         {
             x -= 1f;
         }
 
-        if (ctx.IsKeyDown(Key.D))
+        if (frame.IsKeyDown(Key.D))
         {
             x += 1f;
         }
@@ -210,9 +208,9 @@ internal sealed class TopDownDoomGame
         return new Vector2(x, z);
     }
 
-    private static Vector2 ReadAimWorld(SilkTwoDGameContext ctx, TwoDScene scene)
+    private static Vector2 ReadAimWorld(SilkFrame frame, TwoDScene scene)
     {
-        var mouse = ctx.MousePosition;
+        var mouse = frame.MousePosition;
         var world = scene.Camera.ScreenToWorld(mouse.X, mouse.Y);
         var flat = new Vector2(world.X - scene.Camera.Position.X, world.Z - scene.Camera.Position.Z);
         return flat;
@@ -250,7 +248,7 @@ internal sealed class TopDownDoomGame
         return dx * dx + dz * dz < 6f;
     }
 
-    private void DrawHud(TwoDScene scene, SilkTwoDGameContext ctx)
+    private void DrawHud(TwoDScene scene, SilkFrame frame)
     {
         scene.Hud.Elements.Clear();
         scene.Hud.AddText("WASD move | Mouse aim | LMB shoot | Shift dash | E swap weapon", 10, 10, 1.8f, new Rgba32(200, 200, 210));
@@ -273,30 +271,30 @@ internal sealed class TopDownDoomGame
         }
     }
 
-    private void ShowDeathMenu(SilkTwoDGameContext ctx)
+    private void ShowDeathMenu(SilkFrame frame, TwoDScene scene)
     {
         _playing = false;
-        ctx.Scene.Menus.Push(new TwoDMenuScreen("YOU DIED", [
+        scene.Menus.Push(new TwoDMenuScreen("YOU DIED", [
             new TwoDMenuItem("RETRY", OnSelect: () =>
             {
-                ResetRun(ctx.Scene);
+                ResetRun(scene);
                 _playing = true;
-                ctx.Scene.Menus.Pop();
+                scene.Menus.Pop();
                 return null;
             }),
             new TwoDMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),
         ]));
     }
 
-    private void ShowVictoryMenu(SilkTwoDGameContext ctx)
+    private void ShowVictoryMenu(SilkFrame frame, TwoDScene scene)
     {
         _playing = false;
-        ctx.Scene.Menus.Push(new TwoDMenuScreen("EXIT OPEN", [
+        scene.Menus.Push(new TwoDMenuScreen("EXIT OPEN", [
             new TwoDMenuItem("AGAIN", OnSelect: () =>
             {
-                ResetRun(ctx.Scene);
+                ResetRun(scene);
                 _playing = true;
-                ctx.Scene.Menus.Pop();
+                scene.Menus.Pop();
                 return null;
             }),
             new TwoDMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),

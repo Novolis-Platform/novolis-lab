@@ -2,8 +2,8 @@ using System.Numerics;
 using Microsoft.Extensions.DependencyInjection;
 using Novolis.Rendering.DependencyInjection;
 using Novolis.Rendering.PathTrace.Demos;
-using Novolis.Rendering.Presentation.Silk;
 using Novolis.Rendering.Runtime;
+using Novolis.Silk;
 
 namespace SilkTraceHello;
 
@@ -27,12 +27,12 @@ internal static class Program
         var orbitAngle = 0f;
         var orbitEnabled = false;
 
-        SilkGame.Run("SilkTraceHello — path tracing", 960, 540, ctx =>
+        SilkGame.Run("SilkTraceHello — path tracing", 960, 540, frame =>
         {
-            if (ctx.Width != frameWidth || ctx.Height != frameHeight)
+            if (frame.Width != frameWidth || frame.Height != frameHeight)
             {
-                frameWidth = ctx.Width;
-                frameHeight = ctx.Height;
+                frameWidth = frame.Width;
+                frameHeight = frame.Height;
                 worker.WaitForIdle();
                 backend.ResizeAsync(frameWidth, frameHeight).GetAwaiter().GetResult();
                 backend.UploadSceneAsync(compiled).GetAwaiter().GetResult();
@@ -40,7 +40,7 @@ internal static class Program
                 sample = 0;
             }
 
-            if (ctx.IsResetPressed())
+            if (frame.IsResetPressed())
             {
                 worker.WaitForIdle();
                 backend.ResetAccumulation();
@@ -48,7 +48,7 @@ internal static class Program
                 sample = 0;
             }
 
-            if (ctx.IsOrbitTogglePressed())
+            if (frame.IsOrbitTogglePressed())
             {
                 orbitEnabled = !orbitEnabled;
                 worker.WaitForIdle();
@@ -66,7 +66,7 @@ internal static class Program
 
             if (orbitEnabled)
             {
-                orbitAngle += ctx.DeltaSeconds * 0.35f;
+                orbitAngle += frame.DeltaSeconds * 0.35f;
             }
 
             var camera = CameraSnapshot.LookAt(
@@ -85,8 +85,12 @@ internal static class Program
                 worker.TryEnqueueAccumulate(camera, ref sample, AccumulateSamplesPerBatch);
             }
 
-            display.TryPresent(ctx.FramePresenter);
-            ctx.SetTitle(PathTraceStatusTitle.Format(backend, display.DisplayedSampleCount, orbitEnabled));
+            if (display.TryCopyFrame(out var pixels, out var blitWidth, out var blitHeight))
+            {
+                frame.Blit(pixels, blitWidth, blitHeight);
+            }
+
+            frame.SetTitle(PathTraceStatusTitle.Format(backend, display.DisplayedSampleCount, orbitEnabled));
         });
 
         worker.Dispose();

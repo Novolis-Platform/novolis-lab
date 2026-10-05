@@ -21,8 +21,7 @@
     <LibraryReference Include="Novolis.ThreeD.Scene" />
     <LibraryReference Include="Novolis.Simulation.Humanoid" />
     <LibraryReference Include="Novolis.Simulation.Humanoid.Import" />
-    <PackageReference Include="Silk.NET.OpenGL" />
-  </ItemGroup>
+    </ItemGroup>
   <ItemGroup>
     <Content Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="assets" />
   </ItemGroup>

@@ -10,7 +10,7 @@
     <LibraryReference Include="Novolis.Rendering.PathTrace.Demos" />
     <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
     <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
-    <LibraryReference Include="Novolis.Rendering.Presentation.Silk" />
+    <LibraryReference Include="Novolis.Silk" />
     <LibraryReference Include="Novolis.Rendering.Runtime" />
     <LibraryReference Include="Novolis.Simulation.View" />
   </ItemGroup>

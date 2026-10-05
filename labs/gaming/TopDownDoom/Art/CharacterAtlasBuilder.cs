@@ -1,6 +1,6 @@
 using Novolis.Math.Geometry;
 using Novolis.Rendering.TwoD;
-using Novolis.Rendering.Backends.TwoD.Silk;
+using Novolis.Silk;
 
 namespace TopDownDoom.Art;
 
@@ -73,7 +73,7 @@ internal static class CharacterAtlasBuilder
         var frames = new List<(int W, int H, Rgba32[] Pixels)>(files.Length);
         foreach (var file in files)
         {
-            var texId = SilkTwoDPngLoader.LoadPng(registry, file);
+            var texId = TwoDPngLoader.LoadPng(registry, file);
             var info = registry.GetInfo(texId);
             var pixels = new Rgba32[info.Width * info.Height];
             registry.CopyPixels(texId, pixels, out _, out _);

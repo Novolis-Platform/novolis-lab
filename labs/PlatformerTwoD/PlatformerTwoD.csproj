@@ -11,7 +11,7 @@
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs. -->
     <LibraryReference Include="Novolis.Physics.Abstractions" />
     <LibraryReference Include="Novolis.Rendering.TwoD" />
-    <LibraryReference Include="Novolis.Rendering.Backends.TwoD.Silk" />
+    <LibraryReference Include="Novolis.Silk" />
     <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
     <LibraryReference Include="Novolis.Simulation.Kinematics" />
     <LibraryReference Include="Novolis.Simulation.World" />

@@ -1,10 +1,9 @@
 using System.Numerics;
 using Novolis.Lab.TwoD;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.Backends.TwoD.Silk;
+using Novolis.Silk;
 using Novolis.Rendering.TwoD;
 using RtsLite.Game;
-using Novolis.Rendering.Presentation;
 
 namespace RtsLiteTwoD.Game;
 
@@ -36,28 +35,27 @@ internal sealed class RtsLiteTwoDGame
     private float _spawnPulse;
     private bool _terrainBuilt;
 
-    public void Initialize(SilkTwoDGameContext ctx)
+    public void Initialize(SilkFrame frame, TwoDScene scene)
     {
         _arena = RtsArena.Create();
         SpawnForces();
         _camera.Center = _arena.SpawnPlayer + new Vector3(6f, 0f, 4f);
         _camera.WorldUnitsPerPixel = 1f / 22f;
-        ctx.Scene.Camera.ClearColor = new Rgba32(40, 48, 58);
-        _camera.ApplyTo(ctx.Scene.Camera, ctx.Width, ctx.Height);
+        scene.Camera.ClearColor = new Rgba32(40, 48, 58);
+        _camera.ApplyTo(scene.Camera, frame.Width, frame.Height);
     }
 
-    public void Update(SilkTwoDGameContext ctx)
+    public void Update(SilkFrame frame, TwoDScene scene)
     {
-        var scene = ctx.Scene;
-        UpdateCamera(ctx);
+        UpdateCamera(frame, scene);
 
-        var mouse = ReadMouse(ctx);
+        var mouse = ReadMouse(frame, scene);
         var ground = ScreenToGround(scene.Camera, mouse);
-        HandleBuildKeys(ctx);
-        HandleSelection(ctx, ground, mouse);
+        HandleBuildKeys(frame, scene);
+        HandleSelection(frame, scene, ground, mouse);
 
-        TickUnits(ctx.DeltaSeconds);
-        TickProduction(ctx.DeltaSeconds);
+        TickUnits(frame.DeltaSeconds);
+        TickProduction(frame.DeltaSeconds);
 
         if (!_terrainBuilt)
         {
@@ -69,89 +67,89 @@ internal sealed class RtsLiteTwoDGame
         ClearFrameOverlays(scene);
         DrawBuildGhost(scene, ground);
         DrawUnits(scene);
-        DrawHud(ctx);
+        DrawHud(frame, scene);
     }
 
-    private void UpdateCamera(SilkTwoDGameContext ctx)
+    private void UpdateCamera(SilkFrame frame, TwoDScene scene)
     {
-        var dt = ctx.DeltaSeconds;
+        var dt = frame.DeltaSeconds;
         var pan = 14f * dt / _camera.WorldUnitsPerPixel;
-        if (ctx.IsKeyDown(Key.W))
+        if (frame.IsKeyDown(Key.W))
         {
             _camera.Pan(new Vector3(0f, 0f, -pan));
         }
 
-        if (ctx.IsKeyDown(Key.S))
+        if (frame.IsKeyDown(Key.S))
         {
             _camera.Pan(new Vector3(0f, 0f, pan));
         }
 
-        if (ctx.IsKeyDown(Key.A))
+        if (frame.IsKeyDown(Key.A))
         {
             _camera.Pan(new Vector3(-pan, 0f, 0f));
         }
 
-        if (ctx.IsKeyDown(Key.D))
+        if (frame.IsKeyDown(Key.D))
         {
             _camera.Pan(new Vector3(pan, 0f, 0f));
         }
 
-        if (ctx.IsKeyPressed(Key.Equal) || ctx.IsKeyPressed(Key.KeypadAdd))
+        if (frame.IsKeyPressed(Key.Equal) || frame.IsKeyPressed(Key.KeypadAdd))
         {
             _camera.Zoom(-1f);
         }
 
-        if (ctx.IsKeyPressed(Key.Minus) || ctx.IsKeyPressed(Key.KeypadSubtract))
+        if (frame.IsKeyPressed(Key.Minus) || frame.IsKeyPressed(Key.KeypadSubtract))
         {
             _camera.Zoom(1f);
         }
 
-        if (MathF.Abs(ctx.MouseDelta.Y) > 0.01f)
+        if (MathF.Abs(frame.MouseDelta.Y) > 0.01f)
         {
-            _camera.Zoom(ctx.MouseDelta.Y > 0 ? -0.15f : 0.15f);
+            _camera.Zoom(frame.MouseDelta.Y > 0 ? -0.15f : 0.15f);
         }
 
-        _camera.ApplyTo(ctx.Scene.Camera, ctx.Width, ctx.Height);
+        _camera.ApplyTo(scene.Camera, frame.Width, frame.Height);
     }
 
-    private void HandleBuildKeys(SilkTwoDGameContext ctx)
+    private void HandleBuildKeys(SilkFrame frame, TwoDScene scene)
     {
-        if (ctx.IsKeyPressed(Key.Number1))
+        if (frame.IsKeyPressed(Key.Number1))
         {
             _build.Select(RtsBuildingType.ConstructionYard);
         }
 
-        if (ctx.IsKeyPressed(Key.Number2))
+        if (frame.IsKeyPressed(Key.Number2))
         {
             _build.Select(RtsBuildingType.PowerPlant);
         }
 
-        if (ctx.IsKeyPressed(Key.Number3))
+        if (frame.IsKeyPressed(Key.Number3))
         {
             _build.Select(RtsBuildingType.Barracks);
         }
 
-        if (ctx.IsKeyPressed(Key.Number4))
+        if (frame.IsKeyPressed(Key.Number4))
         {
             _build.Select(RtsBuildingType.OreRefinery);
         }
 
-        if (ctx.IsKeyPressed(Key.Number5))
+        if (frame.IsKeyPressed(Key.Number5))
         {
             _build.Select(RtsBuildingType.WarFactory);
         }
 
-        if (ctx.IsKeyPressed(Key.B))
+        if (frame.IsKeyPressed(Key.B))
         {
             _build.Cancel();
         }
     }
 
-    private void HandleSelection(SilkTwoDGameContext ctx, Vector3 ground, Vector2 mouse)
+    private void HandleSelection(SilkFrame frame, TwoDScene scene, Vector3 ground, Vector2 mouse)
     {
-        var leftPressed = ctx.IsMouseButtonPressed(MouseButton.Left) || ctx.IsKeyPressed(Key.J);
-        var leftDown = ctx.IsMouseButtonDown(MouseButton.Left) || ctx.IsKeyDown(Key.J);
-        var rightPressed = ctx.IsMouseButtonPressed(MouseButton.Right) || ctx.IsKeyPressed(Key.H);
+        var leftPressed = frame.IsMouseButtonPressed(MouseButton.Left) || frame.IsKeyPressed(Key.J);
+        var leftDown = frame.IsMouseButtonDown(MouseButton.Left) || frame.IsKeyDown(Key.J);
+        var rightPressed = frame.IsMouseButtonPressed(MouseButton.Right) || frame.IsKeyPressed(Key.H);
 
         if (_build.IsActive)
         {
@@ -168,10 +166,10 @@ internal sealed class RtsLiteTwoDGame
             return;
         }
 
-        _selection.Update(_units, p => ScreenToGround(ctx.Scene.Camera, p), leftPressed, leftDown, rightPressed, mouse);
+        _selection.Update(_units, p => ScreenToGround(scene.Camera, p), leftPressed, leftDown, rightPressed, mouse);
     }
 
-    private static Vector2 ReadMouse(SilkTwoDGameContext ctx) => ctx.MousePosition;
+    private static Vector2 ReadMouse(SilkFrame frame, TwoDScene scene) => frame.MousePosition;
 
     private static Vector3 ScreenToGround(TwoDViewport camera, Vector2 screen) =>
         camera.ScreenToWorld(screen.X, screen.Y);
@@ -346,9 +344,8 @@ internal sealed class RtsLiteTwoDGame
         return unit.Team == UnitTeam.Player ? 0f : MathF.PI;
     }
 
-    private void DrawHud(SilkTwoDGameContext ctx)
+    private void DrawHud(SilkFrame frame, TwoDScene scene)
     {
-        var scene = ctx.Scene;
         scene.Hud.Elements.Clear();
         scene.Hud.AddText("RTS Lite TwoD (top-down) — RA camera: run RtsLite", 12, 12, 2f, HudText);
         scene.Hud.AddText("WASD pan  wheel/+/- zoom  |  1-5 build  B cancel", 12, 36, 2f, HudText);

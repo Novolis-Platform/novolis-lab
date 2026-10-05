@@ -1,9 +1,8 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Novolis.Game.MenuFlows;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.Backends.TwoD.Silk;
+using Novolis.Silk;
 using Novolis.Rendering.TwoD;
-using Novolis.Rendering.Presentation;
 using TopDownDoom.Art;
 using TopDownDoom.Design;
 

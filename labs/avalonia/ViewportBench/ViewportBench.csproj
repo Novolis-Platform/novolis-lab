@@ -23,10 +23,6 @@
     <LibraryReference Include="Novolis.Raylib.Runtime" />
     <LibraryReference Include="Novolis.Avalonia.Rendering" />
     <LibraryReference Include="Novolis.Rendering.Backends.Vulkan" />
-    <!-- ProjectRef non-transitive: Silk natives for OpenGL / Vulkan wire presenters. -->
-    <PackageReference Include="Silk.NET.OpenGL" />
-    <PackageReference Include="Silk.NET.Vulkan" />
-    <PackageReference Include="Silk.NET.Shaderc" />
-    <PackageReference Include="Silk.NET.Shaderc.Native" />
   </ItemGroup>
 </Project>
+

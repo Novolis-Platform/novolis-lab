@@ -16,14 +16,7 @@
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs. -->
     <LibraryReference Include="Novolis.Math.Topology" />
     <LibraryReference Include="Novolis.Rendering.TwoD" />
-    <LibraryReference Include="Novolis.Rendering.Backends.TwoD.Silk" />
+    <LibraryReference Include="Novolis.Silk" />
     <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
-    <PackageReference Include="Silk.NET.GLFW" />
-    <PackageReference Include="Silk.NET.Input" />
-    <PackageReference Include="Silk.NET.Input.Common" />
-    <PackageReference Include="Silk.NET.Input.Glfw" />
-    <PackageReference Include="Silk.NET.OpenGL" />
-    <PackageReference Include="Silk.NET.Windowing" />
-    <PackageReference Include="Silk.NET.Windowing.Glfw" />
-  </ItemGroup>
+    </ItemGroup>
 </Project>

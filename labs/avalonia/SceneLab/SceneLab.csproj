@@ -28,11 +28,7 @@
     <!-- Vulkan viewport: explicit under ProjectRef (non-transitive). -->
     <LibraryReference Include="Novolis.Rendering.Backends.Vulkan" />
     <!-- ProjectRef non-transitive: Silk natives for OpenGL / Vulkan wire presenters. -->
-    <PackageReference Include="Silk.NET.OpenGL" />
-    <PackageReference Include="Silk.NET.Vulkan" />
-    <PackageReference Include="Silk.NET.Shaderc" />
-    <PackageReference Include="Silk.NET.Shaderc.Native" />
-  </ItemGroup>
+    </ItemGroup>
     <ItemGroup>
       <None Include="samples\spatial-smoke.nov3djson" CopyToOutputDirectory="PreserveNewest" Link="samples\spatial-smoke.nov3djson" />
       <None Include="samples\triangle-soup.json" CopyToOutputDirectory="PreserveNewest" Link="samples\triangle-soup.json" />

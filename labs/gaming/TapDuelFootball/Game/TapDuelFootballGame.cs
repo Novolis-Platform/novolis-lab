@@ -1,8 +1,7 @@
 using System.Numerics;
 using Novolis.Game.MenuFlows;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.Backends.TwoD.Silk;
-using Novolis.Rendering.Presentation;
+using Novolis.Silk;
 using Novolis.Rendering.TwoD;
 using TapDuelFootball.Art;
 
@@ -27,12 +26,11 @@ internal sealed class TapDuelFootballGame
         EndMenu,
     }
 
-    public void Initialize(SilkTwoDGameContext ctx)
+    public void Initialize(SilkFrame frame, TwoDScene scene)
     {
-        var scene = ctx.Scene;
         scene.Camera.ClearColor = new Rgba32(28, 72, 36);
         scene.Camera.Position = Vector3.Zero;
-        FitCamera(ctx);
+        FitCamera(frame, scene);
 
         FieldPainter.Paint(scene);
 
@@ -51,29 +49,28 @@ internal sealed class TapDuelFootballGame
         scene.Sprites.Add(_ball);
 
         _ = _flows.PushAsync(new TitleFlowScreen());
-        PushTitleMenu(ctx);
+        PushTitleMenu(frame, scene);
     }
 
-    public void Update(SilkTwoDGameContext ctx)
+    public void Update(SilkFrame frame, TwoDScene scene)
     {
-        FitCamera(ctx);
-        var scene = ctx.Scene;
+        FitCamera(frame, scene);
         scene.Hud.Elements.Clear();
 
         switch (_phase)
         {
             case Phase.Title:
-                DrawStaticLabels(ctx);
+                DrawStaticLabels(frame, scene);
                 break;
 
             case Phase.Countdown:
-                DrawStaticLabels(ctx);
-                _countdown -= ctx.DeltaSeconds;
+                DrawStaticLabels(frame, scene);
+                _countdown -= frame.DeltaSeconds;
                 var shown = MathF.Max(0f, _countdown);
                 scene.Hud.AddText(
                     shown < 0.15f ? "GO!" : $"{MathF.Ceiling(shown)}",
-                    ctx.Width * 0.5f - 28f,
-                    ctx.Height * 0.5f - 24f,
+                    frame.Width * 0.5f - 28f,
+                    frame.Height * 0.5f - 24f,
                     5f,
                     new Rgba32(255, 255, 255));
                 if (_countdown <= 0f)
@@ -85,8 +82,8 @@ internal sealed class TapDuelFootballGame
                 break;
 
             case Phase.Playing:
-                DrawStaticLabels(ctx);
-                HandlePlayInput(ctx);
+                DrawStaticLabels(frame, scene);
+                HandlePlayInput(frame, scene);
                 if (_match.IsFinished)
                 {
                     _pendingWinner = _match.Winner;
@@ -97,43 +94,43 @@ internal sealed class TapDuelFootballGame
                 break;
 
             case Phase.WinnerFlash:
-                DrawStaticLabels(ctx);
-                DrawWinnerBanner(ctx);
-                _postWinTimer -= ctx.DeltaSeconds;
+                DrawStaticLabels(frame, scene);
+                DrawWinnerBanner(frame, scene);
+                _postWinTimer -= frame.DeltaSeconds;
                 if (_postWinTimer <= 0f)
                 {
                     _phase = Phase.EndMenu;
-                    PushEndMenu(ctx);
+                    PushEndMenu(frame, scene);
                 }
 
                 break;
 
             case Phase.EndMenu:
-                DrawStaticLabels(ctx);
-                DrawWinnerBanner(ctx);
+                DrawStaticLabels(frame, scene);
+                DrawWinnerBanner(frame, scene);
                 break;
         }
 
         UpdateBallSprite();
-        scene.Update(ctx.DeltaSeconds);
+        scene.Update(frame.DeltaSeconds);
     }
 
-    private void HandlePlayInput(SilkTwoDGameContext ctx)
+    private void HandlePlayInput(SilkFrame frame, TwoDScene scene)
     {
         // Hotseat: bottom half / A / S / Down = Player 1; top half / W / Up = Player 2.
-        if (ctx.IsKeyPressed(Key.A) || ctx.IsKeyPressed(Key.S) || ctx.IsKeyPressed(Key.Down))
+        if (frame.IsKeyPressed(Key.A) || frame.IsKeyPressed(Key.S) || frame.IsKeyPressed(Key.Down))
         {
             _match.TapPlayer1();
         }
 
-        if (ctx.IsKeyPressed(Key.W) || ctx.IsKeyPressed(Key.Up))
+        if (frame.IsKeyPressed(Key.W) || frame.IsKeyPressed(Key.Up))
         {
             _match.TapPlayer2();
         }
 
-        if (ctx.IsMouseButtonPressed(MouseButton.Left))
+        if (frame.IsMouseButtonPressed(MouseButton.Left))
         {
-            if (ctx.MousePosition.Y < ctx.Height * 0.5f)
+            if (frame.MousePosition.Y < frame.Height * 0.5f)
             {
                 _match.TapPlayer2();
             }
@@ -154,11 +151,10 @@ internal sealed class TapDuelFootballGame
         _ball.Transform.Position = Vector3PlanarExtensions.Xz(0f, _match.BallZ);
     }
 
-    private void DrawStaticLabels(SilkTwoDGameContext ctx)
+    private void DrawStaticLabels(SilkFrame frame, TwoDScene scene)
     {
-        var scene = ctx.Scene;
-        var w = ctx.Width;
-        var h = ctx.Height;
+        var w = frame.Width;
+        var h = frame.Height;
 
         // Player 1 right-side-up at bottom end zone.
         scene.Hud.AddText("Player 1", w * 0.5f - 70f, h * 0.92f, 2.4f, Rgba32.White);
@@ -195,29 +191,29 @@ internal sealed class TapDuelFootballGame
         scene.Hud.AddText(label, w * 0.88f, y, 1.8f, Rgba32.White);
     }
 
-    private void DrawWinnerBanner(SilkTwoDGameContext ctx)
+    private void DrawWinnerBanner(SilkFrame frame, TwoDScene scene)
     {
         if (_pendingWinner is not { } winner)
         {
             return;
         }
 
-        ctx.Scene.Hud.AddText(
+        scene.Hud.AddText(
             $"Player {winner} wins!",
-            ctx.Width * 0.5f - 110f,
-            ctx.Height * 0.48f,
+            frame.Width * 0.5f - 110f,
+            frame.Height * 0.48f,
             3.2f,
             new Rgba32(40, 40, 40));
     }
 
-    private void PushTitleMenu(SilkTwoDGameContext ctx)
+    private void PushTitleMenu(SilkFrame frame, TwoDScene scene)
     {
         _phase = Phase.Title;
-        ctx.Scene.Menus.Clear();
-        ctx.Scene.Menus.Push(new TwoDMenuScreen("TAP DUEL FOOTBALL", [
+        scene.Menus.Clear();
+        scene.Menus.Push(new TwoDMenuScreen("TAP DUEL FOOTBALL", [
             new TwoDMenuItem("PLAY", Tag: "play", OnSelect: () =>
             {
-                StartCountdown(ctx);
+                StartCountdown(frame, scene);
                 return "play";
             }),
             new TwoDMenuItem("QUIT", Tag: "quit", OnSelect: () =>
@@ -228,9 +224,9 @@ internal sealed class TapDuelFootballGame
         ]));
     }
 
-    private void StartCountdown(SilkTwoDGameContext ctx)
+    private void StartCountdown(SilkFrame frame, TwoDScene scene)
     {
-        ctx.Scene.Menus.Clear();
+        scene.Menus.Clear();
         _match.Reset();
         _pendingWinner = null;
         _countdown = 3f;
@@ -238,14 +234,14 @@ internal sealed class TapDuelFootballGame
         _ = _flows.PushAsync(new CountdownFlowScreen());
     }
 
-    private void PushEndMenu(SilkTwoDGameContext ctx)
+    private void PushEndMenu(SilkFrame frame, TwoDScene scene)
     {
         var title = _pendingWinner is { } w ? $"PLAYER {w} WINS" : "GAME OVER";
-        ctx.Scene.Menus.Clear();
-        ctx.Scene.Menus.Push(new TwoDMenuScreen(title, [
+        scene.Menus.Clear();
+        scene.Menus.Push(new TwoDMenuScreen(title, [
             new TwoDMenuItem("RESET", Tag: "reset", OnSelect: () =>
             {
-                StartCountdown(ctx);
+                StartCountdown(frame, scene);
                 return "reset";
             }),
             new TwoDMenuItem("EXIT", Tag: "exit", OnSelect: () =>
@@ -256,16 +252,15 @@ internal sealed class TapDuelFootballGame
         ]));
     }
 
-    private static void FitCamera(SilkTwoDGameContext ctx)
+    private static void FitCamera(SilkFrame frame, TwoDScene scene)
     {
-        var scene = ctx.Scene;
-        scene.Camera.ViewportWidth = Math.Max(1, ctx.Width);
-        scene.Camera.ViewportHeight = Math.Max(1, ctx.Height);
+        scene.Camera.ViewportWidth = Math.Max(1, frame.Width);
+        scene.Camera.ViewportHeight = Math.Max(1, frame.Height);
 
         var worldH = (FieldPainter.FieldHalfLength + FieldPainter.EndZoneDepth) * 2.15f;
         var worldW = FieldPainter.FieldHalfWidth * 2.25f;
-        var zoomH = worldH / Math.Max(1, ctx.Height);
-        var zoomW = worldW / Math.Max(1, ctx.Width);
+        var zoomH = worldH / Math.Max(1, frame.Height);
+        var zoomW = worldW / Math.Max(1, frame.Width);
         scene.Camera.WorldUnitsPerPixel = MathF.Max(zoomH, zoomW);
     }
 

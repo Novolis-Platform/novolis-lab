@@ -19,7 +19,7 @@
     <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.Math.Topology" />
     <LibraryReference Include="Novolis.Rendering.TwoD" />
-    <LibraryReference Include="Novolis.Rendering.Backends.TwoD.Silk" />
+    <LibraryReference Include="Novolis.Silk" />
     <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
     <LibraryReference Include="Novolis.Simulation.Kinematics" />
   </ItemGroup>

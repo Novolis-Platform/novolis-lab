@@ -7,6 +7,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <LibraryReference Include="Novolis.Rendering.DependencyInjection" />
     <LibraryReference Include="Novolis.Rendering.PathTrace.Demos" />
-    <LibraryReference Include="Novolis.Rendering.Presentation.Silk" />
+    <LibraryReference Include="Novolis.Silk" />
   </ItemGroup>
 </Project>
