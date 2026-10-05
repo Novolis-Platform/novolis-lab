@@ -108,6 +108,7 @@ Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new ex
 | `SilkTwoDHello` | `labs/rendering/SilkTwoDHello` | Rendering.TwoD, Backends.TwoD.Silk |
 | `MeshBench` (Mesh Studio) | `labs/rendering/MeshBench` | Workspaces, Timeline, Snapshots, Rendering, Audio |
 | `GamingSmoke` | `labs/gaming/GamingSmoke` | Game.Identity, Game.MenuFlows, Game.Multiplayer.Abstractions |
+| `FrankMoat` | `labs/gaming/FrankMoat` | Loaded-style top-down range: Rendering.TwoD, raised walls, particles |
 | `TopDownDoom` | `labs/gaming/TopDownDoom` | Rendering.TwoD, Game flows |
 | `TapDuelFootball` | `labs/gaming/TapDuelFootball` | Rendering.TwoD, Game.MenuFlows — hotseat tap duel |
 | `NeuralRacing` | `labs/NeuralRacing` | Simulation.Racing, MachineLearning.Neural |

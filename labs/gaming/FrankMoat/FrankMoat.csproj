@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FrankMoat</RootNamespace>
+    <Description>Single-room Loaded-style top-down shooter — Level 69 minigun range prototype.</Description>
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests\**\*</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>FrankMoat.Unit</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Game.MenuFlows" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
+    <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs. -->
+    <LibraryReference Include="Novolis.Math.Topology" />
+    <LibraryReference Include="Novolis.Rendering.TwoD" />
+    <LibraryReference Include="Novolis.Rendering.Backends.TwoD.Silk" />
+    <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
+    <PackageReference Include="Silk.NET.GLFW" />
+    <PackageReference Include="Silk.NET.Input" />
+    <PackageReference Include="Silk.NET.Input.Common" />
+    <PackageReference Include="Silk.NET.Input.Glfw" />
+    <PackageReference Include="Silk.NET.OpenGL" />
+    <PackageReference Include="Silk.NET.Windowing" />
+    <PackageReference Include="Silk.NET.Windowing.Glfw" />
+  </ItemGroup>
+</Project>

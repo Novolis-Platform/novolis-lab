@@ -475,6 +475,20 @@
       ]
     },
     {
+      "Key": "gaming-FrankMoat",
+      "DisplayName": "gaming Frank Moat",
+      "Projects": [
+        "labs/gaming/FrankMoat/FrankMoat.csproj"
+      ],
+      "Tests": [
+        "labs/gaming/FrankMoat/tests/FrankMoat.Unit/FrankMoat.Unit.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/gaming/FrankMoat/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "gaming-GamingSmoke",
       "DisplayName": "gaming Gaming Smoke",
       "Projects": [

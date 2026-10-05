@@ -152,6 +152,8 @@
     <Project Path="labs/manuscript/ManuscriptSmoke/ManuscriptSmoke.csproj" />
   </Folder>
   <Folder Name="/gaming/">
+    <Project Path="labs/gaming/FrankMoat/FrankMoat.csproj" />
+    <Project Path="labs/gaming/FrankMoat/tests/FrankMoat.Unit/FrankMoat.Unit.csproj" />
     <Project Path="labs/gaming/GamingSmoke/GamingSmoke.csproj" />
     <Project Path="labs/gaming/TopDownDoom/TopDownDoom.csproj" />
     <Project Path="labs/gaming/TapDuelFootball/TapDuelFootball.csproj" />
