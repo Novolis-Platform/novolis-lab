@@ -541,6 +541,7 @@
     {
       "Key": "inference",
       "DisplayName": "inference",
+      "Ci": false,
       "Projects": [
         "labs/inference/ImageInferenceLab/ImageInferenceLab.csproj",
         "labs/inference/LocalInferenceLab/LocalInferenceLab.csproj"
@@ -554,6 +555,7 @@
     {
       "Key": "inspection",
       "DisplayName": "inspection",
+      "Ci": false,
       "Projects": [
         "labs/inspection/InspectionLab/InspectionLab.csproj"
       ],
@@ -578,6 +580,7 @@
     {
       "Key": "language",
       "DisplayName": "language",
+      "Ci": false,
       "Projects": [
         "labs/language/LanguagePipelineLab/LanguagePipelineLab.csproj"
       ],
@@ -957,6 +960,7 @@
     {
       "Key": "scripting",
       "DisplayName": "scripting",
+      "Ci": false,
       "Projects": [
         "labs/scripting/ScriptingLab/ScriptingLab.csproj"
       ],

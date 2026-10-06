@@ -71,11 +71,28 @@ internal static class Program
 
     private static int Generate(string repo, string manifestPath)
     {
+        var heldOffCi = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (File.Exists(manifestPath))
+        {
+            foreach (var lab in Load(manifestPath).Labs)
+            {
+                if (lab.Ci is false)
+                    heldOffCi.Add(lab.Key);
+            }
+        }
+
+        var labs = Discover(repo);
+        foreach (var lab in labs)
+        {
+            if (heldOffCi.Contains(lab.Key))
+                lab.Ci = false;
+        }
+
         var manifest = new LabManifest
         {
             SchemaVersion = 1,
             Repository = "novolis-lab",
-            Labs = Discover(repo),
+            Labs = labs,
         };
 
         Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
@@ -242,10 +259,11 @@ internal static class Program
                 || string.Equals(path, "Directory.Build.props", StringComparison.OrdinalIgnoreCase)
                 || path.StartsWith(".github/workflows/", StringComparison.OrdinalIgnoreCase));
 
+        var pool = manifest.Labs.Where(lab => lab.Ci != false);
         var selected = all
-            ? manifest.Labs
-            : manifest.Labs.Where(lab => lab.ChangedPathGlobs.Any(glob =>
-                changedFiles.Any(file => Matches(file, glob)))).ToList();
+            ? pool
+            : pool.Where(lab => lab.ChangedPathGlobs.Any(glob =>
+                changedFiles.Any(file => Matches(file, glob))));
 
         var selectedList = selected.ToList();
         var matrix = new
@@ -364,5 +382,8 @@ internal static class Program
         public List<string> Projects { get; init; } = [];
         public List<string> Tests { get; init; } = [];
         public List<string> ChangedPathGlobs { get; init; } = [];
+
+        /// <summary>False keeps the lab out of merge CI until its packages are published.</summary>
+        public bool? Ci { get; set; }
     }
 }
