@@ -119,8 +119,12 @@
     <PackageVersion Include="Novolis.Workspaces.DotNet.MSBuild" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.DotNet.Roslyn" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Workspaces.DotNet.Indexing" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.CodeGen.Pipeline" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.CodeGen.Reflection" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.CodeGen.Reflection.Dump" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Commands.Abstractions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Commands.Engine" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Commands.Expressions" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Commands.Queueing" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Economy.Core" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Economy.Accounting" Version="2026.1.*" />

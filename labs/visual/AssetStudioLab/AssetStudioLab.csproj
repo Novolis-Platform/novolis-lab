@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>AssetStudioLab</RootNamespace>
+    <AssemblyName>AssetStudioLab</AssemblyName>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationTitle>Asset Studio</ApplicationTitle>
+    <Description>Visual asset IDE lab: one AST, stack + source + commands, IR, bake, C# emit, timeline branches.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
+    <ProjectReference Include="AssetStudioLab.Core\AssetStudioLab.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="AssetStudioLab.Core\**" />
+    <Compile Remove="tests\**" />
+    <EmbeddedResource Remove="AssetStudioLab.Core\**" />
+    <None Remove="AssetStudioLab.Core\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="samples\**\*.nvisual" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

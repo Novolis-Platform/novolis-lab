@@ -541,7 +541,6 @@
     {
       "Key": "inference",
       "DisplayName": "inference",
-      "Ci": false,
       "Projects": [
         "labs/inference/ImageInferenceLab/ImageInferenceLab.csproj",
         "labs/inference/LocalInferenceLab/LocalInferenceLab.csproj"
@@ -550,12 +549,12 @@
       "ChangedPathGlobs": [
         "labs/inference/**",
         "labs/shared/**"
-      ]
+      ],
+      "Ci": false
     },
     {
       "Key": "inspection",
       "DisplayName": "inspection",
-      "Ci": false,
       "Projects": [
         "labs/inspection/InspectionLab/InspectionLab.csproj"
       ],
@@ -563,7 +562,8 @@
       "ChangedPathGlobs": [
         "labs/inspection/**",
         "labs/shared/**"
-      ]
+      ],
+      "Ci": false
     },
     {
       "Key": "io-IoSmoke",
@@ -580,7 +580,6 @@
     {
       "Key": "language",
       "DisplayName": "language",
-      "Ci": false,
       "Projects": [
         "labs/language/LanguagePipelineLab/LanguagePipelineLab.csproj"
       ],
@@ -588,7 +587,8 @@
       "ChangedPathGlobs": [
         "labs/language/**",
         "labs/shared/**"
-      ]
+      ],
+      "Ci": false
     },
     {
       "Key": "manuscript-ManuscriptSmoke",
@@ -960,7 +960,6 @@
     {
       "Key": "scripting",
       "DisplayName": "scripting",
-      "Ci": false,
       "Projects": [
         "labs/scripting/ScriptingLab/ScriptingLab.csproj"
       ],
@@ -968,7 +967,8 @@
       "ChangedPathGlobs": [
         "labs/scripting/**",
         "labs/shared/**"
-      ]
+      ],
+      "Ci": false
     },
     {
       "Key": "SpaceFleetSurveyTeam",
@@ -981,6 +981,21 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/SpaceFleetSurveyTeam/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "visual-AssetStudioLab",
+      "DisplayName": "visual Asset Studio Lab",
+      "Projects": [
+        "labs/visual/AssetStudioLab/AssetStudioLab.Core/AssetStudioLab.Core.csproj",
+        "labs/visual/AssetStudioLab/AssetStudioLab.csproj"
+      ],
+      "Tests": [
+        "labs/visual/AssetStudioLab/tests/AssetStudioLab.Unit/AssetStudioLab.Unit.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/visual/AssetStudioLab/**",
         "labs/shared/**"
       ]
     },

@@ -168,4 +168,9 @@
     <Project Path="labs/workspaces/ProjectTimelineBench/ProjectTimelineBench.csproj" />
     <Project Path="labs/workspaces/TypedSolutionIntelligence/TypedSolutionIntelligence.csproj" />
   </Folder>
+  <Folder Name="/visual/">
+    <Project Path="labs/visual/AssetStudioLab/AssetStudioLab.csproj" />
+    <Project Path="labs/visual/AssetStudioLab/AssetStudioLab.Core/AssetStudioLab.Core.csproj" />
+    <Project Path="labs/visual/AssetStudioLab/tests/AssetStudioLab.Unit/AssetStudioLab.Unit.csproj" />
+  </Folder>
 </Solution>

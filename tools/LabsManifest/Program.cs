@@ -33,6 +33,7 @@ internal static class Program
             "maui",
             "raylib",
             "rendering",
+            "visual",
             "workspaces",
         };
 

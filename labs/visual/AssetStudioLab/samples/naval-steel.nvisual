@@ -1,0 +1,8 @@
+material NavalSteel {
+    color #747a7d
+    roughness 0.72
+    roughness *= noise(scale: 18mm, amount: 0.05)
+    normal += brushed(direction: y, strength: 0.03)
+    layer edgeWear(amount: 0.08)
+    layer cavityGrime(amount: 0.12)
+}

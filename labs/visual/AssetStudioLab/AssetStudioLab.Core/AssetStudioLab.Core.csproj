@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>AssetStudioLab</RootNamespace>
+    <AssemblyName>AssetStudioLab.Core</AssemblyName>
+    <OutputType>Library</OutputType>
+    <IsPackable>false</IsPackable>
+    <Description>Lab-private visual AST, language, compiler, bake pipeline, and command edits. Candidate for Novolis.Visual.</Description>
+    <NovolisGraphicalProfile>false</NovolisGraphicalProfile>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Commands.Expressions" />
+    <LibraryReference Include="Novolis.CodeGen.Pipeline" />
+    <LibraryReference Include="Novolis.CodeGen.Reflection.Dump" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <LibraryReference Include="Novolis.Snapshots.Abstractions" />
+    <LibraryReference Include="Novolis.Timeline.Abstractions" />
+    <LibraryReference Include="Novolis.Timeline.FileSystem" />
+    <LibraryReference Include="Novolis.Timeline.Presentation" />
+    <LibraryReference Include="Novolis.Workspaces.Abstractions" />
+    <LibraryReference Include="Novolis.Workspaces.FileSystem" />
+    <LibraryReference Include="Novolis.Workspaces.Snapshots" />
+    <LibraryReference Include="Novolis.Workspaces.Timeline" />
+  </ItemGroup>
+</Project>
