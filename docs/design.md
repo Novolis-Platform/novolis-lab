@@ -31,7 +31,7 @@ Authenticate with `GITHUB_TOKEN`, `dotnet restore` from `nuget.config`, then bui
 
 ## 2D rendering dogfood
 
-`Novolis.Rendering.Planar` + `Novolis.Silk` are consumed from GitHub Packages. See [two-d-simulation-gaps.md](two-d-simulation-gaps.md) for Simulation integration and coordinate conventions.
+`Novolis.Rendering.Planar` + `Novolis.Silk` are consumed from GitHub Packages. See [planar-simulation-gaps.md](planar-simulation-gaps.md) for Simulation integration and coordinate conventions.
 
 ## Compose helpers
 
@@ -39,6 +39,6 @@ Authenticate with `GITHUB_TOKEN`, `dotnet restore` from `nuget.config`, then bui
 
 ## Related
 
-- [two-d-simulation-gaps.md](two-d-simulation-gaps.md)
+- [planar-simulation-gaps.md](planar-simulation-gaps.md)
 - [nuget-setup.md](../../novolis-governance/docs/nuget-setup.md)
 - [release-policy.md](../../novolis-governance/docs/release-policy.md)

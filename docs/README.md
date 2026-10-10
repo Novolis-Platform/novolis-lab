@@ -11,7 +11,7 @@ Published docs: [https://novolis-platform.github.io/.github/novolis-lab/](https:
 | [getting-started.md](getting-started.md) | Install, restore from GitHub Packages, first use |
 | [design.md](design.md) | Goals, layer placement, non-goals |
 | [release.md](release.md) | CalVer publish and package list |
-| [two-d-simulation-gaps.md](two-d-simulation-gaps.md) | two-d-simulation-gaps |
+| [planar-simulation-gaps.md](planar-simulation-gaps.md) | Planar + Simulation dogfood gaps |
 
 ## More
 
