@@ -1,33 +1,18 @@
+using Novolis.Game.Scenes;
+using Novolis.Rendering.Planar;
 using Novolis.Silk;
-using Novolis.Rendering.TwoD;
 
 namespace FrankMoat.Input;
 
 internal static class RangeControls
 {
-    public static RangeInput Read(SilkFrame frame, TwoDScene scene)
+    public static RangeInput Read(SilkFrame frame, PlanarScene scene)
     {
-        var x = 0f;
-        var z = 0f;
-        if (frame.IsKeyDown(Key.W) || frame.IsKeyDown(Key.Up))
-        {
-            z += 1f;
-        }
-
-        if (frame.IsKeyDown(Key.S) || frame.IsKeyDown(Key.Down))
-        {
-            z -= 1f;
-        }
-
-        if (frame.IsKeyDown(Key.A))
-        {
-            x -= 1f;
-        }
-
-        if (frame.IsKeyDown(Key.D))
-        {
-            x += 1f;
-        }
+        var move = PlanarMove.FromAxes(
+            frame.IsKeyDown(Key.A),
+            frame.IsKeyDown(Key.D),
+            frame.IsKeyDown(Key.S) || frame.IsKeyDown(Key.Down),
+            frame.IsKeyDown(Key.W) || frame.IsKeyDown(Key.Up));
 
         var zoom = 0;
         if (frame.IsKeyPressed(Key.Equal) || frame.IsKeyPressed(Key.KeypadAdd))
@@ -54,8 +39,8 @@ internal static class RangeControls
         }
 
         return new RangeInput(
-            x,
-            z,
+            move.X,
+            move.Z,
             frame.IsMouseButtonDown(MouseButton.Left),
             frame.IsMouseButtonPressed(MouseButton.Left),
             frame.IsKeyPressed(Key.R),

@@ -1,13 +1,13 @@
 using FrankMoat.Game;
 using Novolis.Rendering.Appearance;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using Novolis.Silk;
 using Novolis.Silk.Capture;
 
 var captureDir = CaptureDir(args);
 var auto = captureDir is not null;
 var game = new FrankMoatGame { SkipMenu = auto };
-var scene = new TwoDScene();
+var scene = new PlanarScene();
 using var capture = new FrameCaptureSession(new CaptureStreamOptions
 {
     CaptureEveryNFrames = auto ? 12 : 1,

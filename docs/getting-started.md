@@ -15,5 +15,5 @@ cd novolis-lab
 ..\novolis-governance\scripts\configure-gpr-user-nuget.ps1
 dotnet restore
 dotnet build --no-restore
-dotnet run --project labs/MathGridDemo
+dotnet run --project labs/math/MathGridDemo
 ```

@@ -4,7 +4,7 @@
 
 ```powershell
 dotnet build d:\novolis\novolis-avalonia\src\Novolis.Avalonia.Agent\Novolis.Avalonia.Agent.csproj -p:NovolisUseProjectReferences=true
-dotnet build d:\novolis\novolis-lab\labs\AvaloniaAgentMcp\AvaloniaAgentMcp.csproj -p:NovolisUseProjectReferences=true
+dotnet build d:\novolis\novolis-lab\labs\commands\AvaloniaAgentMcp\AvaloniaAgentMcp.csproj -p:NovolisUseProjectReferences=true
 dotnet build d:\novolis\novolis-lab\labs\avalonia\StudioChromeLab\StudioChromeLab.csproj -p:NovolisUseProjectReferences=true
 ```
 

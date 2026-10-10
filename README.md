@@ -39,7 +39,7 @@ Integration workspace that **consumes published Novolis packages** from [GitHub 
 
 This repo does not publish packages. Pull-request and merge CI build only changed labs; the lab is for local integration against what is already on the feed.
 
-Per-app READMEs live under `labs/<name>/README.md` (see also [labs/README.md](labs/README.md) for a short index).
+Per-app READMEs live under `labs/<category>/<name>/README.md` (see also [labs/README.md](labs/README.md) for a short index).
 
 ## Quick start
 
@@ -52,7 +52,7 @@ cd novolis-lab
 
 dotnet restore
 dotnet build --no-restore
-dotnet run --project labs/MathGridDemo
+dotnet run --project labs/math/MathGridDemo
 ```
 
 Feed: `https://nuget.pkg.github.com/Novolis-Platform/index.json` (see `nuget.config`).
@@ -74,14 +74,14 @@ pwsh -File scripts/Sync-LabLibraries.ps1
 
 If `d:\novolis\novolis-logging` already exists, synchronization uses that sibling checkout and does not clone a second copy. For a recorded submodule checkout, set `-p:NovolisLibraryRoot=.../submodules` when enabling ProjectReference mode. Lab project files must remain `PackageReference`-only; CI does not initialize submodules.
 
-Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new experiment with `scripts/New-Lab.ps1 -Name FooLab -Stack console|avalonia|raylib|spectre`.
+Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new experiment with `scripts/New-Lab.ps1 -Name FooLab -Category simulation -Stack console|avalonia|raylib|spectre`.
 
 ## Labs
 
 | App | Folder | Novolis packages exercised |
 |-----|--------|---------------------------|
-| `MathGridDemo` | `labs/MathGridDemo` | Math.Arrays |
-| `RaylibHello` | `labs/RaylibHello` | Raylib |
+| `MathGridDemo` | `labs/math/MathGridDemo` | Math.Arrays |
+| `RaylibHello` | `labs/raylib/RaylibHello` | Raylib |
 | `HelloGame` … `HelloRaygui` | `labs/raylib/Hello*` | Raylib API walkthroughs |
 | `RenderingAvalonia` | `labs/avalonia/RenderingAvalonia` | Avalonia.Rendering + Avalonia.Raylib |
 | `MobilityLab` | `labs/avalonia/MobilityLab` | Tax–mobility Civics/Economy/Geopolitics Avalonia UI |
@@ -92,36 +92,36 @@ Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new ex
 | `TypedSolutionIntelligence` | `labs/workspaces/TypedSolutionIntelligence` | Workspaces.DotNet catalog → generated typed project/namespace/type façade |
 | `TinyExprBindings` | `labs/codegen/TinyExprBindings` | CodeGen.Bindings: typed C ABI manifest → LibraryImport + façade |
 | `XFighter` | `labs/raylib/XFighter` | Raylib, Audio (Core, Effects, Playback, Voice) |
-| `ArtillerySimulator` | `labs/ArtillerySimulator` | Raylib, Physics.Ballistics, Physics.Collision, Simulation |
-| `BouncingBall` | `labs/BouncingBall` | Raylib, Math.Arrays, Simulation, Physics.Collision |
-| `DoomLite3D` | `labs/DoomLite3D` | Raylib, Math, Simulation (World, View, Kinematics) |
-| `RagdollPlay` | `labs/RagdollPlay` | Raylib, Simulation, Physics.Joints, Physics.Collision |
-| `ClothPlay` | `labs/ClothPlay` | Raylib, Simulation, Physics.Joints cloth sheet, Physics.Collision |
-| `RandoriFight` | `labs/RandoriFight` | Raylib, Simulation.View, Simulation.Humanoid |
-| `PlatformerHop` | `labs/PlatformerHop` | Raylib, Simulation.Kinematics, Simulation.View |
-| `PlatformerTwoD` | `labs/PlatformerTwoD` | Rendering.TwoD, Novolis.Silk, Simulation |
-| `RtsLite` | `labs/RtsLite` | Raylib, Simulation (Kinematics, View, World) |
-| `RtsLiteTwoD` | `labs/RtsLiteTwoD` | Rendering.TwoD, Novolis.Silk, Simulation.Kinematics |
+| `ArtillerySimulator` | `labs/simulation/ArtillerySimulator` | Raylib, Physics.Ballistics, Physics.Collision, Simulation |
+| `BouncingBall` | `labs/simulation/BouncingBall` | Raylib, Math.Arrays, Simulation, Physics.Collision |
+| `DoomLite3D` | `labs/simulation/DoomLite3D` | Raylib, Math, Simulation (World, View, Kinematics) |
+| `RagdollPlay` | `labs/simulation/RagdollPlay` | Raylib, Simulation, Physics.Joints, Physics.Collision |
+| `ClothPlay` | `labs/simulation/ClothPlay` | Raylib, Simulation, Physics.Joints cloth sheet, Physics.Collision |
+| `RandoriFight` | `labs/simulation/RandoriFight` | Raylib, Simulation.View, Simulation.Humanoid |
+| `PlatformerHop` | `labs/simulation/PlatformerHop` | Raylib, Simulation.Kinematics, Simulation.View |
+| `PlatformerPlanar` | `labs/simulation/PlatformerPlanar` | Rendering.Planar, Novolis.Silk, Simulation |
+| `RtsLite` | `labs/simulation/RtsLite` | Raylib, Simulation (Kinematics, View, World) |
+| `RtsLitePlanar` | `labs/simulation/RtsLitePlanar` | Rendering.Planar, Novolis.Silk, Simulation.Kinematics |
 | `RaytraceHello` | `labs/rendering/RaytraceHello` | Raylib.Game, Rendering (ILGPU + DI + Presentation.Raylib) |
 | `SilkTraceHello` | `labs/rendering/SilkTraceHello` | Rendering (env backend + PathTrace.Demos + Novolis.Silk) |
 | `SilkTraceStudio` | `labs/rendering/SilkTraceStudio` | Rendering backends + PathTrace.Demos + Novolis.Silk |
-| `SilkTwoDHello` | `labs/rendering/SilkTwoDHello` | Rendering.TwoD, Novolis.Silk |
+| `PlanarHello` | `labs/rendering/PlanarHello` | Rendering.Planar, Novolis.Silk |
 | `MeshBench` (Mesh Studio) | `labs/rendering/MeshBench` | Workspaces, Timeline, Snapshots, Rendering, Audio |
 | `GamingSmoke` | `labs/gaming/GamingSmoke` | Game.Identity, Game.MenuFlows, Game.Multiplayer.Abstractions |
-| `FrankMoat` | `labs/gaming/FrankMoat` | Loaded-style top-down range: Rendering.TwoD, raised walls, particles |
-| `TopDownDoom` | `labs/gaming/TopDownDoom` | Rendering.TwoD, Game flows |
-| `TapDuelFootball` | `labs/gaming/TapDuelFootball` | Rendering.TwoD, Game.MenuFlows — hotseat tap duel |
-| `NeuralRacing` | `labs/NeuralRacing` | Simulation.Racing, MachineLearning.Neural |
-| `CapitalistSimulator` | `labs/CapitalistSimulator` | Avalonia economy prototype |
-| `CoverageStudio` | `labs/CoverageStudio` | Avalonia coverage workflow |
-| `CursorRemote` | `labs/CursorRemote` | Avalonia remote-control prototype |
-| `GeoPolity` | `labs/GeoPolity` | Geopolitics theatre and session dogfood |
-| `RepoStudio` | `labs/RepoStudio` | Avalonia multi-repo Git workflow |
-| `SpaceFleetSurveyTeam` | `labs/SpaceFleetSurveyTeam` | Mobile survey-game prototype |
+| `FrankMoat` | `labs/gaming/FrankMoat` | Loaded-style top-down range: Game.Scenes + Silk, raised walls, particles |
+| `TopDownDoom` | `labs/gaming/TopDownDoom` | Rendering.Planar, Game flows |
+| `TapDuelFootball` | `labs/gaming/TapDuelFootball` | Rendering.Planar, Game.MenuFlows — hotseat tap duel |
+| `NeuralRacing` | `labs/machinelearning/NeuralRacing` | Simulation.Racing, MachineLearning.Neural |
+| `CapitalistSimulator` | `labs/apps/CapitalistSimulator` | Avalonia economy prototype |
+| `CoverageStudio` | `labs/apps/CoverageStudio` | Avalonia coverage workflow |
+| `CursorRemote` | `labs/apps/CursorRemote` | Avalonia remote-control prototype |
+| `GeoPolity` | `labs/apps/GeoPolity` | Geopolitics theatre and session dogfood |
+| `RepoStudio` | `labs/apps/RepoStudio` | Avalonia multi-repo Git workflow |
+| `SpaceFleetSurveyTeam` | `labs/apps/SpaceFleetSurveyTeam` | Mobile survey-game prototype |
 | `VoiceSmoke` | `labs/audio/VoiceSmoke` | Audio.Voice, Voice.Atc (Sherpa Piper TTS) |
 | `StudioChromeLab` | `labs/avalonia/StudioChromeLab` | Controls dialogs/lists/jobs + Studio focus/dirty chrome |
-| `AvaloniaAgentMcp` | `labs/AvaloniaAgentMcp` | Avalonia.Agent.Protocol, Transports.LocalIpc, Agent.Core/Surface |
-| `MauiAgentMcp` | `labs/MauiAgentMcp` | Maui.Agent.Protocol, Transports.LocalIpc (`ui.*` sidecar) |
+| `AvaloniaAgentMcp` | `labs/commands/AvaloniaAgentMcp` | Avalonia.Agent.Protocol, Transports.LocalIpc, Agent.Core/Surface |
+| `MauiAgentMcp` | `labs/commands/MauiAgentMcp` | Maui.Agent.Protocol, Transports.LocalIpc (`ui.*` sidecar) |
 | `SketchLab` | `labs/avalonia/SketchLab` | SketchControl freehand canvas + PNG/SVG export |
 | `ViewportBench` | `labs/avalonia/ViewportBench` | Shared-camera CAD wireframe (OpenGL/CPU/Vulkan/Raylib) |
 | `SceneLab` | `labs/avalonia/SceneLab` | Avalonia 3D scene lab |
@@ -141,7 +141,7 @@ Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new ex
 | `PolityTriad` | `labs/civics/PolityTriad` | Civics + Economy + Geopolitics composed month |
 | `IoSmoke` | `labs/io/IoSmoke` | IO.Paths, Recovery, Watching, Processes, Git |
 | `ManuscriptSmoke` | `labs/manuscript/ManuscriptSmoke` | Markup.Manuscript, Voice.Manuscript |
-| `BridgeCommander` | `labs/BridgeCommander` | Commands + Audio.Voice (Spectre console) |
+| `BridgeCommander` | `labs/commands/BridgeCommander` | Commands + Audio.Voice (Spectre console) |
 
 The first utility wave graduated to
 `d:\novolis\novolis-utilities`: Adb, WireFish, Torrent, and VoiceStudio.
@@ -154,7 +154,6 @@ Labs do not ship. Use `scripts/Graduate-Lab.ps1 -Name FooLab -To tools|utilities
 
 | Library | Folder | Purpose |
 |---------|--------|---------|
-| `Novolis.Lab.Compose` | `labs/shared/Novolis.Lab.Compose` | ViewPose → rendering camera bridge |
-| `Novolis.Lab.TwoD` | `labs/shared/Novolis.Lab.TwoD` | TwoD platform/camera helpers |
+| `Novolis.Lab.Compose` | `labs/shared/Novolis.Lab.Compose` | ViewPose → CameraSnapshot; SceneDocument → Rendering.Scene |
 | `Novolis.Lab.Voice` | `labs/shared/Novolis.Lab.Voice` | ATC voice DI for demos |
 

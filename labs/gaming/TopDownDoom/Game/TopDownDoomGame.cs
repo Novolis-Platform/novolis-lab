@@ -2,7 +2,7 @@ using System.Numerics;
 using Novolis.Game.MenuFlows;
 using Novolis.Math.Geometry;
 using Novolis.Silk;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using TopDownDoom.Art;
 using TopDownDoom.Design;
 
@@ -25,7 +25,7 @@ internal sealed class TopDownDoomGame
     private bool _paused;
     private float _combatZoom;
 
-    public void Initialize(SilkFrame frame, TwoDScene scene)
+    public void Initialize(SilkFrame frame, PlanarScene scene)
     {
         var contentRoot = AppContext.BaseDirectory;
         _art.Initialize(scene.Textures, contentRoot);
@@ -35,18 +35,18 @@ internal sealed class TopDownDoomGame
         frame.SetTitle($"Top-Down Doom — {_art.SourceLabel}");
 
         scene.Camera.WorldUnitsPerPixel = 1f / 30f;
-        scene.Menus.Push(new TwoDMenuScreen("TOP-DOWN DOOM", [
-            new TwoDMenuItem("FIGHT", Tag: "play", OnSelect: () =>
+        scene.Menus.Push(new PlanarMenuScreen("TOP-DOWN DOOM", [
+            new PlanarMenuItem("FIGHT", Tag: "play", OnSelect: () =>
             {
                 _playing = true;
                 scene.Menus.Pop();
                 return (object?)"play";
             }),
-            new TwoDMenuItem("QUIT", Tag: "quit", OnSelect: () => { Environment.Exit(0); return null; }),
+            new PlanarMenuItem("QUIT", Tag: "quit", OnSelect: () => { Environment.Exit(0); return null; }),
         ]));
     }
 
-    public void Update(SilkFrame frame, TwoDScene scene)
+    public void Update(SilkFrame frame, PlanarScene scene)
     {
         if (frame.IsKeyPressed(Key.Escape))
         {
@@ -54,14 +54,14 @@ internal sealed class TopDownDoomGame
             {
                 _paused = true;
                 _ = _menuFlows.PushAsync(new TopDownPauseScreen());
-                scene.Menus.Push(new TwoDMenuScreen("PAUSED", [
-                    new TwoDMenuItem("RESUME", OnSelect: () =>
+                scene.Menus.Push(new PlanarMenuScreen("PAUSED", [
+                    new PlanarMenuItem("RESUME", OnSelect: () =>
                     {
                         _paused = false;
                         scene.Menus.Pop();
                         return null;
                     }),
-                    new TwoDMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),
+                    new PlanarMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),
                 ]));
             }
         }
@@ -129,7 +129,7 @@ internal sealed class TopDownDoomGame
         DrawHud(scene, frame);
     }
 
-    private void ApplyLevelScript(TwoDScene scene)
+    private void ApplyLevelScript(PlanarScene scene)
     {
         if (!_level.CorridorLessonTriggered && _world.PlayerPosition.X > 11f && _world.PlayerPosition.Z is > 5f and < 9f)
         {
@@ -151,7 +151,7 @@ internal sealed class TopDownDoomGame
         }
     }
 
-    private void BuildLevel(TwoDScene scene)
+    private void BuildLevel(PlanarScene scene)
     {
         scene.StaticPolygons.Clear();
         scene.Collision.Clear();
@@ -181,7 +181,7 @@ internal sealed class TopDownDoomGame
         _world.ActiveWeapon = list[(idx + 1) % list.Count];
     }
 
-    private static Vector2 ReadMove(SilkFrame frame, TwoDScene scene)
+    private static Vector2 ReadMove(SilkFrame frame, PlanarScene scene)
     {
         var x = 0f;
         var z = 0f;
@@ -208,7 +208,7 @@ internal sealed class TopDownDoomGame
         return new Vector2(x, z);
     }
 
-    private static Vector2 ReadAimWorld(SilkFrame frame, TwoDScene scene)
+    private static Vector2 ReadAimWorld(SilkFrame frame, PlanarScene scene)
     {
         var mouse = frame.MousePosition;
         var world = scene.Camera.ScreenToWorld(mouse.X, mouse.Y);
@@ -216,7 +216,7 @@ internal sealed class TopDownDoomGame
         return flat;
     }
 
-    private void DrawCombatHints(TwoDScene scene)
+    private void DrawCombatHints(PlanarScene scene)
     {
         scene.StaticPolygons.RemoveAll(p => p.SortKey is >= 30 and < 70);
 
@@ -248,7 +248,7 @@ internal sealed class TopDownDoomGame
         return dx * dx + dz * dz < 6f;
     }
 
-    private void DrawHud(TwoDScene scene, SilkFrame frame)
+    private void DrawHud(PlanarScene scene, SilkFrame frame)
     {
         scene.Hud.Elements.Clear();
         scene.Hud.AddText("WASD move | Mouse aim | LMB shoot | Shift dash | E swap weapon", 10, 10, 1.8f, new Rgba32(200, 200, 210));
@@ -271,37 +271,37 @@ internal sealed class TopDownDoomGame
         }
     }
 
-    private void ShowDeathMenu(SilkFrame frame, TwoDScene scene)
+    private void ShowDeathMenu(SilkFrame frame, PlanarScene scene)
     {
         _playing = false;
-        scene.Menus.Push(new TwoDMenuScreen("YOU DIED", [
-            new TwoDMenuItem("RETRY", OnSelect: () =>
+        scene.Menus.Push(new PlanarMenuScreen("YOU DIED", [
+            new PlanarMenuItem("RETRY", OnSelect: () =>
             {
                 ResetRun(scene);
                 _playing = true;
                 scene.Menus.Pop();
                 return null;
             }),
-            new TwoDMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),
+            new PlanarMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),
         ]));
     }
 
-    private void ShowVictoryMenu(SilkFrame frame, TwoDScene scene)
+    private void ShowVictoryMenu(SilkFrame frame, PlanarScene scene)
     {
         _playing = false;
-        scene.Menus.Push(new TwoDMenuScreen("EXIT OPEN", [
-            new TwoDMenuItem("AGAIN", OnSelect: () =>
+        scene.Menus.Push(new PlanarMenuScreen("EXIT OPEN", [
+            new PlanarMenuItem("AGAIN", OnSelect: () =>
             {
                 ResetRun(scene);
                 _playing = true;
                 scene.Menus.Pop();
                 return null;
             }),
-            new TwoDMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),
+            new PlanarMenuItem("QUIT", OnSelect: () => { Environment.Exit(0); return null; }),
         ]));
     }
 
-    private void ResetRun(TwoDScene scene)
+    private void ResetRun(PlanarScene scene)
     {
         _sprites?.Clear(scene);
         _world.Projectiles.Clear();
@@ -320,13 +320,13 @@ internal sealed class TopDownDoomGame
         BuildLevel(scene);
     }
 
-    private static void DrawRadiusHint(TwoDScene scene, Vector3 center, float radius, Rgba32 color)
+    private static void DrawRadiusHint(PlanarScene scene, Vector3 center, float radius, Rgba32 color)
     {
-        var poly = TwoDScenePrimitives.Rectangle(center.X - radius, center.Z - radius, center.X + radius, center.Z + radius);
-        scene.StaticPolygons.Add(new TwoDStaticPolygon(poly, color) { DrawFilled = false, DrawOutline = true, SortKey = 30 });
+        var poly = PlanarScenePrimitives.Rectangle(center.X - radius, center.Z - radius, center.X + radius, center.Z + radius);
+        scene.StaticPolygons.Add(new PlanarStaticPolygon(poly, color) { DrawFilled = false, DrawOutline = true, SortKey = 30 });
     }
 
-    private static void DrawWindUpCone(TwoDScene scene, Vector3 from, Vector3 to, Rgba32 color)
+    private static void DrawWindUpCone(PlanarScene scene, Vector3 from, Vector3 to, Rgba32 color)
     {
         var dir = new Vector2(to.X - from.X, to.Z - from.Z);
         if (dir.LengthSquared() < 0.01f)
@@ -346,7 +346,7 @@ internal sealed class TopDownDoomGame
             tip,
             right,
         ]);
-        scene.StaticPolygons.Add(new TwoDStaticPolygon(shape, color) { DrawFilled = true, SortKey = 55 });
+        scene.StaticPolygons.Add(new PlanarStaticPolygon(shape, color) { DrawFilled = true, SortKey = 55 });
     }
 
     private void EmitAmbientParticles(float dt)

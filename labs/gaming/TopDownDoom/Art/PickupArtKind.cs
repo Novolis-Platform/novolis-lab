@@ -1,5 +1,5 @@
-﻿using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Math.Geometry;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Art;
 

@@ -5,9 +5,9 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using CharacterLab.Demo;
 using CharacterLab.Ui;
-using Novolis.Avalonia.ThreeD;
-using Novolis.Avalonia.ThreeD.Session;
-using Novolis.Avalonia.ThreeD.Ui;
+using Novolis.Avalonia.Modeling;
+using Novolis.Avalonia.Modeling.Session;
+using Novolis.Avalonia.Modeling.Ui;
 
 namespace CharacterLab;
 

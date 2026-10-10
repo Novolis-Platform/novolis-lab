@@ -1,5 +1,5 @@
 using System.Numerics;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using TopDownDoom.Art;
 using TopDownDoom.Design;
 
@@ -7,11 +7,11 @@ namespace TopDownDoom.Game;
 
 internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
 {
-    private readonly Dictionary<Monster, TwoDAnimatedSprite> _monsterSprites = new();
-    private TwoDAnimatedSprite? _playerSprite;
+    private readonly Dictionary<Monster, PlanarAnimatedSprite> _monsterSprites = new();
+    private PlanarAnimatedSprite? _playerSprite;
     private float _shootDisplayTimer;
 
-    public void Sync(TwoDScene scene, TopDownCombatWorld world, float dt)
+    public void Sync(PlanarScene scene, TopDownCombatWorld world, float dt)
     {
         _shootDisplayTimer = MathF.Max(0f, _shootDisplayTimer - dt);
         if (world.FireCooldown > world.ActiveWeapon.FireInterval - TimeSpan.FromMilliseconds(120))
@@ -26,7 +26,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         SyncProjectiles(scene, world);
     }
 
-    public void Clear(TwoDScene scene)
+    public void Clear(PlanarScene scene)
     {
         foreach (var sprite in _monsterSprites.Values)
         {
@@ -43,7 +43,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         scene.Sprites.RemoveAll(s => s.SortKey is >= 30 and < 200);
     }
 
-    private void SyncPlayer(TwoDScene scene, TopDownCombatWorld world)
+    private void SyncPlayer(PlanarScene scene, TopDownCombatWorld world)
     {
         var moving = world.PlayerVelocity.LengthSquared() > 0.35f;
         var shooting = _shootDisplayTimer > 0f;
@@ -58,7 +58,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
             sortKey: 120);
     }
 
-    private void SyncMonsters(TwoDScene scene, TopDownCombatWorld world)
+    private void SyncMonsters(PlanarScene scene, TopDownCombatWorld world)
     {
         var live = new HashSet<Monster>(world.Monsters);
         foreach (var pair in _monsterSprites.ToArray())
@@ -74,7 +74,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         {
             if (!_monsterSprites.TryGetValue(monster, out var sprite))
             {
-                sprite = new TwoDAnimatedSprite { Loop = true, SortKey = 90 };
+                sprite = new PlanarAnimatedSprite { Loop = true, SortKey = 90 };
                 _monsterSprites[monster] = sprite;
                 scene.AnimatedSprites.Add(sprite);
             }
@@ -93,8 +93,8 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
     }
 
     private void ApplyCharacter(
-        TwoDScene scene,
-        ref TwoDAnimatedSprite? sprite,
+        PlanarScene scene,
+        ref PlanarAnimatedSprite? sprite,
         CharacterAnimationSet set,
         Vector3 position,
         float facing,
@@ -102,7 +102,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         bool shooting,
         int sortKey)
     {
-        sprite ??= new TwoDAnimatedSprite { Loop = true, SortKey = sortKey };
+        sprite ??= new PlanarAnimatedSprite { Loop = true, SortKey = sortKey };
         sprite.SortKey = sortKey;
         ApplyToSprite(sprite, set, position, facing, moving, shooting);
         if (!scene.AnimatedSprites.Contains(sprite))
@@ -112,7 +112,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
     }
 
     private static void ApplyToSprite(
-        TwoDAnimatedSprite sprite,
+        PlanarAnimatedSprite sprite,
         CharacterAnimationSet set,
         Vector3 position,
         float facingRadians,
@@ -128,7 +128,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         sprite.Transform.Scale = new Vector3(halfHeight * aspect, 1f, halfHeight);
     }
 
-    private void SyncPickups(TwoDScene scene, TopDownCombatWorld world)
+    private void SyncPickups(PlanarScene scene, TopDownCombatWorld world)
     {
         scene.Sprites.RemoveAll(s => s.SortKey is >= 40 and < 60);
         foreach (var pickup in world.Pickups)
@@ -146,7 +146,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         }
     }
 
-    private void SyncBarrels(TwoDScene scene, TopDownCombatWorld world)
+    private void SyncBarrels(PlanarScene scene, TopDownCombatWorld world)
     {
         scene.Sprites.RemoveAll(s => s.SortKey is >= 50 and < 70);
         foreach (var barrel in world.Barrels)
@@ -155,7 +155,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         }
     }
 
-    private void SyncProjectiles(TwoDScene scene, TopDownCombatWorld world)
+    private void SyncProjectiles(PlanarScene scene, TopDownCombatWorld world)
     {
         scene.Sprites.RemoveAll(s => s.SortKey is >= 70 and < 85);
         foreach (var shot in world.Projectiles)
@@ -165,7 +165,7 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
             var tint = shot.FromPlayer
                 ? new Novolis.Math.Geometry.Rgba32(255, 240, 120, 240)
                 : new Novolis.Math.Geometry.Rgba32(255, 90, 90, 240);
-            scene.Sprites.Add(new TwoDSpriteInstance
+            scene.Sprites.Add(new PlanarSpriteInstance
             {
                 Texture = art.Particles.Spark,
                 SortKey = rocket ? 84 : 80,
@@ -179,9 +179,9 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         }
     }
 
-    private static void AddWorldSprite(TwoDScene scene, Vector3 pos, TwoDTextureId tex, float halfSize, int sort)
+    private static void AddWorldSprite(PlanarScene scene, Vector3 pos, PlanarTextureId tex, float halfSize, int sort)
     {
-        scene.Sprites.Add(new TwoDSpriteInstance
+        scene.Sprites.Add(new PlanarSpriteInstance
         {
             Texture = tex,
             SortKey = sort,

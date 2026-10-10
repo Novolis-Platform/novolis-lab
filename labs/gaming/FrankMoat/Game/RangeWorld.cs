@@ -6,7 +6,8 @@ using FrankMoat.Levels;
 using FrankMoat.Narrative;
 using FrankMoat.Particles;
 using FrankMoat.Weapons;
-using Novolis.Rendering.TwoD;
+using Novolis.Math.Geometry;
+using Novolis.Rendering.Planar;
 
 namespace FrankMoat.Game;
 
@@ -20,8 +21,8 @@ internal sealed class RangeWorld
     public List<RangeBarrel> Barrels { get; } = [];
     public List<RaisedWall> Walls { get; } = [];
     public List<WallSegment> Segments { get; } = [];
-    public ParticleField Particles { get; } = new();
-    public DecalField Decals { get; } = new();
+    public SpriteParticleField Particles { get; } = new();
+    public SpriteDecalField Decals { get; } = new();
     public RangeJuice Juice { get; } = new();
     public FaithAnnouncer Faith { get; } = new();
     public bool OwnsPump { get; private set; }
@@ -63,25 +64,25 @@ internal sealed class RangeWorld
         Faith.Reset();
     }
 
-    public void Tick(float dt, TwoDCollisionWorld collision, RangeInput input, Vector2 aimWorld)
+    public void Tick(float dt, PlanarCollisionWorld collision, RangeInput input, Vector3 aimWorld)
     {
         if (Inspecting)
         {
             return;
         }
 
-        if (aimWorld.LengthSquared() > 0.0001f)
+        if (aimWorld.LengthSquaredXz() > 0.0001f)
         {
-            Frank.Facing = Vector2.Normalize(aimWorld);
+            Frank.Facing = aimWorld.NormalizeXz();
         }
 
-        var move = new Vector2(input.MoveX, input.MoveZ);
-        if (move.LengthSquared() > 1f)
+        var move = new Vector3(input.MoveX, 0f, input.MoveZ);
+        if (move.LengthSquaredXz() > 1f)
         {
-            move = Vector2.Normalize(move);
+            move = move.NormalizeXz();
         }
 
-        var delta = new Vector3(move.X * FrankActor.Speed * dt, 0f, move.Y * FrankActor.Speed * dt);
+        var delta = move * FrankActor.Speed * dt;
         Frank.Position = collision.MoveCircle(Frank.Position, delta, FrankActor.Radius);
         Frank.IFrames = MathF.Max(0f, Frank.IFrames - dt);
 
@@ -243,12 +244,12 @@ internal sealed class RangeWorld
         Juice.FlashMuzzle();
         ParticleEmit.Muzzle(Particles, Frank.Position, Frank.Facing, spec);
 
-        var baseAngle = MathF.Atan2(Frank.Facing.Y, Frank.Facing.X);
+        var baseAngle = Frank.Facing.Atan2Xz();
         for (var i = 0; i < spec.PelletCount; i++)
         {
             var spread = spec.SpreadDegrees * (MathF.PI / 180f);
             var angle = baseAngle + (Random.Shared.NextSingle() - 0.5f) * spread;
-            var dir = new Vector3(MathF.Cos(angle), 0f, MathF.Sin(angle));
+            var dir = Vector3PlanarExtensions.FromHeadingXz(angle);
             Projectiles.Add(new RangeProjectile
             {
                 Position = Frank.Position + dir * 0.48f,
@@ -290,13 +291,13 @@ internal sealed class RangeWorld
     private bool TryHitscan(RangeProjectile projectile, Vector3 dir, float travel)
     {
         var best = travel + 1f;
-        WallHit? wall = null;
+        PlanarHit? wall = null;
         UndeadActor? undead = null;
         RangeBarrel? barrel = null;
 
         foreach (var segment in Segments)
         {
-            if (RaySegment.TryHit(projectile.Position, dir, travel, segment.Start, segment.End, out var hit)
+            if (PlanarRay.TryHitSegment(projectile.Position, dir, travel, segment.Start, segment.End, out var hit)
                 && hit.Distance < best)
             {
                 best = hit.Distance;
@@ -308,7 +309,7 @@ internal sealed class RangeWorld
 
         foreach (var foe in Undead)
         {
-            if (RaySegment.TryHitCircle(projectile.Position, dir, travel, foe.Position, foe.Radius, out var d)
+            if (PlanarRay.TryHitCircle(projectile.Position, dir, travel, foe.Position, foe.Radius, out var d)
                 && d < best)
             {
                 best = d;
@@ -325,7 +326,7 @@ internal sealed class RangeWorld
                 continue;
             }
 
-            if (RaySegment.TryHitCircle(projectile.Position, dir, travel, drum.Position, 0.38f, out var d)
+            if (PlanarRay.TryHitCircle(projectile.Position, dir, travel, drum.Position, 0.38f, out var d)
                 && d < best)
             {
                 best = d;
@@ -357,15 +358,15 @@ internal sealed class RangeWorld
         {
             var steel = NearestMaterial(wh.Point) == WallMaterial.Steel;
             ParticleEmit.WallImpact(Particles, wh.Point, wh.Normal, steel);
-            Decals.Add(new Decal
+            Decals.Add(new SpriteDecal
             {
                 Position = wh.Point + wh.Normal * 0.02f,
                 Elevation = 0.55f + Random.Shared.NextSingle() * 1.4f,
                 Width = 0.18f + Random.Shared.NextSingle() * 0.16f,
                 Height = 0.18f,
                 Rotation = Random.Shared.NextSingle() * MathF.PI,
-                Color = steel ? new Novolis.Math.Geometry.Rgba32(40, 38, 36, 180) : new Novolis.Math.Geometry.Rgba32(28, 26, 24, 160),
-                Kind = DecalKind.SparkMark,
+                Color = steel ? new Rgba32(40, 38, 36, 180) : new Rgba32(28, 26, 24, 160),
+                Kind = (int)DecalKind.SparkMark,
             });
             return true;
         }
@@ -396,14 +397,14 @@ internal sealed class RangeWorld
         foe.Health -= damage;
         foe.HitFlash = 0.08f;
         ParticleEmit.Blood(Particles, foe.Position, incoming, foe.Kind == UndeadKind.Tank ? 1.6f : 1f);
-        Decals.Add(new Decal
+        Decals.Add(new SpriteDecal
         {
             Position = foe.Position + incoming * 0.15f,
             Width = 0.35f + Random.Shared.NextSingle() * 0.35f,
             Height = 0.22f,
             Rotation = Random.Shared.NextSingle() * MathF.PI,
-            Color = new Novolis.Math.Geometry.Rgba32(120, 10, 14, 150),
-            Kind = DecalKind.BloodFloor,
+            Color = new Rgba32(120, 10, 14, 150),
+            Kind = (int)DecalKind.BloodFloor,
         });
 
         if (foe.Health > 0)
@@ -414,14 +415,14 @@ internal sealed class RangeWorld
         Kills++;
         ParticleEmit.Chunks(Particles, foe.Position, foe.Kind == UndeadKind.Tank ? 2.2f : 1f);
         ParticleEmit.Blood(Particles, foe.Position, incoming, 1.8f);
-        Decals.Add(new Decal
+        Decals.Add(new SpriteDecal
         {
             Position = foe.Position,
             Width = 0.9f,
             Height = 0.55f,
             Rotation = Random.Shared.NextSingle() * MathF.PI,
-            Color = new Novolis.Math.Geometry.Rgba32(90, 8, 12, 200),
-            Kind = DecalKind.BloodFloor,
+            Color = new Rgba32(90, 8, 12, 200),
+            Kind = (int)DecalKind.BloodFloor,
         });
         Undead.Remove(foe);
     }
@@ -430,45 +431,45 @@ internal sealed class RangeWorld
     {
         ParticleEmit.Explosion(Particles, barrel.Position, 1.35f);
         Juice.AddShake(0.55f);
-        Decals.Add(new Decal
+        Decals.Add(new SpriteDecal
         {
             Position = barrel.Position,
             Width = 1.6f,
             Height = 1.6f,
-            Color = new Novolis.Math.Geometry.Rgba32(28, 18, 12, 210),
-            Kind = DecalKind.Scorch,
+            Color = new Rgba32(28, 18, 12, 210),
+            Kind = (int)DecalKind.Scorch,
         });
 
         for (var i = Undead.Count - 1; i >= 0; i--)
         {
             var foe = Undead[i];
-            if (Distance(foe.Position, barrel.Position) < 3.4f)
+            if (Vector3PlanarExtensions.DistanceXz(foe.Position, barrel.Position) < 3.4f)
             {
                 HurtUndead(foe, 80, foe.Position - barrel.Position);
             }
         }
 
-        if (Distance(Frank.Position, barrel.Position) < 2.6f)
+        if (Vector3PlanarExtensions.DistanceXz(Frank.Position, barrel.Position) < 2.6f)
         {
             HurtFrank(28);
         }
     }
 
-    private void TickUndead(float dt, TwoDCollisionWorld collision)
+    private void TickUndead(float dt, PlanarCollisionWorld collision)
     {
         foreach (var foe in Undead)
         {
             foe.HitFlash = MathF.Max(0f, foe.HitFlash - dt);
             var to = Frank.Position - foe.Position;
-            var dist = MathF.Sqrt(to.X * to.X + to.Z * to.Z);
+            var dist = to.LengthXz();
             if (dist > 0.01f)
             {
-                foe.Facing = new Vector2(to.X / dist, to.Z / dist);
+                foe.Facing = to.NormalizeXz();
             }
 
             if (dist > foe.Radius + FrankActor.Radius + 0.08f)
             {
-                var step = new Vector3(foe.Facing.X * foe.Speed * dt, 0f, foe.Facing.Y * foe.Speed * dt);
+                var step = foe.Facing * foe.Speed * dt;
                 foe.Position = collision.MoveCircle(foe.Position, step, foe.Radius);
                 continue;
             }
@@ -494,7 +495,7 @@ internal sealed class RangeWorld
         Frank.Health = Math.Max(0, Frank.Health - amount);
         Frank.IFrames = 0.35f;
         Juice.AddShake(0.28f);
-        ParticleEmit.Blood(Particles, Frank.Position, new Vector3(-Frank.Facing.X, 0f, -Frank.Facing.Y), 0.6f);
+        ParticleEmit.Blood(Particles, Frank.Position, -Frank.Facing, 0.6f);
     }
 
     private void TickBarrels()
@@ -512,7 +513,7 @@ internal sealed class RangeWorld
     {
         foreach (var pickup in Pickups)
         {
-            if (pickup.Taken || Distance(Frank.Position, pickup.Position) > 0.7f)
+            if (pickup.Taken || Vector3PlanarExtensions.DistanceXz(Frank.Position, pickup.Position) > 0.7f)
             {
                 continue;
             }
@@ -625,10 +626,4 @@ internal sealed class RangeWorld
         return new Vector3(x + MathF.Sin(t) * 0.4f, 0f, z);
     }
 
-    private static float Distance(Vector3 a, Vector3 b)
-    {
-        var dx = a.X - b.X;
-        var dz = a.Z - b.Z;
-        return MathF.Sqrt(dx * dx + dz * dz);
-    }
 }

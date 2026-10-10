@@ -1,5 +1,5 @@
 using Novolis.Math.Geometry;
-using Novolis.ThreeD;
+using Novolis.Modeling;
 
 namespace CorellianFreighterBuilder;
 

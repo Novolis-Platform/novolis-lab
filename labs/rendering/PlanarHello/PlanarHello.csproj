@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PlanarHello</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Game.Scenes" />
+    <LibraryReference Include="Novolis.Silk" />
+  </ItemGroup>
+</Project>

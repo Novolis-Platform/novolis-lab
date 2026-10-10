@@ -2,17 +2,17 @@ using FrankMoat.Art;
 using FrankMoat.Game;
 using FrankMoat.Weapons;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace FrankMoat.Rendering;
 
 internal static class RangeHud
 {
-    public static void Draw(TwoDScene scene, RangeWorld world, RangeArt art, int width, bool inspecting)
+    public static void Draw(PlanarScene scene, RangeWorld world, RangeArt art, int width, bool inspecting)
     {
         scene.Hud.Elements.Clear();
         var barHeight = inspecting ? 236f : 108f;
-        var plate = scene.Hud.AddSprite(art.White, TwoDSourceRect.Full, 0, 0, width, barHeight);
+        var plate = scene.Hud.AddSprite(art.White, PlanarSourceRect.Full, 0, 0, width, barHeight);
         plate.Tint = new Rgba32(8, 10, 14, 210);
 
         var gun = world.Weapon;

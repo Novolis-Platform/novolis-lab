@@ -2074,12 +2074,12 @@ Even a very dumb lighting model will look convincing because the geometry establ
 Something like:
 
 ```text
-Novolis.Rendering.TwoD
+Novolis.Rendering.Planar
     Sprite
     Polygon
     Camera
 
-Novolis.Rendering.TwoD.Height
+Novolis.Rendering.Planar.Height
     ExtrudedPolygon
     RaisedWall
     RaisedDoor

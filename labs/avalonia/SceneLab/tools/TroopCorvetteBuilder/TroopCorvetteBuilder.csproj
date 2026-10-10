@@ -8,7 +8,7 @@
     <RootNamespace>TroopCorvetteBuilder</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <LibraryReference Include="Novolis.ThreeD.Scene" />
+    <LibraryReference Include="Novolis.Modeling.Scene" />
     <LibraryReference Include="Novolis.Math.Geometry" />
   </ItemGroup>
 </Project>

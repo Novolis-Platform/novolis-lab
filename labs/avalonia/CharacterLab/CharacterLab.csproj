@@ -15,10 +15,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <LibraryReference Include="Novolis.Agent.Core" />
     <LibraryReference Include="Novolis.Agent.Surface" />
-    <LibraryReference Include="Novolis.Avalonia.ThreeD" />
+    <LibraryReference Include="Novolis.Avalonia.Modeling" />
     <LibraryReference Include="Novolis.Game.Humanoid" />
     <LibraryReference Include="Novolis.Math.Geometry" />
-    <LibraryReference Include="Novolis.ThreeD.Scene" />
+    <LibraryReference Include="Novolis.Modeling.Scene" />
     <LibraryReference Include="Novolis.Simulation.Humanoid" />
     <LibraryReference Include="Novolis.Simulation.Humanoid.Import" />
     <LibraryReference Include="Novolis.Silk" />

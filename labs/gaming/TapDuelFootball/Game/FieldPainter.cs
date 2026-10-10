@@ -1,5 +1,5 @@
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TapDuelFootball.Game;
 
@@ -14,7 +14,7 @@ internal static class FieldPainter
     public const float FieldHalfLength = 8f;
     public const float EndZoneDepth = 1.35f;
 
-    public static void Paint(TwoDScene scene)
+    public static void Paint(PlanarScene scene)
     {
         var minX = -FieldHalfWidth;
         var maxX = FieldHalfWidth;
@@ -56,7 +56,7 @@ internal static class FieldPainter
     }
 
     private static void AddRect(
-        TwoDScene scene,
+        PlanarScene scene,
         float minX,
         float minZ,
         float maxX,
@@ -66,8 +66,8 @@ internal static class FieldPainter
         bool outline,
         int sort)
     {
-        scene.StaticPolygons.Add(new TwoDStaticPolygon(
-            TwoDScenePrimitives.Rectangle(minX, minZ, maxX, maxZ),
+        scene.StaticPolygons.Add(new PlanarStaticPolygon(
+            PlanarScenePrimitives.Rectangle(minX, minZ, maxX, maxZ),
             color)
         {
             DrawFilled = filled,
@@ -77,7 +77,7 @@ internal static class FieldPainter
         });
     }
 
-    private static void AddLine(TwoDScene scene, float x0, float z0, float x1, float z1, float thickness, int sort)
+    private static void AddLine(PlanarScene scene, float x0, float z0, float x1, float z1, float thickness, int sort)
     {
         var dx = x1 - x0;
         var dz = z1 - z0;
@@ -96,7 +96,7 @@ internal static class FieldPainter
             Vector3PlanarExtensions.Xz(x1 - nx, z1 - nz),
             Vector3PlanarExtensions.Xz(x0 - nx, z0 - nz),
         ]);
-        scene.StaticPolygons.Add(new TwoDStaticPolygon(poly, Sideline)
+        scene.StaticPolygons.Add(new PlanarStaticPolygon(poly, Sideline)
         {
             DrawFilled = true,
             DrawOutline = false,

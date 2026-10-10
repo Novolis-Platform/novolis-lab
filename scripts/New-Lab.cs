@@ -17,17 +17,19 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
 var name = Arg(args, "--name", "-Name");
+var category = Arg(args, "--category", "-Category");
 var stack = Arg(args, "--stack", "-Stack");
 var force = args.Any(a => a is "--force" or "-Force");
-if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(stack))
+if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(stack))
 {
-    Console.Error.WriteLine("Usage: New-Lab --name Name --stack avalonia|raylib|spectre|console [--force]");
+    Console.Error.WriteLine("Usage: New-Lab --name Name --category simulation --stack avalonia|raylib|spectre|console [--force]");
     return 2;
 }
 
-if (!Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9.-]*$"))
+if (!Regex.IsMatch(name, "^[A-Za-z][A-Za-z0-9.-]*$")
+    || !Regex.IsMatch(category, "^[a-z][a-z0-9-]*$"))
 {
-    Console.Error.WriteLine("Name must start with a letter.");
+    Console.Error.WriteLine("Name must start with a letter. Category is the repo name with the novolis- prefix removed (lowercase).");
     return 2;
 }
 
@@ -39,7 +41,7 @@ if (!allowed.Contains(stack))
 }
 
 var repoRoot = Directory.GetParent(Path.GetDirectoryName(ThisFile())!)!.FullName;
-var labPath = Path.Combine(repoRoot, "labs", name);
+var labPath = Path.Combine(repoRoot, "labs", category, name);
 var projectPath = Path.Combine(labPath, $"{name}.csproj");
 var manifestPath = Path.Combine(repoRoot, "build", "labs.json");
 var solutionPath = Path.Combine(repoRoot, "Novolis.Lab.slnx");
@@ -69,7 +71,7 @@ File.WriteAllText(Path.Combine(labPath, "README.md"), $"""
     Run it from the repository root:
 
     ```powershell
-    dotnet run --project labs/{name}/{name}.csproj
+    dotnet run --project labs/{category}/{name}/{name}.csproj
     ```
 
     This host is not a release artifact. Graduate a successful experiment into
@@ -84,19 +86,20 @@ if (!File.Exists(manifestPath))
 
 var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
 var labs = manifest["Labs"]!.AsArray();
-if (labs.Any(l => string.Equals(l?["Key"]?.GetValue<string>(), name, StringComparison.OrdinalIgnoreCase)))
+var key = $"{category}-{name}";
+if (labs.Any(l => string.Equals(l?["Key"]?.GetValue<string>(), key, StringComparison.OrdinalIgnoreCase)))
 {
-    Console.Error.WriteLine($"The labs manifest already contains '{name}'.");
+    Console.Error.WriteLine($"The labs manifest already contains '{key}'.");
     return 1;
 }
 
 labs.Add(new JsonObject
 {
-    ["Key"] = name,
+    ["Key"] = key,
     ["DisplayName"] = Regex.Replace(name, "(?<=[a-z])(?=[A-Z])", " "),
-    ["Projects"] = new JsonArray($"labs/{name}/{name}.csproj"),
+    ["Projects"] = new JsonArray($"labs/{category}/{name}/{name}.csproj"),
     ["Tests"] = new JsonArray(),
-    ["ChangedPathGlobs"] = new JsonArray($"labs/{name}/**", "labs/shared/**"),
+    ["ChangedPathGlobs"] = new JsonArray($"labs/{category}/{name}/**", "labs/shared/**"),
 });
 File.WriteAllText(manifestPath, manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
 
@@ -111,7 +114,7 @@ psi.ArgumentList.Add(solutionPath);
 psi.ArgumentList.Add("add");
 psi.ArgumentList.Add(projectPath);
 psi.ArgumentList.Add("--solution-folder");
-psi.ArgumentList.Add(stack);
+psi.ArgumentList.Add(category);
 using var p = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start dotnet");
 p.WaitForExit();
 if (p.ExitCode != 0)

@@ -1,21 +1,21 @@
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Art;
 
 /// <summary>8-way top-down clips — never rotate these quads; pick the facing frame instead.</summary>
 internal sealed class DirectionalClips
 {
-    private readonly Dictionary<string, TwoDAnimationClip> _idle = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, TwoDAnimationClip> _move = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, PlanarAnimationClip> _idle = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, PlanarAnimationClip> _move = new(StringComparer.OrdinalIgnoreCase);
 
     public float WorldHalfHeight { get; init; } = 0.62f;
-    public TwoDAnimationClip? ShootOverlay { get; set; }
+    public PlanarAnimationClip? ShootOverlay { get; set; }
 
-    public void AddIdle(string suffix, TwoDAnimationClip clip) => _idle[suffix] = clip;
+    public void AddIdle(string suffix, PlanarAnimationClip clip) => _idle[suffix] = clip;
 
-    public void AddMove(string suffix, TwoDAnimationClip clip) => _move[suffix] = clip;
+    public void AddMove(string suffix, PlanarAnimationClip clip) => _move[suffix] = clip;
 
-    public (TwoDAnimationClip Clip, bool FlipX) Select(float facingRadians, bool moving, bool shooting)
+    public (PlanarAnimationClip Clip, bool FlipX) Select(float facingRadians, bool moving, bool shooting)
     {
         var (suffix, flip) = SuffixFromRadians(facingRadians);
         if (shooting && ShootOverlay is not null)

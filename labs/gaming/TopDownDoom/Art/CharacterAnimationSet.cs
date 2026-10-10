@@ -1,14 +1,14 @@
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Art;
 
 internal sealed class CharacterAnimationSet
 {
     public CharacterAnimationSet(
-        TwoDAnimationClip walk,
+        PlanarAnimationClip walk,
         float worldHalfHeight,
-        TwoDAnimationClip? shoot = null,
-        TwoDAnimationClip? death = null,
+        PlanarAnimationClip? shoot = null,
+        PlanarAnimationClip? death = null,
         DirectionalClips? facing = null)
     {
         Walk = walk;
@@ -18,13 +18,13 @@ internal sealed class CharacterAnimationSet
         Facing = facing;
     }
 
-    public TwoDAnimationClip Walk { get; }
-    public TwoDAnimationClip? Shoot { get; }
-    public TwoDAnimationClip? Death { get; }
+    public PlanarAnimationClip Walk { get; }
+    public PlanarAnimationClip? Shoot { get; }
+    public PlanarAnimationClip? Death { get; }
     public float WorldHalfHeight { get; }
     public DirectionalClips? Facing { get; }
 
-    public (TwoDAnimationClip Clip, bool FlipX, float HalfHeight) Resolve(
+    public (PlanarAnimationClip Clip, bool FlipX, float HalfHeight) Resolve(
         float facingRadians,
         bool moving,
         bool shooting)

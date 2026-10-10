@@ -1,5 +1,5 @@
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using TopDownDoom.Design;
 
 namespace TopDownDoom.Game;
@@ -42,7 +42,7 @@ internal static class DemoLevelAuthoring
         Secrets: [new Secret(new RoomId("ammo-nook"), "Cracked wall behind fodder closet")],
         Exit: new ExitCondition(new RoomId("final-arena"), "exit-switch"));
 
-    public static void BuildGeometry(TwoDScene scene, DoomLevelState level)
+    public static void BuildGeometry(PlanarScene scene, DoomLevelState level)
     {
         scene.Camera.ClearColor = new Rgba32(14, 10, 18);
 
@@ -72,7 +72,7 @@ internal static class DemoLevelAuthoring
         world.SpawnMonster(MonsterRole.Hitscan, 29f, 5f);
     }
 
-    private static void AddOuterShell(TwoDScene scene)
+    private static void AddOuterShell(PlanarScene scene)
     {
         ObliqueWallDrawer.AddWall(scene, 0f, 0f, 42f, 1f);
         ObliqueWallDrawer.AddWall(scene, 0f, 23f, 42f, 24f);
@@ -80,27 +80,27 @@ internal static class DemoLevelAuthoring
         ObliqueWallDrawer.AddWall(scene, 41f, 0f, 42f, 24f);
     }
 
-    private static void AddStartRoom(TwoDScene scene)
+    private static void AddStartRoom(PlanarScene scene)
     {
         ObliqueWallDrawer.AddWall(scene, 1f, 1f, 10f, 2f);
         ObliqueWallDrawer.AddWall(scene, 1f, 10f, 10f, 11f, new Rgba32(55, 48, 62));
     }
 
-    private static void AddCorridor(TwoDScene scene)
+    private static void AddCorridor(PlanarScene scene)
     {
         ObliqueWallDrawer.AddWall(scene, 10f, 4f, 11f, 18f);
         ObliqueWallDrawer.AddWall(scene, 18f, 4f, 19f, 18f);
         ObliqueWallDrawer.AddDoorFrame(scene, 19f, 8.5f, 20f, 14.5f);
     }
 
-    private static void RegisterBlueGate(TwoDScene scene, DoomLevelState level)
+    private static void RegisterBlueGate(PlanarScene scene, DoomLevelState level)
     {
         var (_, north, blocker) = ObliqueWallDrawer.AddWall(scene, 19f, 9f, 20f, 14f, new Rgba32(50, 60, 100));
         level.BlueGateVisuals.Add(north);
         level.BlueGateColliders.Add(blocker);
     }
 
-    private static void RegisterArena(TwoDScene scene, DoomLevelState level)
+    private static void RegisterArena(PlanarScene scene, DoomLevelState level)
     {
         ObliqueWallDrawer.AddWall(scene, 20f, 1f, 40f, 2f);
         ObliqueWallDrawer.AddWall(scene, 20f, 21f, 40f, 22f);
@@ -116,7 +116,7 @@ internal static class DemoLevelAuthoring
         ObliqueWallDrawer.AddWall(scene, 36f, 10f, 40f, 11f);
     }
 
-    private static void AddSecretNook(TwoDScene scene)
+    private static void AddSecretNook(PlanarScene scene)
     {
         ObliqueWallDrawer.AddWall(scene, 6f, 14f, 9f, 15f);
         ObliqueWallDrawer.AddSecretCrack(scene, 7.2f, 14.4f);

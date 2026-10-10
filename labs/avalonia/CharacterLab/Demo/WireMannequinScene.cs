@@ -1,7 +1,7 @@
 using System.Numerics;
-using Novolis.Avalonia.ThreeD.Session;
+using Novolis.Avalonia.Modeling.Session;
 using Novolis.Math.Geometry;
-using Novolis.ThreeD;
+using Novolis.Modeling;
 using Novolis.Simulation.Humanoid;
 
 namespace CharacterLab.Demo;

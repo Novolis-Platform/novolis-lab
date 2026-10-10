@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>RtsLitePlanar</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\RtsLite\Game\RtsArena.cs" Link="Shared\RtsArena.cs" />
+    <Compile Include="..\RtsLite\Game\RtsUnit.cs" Link="Shared\RtsUnit.cs" />
+    <Compile Include="..\RtsLite\Game\RtsBuilding.cs" Link="Shared\RtsBuilding.cs" />
+    <Compile Include="..\RtsLite\Game\RtsBuildingType.cs" Link="Shared\RtsBuildingType.cs" />
+    <Compile Include="..\RtsLite\Game\RtsSelection.cs" Link="Shared\RtsSelection.cs" />
+    <Compile Include="..\RtsLite\Game\RtsBuildPlacer.cs" Link="Shared\RtsBuildPlacer.cs" />
+    <Compile Include="..\RtsLite\Game\UnitTeam.cs" Link="Shared\UnitTeam.cs" />
+    <Compile Include="..\RtsLite\Game\ScreenRect.cs" Link="Shared\ScreenRect.cs" />
+    <Compile Include="..\RtsLite\Game\RtsBuildingDefs.cs" Link="Shared\RtsBuildingDefs.cs" />
+    <LibraryReference Include="Novolis.Game.Scenes" />
+    <LibraryReference Include="Novolis.Silk" />
+    <LibraryReference Include="Novolis.Simulation.Kinematics" />
+  </ItemGroup>
+</Project>

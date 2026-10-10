@@ -3,30 +3,31 @@ using FrankMoat.Art;
 using FrankMoat.Input;
 using FrankMoat.Levels;
 using FrankMoat.Rendering;
+using Novolis.Game.Scenes;
 using Novolis.Math.Geometry;
 using Novolis.Silk;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace FrankMoat.Game;
 
 internal sealed class FrankMoatGame
 {
-    private const float Step = 1f / 60f;
     private const float DefaultZoom = 0.016f;
 
     private readonly RangeWorld _world = new();
     private readonly RaisedWallDrawer _walls = new();
+    private readonly FixedStepClock _clock = new();
+    private readonly ViewportFollow _follow = new() { ShakeDecay = 0f };
     private RangeArt? _art;
     private RangePresenter? _presenter;
     private bool _playing;
     private bool _paused;
     private bool _ended;
-    private float _accum;
     private float _zoom = DefaultZoom;
 
     public bool SkipMenu { get; init; }
 
-    public void Initialize(SilkFrame frame, TwoDScene scene)
+    public void Initialize(SilkFrame frame, PlanarScene scene)
     {
         _art = RangeArt.Create(scene.Textures);
         _presenter = new RangePresenter(_art);
@@ -38,15 +39,15 @@ internal sealed class FrankMoatGame
             _playing = true;
             return;
         }
-        scene.Menus.Push(new TwoDMenuScreen("FRANK MOAT", [
-            new TwoDMenuItem("ENTER THE RANGE", Tag: "play", OnSelect: () =>
+        scene.Menus.Push(new PlanarMenuScreen("FRANK MOAT", [
+            new PlanarMenuItem("ENTER THE RANGE", Tag: "play", OnSelect: () =>
             {
                 StartRun(scene);
                 _playing = true;
                 scene.Menus.Pop();
                 return "play";
             }),
-            new TwoDMenuItem("QUIT", Tag: "quit", OnSelect: () =>
+            new PlanarMenuItem("QUIT", Tag: "quit", OnSelect: () =>
             {
                 Environment.Exit(0);
                 return null;
@@ -54,19 +55,19 @@ internal sealed class FrankMoatGame
         ]));
     }
 
-    public void Update(SilkFrame frame, TwoDScene scene)
+    public void Update(SilkFrame frame, PlanarScene scene)
     {
         if (frame.IsKeyPressed(Key.Escape) && _playing && !_paused && !_world.Inspecting)
         {
             _paused = true;
-            scene.Menus.Push(new TwoDMenuScreen("PAUSED", [
-                new TwoDMenuItem("RESUME", OnSelect: () =>
+            scene.Menus.Push(new PlanarMenuScreen("PAUSED", [
+                new PlanarMenuItem("RESUME", OnSelect: () =>
                 {
                     _paused = false;
                     scene.Menus.Pop();
                     return null;
                 }),
-                new TwoDMenuItem("QUIT", OnSelect: () =>
+                new PlanarMenuItem("QUIT", OnSelect: () =>
                 {
                     Environment.Exit(0);
                     return null;
@@ -90,15 +91,14 @@ internal sealed class FrankMoatGame
             _world.Inspecting = !_world.Inspecting;
         }
 
-        var aim = ReadAim(frame, scene);
+        var aim = ViewportAim.DeltaXz(scene.Camera, frame.MousePosition.X, frame.MousePosition.Y, _world.Frank.Position);
+        var look = aim.LengthSquaredXz() > 0.01f ? aim : _world.Frank.Facing;
         if (!_world.Inspecting)
         {
-            _accum += frame.DeltaSeconds;
-            _accum = MathF.Min(_accum, 0.12f);
-            while (_accum >= Step)
+            var steps = _clock.Consume(frame.DeltaSeconds);
+            for (var i = 0; i < steps; i++)
             {
-                _world.Tick(Step, scene.Collision, input, aim);
-                _accum -= Step;
+                _world.Tick(_clock.StepSeconds, scene.Collision, input, aim);
             }
         }
 
@@ -114,7 +114,13 @@ internal sealed class FrankMoatGame
             return;
         }
 
-        FollowCamera(scene, frame.DeltaSeconds, aim);
+        _follow.Shake = _world.Juice.Shake;
+        _follow.Tick(scene.Camera, _world.Frank.Position, look, frame.DeltaSeconds);
+        scene.Camera.WorldUnitsPerPixel = _zoom;
+        scene.Camera.ClearColor = new Rgba32(
+            (byte)(16 + _world.Juice.Shake * 18),
+            18,
+            22);
         _walls.TickOcclusion(_world.Frank.Position, _world.Juice.MuzzleTimer);
         _presenter?.Sync(scene, _world);
         scene.Update(frame.DeltaSeconds);
@@ -122,7 +128,7 @@ internal sealed class FrankMoatGame
         frame.SetTitle($"Frank Moat — FX {_world.Particles.Count}  wave {_world.Wave}");
     }
 
-    private void StartRun(TwoDScene scene)
+    private void StartRun(PlanarScene scene)
     {
         _presenter?.ClearDynamic(scene);
         _world.Reset();
@@ -131,13 +137,13 @@ internal sealed class FrankMoatGame
         _walls.Build(scene, walls, _art!);
         _ended = false;
         _paused = false;
-        _accum = 0f;
+        _clock.Reset();
         _zoom = DefaultZoom;
         scene.Camera.Position = _world.Frank.Position;
         scene.Camera.WorldUnitsPerPixel = _zoom;
     }
 
-    private void ShowEnd(SilkFrame frame, TwoDScene scene, string title)
+    private void ShowEnd(SilkFrame frame, PlanarScene scene, string title)
     {
         if (_ended)
         {
@@ -146,15 +152,15 @@ internal sealed class FrankMoatGame
 
         _ended = true;
         _playing = false;
-        scene.Menus.Push(new TwoDMenuScreen(title, [
-            new TwoDMenuItem("AGAIN", OnSelect: () =>
+        scene.Menus.Push(new PlanarMenuScreen(title, [
+            new PlanarMenuItem("AGAIN", OnSelect: () =>
             {
                 StartRun(scene);
                 _playing = true;
                 scene.Menus.Pop();
                 return null;
             }),
-            new TwoDMenuItem("QUIT", OnSelect: () =>
+            new PlanarMenuItem("QUIT", OnSelect: () =>
             {
                 Environment.Exit(0);
                 return null;
@@ -162,31 +168,4 @@ internal sealed class FrankMoatGame
         ]));
     }
 
-    private void FollowCamera(TwoDScene scene, float dt, Vector2 aim)
-    {
-        var look = aim.LengthSquared() > 0.01f ? Vector2.Normalize(aim) : _world.Frank.Facing;
-        var target = _world.Frank.Position + new Vector3(look.X * 2.3f, 0f, look.Y * 2.3f);
-        var shake = _world.Juice.Shake;
-        if (shake > 0.01f)
-        {
-            target += new Vector3(
-                (Random.Shared.NextSingle() - 0.5f) * 0.4f * shake,
-                0f,
-                (Random.Shared.NextSingle() - 0.5f) * 0.4f * shake);
-        }
-
-        var t = 1f - MathF.Exp(-10f * dt);
-        scene.Camera.Position = Vector3.Lerp(scene.Camera.Position, target, t);
-        scene.Camera.WorldUnitsPerPixel = _zoom;
-        scene.Camera.ClearColor = new Rgba32(
-            (byte)(16 + shake * 18),
-            18,
-            22);
-    }
-
-    private Vector2 ReadAim(SilkFrame frame, TwoDScene scene)
-    {
-        var world = scene.Camera.ScreenToWorld(frame.MousePosition.X, frame.MousePosition.Y);
-        return new Vector2(world.X - _world.Frank.Position.X, world.Z - _world.Frank.Position.Z);
-    }
 }

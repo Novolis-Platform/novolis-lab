@@ -1,4 +1,4 @@
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Art;
 
@@ -9,13 +9,13 @@ namespace TopDownDoom.Art;
 internal static class SquareCharacterArtLoader
 {
     public static bool TryLoad(
-        TwoDTextureRegistry registry,
+        PlanarTextureRegistry registry,
         string root,
         out CharacterAnimationSet player,
         out CharacterAnimationSet fodder,
         out CharacterAnimationSet imp,
         out CharacterAnimationSet bruiser,
-        out TwoDAnimationClip? explosion,
+        out PlanarAnimationClip? explosion,
         out string label)
     {
         player = null!;
@@ -51,7 +51,7 @@ internal static class SquareCharacterArtLoader
     }
 
     private static CharacterAnimationSet? LoadRole(
-        TwoDTextureRegistry registry,
+        PlanarTextureRegistry registry,
         string folder,
         DirectionalClips fallbackFacing,
         float halfHeight)

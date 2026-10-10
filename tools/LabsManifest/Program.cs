@@ -16,27 +16,6 @@ internal static class Program
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    private static readonly HashSet<string> CategoryDirectories =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            "astro",
-            "audio",
-            "avalonia",
-            "cad",
-            "civics",
-            "codegen",
-            "documents",
-            "economy",
-            "gaming",
-            "io",
-            "manuscript",
-            "maui",
-            "raylib",
-            "rendering",
-            "visual",
-            "workspaces",
-        };
-
     private static int Main(string[] args)
     {
         var command = args.FirstOrDefault()?.ToLowerInvariant();
@@ -72,20 +51,23 @@ internal static class Program
 
     private static int Generate(string repo, string manifestPath)
     {
-        var heldOffCi = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var heldOffProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (File.Exists(manifestPath))
         {
             foreach (var lab in Load(manifestPath).Labs)
             {
-                if (lab.Ci is false)
-                    heldOffCi.Add(lab.Key);
+                if (lab.Ci is not false)
+                    continue;
+
+                foreach (var project in lab.Projects.Concat(lab.Tests))
+                    heldOffProjects.Add(Normalize(project));
             }
         }
 
         var labs = Discover(repo);
         foreach (var lab in labs)
         {
-            if (heldOffCi.Contains(lab.Key))
+            if (lab.Projects.Concat(lab.Tests).Any(project => heldOffProjects.Contains(Normalize(project))))
                 lab.Ci = false;
         }
 
@@ -112,6 +94,7 @@ internal static class Program
         foreach (var projectPath in Directory.EnumerateFiles(labsRoot, "*.csproj", SearchOption.AllDirectories)
                      .Where(path => path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
                          .All(part => !string.Equals(part, "shared", StringComparison.OrdinalIgnoreCase)
+                             && !string.Equals(part, "fixture", StringComparison.OrdinalIgnoreCase)
                              && !string.Equals(part, "bin", StringComparison.OrdinalIgnoreCase)
                              && !string.Equals(part, "obj", StringComparison.OrdinalIgnoreCase))))
         {
@@ -168,7 +151,8 @@ internal static class Program
 
     private static string[] GetLabRootSegments(string[] segments)
     {
-        if (segments.Length >= 2 && CategoryDirectories.Contains(segments[0]))
+        // labs/<category>/<Lab>/… where category is the Novolis repo name without the "novolis-" prefix.
+        if (segments.Length >= 3)
         {
             var name = Regex.Replace(segments[1], @"(?i)\.Tests$", string.Empty);
             return [segments[0], name];

@@ -1,5 +1,5 @@
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Art;
 
@@ -8,19 +8,19 @@ internal static class ProceduralDoomSprites
 {
     private static readonly string[] DirectionSuffixes = ["down", "up", "right", "up_right", "down_right"];
 
-    public static CharacterAnimationSet CreateMarine(TwoDTextureRegistry registry) =>
+    public static CharacterAnimationSet CreateMarine(PlanarTextureRegistry registry) =>
         CreateDirectional(registry, DoomArchetype.Marine, 0.68f);
 
-    public static CharacterAnimationSet CreateZombie(TwoDTextureRegistry registry) =>
+    public static CharacterAnimationSet CreateZombie(PlanarTextureRegistry registry) =>
         CreateDirectional(registry, DoomArchetype.Zombie, 0.64f);
 
-    public static CharacterAnimationSet CreateImp(TwoDTextureRegistry registry) =>
+    public static CharacterAnimationSet CreateImp(PlanarTextureRegistry registry) =>
         CreateDirectional(registry, DoomArchetype.Imp, 0.58f);
 
-    public static CharacterAnimationSet CreateBruiser(TwoDTextureRegistry registry) =>
+    public static CharacterAnimationSet CreateBruiser(PlanarTextureRegistry registry) =>
         CreateDirectional(registry, DoomArchetype.Pinky, 0.82f);
 
-    public static TwoDAnimationClip CreateExplosionClip(TwoDTextureRegistry registry)
+    public static PlanarAnimationClip CreateExplosionClip(PlanarTextureRegistry registry)
     {
         const int fw = 32;
         const int fh = 32;
@@ -54,11 +54,11 @@ internal static class ProceduralDoomSprites
         }
 
         var id = registry.Register(atlas, fw * frames, fh, "procedural-explosion");
-        var sheet = new TwoDSpriteSheet(id, fw, fh, fw * frames, fh);
-        return new TwoDAnimationClip(sheet, [0, 1, 2, 3, 4, 5, 6, 7], 18f);
+        var sheet = new PlanarSpriteSheet(id, fw, fh, fw * frames, fh);
+        return new PlanarAnimationClip(sheet, [0, 1, 2, 3, 4, 5, 6, 7], 18f);
     }
 
-    public static TwoDTextureId CreatePickupIcon(TwoDTextureRegistry registry, PickupArtKind kind)
+    public static PlanarTextureId CreatePickupIcon(PlanarTextureRegistry registry, PickupArtKind kind)
     {
         const int size = 32;
         var pixels = new Rgba32[size * size];
@@ -83,7 +83,7 @@ internal static class ProceduralDoomSprites
     }
 
     private static CharacterAnimationSet CreateDirectional(
-        TwoDTextureRegistry registry,
+        PlanarTextureRegistry registry,
         DoomArchetype archetype,
         float worldHalfHeight)
     {
@@ -103,8 +103,8 @@ internal static class ProceduralDoomSprites
         return new CharacterAnimationSet(fallback, worldHalfHeight, shoot, facing: facing);
     }
 
-    private static TwoDAnimationClip BuildDirectionClip(
-        TwoDTextureRegistry registry,
+    private static PlanarAnimationClip BuildDirectionClip(
+        PlanarTextureRegistry registry,
         DoomArchetype archetype,
         ViewAngle view,
         int frames,
@@ -122,8 +122,8 @@ internal static class ProceduralDoomSprites
         }
 
         var id = registry.Register(atlas, fw * frames, fh, $"proc-{archetype}-{view}");
-        var sheet = new TwoDSpriteSheet(id, fw, fh, fw * frames, fh);
-        return new TwoDAnimationClip(sheet, Enumerable.Range(0, frames).ToArray(), fps);
+        var sheet = new PlanarSpriteSheet(id, fw, fh, fw * frames, fh);
+        return new PlanarAnimationClip(sheet, Enumerable.Range(0, frames).ToArray(), fps);
     }
 
     private static ViewAngle ViewFromSuffix(string suffix) => suffix switch

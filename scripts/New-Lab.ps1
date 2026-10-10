@@ -6,6 +6,10 @@ param(
     [string]$Name,
 
     [Parameter(Mandatory)]
+    [ValidatePattern('^[a-z][a-z0-9-]*$')]
+    [string]$Category,
+
+    [Parameter(Mandatory)]
     [ValidateSet('avalonia', 'raylib', 'spectre', 'console')]
     [string]$Stack,
 
@@ -13,7 +17,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $cs = Join-Path $PSScriptRoot 'New-Lab.cs'
-$forward = @('--name', $Name, '--stack', $Stack)
+$forward = @('--name', $Name, '--category', $Category, '--stack', $Stack)
 if ($Force) { $forward += '--force' }
 & dotnet run --file $cs -- @forward
 exit $LASTEXITCODE

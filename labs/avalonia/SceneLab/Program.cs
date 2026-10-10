@@ -7,11 +7,11 @@ using Avalonia.Win32;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Novolis.Agent.Surface;
-using Novolis.Avalonia.ThreeD;
-using Novolis.Avalonia.ThreeD.Services;
-using Novolis.Avalonia.ThreeD.Session;
-using Novolis.Avalonia.ThreeD.Ui;
-using Novolis.ThreeD;
+using Novolis.Avalonia.Modeling;
+using Novolis.Avalonia.Modeling.Services;
+using Novolis.Avalonia.Modeling.Session;
+using Novolis.Avalonia.Modeling.Ui;
+using Novolis.Modeling;
 
 namespace SceneLab;
 

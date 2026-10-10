@@ -5,7 +5,7 @@ using CharacterLab.Demo;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Novolis.Agent.Surface;
-using Novolis.Avalonia.ThreeD.Session;
+using Novolis.Avalonia.Modeling.Session;
 
 namespace CharacterLab;
 

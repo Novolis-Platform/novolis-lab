@@ -1,20 +1,20 @@
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Art;
 
 internal sealed class ParticleTextures(
-    TwoDTextureId softGlow,
-    TwoDTextureId spark,
-    TwoDTextureId smoke,
-    TwoDTextureId shell)
+    PlanarTextureId softGlow,
+    PlanarTextureId spark,
+    PlanarTextureId smoke,
+    PlanarTextureId shell)
 {
-    public TwoDTextureId SoftGlow { get; } = softGlow;
-    public TwoDTextureId Spark { get; } = spark;
-    public TwoDTextureId Smoke { get; } = smoke;
-    public TwoDTextureId Shell { get; } = shell;
+    public PlanarTextureId SoftGlow { get; } = softGlow;
+    public PlanarTextureId Spark { get; } = spark;
+    public PlanarTextureId Smoke { get; } = smoke;
+    public PlanarTextureId Shell { get; } = shell;
 
-    public static ParticleTextures Create(TwoDTextureRegistry registry)
+    public static ParticleTextures Create(PlanarTextureRegistry registry)
     {
         const int size = 16;
         var soft = new Rgba32[size * size];

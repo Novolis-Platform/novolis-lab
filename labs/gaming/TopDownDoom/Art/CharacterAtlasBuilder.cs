@@ -1,13 +1,13 @@
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using Novolis.Silk;
 
 namespace TopDownDoom.Art;
 
 internal static class CharacterAtlasBuilder
 {
-    public static TwoDAnimationClip? TryBuildClipFromNamePrefix(
-        TwoDTextureRegistry registry,
+    public static PlanarAnimationClip? TryBuildClipFromNamePrefix(
+        PlanarTextureRegistry registry,
         string folder,
         string namePrefix,
         float framesPerSecond)
@@ -24,8 +24,8 @@ internal static class CharacterAtlasBuilder
         return BuildClipFromFiles(registry, files, framesPerSecond, namePrefix);
     }
 
-    public static TwoDAnimationClip? TryBuildClipFromExactPrefix(
-        TwoDTextureRegistry registry,
+    public static PlanarAnimationClip? TryBuildClipFromExactPrefix(
+        PlanarTextureRegistry registry,
         string folder,
         string exactPrefix,
         float framesPerSecond) =>
@@ -43,8 +43,8 @@ internal static class CharacterAtlasBuilder
         return rest.Length == 0 || rest[0] is ' ' or '(';
     }
 
-    public static TwoDAnimationClip? TryBuildClipFromFolder(
-        TwoDTextureRegistry registry,
+    public static PlanarAnimationClip? TryBuildClipFromFolder(
+        PlanarTextureRegistry registry,
         string folder,
         float framesPerSecond)
     {
@@ -59,8 +59,8 @@ internal static class CharacterAtlasBuilder
         return BuildClipFromFiles(registry, files, framesPerSecond, Path.GetFileName(folder.TrimEnd(Path.DirectorySeparatorChar)));
     }
 
-    private static TwoDAnimationClip? BuildClipFromFiles(
-        TwoDTextureRegistry registry,
+    private static PlanarAnimationClip? BuildClipFromFiles(
+        PlanarTextureRegistry registry,
         string[] files,
         float framesPerSecond,
         string label)
@@ -73,7 +73,7 @@ internal static class CharacterAtlasBuilder
         var frames = new List<(int W, int H, Rgba32[] Pixels)>(files.Length);
         foreach (var file in files)
         {
-            var texId = TwoDPngLoader.LoadPng(registry, file);
+            var texId = PlanarPngLoader.LoadPng(registry, file);
             var info = registry.GetInfo(texId);
             var pixels = new Rgba32[info.Width * info.Height];
             registry.CopyPixels(texId, pixels, out _, out _);
@@ -105,8 +105,8 @@ internal static class CharacterAtlasBuilder
         }
 
         var atlasId = registry.Register(atlas, atlasW, frameH, label);
-        var sheet = new TwoDSpriteSheet(atlasId, frameW, frameH, atlasW, frameH);
+        var sheet = new PlanarSpriteSheet(atlasId, frameW, frameH, atlasW, frameH);
         var indices = Enumerable.Range(0, frames.Count).ToArray();
-        return new TwoDAnimationClip(sheet, indices, framesPerSecond);
+        return new PlanarAnimationClip(sheet, indices, framesPerSecond);
     }
 }

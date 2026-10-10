@@ -27,6 +27,6 @@
     <LibraryReference Include="Novolis.Ship.Analysis" />
     <LibraryReference Include="Novolis.Math.Measure" />
     <LibraryReference Include="Novolis.Commands.Expressions" />
-    <LibraryReference Include="Novolis.ThreeD.Scene" />
+    <LibraryReference Include="Novolis.Modeling.Scene" />
   </ItemGroup>
 </Project>

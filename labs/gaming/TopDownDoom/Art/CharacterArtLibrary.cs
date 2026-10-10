@@ -1,4 +1,4 @@
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Art;
 
@@ -8,18 +8,18 @@ internal sealed class CharacterArtLibrary
     public CharacterAnimationSet Fodder { get; private set; } = null!;
     public CharacterAnimationSet Imp { get; private set; } = null!;
     public CharacterAnimationSet Bruiser { get; private set; } = null!;
-    public TwoDAnimationClip? Explosion { get; private set; }
+    public PlanarAnimationClip? Explosion { get; private set; }
     public string SourceLabel { get; private set; } = "built-in";
 
-    public TwoDTextureId HealthIcon { get; private set; }
-    public TwoDTextureId ArmorIcon { get; private set; }
-    public TwoDTextureId AmmoIcon { get; private set; }
-    public TwoDTextureId KeyIcon { get; private set; }
-    public TwoDTextureId ExitIcon { get; private set; }
-    public TwoDTextureId BarrelIcon { get; private set; }
+    public PlanarTextureId HealthIcon { get; private set; }
+    public PlanarTextureId ArmorIcon { get; private set; }
+    public PlanarTextureId AmmoIcon { get; private set; }
+    public PlanarTextureId KeyIcon { get; private set; }
+    public PlanarTextureId ExitIcon { get; private set; }
+    public PlanarTextureId BarrelIcon { get; private set; }
     public ParticleTextures Particles { get; private set; } = null!;
 
-    public void Initialize(TwoDTextureRegistry registry, string contentRoot)
+    public void Initialize(PlanarTextureRegistry registry, string contentRoot)
     {
         var assets = Path.Combine(contentRoot, "Assets");
         if (SquareCharacterArtLoader.TryLoad(
@@ -67,7 +67,7 @@ internal sealed class CharacterArtLibrary
         BarrelIcon = ProceduralDoomSprites.CreatePickupIcon(registry, PickupArtKind.Barrel);
     }
 
-    private bool TryLoadTdsPack(TwoDTextureRegistry registry, string root)
+    private bool TryLoadTdsPack(PlanarTextureRegistry registry, string root)
     {
         if (!Directory.Exists(root))
         {

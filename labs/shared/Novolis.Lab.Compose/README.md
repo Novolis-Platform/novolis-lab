@@ -1,14 +1,15 @@
 # Novolis.Lab.Compose
 
-In-repo shared library (not published). Bridges **Novolis.Simulation.View** poses to **Novolis.Rendering.Runtime** cameras without a Simulation↔Rendering package dependency.
+In-repo shared library (not published). Compose-layer bridges that must not live in Simulation, Rendering, or Modeling.
 
 ## Consumers
 
-Referenced by dogfood apps that need `ViewPose` → `CameraSnapshot` conversion (e.g. path-trace / viewport benches).
+Referenced by dogfood apps that need `ViewPose` → `CameraSnapshot` or `.nov3djson` → path-trace `Scene` conversion.
 
 ## API
 
 - `ViewPoseRenderingBridge.ToCameraSnapshot(ViewPose, aspectRatio)`
+- `SceneDocumentRenderingBridge.ToScene(SceneDocument | LookCache)` — meshes + lights only; cameras stay `ViewPose` / `CameraNode`
 
 ## ProjectRef note
 

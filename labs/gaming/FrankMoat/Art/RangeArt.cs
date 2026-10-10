@@ -1,32 +1,32 @@
 using FrankMoat.Levels;
 using Novolis.Math.Geometry;
 using Novolis.Rendering.Appearance;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace FrankMoat.Art;
 
 internal sealed class RangeArt
 {
-    public required TwoDTextureId White { get; init; }
-    public required TwoDTextureId SoftGlow { get; init; }
-    public required TwoDTextureId Spark { get; init; }
-    public required TwoDTextureId Smoke { get; init; }
-    public required TwoDTextureId Shell { get; init; }
-    public required TwoDTextureId Blood { get; init; }
-    public required TwoDTextureId Frank { get; init; }
-    public required TwoDTextureId Shambler { get; init; }
-    public required TwoDTextureId Runner { get; init; }
-    public required TwoDTextureId Tank { get; init; }
-    public required TwoDTextureId Barrel { get; init; }
-    public required TwoDTextureId Crate { get; init; }
-    public required TwoDTextureId Floor { get; init; }
-    public required TwoDTextureId Steel { get; init; }
-    public required TwoDTextureId Concrete { get; init; }
-    public required TwoDTextureId Glass { get; init; }
-    public required TwoDTextureId FilthyGlow { get; init; }
-    public required TwoDTextureId FlashCone { get; init; }
+    public required PlanarTextureId White { get; init; }
+    public required PlanarTextureId SoftGlow { get; init; }
+    public required PlanarTextureId Spark { get; init; }
+    public required PlanarTextureId Smoke { get; init; }
+    public required PlanarTextureId Shell { get; init; }
+    public required PlanarTextureId Blood { get; init; }
+    public required PlanarTextureId Frank { get; init; }
+    public required PlanarTextureId Shambler { get; init; }
+    public required PlanarTextureId Runner { get; init; }
+    public required PlanarTextureId Tank { get; init; }
+    public required PlanarTextureId Barrel { get; init; }
+    public required PlanarTextureId Crate { get; init; }
+    public required PlanarTextureId Floor { get; init; }
+    public required PlanarTextureId Steel { get; init; }
+    public required PlanarTextureId Concrete { get; init; }
+    public required PlanarTextureId Glass { get; init; }
+    public required PlanarTextureId FilthyGlow { get; init; }
+    public required PlanarTextureId FlashCone { get; init; }
 
-    public TwoDTextureId Wall(WallMaterial material) => material switch
+    public PlanarTextureId Wall(WallMaterial material) => material switch
     {
         WallMaterial.Steel => Steel,
         WallMaterial.Glass => Glass,
@@ -34,14 +34,14 @@ internal sealed class RangeArt
         _ => Concrete,
     };
 
-    public static RangeArt Create(TwoDTextureRegistry registry) => new()
+    public static RangeArt Create(PlanarTextureRegistry registry) => new()
     {
-        White = Solid(registry, 255, 255, 255, 255, "white"),
-        SoftGlow = Disc(registry, 16, 255, 255, 255, 255, falloff: 2f, "glow"),
-        Spark = Cross(registry),
-        Smoke = Disc(registry, 16, 90, 90, 96, 170, falloff: 1.4f, "smoke"),
-        Shell = Capsule(registry),
-        Blood = Disc(registry, 16, 170, 16, 20, 230, falloff: 1.8f, "blood"),
+        White = registry.Solid(Rgba32.White, "white"),
+        SoftGlow = registry.Disc(16, new Rgba32(255, 255, 255), falloff: 2f, "glow"),
+        Spark = registry.Cross(16, new Rgba32(255, 236, 170, 230), "spark"),
+        Smoke = registry.Disc(16, new Rgba32(90, 90, 96, 170), falloff: 1.4f, "smoke"),
+        Shell = registry.Capsule(16, new Rgba32(220, 176, 64), "shell"),
+        Blood = registry.Disc(16, new Rgba32(170, 16, 20, 230), falloff: 1.8f, "blood"),
         Frank = Actor(registry, 72, 88, 52, 36, 44, 28, "frank"),
         Shambler = Actor(registry, 86, 104, 70, 48, 56, 40, "shambler"),
         Runner = Actor(registry, 70, 92, 58, 40, 52, 34, "runner"),
@@ -56,81 +56,11 @@ internal sealed class RangeArt
         FlashCone = Register(registry, AppearanceBaker.BakeLightVolume(AppearanceRecipes.Flashlight(), AppearanceRecipes.IndoorFog(), 96, 96, 1), 96, "cone"),
     };
 
-    private static TwoDTextureId Register(TwoDTextureRegistry registry, Rgba32[] pixels, int size, string name) =>
+    private static PlanarTextureId Register(PlanarTextureRegistry registry, Rgba32[] pixels, int size, string name) =>
         registry.Register(pixels, size, size, name);
 
-    private static TwoDTextureId Solid(TwoDTextureRegistry registry, byte r, byte g, byte b, byte a, string name)
-    {
-        return registry.Register([new Rgba32(r, g, b, a)], 1, 1, name);
-    }
-
-    private static TwoDTextureId Disc(
-        TwoDTextureRegistry registry,
-        int size,
-        byte r,
-        byte g,
-        byte b,
-        byte a,
-        float falloff,
-        string name)
-    {
-        var px = new Rgba32[size * size];
-        var c = size / 2f;
-        for (var y = 0; y < size; y++)
-        {
-            for (var x = 0; x < size; x++)
-            {
-                var d = MathF.Sqrt((x - c) * (x - c) + (y - c) * (y - c)) / c;
-                if (d > 1f)
-                {
-                    continue;
-                }
-
-                var alpha = (byte)(a * MathF.Pow(1f - d, falloff));
-                px[y * size + x] = new Rgba32(r, g, b, alpha);
-            }
-        }
-
-        return registry.Register(px, size, size, name);
-    }
-
-    private static TwoDTextureId Cross(TwoDTextureRegistry registry)
-    {
-        const int size = 16;
-        var px = new Rgba32[size * size];
-        var c = size / 2f;
-        for (var y = 0; y < size; y++)
-        {
-            for (var x = 0; x < size; x++)
-            {
-                if (MathF.Abs(x - c) < 1.3f || MathF.Abs(y - c) < 1.3f)
-                {
-                    var sa = (byte)(230 * (1f - MathF.Min(1f, (MathF.Abs(x - c) + MathF.Abs(y - c)) / 5f)));
-                    px[y * size + x] = new Rgba32(255, 236, 170, sa);
-                }
-            }
-        }
-
-        return registry.Register(px, size, size, "spark");
-    }
-
-    private static TwoDTextureId Capsule(TwoDTextureRegistry registry)
-    {
-        const int size = 16;
-        var px = new Rgba32[size * size];
-        for (var y = 4; y <= 11; y++)
-        {
-            for (var x = 6; x <= 10; x++)
-            {
-                px[y * size + x] = new Rgba32(220, 176, 64);
-            }
-        }
-
-        return registry.Register(px, size, size, "shell");
-    }
-
-    private static TwoDTextureId Actor(
-        TwoDTextureRegistry registry,
+    private static PlanarTextureId Actor(
+        PlanarTextureRegistry registry,
         byte bodyR,
         byte bodyG,
         byte bodyB,
@@ -175,7 +105,7 @@ internal sealed class RangeArt
         return registry.Register(px, size, size, name);
     }
 
-    private static TwoDTextureId Drum(TwoDTextureRegistry registry)
+    private static PlanarTextureId Drum(PlanarTextureRegistry registry)
     {
         const int size = 24;
         var px = new Rgba32[size * size];
@@ -195,7 +125,7 @@ internal sealed class RangeArt
         return registry.Register(px, size, size, "barrel");
     }
 
-    private static TwoDTextureId Box(TwoDTextureRegistry registry)
+    private static PlanarTextureId Box(PlanarTextureRegistry registry)
     {
         const int size = 20;
         var px = new Rgba32[size * size];

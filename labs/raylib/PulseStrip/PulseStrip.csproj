@@ -13,7 +13,7 @@
     <LibraryReference Include="Novolis.MachineLearning.Neural" />
     <LibraryReference Include="Novolis.MachineLearning.Neural.Abstractions" />
     <LibraryReference Include="Novolis.Math.Geometry" />
-    <LibraryReference Include="Novolis.ThreeD.Import.Assimp" />
+    <LibraryReference Include="Novolis.Modeling.Import.Assimp" />
     <LibraryReference Include="Novolis.Simulation.Racing" />
     <PackageReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>

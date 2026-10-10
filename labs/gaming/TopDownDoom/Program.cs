@@ -1,9 +1,9 @@
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using Novolis.Silk;
 using TopDownDoom.Game;
 
 var game = new TopDownDoomGame();
-var scene = new TwoDScene();
+var scene = new PlanarScene();
 SilkGame.Run(
     "Top-Down Doom — lab (movement-first combat puzzle)",
     1024,

@@ -1,0 +1,116 @@
+using System.Numerics;
+using Novolis.Math.Geometry;
+using Novolis.Rendering.Planar;
+using Novolis.Silk;
+
+namespace PlanarHello;
+
+internal static class Program
+{
+    public static void Main()
+    {
+        var playerZ = 2f;
+        var velocityZ = 0f;
+        var playerPos = Vector3PlanarExtensions.Xz(4f, playerZ);
+        const float gravity = 22f;
+        const float jumpSpeed = 8f;
+        const float radius = 0.35f;
+        PlanarStaticPolygon? playerMarker = null;
+        var scene = new PlanarScene();
+
+        SilkGame.Run("PlanarHello — orthographic 2D", 800, 600, frame =>
+        {
+            scene.Camera.ClearColor = new Rgba32(30, 36, 52);
+            scene.Camera.WorldUnitsPerPixel = 1f / 28f;
+
+            scene.AddPlatform(0f, 0f, 18f, 1.2f, new Rgba32(70, 90, 120));
+            scene.AddPlatform(4f, 3f, 8f, 3.8f, new Rgba32(90, 110, 150));
+            scene.AddPlatform(10f, 5.5f, 16f, 6.2f, new Rgba32(90, 110, 150));
+
+            scene.Menus.Push(new PlanarMenuScreen("SILK TWO-D HELLO", [
+                new PlanarMenuItem("PLAY", Tag: "play", OnSelect: () => { scene.Menus.Pop(); return (object?)"play"; }),
+                new PlanarMenuItem("QUIT", Tag: "quit", OnSelect: () => { Environment.Exit(0); return (object?)"quit"; }),
+            ]));
+        }, frame =>
+        {
+            scene.Menus.HandleInput(frame.IsMenuUpPressed(), frame.IsMenuDownPressed(), frame.IsMenuConfirmPressed(), frame.IsMenuCancelPressed());
+            if (scene.Menus.IsActive)
+            {
+                frame.Submit(scene.Tessellate(frame.Width, frame.Height));
+                return;
+            }
+
+            var dt = frame.DeltaSeconds;
+
+            var move = 0f;
+            if (frame.IsKeyDown(Key.A))
+            {
+                move -= 1f;
+            }
+
+            if (frame.IsKeyDown(Key.D))
+            {
+                move += 1f;
+            }
+
+            var pos = playerPos;
+            var horizontal = new Vector3(move * 4.5f * dt, 0f, 0f);
+            pos = scene.Collision.MoveCircle(pos, horizontal, radius);
+
+            var grounded = !scene.Collision.Overlaps(pos + new Vector3(0f, 0f, -(radius + 0.03f)), radius);
+            if (grounded && frame.IsKeyPressed(Key.Space))
+            {
+                velocityZ = jumpSpeed;
+                grounded = false;
+            }
+
+            if (!grounded)
+            {
+                velocityZ -= gravity * dt;
+                var vertical = new Vector3(0f, 0f, velocityZ * dt);
+                pos = scene.Collision.MoveCircle(pos, vertical, radius);
+            }
+            else if (velocityZ < 0f)
+            {
+                velocityZ = 0f;
+            }
+
+            playerPos = pos;
+            playerZ = pos.Z;
+
+            var targetX = pos.X;
+            var t = 1f - MathF.Exp(-8f * dt);
+            scene.Camera.Position = Vector3.Lerp(scene.Camera.Position, Vector3PlanarExtensions.Xz(targetX, playerZ + 1.5f), t);
+
+            scene.Update(dt);
+            scene.Hud.Elements.Clear();
+            scene.Hud.AddText("A/D move  |  Space jump  |  Esc menu", 12, 12, 2f, new Rgba32(210, 220, 235));
+            scene.Hud.AddText($"pos {pos.X:F1},{pos.Z:F1}", 12, 36, 2f, new Rgba32(180, 200, 220));
+
+            if (playerMarker is not null)
+            {
+                scene.StaticPolygons.Remove(playerMarker);
+            }
+
+            playerMarker = CreatePlayerMarker(pos, radius);
+            scene.StaticPolygons.Add(playerMarker);
+            frame.Submit(scene.Tessellate(frame.Width, frame.Height));
+        });
+    }
+
+    private static PlanarStaticPolygon CreatePlayerMarker(Vector3 pos, float radius)
+    {
+        var minX = pos.X - radius;
+        var maxX = pos.X + radius;
+        var minZ = pos.Z - radius;
+        var maxZ = pos.Z + radius;
+        return new PlanarStaticPolygon(
+            PlanarScenePrimitives.Rectangle(minX, minZ, maxX, maxZ),
+            new Rgba32(255, 180, 90))
+        {
+            DrawFilled = true,
+            DrawOutline = true,
+            SortKey = 1000,
+        };
+    }
+}

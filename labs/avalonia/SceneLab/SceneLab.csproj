@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>SceneLab</RootNamespace>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <Description>Dogfood Novolis.Avalonia.ThreeD — CAD 3D editor / renderer (scene hierarchy, primitives, mesh edit, lights, cameras).</Description>
+    <Description>Dogfood Novolis.Avalonia.Modeling — CAD 3D editor / renderer (scene hierarchy, primitives, mesh edit, lights, cameras).</Description>
     <IsPackable>false</IsPackable>
     <DefaultItemExcludes>$(DefaultItemExcludes);tools\**\*</DefaultItemExcludes>
   </PropertyGroup>
@@ -14,10 +14,10 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <LibraryReference Include="Novolis.Avalonia.ThreeD" />
+    <LibraryReference Include="Novolis.Avalonia.Modeling" />
     <LibraryReference Include="Novolis.Agent.Core" />
     <LibraryReference Include="Novolis.Agent.Surface" />
-    <LibraryReference Include="Novolis.ThreeD.Scene" />
+    <LibraryReference Include="Novolis.Modeling.Scene" />
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs (same pattern as CalypsoCad). -->
     <LibraryReference Include="Novolis.Avalonia.Raylib" />
     <PackageReference Include="Novolis.Raylib" />

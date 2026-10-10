@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PlatformerPlanar</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\PlatformerHop\Game\SideLevel.cs" Link="Shared\SideLevel.cs" />
+    <LibraryReference Include="Novolis.Game.Scenes" />
+    <LibraryReference Include="Novolis.Physics.Abstractions" />
+    <LibraryReference Include="Novolis.Silk" />
+    <LibraryReference Include="Novolis.Simulation.Kinematics" />
+    <LibraryReference Include="Novolis.Simulation.World" />
+  </ItemGroup>
+</Project>

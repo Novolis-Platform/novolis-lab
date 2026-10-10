@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ApplicationId>com.novolis.raylibhello</ApplicationId>
+    <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <RootNamespace>RaylibHello.Android</RootNamespace>
+    <AssemblyName>RaylibHello.Android</AssemblyName>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Raylib.Native" />
+  </ItemGroup>
+
+  <!-- Sibling checkout / ProjectRef: Native ProjectReference does not flow buildTransitive from the nupkg. -->
+  <Import Project="..\..\..\..\novolis-raylib\build\Novolis.Raylib.Native.targets"
+          Condition="Exists('..\..\..\..\novolis-raylib\build\Novolis.Raylib.Native.targets')" />
+</Project>

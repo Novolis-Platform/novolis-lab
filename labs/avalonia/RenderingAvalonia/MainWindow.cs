@@ -18,7 +18,7 @@ internal sealed class MainWindow : Window
         Width = 1440;
         Height = 720;
 
-        var twoD = new TwoDSceneControl { MinHeight = 280 };
+        var twoD = new PlanarSceneControl { MinHeight = 280 };
         _ = new PlatformerDemo(twoD);
 
         var cpu = new Rgba32FrameControl { MinHeight = 280 };
@@ -56,7 +56,7 @@ internal sealed class MainWindow : Window
             {
                 new TextBlock
                 {
-                    Text = "TwoD (OpenGL)  |  CPU RGBA  |  RaylibHostControl (embedded GLFW)",
+                    Text = "Planar (OpenGL)  |  CPU RGBA  |  RaylibHostControl (embedded GLFW)",
                     Margin = new Thickness(8),
                     [DockPanel.DockProperty] = Dock.Top,
                 },

@@ -2,14 +2,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>TapDuelFootball</RootNamespace>
-    <Description>Portrait hotseat tap-duel football — recreation of frankhaugen/tap-duel-football on Novolis Rendering.TwoD + Game.MenuFlows.</Description>
+    <Description>Portrait hotseat tap-duel football — recreation of frankhaugen/tap-duel-football on Novolis.Game.Scenes + Game.MenuFlows.</Description>
   </PropertyGroup>
   <ItemGroup>
     <LibraryReference Include="Novolis.Game.MenuFlows" />
-    <LibraryReference Include="Novolis.Math.Geometry" />
-    <LibraryReference Include="Novolis.Math.Topology" />
-    <LibraryReference Include="Novolis.Rendering.TwoD" />
+    <LibraryReference Include="Novolis.Game.Scenes" />
     <LibraryReference Include="Novolis.Silk" />
-    <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
   </ItemGroup>
 </Project>

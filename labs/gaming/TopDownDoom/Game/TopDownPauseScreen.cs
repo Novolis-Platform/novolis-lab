@@ -2,7 +2,7 @@ using System.Numerics;
 using Novolis.Game.MenuFlows;
 using Novolis.Math.Geometry;
 using Novolis.Silk;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using TopDownDoom.Art;
 using TopDownDoom.Design;
 

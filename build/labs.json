@@ -3,14 +3,84 @@
   "Repository": "novolis-lab",
   "Labs": [
     {
-      "Key": "ArtillerySimulator",
-      "DisplayName": "Artillery Simulator",
+      "Key": "apps-CapitalistSimulator",
+      "DisplayName": "apps Capitalist Simulator",
       "Projects": [
-        "labs/ArtillerySimulator/ArtillerySimulator.csproj"
+        "labs/apps/CapitalistSimulator/CapitalistSimulator.csproj"
+      ],
+      "Tests": [
+        "labs/apps/CapitalistSimulator/tests/CapitalistSimulator.Unit/CapitalistSimulator.Unit.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/apps/CapitalistSimulator/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "apps-CoverageStudio",
+      "DisplayName": "apps Coverage Studio",
+      "Projects": [
+        "labs/apps/CoverageStudio/CoverageStudio.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/ArtillerySimulator/**",
+        "labs/apps/CoverageStudio/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "apps-CursorRemote",
+      "DisplayName": "apps Cursor Remote",
+      "Projects": [
+        "labs/apps/CursorRemote/CursorRemote.Android/CursorRemote.Android.csproj",
+        "labs/apps/CursorRemote/CursorRemote.Desktop/CursorRemote.Desktop.csproj",
+        "labs/apps/CursorRemote/CursorRemote/CursorRemote.csproj"
+      ],
+      "Tests": [
+        "labs/apps/CursorRemote/tests/CursorRemote.Unit/CursorRemote.Unit.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/apps/CursorRemote/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "apps-GeoPolity",
+      "DisplayName": "apps Geo Polity",
+      "Projects": [
+        "labs/apps/GeoPolity/GeoPolity.csproj"
+      ],
+      "Tests": [
+        "labs/apps/GeoPolity/tests/GeoPolity.Unit/GeoPolity.Unit.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/apps/GeoPolity/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "apps-RepoStudio",
+      "DisplayName": "apps Repo Studio",
+      "Projects": [
+        "labs/apps/RepoStudio/RepoStudio.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/apps/RepoStudio/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "apps-SpaceFleetSurveyTeam",
+      "DisplayName": "apps Space Fleet Survey Team",
+      "Projects": [
+        "labs/apps/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Android/SpaceFleetSurveyTeam.Android.csproj",
+        "labs/apps/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Desktop/SpaceFleetSurveyTeam.Desktop.csproj",
+        "labs/apps/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/apps/SpaceFleetSurveyTeam/**",
         "labs/shared/**"
       ]
     },
@@ -215,50 +285,14 @@
       ]
     },
     {
-      "Key": "AvaloniaAgentMcp",
-      "DisplayName": "Avalonia Agent Mcp",
-      "Projects": [
-        "labs/AvaloniaAgentMcp/AvaloniaAgentMcp.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/AvaloniaAgentMcp/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "blazor",
-      "DisplayName": "blazor",
+      "Key": "blazor-BlazorMarkupLab",
+      "DisplayName": "blazor Blazor Markup Lab",
       "Projects": [
         "labs/blazor/BlazorMarkupLab/BlazorMarkupLab.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/blazor/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "BouncingBall",
-      "DisplayName": "Bouncing Ball",
-      "Projects": [
-        "labs/BouncingBall/BouncingBall.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/BouncingBall/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "BridgeCommander",
-      "DisplayName": "Bridge Commander",
-      "Projects": [
-        "labs/BridgeCommander/BridgeCommander.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/BridgeCommander/**",
+        "labs/blazor/BlazorMarkupLab/**",
         "labs/shared/**"
       ]
     },
@@ -299,20 +333,6 @@
       ]
     },
     {
-      "Key": "CapitalistSimulator",
-      "DisplayName": "Capitalist Simulator",
-      "Projects": [
-        "labs/CapitalistSimulator/CapitalistSimulator.csproj"
-      ],
-      "Tests": [
-        "labs/CapitalistSimulator/tests/CapitalistSimulator.Unit/CapitalistSimulator.Unit.csproj"
-      ],
-      "ChangedPathGlobs": [
-        "labs/CapitalistSimulator/**",
-        "labs/shared/**"
-      ]
-    },
-    {
       "Key": "civics-PolityTriad",
       "DisplayName": "civics Polity Triad",
       "Projects": [
@@ -321,18 +341,6 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/civics/PolityTriad/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "ClothPlay",
-      "DisplayName": "Cloth Play",
-      "Projects": [
-        "labs/ClothPlay/ClothPlay.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/ClothPlay/**",
         "labs/shared/**"
       ]
     },
@@ -349,30 +357,38 @@
       ]
     },
     {
-      "Key": "CoverageStudio",
-      "DisplayName": "Coverage Studio",
+      "Key": "commands-AvaloniaAgentMcp",
+      "DisplayName": "commands Avalonia Agent Mcp",
       "Projects": [
-        "labs/CoverageStudio/CoverageStudio.csproj"
+        "labs/commands/AvaloniaAgentMcp/AvaloniaAgentMcp.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/CoverageStudio/**",
+        "labs/commands/AvaloniaAgentMcp/**",
         "labs/shared/**"
       ]
     },
     {
-      "Key": "CursorRemote",
-      "DisplayName": "Cursor Remote",
+      "Key": "commands-BridgeCommander",
+      "DisplayName": "commands Bridge Commander",
       "Projects": [
-        "labs/CursorRemote/CursorRemote.Android/CursorRemote.Android.csproj",
-        "labs/CursorRemote/CursorRemote.Desktop/CursorRemote.Desktop.csproj",
-        "labs/CursorRemote/CursorRemote/CursorRemote.csproj"
+        "labs/commands/BridgeCommander/BridgeCommander.csproj"
       ],
-      "Tests": [
-        "labs/CursorRemote/tests/CursorRemote.Unit/CursorRemote.Unit.csproj"
-      ],
+      "Tests": [],
       "ChangedPathGlobs": [
-        "labs/CursorRemote/**",
+        "labs/commands/BridgeCommander/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "commands-MauiAgentMcp",
+      "DisplayName": "commands Maui Agent Mcp",
+      "Projects": [
+        "labs/commands/MauiAgentMcp/MauiAgentMcp.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/commands/MauiAgentMcp/**",
         "labs/shared/**"
       ]
     },
@@ -397,18 +413,6 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/documents/HelloMarkdownPdf/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "DoomLite3D",
-      "DisplayName": "Doom Lite3D",
-      "Projects": [
-        "labs/DoomLite3D/DoomLite3D.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/DoomLite3D/**",
         "labs/shared/**"
       ]
     },
@@ -525,42 +529,40 @@
       ]
     },
     {
-      "Key": "GeoPolity",
-      "DisplayName": "Geo Polity",
+      "Key": "inference-ImageInferenceLab",
+      "DisplayName": "inference Image Inference Lab",
       "Projects": [
-        "labs/GeoPolity/GeoPolity.csproj"
-      ],
-      "Tests": [
-        "labs/GeoPolity/tests/GeoPolity.Unit/GeoPolity.Unit.csproj"
-      ],
-      "ChangedPathGlobs": [
-        "labs/GeoPolity/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "inference",
-      "DisplayName": "inference",
-      "Projects": [
-        "labs/inference/ImageInferenceLab/ImageInferenceLab.csproj",
-        "labs/inference/LocalInferenceLab/LocalInferenceLab.csproj"
+        "labs/inference/ImageInferenceLab/ImageInferenceLab.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/inference/**",
+        "labs/inference/ImageInferenceLab/**",
         "labs/shared/**"
       ],
       "Ci": false
     },
     {
-      "Key": "inspection",
-      "DisplayName": "inspection",
+      "Key": "inference-LocalInferenceLab",
+      "DisplayName": "inference Local Inference Lab",
+      "Projects": [
+        "labs/inference/LocalInferenceLab/LocalInferenceLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/inference/LocalInferenceLab/**",
+        "labs/shared/**"
+      ],
+      "Ci": false
+    },
+    {
+      "Key": "inspection-InspectionLab",
+      "DisplayName": "inspection Inspection Lab",
       "Projects": [
         "labs/inspection/InspectionLab/InspectionLab.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/inspection/**",
+        "labs/inspection/InspectionLab/**",
         "labs/shared/**"
       ],
       "Ci": false
@@ -578,17 +580,31 @@
       ]
     },
     {
-      "Key": "language",
-      "DisplayName": "language",
+      "Key": "language-LanguagePipelineLab",
+      "DisplayName": "language Language Pipeline Lab",
       "Projects": [
         "labs/language/LanguagePipelineLab/LanguagePipelineLab.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/language/**",
+        "labs/language/LanguagePipelineLab/**",
         "labs/shared/**"
       ],
       "Ci": false
+    },
+    {
+      "Key": "machinelearning-NeuralRacing",
+      "DisplayName": "machinelearning Neural Racing",
+      "Projects": [
+        "labs/machinelearning/NeuralRacing/NeuralRacing.csproj"
+      ],
+      "Tests": [
+        "labs/machinelearning/NeuralRacing.Tests/NeuralRacing.Tests.csproj"
+      ],
+      "ChangedPathGlobs": [
+        "labs/machinelearning/NeuralRacing/**",
+        "labs/shared/**"
+      ]
     },
     {
       "Key": "manuscript-ManuscriptSmoke",
@@ -603,14 +619,14 @@
       ]
     },
     {
-      "Key": "MathGridDemo",
-      "DisplayName": "Math Grid Demo",
+      "Key": "math-MathGridDemo",
+      "DisplayName": "math Math Grid Demo",
       "Projects": [
-        "labs/MathGridDemo/MathGridDemo.csproj"
+        "labs/math/MathGridDemo/MathGridDemo.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/MathGridDemo/**",
+        "labs/math/MathGridDemo/**",
         "labs/shared/**"
       ]
     },
@@ -624,80 +640,6 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/maui/MapProvidersLab/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "MauiAgentMcp",
-      "DisplayName": "Maui Agent Mcp",
-      "Projects": [
-        "labs/MauiAgentMcp/MauiAgentMcp.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/MauiAgentMcp/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "NeuralRacing",
-      "DisplayName": "Neural Racing",
-      "Projects": [
-        "labs/NeuralRacing/NeuralRacing.csproj"
-      ],
-      "Tests": [
-        "labs/NeuralRacing.Tests/NeuralRacing.Tests.csproj"
-      ],
-      "ChangedPathGlobs": [
-        "labs/NeuralRacing/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "PlatformerHop",
-      "DisplayName": "Platformer Hop",
-      "Projects": [
-        "labs/PlatformerHop/PlatformerHop.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/PlatformerHop/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "PlatformerTwoD",
-      "DisplayName": "Platformer Two D",
-      "Projects": [
-        "labs/PlatformerTwoD/PlatformerTwoD.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/PlatformerTwoD/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "RagdollPlay",
-      "DisplayName": "Ragdoll Play",
-      "Projects": [
-        "labs/RagdollPlay/RagdollPlay.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/RagdollPlay/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "RandoriFight",
-      "DisplayName": "Randori Fight",
-      "Projects": [
-        "labs/RandoriFight/RandoriFight.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/RandoriFight/**",
         "labs/shared/**"
       ]
     },
@@ -824,6 +766,30 @@
       ]
     },
     {
+      "Key": "raylib-RaylibHello",
+      "DisplayName": "raylib Raylib Hello",
+      "Projects": [
+        "labs/raylib/RaylibHello/RaylibHello.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/RaylibHello/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "raylib-RaylibHello.Android",
+      "DisplayName": "raylib Raylib Hello.Android",
+      "Projects": [
+        "labs/raylib/RaylibHello.Android/RaylibHello.Android.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/raylib/RaylibHello.Android/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "raylib-XFighter",
       "DisplayName": "raylib XFighter",
       "Projects": [
@@ -838,30 +804,6 @@
       ]
     },
     {
-      "Key": "RaylibHello",
-      "DisplayName": "Raylib Hello",
-      "Projects": [
-        "labs/RaylibHello/RaylibHello.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/RaylibHello/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "RaylibHello.Android",
-      "DisplayName": "Raylib Hello.Android",
-      "Projects": [
-        "labs/RaylibHello.Android/RaylibHello.Android.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/RaylibHello.Android/**",
-        "labs/shared/**"
-      ]
-    },
-    {
       "Key": "rendering-MeshBench",
       "DisplayName": "rendering Mesh Bench",
       "Projects": [
@@ -870,6 +812,18 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/rendering/MeshBench/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "rendering-PlanarHello",
+      "DisplayName": "rendering Planar Hello",
+      "Projects": [
+        "labs/rendering/PlanarHello/PlanarHello.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/rendering/PlanarHello/**",
         "labs/shared/**"
       ]
     },
@@ -910,77 +864,135 @@
       ]
     },
     {
-      "Key": "rendering-SilkTwoDHello",
-      "DisplayName": "rendering Silk Two DHello",
-      "Projects": [
-        "labs/rendering/SilkTwoDHello/SilkTwoDHello.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/rendering/SilkTwoDHello/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "RepoStudio",
-      "DisplayName": "Repo Studio",
-      "Projects": [
-        "labs/RepoStudio/RepoStudio.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/RepoStudio/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "RtsLite",
-      "DisplayName": "Rts Lite",
-      "Projects": [
-        "labs/RtsLite/RtsLite.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/RtsLite/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "RtsLiteTwoD",
-      "DisplayName": "Rts Lite Two D",
-      "Projects": [
-        "labs/RtsLiteTwoD/RtsLiteTwoD.csproj"
-      ],
-      "Tests": [],
-      "ChangedPathGlobs": [
-        "labs/RtsLiteTwoD/**",
-        "labs/shared/**"
-      ]
-    },
-    {
-      "Key": "scripting",
-      "DisplayName": "scripting",
+      "Key": "scripting-ScriptingLab",
+      "DisplayName": "scripting Scripting Lab",
       "Projects": [
         "labs/scripting/ScriptingLab/ScriptingLab.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/scripting/**",
+        "labs/scripting/ScriptingLab/**",
         "labs/shared/**"
       ],
       "Ci": false
     },
     {
-      "Key": "SpaceFleetSurveyTeam",
-      "DisplayName": "Space Fleet Survey Team",
+      "Key": "simulation-ArtillerySimulator",
+      "DisplayName": "simulation Artillery Simulator",
       "Projects": [
-        "labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Android/SpaceFleetSurveyTeam.Android.csproj",
-        "labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Desktop/SpaceFleetSurveyTeam.Desktop.csproj",
-        "labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.csproj"
+        "labs/simulation/ArtillerySimulator/ArtillerySimulator.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/SpaceFleetSurveyTeam/**",
+        "labs/simulation/ArtillerySimulator/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-BouncingBall",
+      "DisplayName": "simulation Bouncing Ball",
+      "Projects": [
+        "labs/simulation/BouncingBall/BouncingBall.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/BouncingBall/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-ClothPlay",
+      "DisplayName": "simulation Cloth Play",
+      "Projects": [
+        "labs/simulation/ClothPlay/ClothPlay.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/ClothPlay/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-DoomLite3D",
+      "DisplayName": "simulation Doom Lite3D",
+      "Projects": [
+        "labs/simulation/DoomLite3D/DoomLite3D.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/DoomLite3D/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-PlatformerHop",
+      "DisplayName": "simulation Platformer Hop",
+      "Projects": [
+        "labs/simulation/PlatformerHop/PlatformerHop.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/PlatformerHop/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-PlatformerPlanar",
+      "DisplayName": "simulation Platformer Planar",
+      "Projects": [
+        "labs/simulation/PlatformerPlanar/PlatformerPlanar.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/PlatformerPlanar/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-RagdollPlay",
+      "DisplayName": "simulation Ragdoll Play",
+      "Projects": [
+        "labs/simulation/RagdollPlay/RagdollPlay.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/RagdollPlay/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-RandoriFight",
+      "DisplayName": "simulation Randori Fight",
+      "Projects": [
+        "labs/simulation/RandoriFight/RandoriFight.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/RandoriFight/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-RtsLite",
+      "DisplayName": "simulation Rts Lite",
+      "Projects": [
+        "labs/simulation/RtsLite/RtsLite.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/RtsLite/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-RtsLitePlanar",
+      "DisplayName": "simulation Rts Lite Planar",
+      "Projects": [
+        "labs/simulation/RtsLitePlanar/RtsLitePlanar.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/RtsLitePlanar/**",
         "labs/shared/**"
       ]
     },
@@ -1000,14 +1012,14 @@
       ]
     },
     {
-      "Key": "workflows",
-      "DisplayName": "workflows",
+      "Key": "workflows-WorkflowEngineLab",
+      "DisplayName": "workflows Workflow Engine Lab",
       "Projects": [
         "labs/workflows/WorkflowEngineLab/WorkflowEngineLab.csproj"
       ],
       "Tests": [],
       "ChangedPathGlobs": [
-        "labs/workflows/**",
+        "labs/workflows/WorkflowEngineLab/**",
         "labs/shared/**"
       ]
     },
@@ -1039,8 +1051,6 @@
       "Key": "workspaces-TypedSolutionIntelligence",
       "DisplayName": "workspaces Typed Solution Intelligence",
       "Projects": [
-        "labs/workspaces/TypedSolutionIntelligence/fixture/src/DemoApp/DemoApp.csproj",
-        "labs/workspaces/TypedSolutionIntelligence/fixture/src/DemoLib/DemoLib.csproj",
         "labs/workspaces/TypedSolutionIntelligence/TypedSolutionIntelligence.csproj"
       ],
       "Tests": [],

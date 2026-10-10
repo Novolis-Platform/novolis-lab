@@ -1,4 +1,4 @@
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Art;
 
@@ -7,7 +7,7 @@ internal static class DirectionalArtLoader
     private static readonly string[] Suffixes = ["down", "up", "right", "up_right", "down_right"];
 
     public static DirectionalClips? TryLoadFolder(
-        TwoDTextureRegistry registry,
+        PlanarTextureRegistry registry,
         string folder,
         float worldHalfHeight,
         float idleFps = 8f,

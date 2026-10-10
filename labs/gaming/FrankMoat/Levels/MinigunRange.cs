@@ -2,13 +2,13 @@ using System.Numerics;
 using FrankMoat.Actors;
 using FrankMoat.Game;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace FrankMoat.Levels;
 
 internal static class MinigunRange
 {
-    public static List<RaisedWall> Build(TwoDScene scene, RangeWorld world)
+    public static List<RaisedWall> Build(PlanarScene scene, RangeWorld world)
     {
         scene.StaticPolygons.Clear();
         scene.Collision.Clear();
@@ -41,7 +41,7 @@ internal static class MinigunRange
 
         foreach (var wall in walls)
         {
-            scene.Collision.AddStatic(new TwoDCollider(wall.Footprint));
+            scene.Collision.AddStatic(new PlanarCollider(wall.Footprint));
         }
 
         world.Walls.Clear();

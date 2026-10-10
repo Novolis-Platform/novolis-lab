@@ -8,7 +8,7 @@ internal sealed class UndeadActor
 
     public Vector3 Position { get; set; }
 
-    public Vector2 Facing { get; set; } = new(0f, -1f);
+    public Vector3 Facing { get; set; } = new(0f, 0f, -1f);
 
     public int Health { get; set; }
 

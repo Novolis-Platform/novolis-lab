@@ -1,23 +1,23 @@
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Game;
 
 internal sealed class DoomLevelState
 {
-    private readonly List<TwoDCollider> _sessionColliders = [];
+    private readonly List<PlanarCollider> _sessionColliders = [];
 
-    public readonly List<TwoDStaticPolygon> BlueGateVisuals = [];
-    public readonly List<TwoDCollider> BlueGateColliders = [];
-    public readonly List<TwoDStaticPolygon> ClosetNorthVisuals = [];
-    public readonly List<TwoDCollider> ClosetNorthColliders = [];
-    public readonly List<TwoDStaticPolygon> ClosetEastVisuals = [];
-    public readonly List<TwoDCollider> ClosetEastColliders = [];
+    public readonly List<PlanarStaticPolygon> BlueGateVisuals = [];
+    public readonly List<PlanarCollider> BlueGateColliders = [];
+    public readonly List<PlanarStaticPolygon> ClosetNorthVisuals = [];
+    public readonly List<PlanarCollider> ClosetNorthColliders = [];
+    public readonly List<PlanarStaticPolygon> ClosetEastVisuals = [];
+    public readonly List<PlanarCollider> ClosetEastColliders = [];
 
     public bool CorridorLessonTriggered { get; set; }
     public bool BlueGateOpen { get; set; }
     public bool ClosetsOpened { get; set; }
 
-    public void CaptureCollision(TwoDScene scene)
+    public void CaptureCollision(PlanarScene scene)
     {
         _sessionColliders.Clear();
         foreach (var c in scene.Collision.StaticColliders)
@@ -40,7 +40,7 @@ internal sealed class DoomLevelState
         _sessionColliders.Clear();
     }
 
-    public void OpenBlueGate(TwoDScene scene)
+    public void OpenBlueGate(PlanarScene scene)
     {
         if (BlueGateOpen)
         {
@@ -51,7 +51,7 @@ internal sealed class DoomLevelState
         RemoveBlocks(scene, BlueGateVisuals, BlueGateColliders);
     }
 
-    public void OpenClosets(TwoDScene scene)
+    public void OpenClosets(PlanarScene scene)
     {
         if (ClosetsOpened)
         {
@@ -64,9 +64,9 @@ internal sealed class DoomLevelState
     }
 
     private void RemoveBlocks(
-        TwoDScene scene,
-        List<TwoDStaticPolygon> visuals,
-        List<TwoDCollider> colliders)
+        PlanarScene scene,
+        List<PlanarStaticPolygon> visuals,
+        List<PlanarCollider> colliders)
     {
         foreach (var v in visuals)
         {
@@ -83,7 +83,7 @@ internal sealed class DoomLevelState
         RebuildCollision(scene);
     }
 
-    private void RebuildCollision(TwoDScene scene)
+    private void RebuildCollision(PlanarScene scene)
     {
         scene.Collision.Clear();
         foreach (var c in _sessionColliders)

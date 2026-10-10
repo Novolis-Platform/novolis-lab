@@ -35,4 +35,4 @@ Downloads [square CC0 characters](https://opengameart.org/content/hand-drawn-squ
 
 ## Packages
 
-`Novolis.Rendering.TwoD`, `Novolis.Silk`, `Novolis.Game.MenuFlows` — GPR `2026.1.*`.
+`Novolis.Game.Scenes`, `Novolis.Game.MenuFlows`, `Novolis.Silk` — GPR `2026.1.*`.

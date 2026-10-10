@@ -2,7 +2,7 @@ using System.Numerics;
 using Novolis.Game.MenuFlows;
 using Novolis.Math.Geometry;
 using Novolis.Silk;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using TapDuelFootball.Art;
 
 namespace TapDuelFootball.Game;
@@ -11,7 +11,7 @@ internal sealed class TapDuelFootballGame
 {
     private readonly TapDuelMatch _match = new(FieldPainter.FieldHalfLength, stepSize: 0.55f);
     private readonly GameScreenStack _flows = new();
-    private TwoDSpriteInstance? _ball;
+    private PlanarSpriteInstance? _ball;
     private Phase _phase = Phase.Title;
     private float _countdown;
     private float _postWinTimer;
@@ -26,7 +26,7 @@ internal sealed class TapDuelFootballGame
         EndMenu,
     }
 
-    public void Initialize(SilkFrame frame, TwoDScene scene)
+    public void Initialize(SilkFrame frame, PlanarScene scene)
     {
         scene.Camera.ClearColor = new Rgba32(28, 72, 36);
         scene.Camera.Position = Vector3.Zero;
@@ -35,10 +35,10 @@ internal sealed class TapDuelFootballGame
         FieldPainter.Paint(scene);
 
         var footballId = ProceduralFootball.Register(scene.Textures);
-        _ball = new TwoDSpriteInstance
+        _ball = new PlanarSpriteInstance
         {
             Texture = footballId,
-            Layer = TwoDDrawLayer.World,
+            Layer = PlanarDrawLayer.World,
             SortKey = 100,
             Transform =
             {
@@ -52,7 +52,7 @@ internal sealed class TapDuelFootballGame
         PushTitleMenu(frame, scene);
     }
 
-    public void Update(SilkFrame frame, TwoDScene scene)
+    public void Update(SilkFrame frame, PlanarScene scene)
     {
         FitCamera(frame, scene);
         scene.Hud.Elements.Clear();
@@ -115,7 +115,7 @@ internal sealed class TapDuelFootballGame
         scene.Update(frame.DeltaSeconds);
     }
 
-    private void HandlePlayInput(SilkFrame frame, TwoDScene scene)
+    private void HandlePlayInput(SilkFrame frame, PlanarScene scene)
     {
         // Hotseat: bottom half / A / S / Down = Player 1; top half / W / Up = Player 2.
         if (frame.IsKeyPressed(Key.A) || frame.IsKeyPressed(Key.S) || frame.IsKeyPressed(Key.Down))
@@ -151,7 +151,7 @@ internal sealed class TapDuelFootballGame
         _ball.Transform.Position = Vector3PlanarExtensions.Xz(0f, _match.BallZ);
     }
 
-    private void DrawStaticLabels(SilkFrame frame, TwoDScene scene)
+    private void DrawStaticLabels(SilkFrame frame, PlanarScene scene)
     {
         var w = frame.Width;
         var h = frame.Height;
@@ -184,14 +184,14 @@ internal sealed class TapDuelFootballGame
         }
     }
 
-    private static void DrawYardHud(TwoDScene scene, float w, float h, string label, float yFrac)
+    private static void DrawYardHud(PlanarScene scene, float w, float h, string label, float yFrac)
     {
         var y = h * yFrac;
         scene.Hud.AddText(label, w * 0.08f, y, 1.8f, Rgba32.White);
         scene.Hud.AddText(label, w * 0.88f, y, 1.8f, Rgba32.White);
     }
 
-    private void DrawWinnerBanner(SilkFrame frame, TwoDScene scene)
+    private void DrawWinnerBanner(SilkFrame frame, PlanarScene scene)
     {
         if (_pendingWinner is not { } winner)
         {
@@ -206,17 +206,17 @@ internal sealed class TapDuelFootballGame
             new Rgba32(40, 40, 40));
     }
 
-    private void PushTitleMenu(SilkFrame frame, TwoDScene scene)
+    private void PushTitleMenu(SilkFrame frame, PlanarScene scene)
     {
         _phase = Phase.Title;
         scene.Menus.Clear();
-        scene.Menus.Push(new TwoDMenuScreen("TAP DUEL FOOTBALL", [
-            new TwoDMenuItem("PLAY", Tag: "play", OnSelect: () =>
+        scene.Menus.Push(new PlanarMenuScreen("TAP DUEL FOOTBALL", [
+            new PlanarMenuItem("PLAY", Tag: "play", OnSelect: () =>
             {
                 StartCountdown(frame, scene);
                 return "play";
             }),
-            new TwoDMenuItem("QUIT", Tag: "quit", OnSelect: () =>
+            new PlanarMenuItem("QUIT", Tag: "quit", OnSelect: () =>
             {
                 Environment.Exit(0);
                 return "quit";
@@ -224,7 +224,7 @@ internal sealed class TapDuelFootballGame
         ]));
     }
 
-    private void StartCountdown(SilkFrame frame, TwoDScene scene)
+    private void StartCountdown(SilkFrame frame, PlanarScene scene)
     {
         scene.Menus.Clear();
         _match.Reset();
@@ -234,17 +234,17 @@ internal sealed class TapDuelFootballGame
         _ = _flows.PushAsync(new CountdownFlowScreen());
     }
 
-    private void PushEndMenu(SilkFrame frame, TwoDScene scene)
+    private void PushEndMenu(SilkFrame frame, PlanarScene scene)
     {
         var title = _pendingWinner is { } w ? $"PLAYER {w} WINS" : "GAME OVER";
         scene.Menus.Clear();
-        scene.Menus.Push(new TwoDMenuScreen(title, [
-            new TwoDMenuItem("RESET", Tag: "reset", OnSelect: () =>
+        scene.Menus.Push(new PlanarMenuScreen(title, [
+            new PlanarMenuItem("RESET", Tag: "reset", OnSelect: () =>
             {
                 StartCountdown(frame, scene);
                 return "reset";
             }),
-            new TwoDMenuItem("EXIT", Tag: "exit", OnSelect: () =>
+            new PlanarMenuItem("EXIT", Tag: "exit", OnSelect: () =>
             {
                 Environment.Exit(0);
                 return "exit";
@@ -252,7 +252,7 @@ internal sealed class TapDuelFootballGame
         ]));
     }
 
-    private static void FitCamera(SilkFrame frame, TwoDScene scene)
+    private static void FitCamera(SilkFrame frame, PlanarScene scene)
     {
         scene.Camera.ViewportWidth = Math.Max(1, frame.Width);
         scene.Camera.ViewportHeight = Math.Max(1, frame.Height);

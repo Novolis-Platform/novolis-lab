@@ -9,6 +9,9 @@
   </PropertyGroup>
   <ItemGroup>
     <LibraryReference Include="Novolis.Rendering.Runtime" />
+    <LibraryReference Include="Novolis.Rendering.Scene" />
+    <LibraryReference Include="Novolis.Rendering.Materials" />
     <LibraryReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Modeling.Scene" />
   </ItemGroup>
 </Project>

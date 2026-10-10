@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/shared/">
-    <Project Path="labs/shared/Novolis.Lab.TwoD/Novolis.Lab.TwoD.csproj" />
     <Project Path="labs/shared/Novolis.Lab.Compose/Novolis.Lab.Compose.csproj" />
     <Project Path="labs/shared/Novolis.Lab.Voice/Novolis.Lab.Voice.csproj" />
     <Project Path="labs/shared/Novolis.Lab.SpaceCombat/Novolis.Lab.SpaceCombat.csproj" />
@@ -24,7 +23,7 @@
     <Project Path="labs/workflows/WorkflowEngineLab/WorkflowEngineLab.csproj" />
   </Folder>
   <Folder Name="/raylib/">
-    <Project Path="labs/RaylibHello/RaylibHello.csproj" />
+    <Project Path="labs/raylib/RaylibHello/RaylibHello.csproj" />
     <Project Path="labs/raylib/HelloGame/HelloGame.csproj" />
     <Project Path="labs/raylib/HelloRuntime/HelloRuntime.csproj" />
     <Project Path="labs/raylib/HelloHosting/HelloHosting.csproj" />
@@ -43,56 +42,55 @@
     <Project Path="labs/rendering/RaytraceHello/RaytraceHello.csproj" />
     <Project Path="labs/rendering/SilkTraceHello/SilkTraceHello.csproj" />
     <Project Path="labs/rendering/SilkTraceStudio/SilkTraceStudio.csproj" />
-    <Project Path="labs/rendering/SilkTwoDHello/SilkTwoDHello.csproj" />
+    <Project Path="labs/rendering/PlanarHello/PlanarHello.csproj" />
     <Project Path="labs/rendering/MeshBench/MeshBench.csproj" />
   </Folder>
   <Folder Name="/math/">
-    <Project Path="labs/MathGridDemo/MathGridDemo.csproj" />
+    <Project Path="labs/math/MathGridDemo/MathGridDemo.csproj" />
   </Folder>
   <Folder Name="/documents/">
     <Project Path="labs/documents/HelloDocument/HelloDocument.csproj" />
     <Project Path="labs/documents/HelloMarkdownPdf/HelloMarkdownPdf.csproj" />
   </Folder>
   <Folder Name="/simulation/">
-    <Project Path="labs/DoomLite3D/DoomLite3D.csproj" />
-    <Project Path="labs/BouncingBall/BouncingBall.csproj" />
-    <Project Path="labs/ArtillerySimulator/ArtillerySimulator.csproj" />
-    <Project Path="labs/RagdollPlay/RagdollPlay.csproj" />
-    <Project Path="labs/ClothPlay/ClothPlay.csproj" />
-    <Project Path="labs/PlatformerHop/PlatformerHop.csproj" />
-    <Project Path="labs/PlatformerTwoD/PlatformerTwoD.csproj" />
-    <Project Path="labs/RtsLite/RtsLite.csproj" />
-    <Project Path="labs/RtsLiteTwoD/RtsLiteTwoD.csproj" />
-    <Project Path="labs/RandoriFight/RandoriFight.csproj" />
+    <Project Path="labs/simulation/DoomLite3D/DoomLite3D.csproj" />
+    <Project Path="labs/simulation/BouncingBall/BouncingBall.csproj" />
+    <Project Path="labs/simulation/ArtillerySimulator/ArtillerySimulator.csproj" />
+    <Project Path="labs/simulation/RagdollPlay/RagdollPlay.csproj" />
+    <Project Path="labs/simulation/ClothPlay/ClothPlay.csproj" />
+    <Project Path="labs/simulation/PlatformerHop/PlatformerHop.csproj" />
+    <Project Path="labs/simulation/PlatformerPlanar/PlatformerPlanar.csproj" />
+    <Project Path="labs/simulation/RtsLite/RtsLite.csproj" />
+    <Project Path="labs/simulation/RtsLitePlanar/RtsLitePlanar.csproj" />
+    <Project Path="labs/simulation/RandoriFight/RandoriFight.csproj" />
   </Folder>
   <Folder Name="/commands/">
-    <Project Path="labs/BridgeCommander/BridgeCommander.csproj" />
-    <Project Path="labs/AvaloniaAgentMcp/AvaloniaAgentMcp.csproj" />
-    <Project Path="labs/MauiAgentMcp/MauiAgentMcp.csproj" />
+    <Project Path="labs/commands/BridgeCommander/BridgeCommander.csproj" />
+    <Project Path="labs/commands/AvaloniaAgentMcp/AvaloniaAgentMcp.csproj" />
+    <Project Path="labs/commands/MauiAgentMcp/MauiAgentMcp.csproj" />
   </Folder>
   <Folder Name="/maui/">
     <Project Path="labs/maui/MapProvidersLab/MapProvidersLab.csproj" />
   </Folder>
-  <Folder Name="/labs/" />
-  <Folder Name="/labs/blazor/">
+  <Folder Name="/blazor/">
     <Project Path="labs/blazor/BlazorMarkupLab/BlazorMarkupLab.csproj" />
   </Folder>
-  <Folder Name="/labs/inference/">
+  <Folder Name="/inference/">
     <Project Path="labs/inference/ImageInferenceLab/ImageInferenceLab.csproj" />
     <Project Path="labs/inference/LocalInferenceLab/LocalInferenceLab.csproj" />
   </Folder>
-  <Folder Name="/labs/inspection/">
+  <Folder Name="/inspection/">
     <Project Path="labs/inspection/InspectionLab/InspectionLab.csproj" />
   </Folder>
-  <Folder Name="/labs/language/">
+  <Folder Name="/language/">
     <Project Path="labs/language/LanguagePipelineLab/LanguagePipelineLab.csproj" />
   </Folder>
-  <Folder Name="/labs/scripting/">
+  <Folder Name="/scripting/">
     <Project Path="labs/scripting/ScriptingLab/ScriptingLab.csproj" />
   </Folder>
-  <Folder Name="/machine-learning/">
-    <Project Path="labs/NeuralRacing/NeuralRacing.csproj" />
-    <Project Path="labs/NeuralRacing.Tests/NeuralRacing.Tests.csproj" />
+  <Folder Name="/machinelearning/">
+    <Project Path="labs/machinelearning/NeuralRacing/NeuralRacing.csproj" />
+    <Project Path="labs/machinelearning/NeuralRacing.Tests/NeuralRacing.Tests.csproj" />
   </Folder>
   <Folder Name="/avalonia/">
     <Project Path="labs/avalonia/StudioChromeLab/StudioChromeLab.csproj" />
@@ -118,17 +116,17 @@
     <Project Path="labs/audio/VoiceSmoke/VoiceSmoke.csproj" />
   </Folder>
   <Folder Name="/apps/">
-    <Project Path="labs/CapitalistSimulator/CapitalistSimulator.csproj" />
-    <Project Path="labs/CapitalistSimulator/tests/CapitalistSimulator.Unit/CapitalistSimulator.Unit.csproj" />
-    <Project Path="labs/CoverageStudio/CoverageStudio.csproj" />
-    <Project Path="labs/CursorRemote/CursorRemote.Desktop/CursorRemote.Desktop.csproj" />
-    <Project Path="labs/CursorRemote/CursorRemote/CursorRemote.csproj" />
-    <Project Path="labs/CursorRemote/tests/CursorRemote.Unit/CursorRemote.Unit.csproj" />
-    <Project Path="labs/GeoPolity/GeoPolity.csproj" />
-    <Project Path="labs/GeoPolity/tests/GeoPolity.Unit/GeoPolity.Unit.csproj" />
-    <Project Path="labs/RepoStudio/RepoStudio.csproj" />
-    <Project Path="labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Desktop/SpaceFleetSurveyTeam.Desktop.csproj" />
-    <Project Path="labs/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.csproj" />
+    <Project Path="labs/apps/CapitalistSimulator/CapitalistSimulator.csproj" />
+    <Project Path="labs/apps/CapitalistSimulator/tests/CapitalistSimulator.Unit/CapitalistSimulator.Unit.csproj" />
+    <Project Path="labs/apps/CoverageStudio/CoverageStudio.csproj" />
+    <Project Path="labs/apps/CursorRemote/CursorRemote.Desktop/CursorRemote.Desktop.csproj" />
+    <Project Path="labs/apps/CursorRemote/CursorRemote/CursorRemote.csproj" />
+    <Project Path="labs/apps/CursorRemote/tests/CursorRemote.Unit/CursorRemote.Unit.csproj" />
+    <Project Path="labs/apps/GeoPolity/GeoPolity.csproj" />
+    <Project Path="labs/apps/GeoPolity/tests/GeoPolity.Unit/GeoPolity.Unit.csproj" />
+    <Project Path="labs/apps/RepoStudio/RepoStudio.csproj" />
+    <Project Path="labs/apps/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.Desktop/SpaceFleetSurveyTeam.Desktop.csproj" />
+    <Project Path="labs/apps/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam/SpaceFleetSurveyTeam.csproj" />
   </Folder>
   <Folder Name="/astro/">
     <Project Path="labs/astro/AstroSmoke/AstroSmoke.csproj" />

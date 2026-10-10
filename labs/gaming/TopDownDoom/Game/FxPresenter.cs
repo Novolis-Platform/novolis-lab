@@ -1,6 +1,6 @@
 using System.Numerics;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using TopDownDoom.Art;
 
 namespace TopDownDoom.Game;
@@ -9,7 +9,7 @@ internal sealed class FxPresenter(CharacterArtLibrary art)
 {
     private const int ParticleSortBase = 180;
 
-    public void Sync(TwoDScene scene, CombatJuice juice)
+    public void Sync(PlanarScene scene, CombatJuice juice)
     {
         scene.Sprites.RemoveAll(s => s.SortKey is >= ParticleSortBase and < 220);
         scene.AnimatedSprites.RemoveAll(s => s.SortKey is >= 210 and < 215);
@@ -30,7 +30,7 @@ internal sealed class FxPresenter(CharacterArtLibrary art)
                 _ => art.Particles.SoftGlow,
             };
 
-            scene.Sprites.Add(new TwoDSpriteInstance
+            scene.Sprites.Add(new PlanarSpriteInstance
             {
                 Texture = tex,
                 SortKey = ParticleSortBase + (int)(t * 30),
@@ -51,7 +51,7 @@ internal sealed class FxPresenter(CharacterArtLibrary art)
                 continue;
             }
 
-            scene.AnimatedSprites.Add(new TwoDAnimatedSprite
+            scene.AnimatedSprites.Add(new PlanarAnimatedSprite
             {
                 Clip = art.Explosion,
                 Loop = false,

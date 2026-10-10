@@ -1,22 +1,22 @@
 using System.Numerics;
 using Novolis.Avalonia.Rendering;
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace RenderingAvalonia;
 
 internal sealed class PlatformerDemo
 {
-    private readonly TwoDSceneControl _view;
-    private readonly TwoDScene _scene;
+    private readonly PlanarSceneControl _view;
+    private readonly PlanarScene _scene;
     private Vector3 _player = Vector3PlanarExtensions.Xz(4f, 2f);
     private float _velocityZ;
-    private TwoDStaticPolygon? _marker;
+    private PlanarStaticPolygon? _marker;
 
-    public PlatformerDemo(TwoDSceneControl view)
+    public PlatformerDemo(PlanarSceneControl view)
     {
         _view = view;
-        _scene = new TwoDScene();
+        _scene = new PlanarScene();
         _view.Scene = _scene;
         _scene.Camera.ClearColor = new Rgba32(30, 36, 52);
         _scene.Camera.WorldUnitsPerPixel = 1f / 32f;
@@ -26,11 +26,11 @@ internal sealed class PlatformerDemo
         _view.FrameUpdating += OnFrame;
     }
 
-    private void OnFrame(object? sender, TwoDFrameEventArgs e)
+    private void OnFrame(object? sender, PlanarFrameEventArgs e)
     {
         const float radius = 0.35f;
         var move = 0f;
-        if (sender is TwoDSceneControl { IsFocused: true })
+        if (sender is PlanarSceneControl { IsFocused: true })
         {
             // keyboard handled on window level — demo uses simple auto-walk
         }
@@ -53,7 +53,7 @@ internal sealed class PlatformerDemo
         _marker = ReplaceMarker(_marker, _player, radius);
     }
 
-    private TwoDStaticPolygon ReplaceMarker(TwoDStaticPolygon? prev, Vector3 pos, float radius)
+    private PlanarStaticPolygon ReplaceMarker(PlanarStaticPolygon? prev, Vector3 pos, float radius)
     {
         if (prev is not null)
         {
@@ -61,8 +61,8 @@ internal sealed class PlatformerDemo
         }
 
         var r = radius;
-        var marker = new TwoDStaticPolygon(
-            TwoDScenePrimitives.Rectangle(pos.X - r, pos.Z - r, pos.X + r, pos.Z + r),
+        var marker = new PlanarStaticPolygon(
+            PlanarScenePrimitives.Rectangle(pos.X - r, pos.Z - r, pos.X + r, pos.Z + r),
             new Rgba32(255, 180, 90))
         {
             DrawFilled = true,

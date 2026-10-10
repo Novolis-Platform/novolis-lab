@@ -1,6 +1,6 @@
 # SceneLab
 
-Dogfood host for **Novolis.Avalonia.ThreeD** — CAD 3D editor / renderer (scene hierarchy, primitives, mesh edit, array/boolean, lights, cameras).
+Dogfood host for **Novolis.Avalonia.Modeling** — CAD 3D editor / renderer (scene hierarchy, primitives, mesh edit, array/boolean, lights, cameras).
 
 ## Run
 

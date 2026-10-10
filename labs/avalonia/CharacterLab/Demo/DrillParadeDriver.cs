@@ -1,9 +1,9 @@
 using System.Numerics;
-using Novolis.Avalonia.ThreeD.Session;
+using Novolis.Avalonia.Modeling.Session;
 using Novolis.Game.Humanoid;
 using Novolis.Math.Geometry;
-using Novolis.ThreeD;
-using Novolis.ThreeD;
+using Novolis.Modeling;
+using Novolis.Modeling;
 using Novolis.Simulation.Humanoid;
 using Novolis.Simulation.Humanoid.Skinning;
 
@@ -600,10 +600,7 @@ internal sealed class DrillParadeDriver
             var lodMesh = MeshLod.Decimate(named.Mesh, CharacterLodTris, out var srcMap);
             var lodWeights = new NamedBoneWeight[lodMesh.VertexCount][];
             for (var i = 0; i < lodMesh.VertexCount; i++)
-            {
-                var src = named.VertexWeights[srcMap[i]];
-                lodWeights[i] = src.Select(w => new NamedBoneWeight(w.BoneName, w.Weight)).ToArray();
-            }
+                lodWeights[i] = named.VertexWeights[srcMap[i]];
 
             var aligned = HumanoidMeshAligner.FitToBindPose(lodMesh, bind);
             if (HumanoidNearestBoneSkinner.TryBindNamedWeights(aligned, lodWeights, bind) is { } authored)

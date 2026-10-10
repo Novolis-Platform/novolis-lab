@@ -1,9 +1,9 @@
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 using Novolis.Silk;
 using TapDuelFootball.Game;
 
 var game = new TapDuelFootballGame();
-var scene = new TwoDScene();
+var scene = new PlanarScene();
 SilkGame.Run(
     "Tap Duel Football — Novolis",
     432,

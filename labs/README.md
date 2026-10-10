@@ -2,7 +2,7 @@
 
 Small experimental hosts that consume **published Novolis packages** from GitHub Packages (`PackageReference` in each `.csproj`).
 
-Add a project under `labs/` (or `labs/<repo>/` for grouped labs like `rendering/`), declare packages in `Directory.Packages.props`, and register it in `Novolis.Lab.slnx` under the solution folder for the **primary** Novolis repo it exercises (`/raylib/`, `/rendering/`, `/simulation/`, …).
+Add a project under `labs/<category>/<Name>/`. The category is the Novolis repo name with the `novolis-` prefix removed (`rendering`, `raylib`, `simulation`, `machinelearning`, …). Hosts that span several repos and are headed for a product live under `labs/apps/`. Declare packages in `Directory.Packages.props`, and register the project in `Novolis.Lab.slnx` under that same category folder.
 
 API walkthroughs (`HelloGame`, `HelloRuntime`, …) live under `labs/raylib/Hello*`. Library repos keep packable `src/`, tests, and `tools/` only — no `samples/` or product hosts.
 
@@ -72,28 +72,28 @@ dotnet run --project d:\novolis\novolis-experimental\src\Novolis.Experimental.Xw
 dotnet run --project d:\novolis\novolis-lab\labs\raylib\FreightWing -p:NovolisUseProjectReferences=true
 ```
 
-## SilkTwoDHello
+## PlanarHello
 
-Orthographic 2D sample (`Rendering.TwoD` + Silk): platforms, `TwoDCollisionWorld`, HUD, menus.
+Orthographic 2D sample (`Rendering.Planar` + Silk): platforms, `PlanarCollisionWorld`, HUD, menus.
 
 ```bash
-dotnet run --project labs/rendering/SilkTwoDHello
+dotnet run --project labs/rendering/PlanarHello
 ```
 
-## PlatformerTwoD
+## PlatformerPlanar
 
-Same tile demo as PlatformerHop, but **planar XZ** via `PlanarAgent` and **Silk TwoD** drawing (pairs with Raylib `PlatformerHop`).
+Same tile demo as PlatformerHop, but **planar XZ** via `PlanarAgent` and **Silk Planar** drawing (pairs with Raylib `PlatformerHop`).
 
 ```bash
-dotnet run --project labs/PlatformerTwoD
+dotnet run --project labs/simulation/PlatformerPlanar
 ```
 
-## RtsLiteTwoD
+## RtsLitePlanar
 
-Top-down RTS on **orthographic TwoD** (shared sim with `RtsLite`; sand field + tiberium patches, tank markers). **Mouse:** LMB select, RMB orders. Classic **diagonal RA camera + sprites:** `RtsLite` (Raylib).
+Top-down RTS on **orthographic Planar** (shared sim with `RtsLite`; sand field + tiberium patches, tank markers). **Mouse:** LMB select, RMB orders. Classic **diagonal RA camera + sprites:** `RtsLite` (Raylib).
 
 ```bash
-dotnet run --project labs/RtsLiteTwoD
+dotnet run --project labs/simulation/RtsLitePlanar
 ```
 
 ## RtsLite (Raylib)
@@ -101,7 +101,7 @@ dotnet run --project labs/RtsLiteTwoD
 Pseudo-3D C&amp;C-style camera + building sprites — kept for Raylib/billboard experimentation.
 
 ```bash
-dotnet run --project labs/RtsLite
+dotnet run --project labs/simulation/RtsLite
 ```
 
 ## IoSmoke
@@ -117,7 +117,7 @@ The ADB utility now lives in
 
 ## Tap Duel Football
 
-Portrait hotseat tap-tug football (`Rendering.TwoD` + `Game.MenuFlows`), recreation of [tap-duel-football](https://github.com/frankhaugen/tap-duel-football).
+Portrait hotseat tap-tug football (`Rendering.Planar` + `Game.MenuFlows`), recreation of [tap-duel-football](https://github.com/frankhaugen/tap-duel-football).
 
 ```powershell
 dotnet run --project labs/gaming/TapDuelFootball -p:NovolisUseProjectReferences=true

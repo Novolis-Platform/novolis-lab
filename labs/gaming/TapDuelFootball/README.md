@@ -1,6 +1,6 @@
 # Tap Duel Football
 
-Portrait hotseat recreation of [frankhaugen/tap-duel-football](https://github.com/frankhaugen/tap-duel-football) on **Novolis.Rendering.TwoD** + **Novolis.Game.MenuFlows**.
+Portrait hotseat recreation of [frankhaugen/tap-duel-football](https://github.com/frankhaugen/tap-duel-football) on **Novolis.Game.Scenes** + **Novolis.Game.MenuFlows**.
 
 Two players share one device: tap your end of the field to shove the football toward the opponent. First into the far end zone wins.
 
@@ -24,4 +24,4 @@ dotnet run --project d:\novolis\novolis-lab\labs\gaming\TapDuelFootball -p:Novol
 
 ## Packages
 
-`Novolis.Rendering.TwoD`, `Novolis.Silk`, `Novolis.Rendering.Presentation.Abstractions`, `Novolis.Game.MenuFlows`, `Novolis.Math.Geometry`, `Novolis.Math.Topology` — GPR `2026.1.*`.
+`Novolis.Game.Scenes`, `Novolis.Game.MenuFlows`, `Novolis.Silk` — GPR `2026.1.*`.

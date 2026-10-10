@@ -1,12 +1,12 @@
 using Novolis.Math.Geometry;
-using Novolis.Rendering.TwoD;
+using Novolis.Rendering.Planar;
 
 namespace TapDuelFootball.Art;
 
 /// <summary>Brown American football with stripes and laces for the duel sprite.</summary>
 internal static class ProceduralFootball
 {
-    public static TwoDTextureId Register(TwoDTextureRegistry registry, int size = 64)
+    public static PlanarTextureId Register(PlanarTextureRegistry registry, int size = 64)
     {
         var pixels = new Rgba32[size * size];
         var cx = (size - 1) * 0.5f;

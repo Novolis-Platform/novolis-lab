@@ -1,41 +1,41 @@
-# TwoD rendering + Simulation — dogfood gaps
+# Planar rendering + Simulation — dogfood gaps
 
-Orthographic 2D lives in **`Novolis.Rendering.TwoD`**. Hosts tessellate the scene and submit through **`Novolis.Silk`**. Simulation stays **BCL `Vector3` / `Quaternion`** on the **XZ plane** (`Y = 0`). Do not add `Vector2`, suffix-3 types, or TwoD types to Math or Physics.
+Orthographic 2D lives in **`Novolis.Rendering.Planar`**. Hosts tessellate the scene and submit through **`Novolis.Silk`**. Simulation stays **BCL `Vector3` / `Quaternion`** on the **XZ plane** (`Y = 0`). Do not add `Vector2`, suffix-3 types, or Planar types to Math or Physics.
 
 ## Dogfood apps (new)
 
 | App | Stack | Purpose |
 |-----|-------|---------|
-| `labs/rendering/SilkTwoDHello` | Rendering.TwoD + Silk | Collision, platforms, HUD, menus — no Simulation |
-| `labs/PlatformerTwoD` | Simulation.Kinematics + World + Rendering.TwoD | Same tile demo as `PlatformerHop`, planar XZ via `PlanarAgent` |
-| `labs/RtsLiteTwoD` | Shared RTS sim + Rendering.TwoD | Top-down orthographic RTS (Raylib `RtsLite` = pseudo-3D + PNG billboards) |
+| `labs/rendering/PlanarHello` | Rendering.Planar + Silk | Collision, platforms, HUD, menus — no Simulation |
+| `labs/simulation/PlatformerPlanar` | Simulation.Kinematics + World + Rendering.Planar | Same tile demo as `PlatformerHop`, planar XZ via `PlanarAgent` |
+| `labs/simulation/RtsLitePlanar` | Shared RTS sim + Rendering.Planar | Top-down orthographic RTS (Raylib `RtsLite` = pseudo-3D + PNG billboards) |
 
 Run:
 
 ```bash
-dotnet run --project labs/rendering/SilkTwoDHello
-dotnet run --project labs/PlatformerTwoD
-dotnet run --project labs/RtsLiteTwoD
+dotnet run --project labs/rendering/PlanarHello
+dotnet run --project labs/simulation/PlatformerPlanar
+dotnet run --project labs/simulation/RtsLitePlanar
 ```
 
-| Raylib (3D-style) | TwoD (orthographic) |
+| Raylib (3D-style) | Planar (orthographic) |
 |-------------------|---------------------|
-| `PlatformerHop` | `PlatformerTwoD` |
-| `RtsLite` | `RtsLiteTwoD` |
+| `PlatformerHop` | `PlatformerPlanar` |
+| `RtsLite` | `RtsLitePlanar` |
 
-Shared helpers: `labs/shared/Novolis.Lab.TwoD` (`DenseGridPlatforms`, `OrthoPanCamera`).
+Shared helpers: `Novolis.Game.Scenes` (`DenseGridPlatforms`, `OrthoPanCamera`).
 
 ## Side-view vs planar XZ
 
 | Convention | Horizontal | Vertical | Depth |
 |------------|------------|----------|-------|
 | Raylib `PlatformerHop` | `Vector3.X` | `Vector3.Y` | `Z ≈ 0` |
-| Simulation + TwoD | `Vector3.X` | `Vector3.Z` | `Y = 0` |
+| Simulation + Planar | `Vector3.X` | `Vector3.Z` | `Y = 0` |
 
 Bridge at the **app layer** only (no Simulation → Rendering package reference):
 
 ```csharp
-// Side-view position (Raylib) → planar (Simulation / TwoD)
+// Side-view position (Raylib) → planar (Simulation / Planar)
 static Vector3 SideToPlanar(Vector3 side) => new(side.X, 0f, side.Y);
 ```
 
@@ -53,13 +53,13 @@ static Vector3 SideToPlanar(Vector3 side) => new(side.X, 0f, side.Y);
 
 ### Gaps (no new Math/Physics types)
 
-1. **No side-view camera in Simulation.View** — `ViewPose` targets perspective 3D. Orthographic 2D uses `TwoDViewport` in Rendering at compose time. Optional future: document-only “side rig” recipe in dogfood, not a new Simulation type.
-2. **Duplicate collision paths** — `PlanarOccupancy` (Simulation) vs `TwoDCollisionWorld` (Rendering). Apps should pick one per game: PlatformerTwoD uses Simulation for motion; SilkTwoDHello uses Rendering collision only.
-3. **No Simulation → TwoD scene builder** — tile grids are app-wired (`AddPlatform` per cell). A shared **dogfood helper** (not a platform package) could emit platforms from `DenseGrid<byte>` if more 2D apps appear.
-4. **ViewPose bridge** — still app-only for path tracing ([simulation-viewpose-to-rendering-bridge](../../novolis-governance/docs/imports-todo/internal-novolis-audit/simulation-viewpose-to-rendering-bridge.md)); irrelevant for orthographic TwoD.
+1. **No side-view camera in Simulation.View** — `ViewPose` targets perspective 3D. Orthographic 2D uses `PlanarViewport` in Rendering at compose time. Optional future: document-only “side rig” recipe in dogfood, not a new Simulation type.
+2. **Duplicate collision paths** — `PlanarOccupancy` (Simulation) vs `PlanarCollisionWorld` (Rendering). Apps should pick one per game: PlatformerPlanar uses Simulation for motion; PlanarHello uses Rendering collision only.
+3. **No Simulation → Planar scene builder** — tile grids are app-wired (`AddPlatform` per cell). A shared **dogfood helper** (not a platform package) could emit platforms from `DenseGrid<byte>` if more 2D apps appear.
+4. **ViewPose bridge** — still app-only for path tracing ([simulation-viewpose-to-rendering-bridge](../../novolis-governance/docs/imports-todo/internal-novolis-audit/simulation-viewpose-to-rendering-bridge.md)); irrelevant for orthographic Planar.
 5. **NeuralRacing / headless sims** — no visualization; 2D would be a new app if needed.
-6. **RtsLite / top-down** — `RtsLiteTwoD` dogfoods orthographic RTS; PNG billboards still Raylib-only in `RtsLite`.
-7. **Assets** — no committed PNGs under lab for `SilkTwoDPngLoader`; polygon/HUD dogfood works without art.
+6. **RtsLite / top-down** — `RtsLitePlanar` dogfoods orthographic RTS; PNG billboards still Raylib-only in `RtsLite`.
+7. **Assets** — no committed PNGs under lab for `SilkPlanarPngLoader`; polygon/HUD dogfood works without art.
 
 ### Explicit non-goals
 
@@ -73,7 +73,7 @@ Package **`Novolis.Avalonia.Rendering`** (`novolis-avalonia`):
 
 | Control | Renders |
 |---------|---------|
-| `TwoDSceneControl` | `TwoDScene` tessellated through `Novolis.Silk.Runtime` |
+| `PlanarSceneControl` | `PlanarScene` tessellated through `Novolis.Silk.Runtime` |
 | `Rgba32FrameControl` | CPU `Rgba32` frames (`IFramePresenter`) — path trace preview |
 
 Sample: `novolis-lab/labs/avalonia/RenderingAvalonia`. PackageReference `Novolis.Avalonia.Rendering` (no cross-repo `ProjectReference`).
@@ -84,8 +84,8 @@ Low-level GPU interop (VMA, D3D12) was considered and **not** adopted — OpenGL
 
 ## Rendering gaps (for follow-up)
 
-- **Raylib TwoD backend** — not planned; Silk-only host for `Rendering.TwoD`
-- **Procedural / solid-color sprites** without PNG — today use `TwoDStaticPolygon` or register a 1×1 texture
+- **Raylib Planar backend** — not planned; Silk-only host for `Rendering.Planar`
+- **Procedural / solid-color sprites** without PNG — today use `PlanarStaticPolygon` or register a 1×1 texture
 - **PlatformerHop axis** — migrating the Raylib app would require coordinate remap or a documented side-view profile
 
 ## Related
