@@ -997,6 +997,18 @@
       ]
     },
     {
+      "Key": "transports-Ed2kSearchLab",
+      "DisplayName": "transports Ed2k Search Lab",
+      "Projects": [
+        "labs/transports/Ed2kSearchLab/Ed2kSearchLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/transports/Ed2kSearchLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "visual-AssetStudioLab",
       "DisplayName": "visual Asset Studio Lab",
       "Projects": [

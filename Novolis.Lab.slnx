@@ -22,6 +22,9 @@
   <Folder Name="/workflows/">
     <Project Path="labs/workflows/WorkflowEngineLab/WorkflowEngineLab.csproj" />
   </Folder>
+  <Folder Name="/transports/">
+    <Project Path="labs/transports/Ed2kSearchLab/Ed2kSearchLab.csproj" />
+  </Folder>
   <Folder Name="/raylib/">
     <Project Path="labs/raylib/RaylibHello/RaylibHello.csproj" />
     <Project Path="labs/raylib/HelloGame/HelloGame.csproj" />

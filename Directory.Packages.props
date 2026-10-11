@@ -254,6 +254,7 @@
     <PackageVersion Include="Novolis.Transports.WireFish" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Transports.Torrent" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Transports.LocalIpc" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Transports.Ed2k" Version="2026.1.*" />
     <PackageVersion Include="TUnit" Version="1.72.16" />
   </ItemGroup>
 </Project>

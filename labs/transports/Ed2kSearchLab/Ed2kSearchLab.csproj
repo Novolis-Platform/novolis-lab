@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Novolis.Lab.Ed2kSearch</RootNamespace>
+    <AssemblyName>Novolis.Lab.Ed2kSearch</AssemblyName>
+    <Description>Connect to a user-supplied eD2k server list and run one search.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Transports.Ed2k" />
+  </ItemGroup>
+</Project>
