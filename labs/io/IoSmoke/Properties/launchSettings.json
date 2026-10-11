@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "IoSmoke": {
+      "commandName": "Project"
+    }
+  }
+}
