@@ -146,10 +146,7 @@ internal static class ImportedDoomLevelBuilder
                 footprint.Extrude(PlanarElevation.Offset(height)),
                 faceTexture,
                 2f,
-                false,
-                faceTexture,
-                color,
-                color);
+                false);
             var visuals = scene.StaticPolygons.Skip(visualStart).ToArray();
             foreach (var visual in visuals)
             {
