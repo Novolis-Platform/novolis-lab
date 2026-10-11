@@ -1,6 +1,8 @@
 using System.Numerics;
 using Novolis.Math.Geometry;
+using Novolis.Rendering.Planar;
 using TopDownDoom.Design;
+using TopDownDoom.Game.ImportedDoom;
 
 namespace TopDownDoom.Game;
 
@@ -26,6 +28,73 @@ internal sealed class TopDownCombatWorld
     public readonly List<Monster> Monsters = [];
     public readonly List<Pickup> Pickups = [];
     public readonly List<ExplosiveBarrel> Barrels = [];
+    private Random _random = new(4761);
+    private PlanarCollisionWorld? _collision;
+    private IReadOnlyList<ImportedDoomWallSegment> _wallSegments = Array.Empty<ImportedDoomWallSegment>();
+    private ImportedDoomWallIndex? _wallIndex;
+
+    public void SetGeometry(
+        PlanarCollisionWorld collision,
+        IReadOnlyList<ImportedDoomWallSegment> wallSegments)
+    {
+        _collision = collision ?? throw new ArgumentNullException(nameof(collision));
+        _wallSegments = wallSegments ?? throw new ArgumentNullException(nameof(wallSegments));
+        _wallIndex = new ImportedDoomWallIndex(_wallSegments);
+    }
+
+    public void Reset()
+    {
+        PlayerPosition = Vector3.Zero;
+        PlayerVelocity = Vector2.Zero;
+        PlayerFacingRadians = 0f;
+        Health = 100;
+        Armor = 0;
+        Ammo = 48;
+        ActiveWeapon = WeaponCatalog.Pistol;
+        FireCooldown = TimeSpan.Zero;
+        DashCooldown = TimeSpan.Zero;
+        HasBlueKey = false;
+        ExitUnlocked = false;
+        ClosetAmbushTriggered = false;
+        FoundShotgun = false;
+        DashTrailTimer = 0f;
+        _random = new Random(4761);
+        Projectiles.Clear();
+        Monsters.Clear();
+        Pickups.Clear();
+        Barrels.Clear();
+        Juice.Clear();
+    }
+
+    public void SeedImportedLevel(ImportedDoomLevelBuild level)
+    {
+        ArgumentNullException.ThrowIfNull(level);
+        PlayerPosition = level.PlayerStart;
+        PlayerFacingRadians = level.PlayerAngle * (MathF.PI / 180f);
+        foreach (var spawn in level.Things)
+        {
+            if (DoomThingCatalog.IsPlayerStart(spawn.Thing.Type))
+            {
+                continue;
+            }
+
+            if (DoomThingCatalog.TryMonsterRole(spawn.Thing.Type) is { } role)
+            {
+                SpawnMonster(role, spawn.Position.X, spawn.Position.Z);
+                continue;
+            }
+
+            if (DoomThingCatalog.TryPickup(spawn.Thing.Type) is { } pickup)
+            {
+                Pickups.Add(new Pickup(pickup, spawn.Position));
+            }
+        }
+
+        foreach (var exit in level.ExitPositions)
+        {
+            Pickups.Add(new Pickup(PickupKind.Exit, exit));
+        }
+    }
 
     public void Tick(float dt, Vector2 moveInput, Vector2 aimWorld, bool shootHeld, bool dashPressed)
     {
@@ -54,6 +123,13 @@ internal sealed class TopDownCombatWorld
         }
 
         PlayerVelocity = DoomMovement.Integrate(PlayerVelocity, moveInput, dt);
+        if (_collision is not null)
+        {
+            PlayerPosition = _collision.MoveCircle(
+                PlayerPosition,
+                new Vector3(PlayerVelocity.X * dt, 0f, PlayerVelocity.Y * dt),
+                0.35f);
+        }
 
         if (aimWorld.LengthSquared() > 0.01f)
         {
@@ -84,7 +160,7 @@ internal sealed class TopDownCombatWorld
         for (var i = 0; i < weapon.PelletCount; i++)
         {
             var spread = weapon.SpreadDegrees * (MathF.PI / 180f);
-            var angle = PlayerFacingRadians + Random.Shared.NextSingle() * spread - spread * 0.5f;
+            var angle = PlayerFacingRadians + _random.NextSingle() * spread - spread * 0.5f;
             var dir = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
             Projectiles.Add(new Projectile(
                 PlayerPosition + new Vector3(dir.X * 0.4f, 0f, dir.Y * 0.4f),
@@ -101,11 +177,22 @@ internal sealed class TopDownCombatWorld
         for (var i = Projectiles.Count - 1; i >= 0; i--)
         {
             var p = Projectiles[i];
-            p.Position += p.Velocity * dt;
             p.Life -= dt;
+            var velocityLength = p.Velocity.Length();
+            var direction = velocityLength > 0.001f ? p.Velocity / velocityLength : Vector3.Zero;
+            var travel = velocityLength * dt;
+            if (travel > 0f && TryHitWall(p.Position, direction, travel, out var wallHit))
+            {
+                p.Position = wallHit.Point;
+                ParticlePresets.HitSparks(Juice.Particles, wallHit.Point, new Rgba32(180, 180, 180, 220), 5);
+                Projectiles.RemoveAt(i);
+                continue;
+            }
+
+            p.Position += p.Velocity * dt;
 
             var rocket = p.SplashRadius > 1.5f;
-            if (Random.Shared.NextSingle() < (rocket ? 0.9f : 0.55f))
+            if (_random.NextSingle() < (rocket ? 0.9f : 0.55f))
             {
                 ParticlePresets.BulletTrail(Juice.Particles, p.Position, p.FromPlayer, rocket);
             }
@@ -220,10 +307,10 @@ internal sealed class TopDownCombatWorld
             switch (monster.Role)
             {
                 case MonsterRole.Fodder:
-                    monster.Position += new Vector3(flat.X * 3.2f * dt, 0f, flat.Y * 3.2f * dt);
+                    MoveMonster(monster, flat, 3.2f, dt);
                     break;
                 case MonsterRole.Projectile:
-                    monster.Position += new Vector3(flat.X * 2.4f * dt, 0f, flat.Y * 2.4f * dt);
+                    MoveMonster(monster, flat, 2.4f, dt);
                     if (dist < 14f && monster.FireCooldown <= TimeSpan.Zero)
                     {
                         ShootFrom(monster, flat, 10f, 12);
@@ -231,8 +318,8 @@ internal sealed class TopDownCombatWorld
                     }
                     break;
                 case MonsterRole.Charger:
-                    monster.Position += new Vector3(flat.X * 6.5f * dt, 0f, flat.Y * 6.5f * dt);
-                    if (Random.Shared.NextSingle() < 0.15f)
+                    MoveMonster(monster, flat, 6.5f, dt);
+                    if (_random.NextSingle() < 0.15f)
                     {
                         ParticlePresets.HitSparks(Juice.Particles, monster.Position, new Rgba32(255, 120, 60, 120), 2);
                     }
@@ -246,7 +333,16 @@ internal sealed class TopDownCombatWorld
                     }
                     break;
                 case MonsterRole.Bruiser:
-                    monster.Position += new Vector3(flat.X * 2f * dt, 0f, flat.Y * 2f * dt);
+                    MoveMonster(monster, flat, 2f, dt);
+                    break;
+                case MonsterRole.Flier:
+                    MoveMonster(monster, flat, 2.8f, dt);
+                    break;
+                case MonsterRole.Boss:
+                    MoveMonster(monster, flat, 1.4f, dt);
+                    break;
+                case MonsterRole.Summoner:
+                    MoveMonster(monster, flat, 1.2f, dt);
                     break;
             }
         }
@@ -264,14 +360,24 @@ internal sealed class TopDownCombatWorld
             false));
     }
 
-    private bool HasLineOfSight(Vector3 from) =>
-        DistanceXZ(from, PlayerPosition) < 18f;
+    private bool HasLineOfSight(Vector3 from)
+    {
+        var toPlayer = PlayerPosition - from;
+        var distance = toPlayer.LengthXz();
+        if (distance >= 18f || distance <= 0.01f)
+        {
+            return false;
+        }
+
+        var direction = toPlayer.NormalizeXz();
+        return !TryHitWall(from, direction, distance - 0.05f, out _);
+    }
 
     private void TickBarrels(float dt)
     {
         foreach (var barrel in Barrels)
         {
-            if (Random.Shared.NextSingle() < 0.08f)
+            if (_random.NextSingle() < 0.08f)
             {
                 ParticlePresets.BarrelFuse(Juice.Particles, barrel.Position);
             }
@@ -410,6 +516,34 @@ internal sealed class TopDownCombatWorld
             _ => 20,
         };
         Monsters.Add(new Monster(role, Vector3PlanarExtensions.Xz(x, z), hp));
+    }
+
+    private void MoveMonster(Monster monster, Vector2 direction, float speed, float dt)
+    {
+        var delta = new Vector3(direction.X * speed * dt, 0f, direction.Y * speed * dt);
+        monster.Position = _collision?.MoveCircle(monster.Position, delta, 0.32f)
+            ?? monster.Position + delta;
+    }
+
+    private bool TryHitWall(Vector3 origin, Vector3 direction, float length, out PlanarHit hit)
+    {
+        var nearest = length + 0.001f;
+        hit = default;
+        var found = false;
+        foreach (var segment in _wallIndex?.Query(origin, direction, length) ?? _wallSegments)
+        {
+            if (!PlanarRay.TryHitSegment(origin, direction, length, segment.Start, segment.End, out var candidate)
+                || candidate.Distance >= nearest)
+            {
+                continue;
+            }
+
+            nearest = candidate.Distance;
+            hit = candidate;
+            found = true;
+        }
+
+        return found;
     }
 
     private void ApplyPlayerDamage(int amount)

@@ -16,6 +16,10 @@ labs/avalonia/SceneLab/samples/corellian-freighter.nov3djson
 # FreightWing baked XWA content (local bake-app only)
 labs/raylib/FreightWing/Content/**
 !labs/raylib/FreightWing/Content/README.md
+
+# Locally generated Doom WAD packages; source data and extracted proprietary art stay local.
+labs/gaming/TopDownDoom/Assets/ImportedDoom/**
+
 # MTP / VS test output
 TestResults/
 [Tt]est[Rr]esults/

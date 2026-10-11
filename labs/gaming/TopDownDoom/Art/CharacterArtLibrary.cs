@@ -1,4 +1,5 @@
 using Novolis.Rendering.Planar;
+using TopDownDoom.Game.ImportedDoom;
 
 namespace TopDownDoom.Art;
 
@@ -125,4 +126,58 @@ internal sealed class CharacterArtLibrary
         Design.MonsterRole.Projectile or Design.MonsterRole.Hitscan or Design.MonsterRole.Flier => Imp,
         _ => Fodder,
     };
+
+    public void TryLoadImported(PlanarTextureRegistry registry, ImportedDoomPackage package)
+    {
+        ArgumentNullException.ThrowIfNull(registry);
+        ArgumentNullException.ThrowIfNull(package);
+
+        Player = TryBuildImportedSet(registry, package, "PLAY") ?? Player;
+        Fodder = TryBuildImportedSet(registry, package, "POSS") ?? Fodder;
+        Imp = TryBuildImportedSet(registry, package, "TROO") ?? Imp;
+        Bruiser = TryBuildImportedSet(registry, package, "SARG") ?? Bruiser;
+        SourceLabel = $"imported Doom sprites ({package.Manifest.ContentProfile})";
+    }
+
+    private static CharacterAnimationSet? TryBuildImportedSet(
+        PlanarTextureRegistry registry,
+        ImportedDoomPackage package,
+        string prefix)
+    {
+        var directions = new DirectionalClips { WorldHalfHeight = 0.65f };
+        var loaded = 0;
+        foreach (var (suffix, frame) in new[]
+        {
+            ("down", "A1"),
+            ("down_right", "A2A8"),
+            ("right", "A3A7"),
+            ("up_right", "A4A6"),
+            ("up", "A5"),
+        })
+        {
+            var asset = package.Manifest.Assets.FirstOrDefault(candidate =>
+                string.Equals(candidate.Kind, "sprites", StringComparison.OrdinalIgnoreCase)
+                && candidate.Name.StartsWith(prefix + frame, StringComparison.OrdinalIgnoreCase));
+            if (asset is null || !File.Exists(package.GetAssetPath(asset)))
+            {
+                continue;
+            }
+
+            var texture = PlanarPngLoader.LoadPng(registry, package.GetAssetPath(asset));
+            var info = registry.GetInfo(texture);
+            var sheet = new PlanarSpriteSheet(texture, info.Width, info.Height, info.Width, info.Height);
+            var clip = new PlanarAnimationClip(sheet, [0], 1f);
+            directions.AddIdle(suffix, clip);
+            directions.AddMove(suffix, clip);
+            loaded++;
+        }
+
+        if (loaded == 0)
+        {
+            return null;
+        }
+
+        var fallback = directions.Select(0f, moving: false, shooting: false).Clip;
+        return new CharacterAnimationSet(fallback, directions.WorldHalfHeight, facing: directions);
+    }
 }

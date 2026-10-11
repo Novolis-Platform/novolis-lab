@@ -1,3 +1,5 @@
+using System.Numerics;
+using TopDownDoom.Game.ImportedDoom;
 using Novolis.Rendering.Planar;
 
 namespace TopDownDoom.Game;
@@ -16,6 +18,56 @@ internal sealed class DoomLevelState
     public bool CorridorLessonTriggered { get; set; }
     public bool BlueGateOpen { get; set; }
     public bool ClosetsOpened { get; set; }
+    public ImportedDoomLevelBuild? ImportedLevel { get; private set; }
+
+    public bool UsesImportedLevel => ImportedLevel is not null;
+
+    public IReadOnlyList<ImportedDoomWallSegment> WallSegments =>
+        ImportedLevel is null
+            ? Array.Empty<ImportedDoomWallSegment>()
+            : ImportedLevel.WallSegments
+                .Where(segment => !ImportedLevel.Doors.Any(door =>
+                    door.IsOpen && door.SourceLineIndex == segment.SourceLineIndex))
+                .ToArray();
+
+    public IReadOnlyList<ImportedDoomThingSpawn> ImportedThings =>
+        ImportedLevel?.Things ?? Array.Empty<ImportedDoomThingSpawn>();
+
+    public IReadOnlyList<ImportedDoomDoor> Doors =>
+        ImportedLevel?.Doors ?? Array.Empty<ImportedDoomDoor>();
+
+    public void SetImportedLevel(ImportedDoomLevelBuild level) =>
+        ImportedLevel = level ?? throw new ArgumentNullException(nameof(level));
+
+    public void ClearImportedLevel() => ImportedLevel = null;
+
+    public bool TryOpenDoor(PlanarScene scene, Vector3 position, float radius = 1.25f)
+    {
+        if (ImportedLevel is null)
+        {
+            return false;
+        }
+
+        foreach (var door in ImportedLevel.Doors)
+        {
+            if (door.IsOpen || DistanceXz(position, door.Center) > radius)
+            {
+                continue;
+            }
+
+            door.IsOpen = true;
+            foreach (var visual in door.Visuals)
+            {
+                scene.StaticPolygons.Remove(visual);
+            }
+
+            _sessionColliders.Remove(door.Collider);
+            RebuildCollision(scene);
+            return true;
+        }
+
+        return false;
+    }
 
     public void CaptureCollision(PlanarScene scene)
     {
@@ -90,5 +142,12 @@ internal sealed class DoomLevelState
         {
             scene.Collision.AddStatic(c);
         }
+    }
+
+    private static float DistanceXz(Vector3 a, Vector3 b)
+    {
+        var dx = a.X - b.X;
+        var dz = a.Z - b.Z;
+        return MathF.Sqrt(dx * dx + dz * dz);
     }
 }

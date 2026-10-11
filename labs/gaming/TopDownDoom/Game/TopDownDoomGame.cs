@@ -1,10 +1,12 @@
 using System.Numerics;
+using Novolis.Game.Scenes;
 using Novolis.Game.MenuFlows;
 using Novolis.Math.Geometry;
 using Novolis.Silk;
 using Novolis.Rendering.Planar;
 using TopDownDoom.Art;
 using TopDownDoom.Design;
+using TopDownDoom.Game.ImportedDoom;
 
 namespace TopDownDoom.Game;
 
@@ -19,6 +21,8 @@ internal sealed class TopDownDoomGame
     private readonly CharacterArtLibrary _art = new();
     private readonly LevelFlow _flow = DemoLevelAuthoring.CreateFlow();
     private readonly GameScreenStack _menuFlows = new();
+    private readonly FixedStepClock _clock = new();
+    private ImportedDoomRuntimeOptions _runtimeOptions = null!;
     private SpriteScenePresenter? _sprites;
     private FxPresenter? _fx;
     private bool _playing;
@@ -28,11 +32,14 @@ internal sealed class TopDownDoomGame
     public void Initialize(SilkFrame frame, PlanarScene scene)
     {
         var contentRoot = AppContext.BaseDirectory;
+        _runtimeOptions = ImportedDoomRuntimeOptions.FromEnvironment(contentRoot);
         _art.Initialize(scene.Textures, contentRoot);
         _sprites = new SpriteScenePresenter(_art);
         _fx = new FxPresenter(_art);
         BuildLevel(scene);
-        frame.SetTitle($"Top-Down Doom — {_art.SourceLabel}");
+        frame.SetTitle(
+            $"Top-Down Doom — {_art.SourceLabel}" +
+            (_level.UsesImportedLevel ? $" — {_runtimeOptions.MapName}" : string.Empty));
 
         scene.Camera.WorldUnitsPerPixel = 1f / 30f;
         scene.Menus.Push(new PlanarMenuScreen("TOP-DOWN DOOM", [
@@ -91,14 +98,21 @@ internal sealed class TopDownDoomGame
 
         if (interact)
         {
-            CycleWeapon();
+            if (!_level.TryOpenDoor(scene, _world.PlayerPosition))
+            {
+                CycleWeapon();
+            }
+            else
+            {
+                _world.SetGeometry(scene.Collision, _level.WallSegments);
+            }
         }
 
-        _world.Tick(frame.DeltaSeconds, move, aimWorld, shoot, dash);
-        _world.PlayerPosition = scene.Collision.MoveCircle(
-            _world.PlayerPosition,
-            new Vector3(_world.PlayerVelocity.X * frame.DeltaSeconds, 0f, _world.PlayerVelocity.Y * frame.DeltaSeconds),
-            PlayerRadius);
+        var steps = _clock.Consume(frame.DeltaSeconds);
+        for (var i = 0; i < steps; i++)
+        {
+            _world.Tick(_clock.StepSeconds, move, aimWorld, shoot, dash);
+        }
 
         ApplyLevelScript(scene);
 
@@ -131,6 +145,11 @@ internal sealed class TopDownDoomGame
 
     private void ApplyLevelScript(PlanarScene scene)
     {
+        if (_level.UsesImportedLevel)
+        {
+            return;
+        }
+
         if (!_level.CorridorLessonTriggered && _world.PlayerPosition.X > 11f && _world.PlayerPosition.Z is > 5f and < 9f)
         {
             _level.CorridorLessonTriggered = true;
@@ -159,9 +178,28 @@ internal sealed class TopDownDoomGame
         scene.AnimatedSprites.Clear();
         scene.StaticPolygons.RemoveAll(p => p.SortKey is >= 30 and < 200);
         _level.ResetProgress();
-        DemoLevelAuthoring.BuildGeometry(scene, _level);
-        _level.CaptureCollision(scene);
-        DemoLevelAuthoring.SeedEntities(_world);
+        _level.ClearImportedLevel();
+        _world.Reset();
+        if (ImportedDoomPackage.TryLoad(_runtimeOptions.PackageRoot, _runtimeOptions.MapName, out var package)
+            && package is not null)
+        {
+            var imported = ImportedDoomLevelBuilder.Build(scene, package);
+            _art.TryLoadImported(scene.Textures, package);
+            _level.SetImportedLevel(imported);
+            _level.CaptureCollision(scene);
+            _world.SetGeometry(scene.Collision, imported.WallSegments);
+            _world.SeedImportedLevel(imported);
+        }
+        else
+        {
+            DemoLevelAuthoring.BuildGeometry(scene, _level);
+            _world.SetGeometry(scene.Collision, Array.Empty<ImportedDoomWallSegment>());
+            _level.CaptureCollision(scene);
+            DemoLevelAuthoring.SeedEntities(_world);
+        }
+
+        scene.Camera.Position = _world.PlayerPosition;
+        _clock.Reset();
         _combatZoom = ExploreZoomFactor;
     }
 
@@ -258,7 +296,10 @@ internal sealed class TopDownDoomGame
             32,
             2f,
             new Rgba32(220, 220, 235));
-        scene.Hud.AddText(_flow.Start.Label + " → blue key → arena → exit", 10, 56, 1.6f, new Rgba32(140, 140, 160));
+        var routeLabel = _level.UsesImportedLevel
+            ? "Imported classic Doom map — find the exit"
+            : _flow.Start.Label + " → blue key → arena → exit";
+        scene.Hud.AddText(routeLabel, 10, 56, 1.6f, new Rgba32(140, 140, 160));
         scene.Hud.AddText(_art.SourceLabel, 10, 78, 1.4f, new Rgba32(120, 130, 150));
         if (_world.ClosetAmbushTriggered)
         {

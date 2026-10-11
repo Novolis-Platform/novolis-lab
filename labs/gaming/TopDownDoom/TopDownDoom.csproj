@@ -11,5 +11,6 @@
   <ItemGroup>
     <None Include="Assets\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="Assets" />
     <None Include="scripts\fetch-fun-art.ps1" CopyToOutputDirectory="Never" />
+    <None Include="scripts\fetch-freedoom.ps1" CopyToOutputDirectory="Never" />
   </ItemGroup>
 </Project>
