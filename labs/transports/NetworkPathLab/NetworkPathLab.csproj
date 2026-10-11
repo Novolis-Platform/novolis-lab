@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Novolis.Lab.NetworkPath</RootNamespace>
+    <AssemblyName>Novolis.Lab.NetworkPath</AssemblyName>
+    <Description>Inspect local network paths and compare adapter-bound TCP probes.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" />
+    <LibraryReference Include="Novolis.Transports.NetworkPath" />
+  </ItemGroup>
+</Project>

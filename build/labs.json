@@ -1009,6 +1009,18 @@
       ]
     },
     {
+      "Key": "transports-NetworkPathLab",
+      "DisplayName": "transports Network Path Lab",
+      "Projects": [
+        "labs/transports/NetworkPathLab/NetworkPathLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/transports/NetworkPathLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "visual-AssetStudioLab",
       "DisplayName": "visual Asset Studio Lab",
       "Projects": [

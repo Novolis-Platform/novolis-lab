@@ -1,21 +1,37 @@
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
+using Novolis.Lab.Ed2kSearch;
 using Novolis.Transports.Ed2k;
 
 return await Ed2kSearchLab.RunAsync(args);
 
 internal static class Ed2kSearchLab
 {
-    private const string DefaultServerListUrl = "https://upd.emule-security.org/server.met";
     private const int MaximumServerListBytes = 2 * 1024 * 1024;
 
     public static async Task<int> RunAsync(string[] args)
     {
-        if (!TryReadArguments(args, out var serverPath, out var query, out var serverUrl))
+        if (!Ed2kSearchOptions.TryParse(args, out var options, out var parseError))
+        {
+            Console.Error.WriteLine(parseError);
+            Console.Error.WriteLine(Ed2kSearchOptions.Usage);
+            return 2;
+        }
+
+        var useSpectre = options.Interactive && Ed2kSearchUi.CanUseInteractiveConsole;
+        if (useSpectre)
+        {
+            Ed2kSearchUi.ShowTitle();
+            options = Ed2kSearchUi.PromptMissing(options);
+        }
+
+        if (string.IsNullOrWhiteSpace(options.ServerPath) ||
+            string.IsNullOrWhiteSpace(options.Query))
         {
             Console.Error.WriteLine(
-                "Usage: Ed2kSearchLab --servers <server-list.txt|server.met> " +
-                "--query <terms> [--server-url <https-url>]");
+                "A server-list path and query are required when interactive prompts are unavailable.");
+            Console.Error.WriteLine(Ed2kSearchOptions.Usage);
             return 2;
         }
 
@@ -23,21 +39,40 @@ internal static class Ed2kSearchLab
         try
         {
             using var loadTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-            servers = await LoadServerListAsync(serverPath, serverUrl, loadTimeout.Token);
+            async Task<ServerList> LoadAsync() =>
+                await LoadServerListAsync(
+                        options.ServerPath,
+                        options.ServerUrl,
+                        loadTimeout.Token,
+                        useSpectre ? Ed2kSearchUi.ShowNotice : Console.WriteLine)
+                    .ConfigureAwait(false);
+
+            servers = useSpectre
+                ? await Ed2kSearchUi.RunStatusAsync("Loading server list...", LoadAsync)
+                : await LoadAsync();
         }
         catch (Exception exception) when (
             exception is ArgumentException or IOException or InvalidDataException or
             HttpRequestException or OperationCanceledException)
         {
-            Console.Error.WriteLine($"Could not load the server list: {exception.Message}");
+            if (useSpectre)
+                Ed2kSearchUi.ShowFailure($"Could not load the server list: {exception.Message}");
+            else
+                Console.Error.WriteLine($"Could not load the server list: {exception.Message}");
             return 1;
         }
 
         if (servers.Servers.Count == 0)
         {
-            Console.Error.WriteLine("The server list did not contain any usable endpoints.");
+            if (useSpectre)
+                Ed2kSearchUi.ShowFailure("The server list did not contain any usable endpoints.");
+            else
+                Console.Error.WriteLine("The server list did not contain any usable endpoints.");
             return 1;
         }
+
+        if (useSpectre)
+            Ed2kSearchUi.ShowServerList(servers, options.ServerPath, options.ServerUrl);
 
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         await using var session = new Ed2kSession(clientName: "Novolis Ed2k Search");
@@ -46,76 +81,111 @@ internal static class Ed2kSearchLab
         {
             try
             {
-                Console.WriteLine($"Connecting to {server.Endpoint} ...");
-                connection = await session.ConnectServerAsync(server.Endpoint, timeout.Token);
+                if (useSpectre)
+                {
+                    connection = await Ed2kSearchUi.RunStatusAsync(
+                        $"Connecting to {server.Endpoint}...",
+                        () => session.ConnectServerAsync(server.Endpoint, timeout.Token));
+                }
+                else
+                {
+                    Console.WriteLine($"Connecting to {server.Endpoint} ...");
+                    connection = await session.ConnectServerAsync(server.Endpoint, timeout.Token);
+                }
+
                 break;
             }
             catch (Exception exception) when (
                 exception is SocketException or IOException or TimeoutException or OperationCanceledException)
             {
-                Console.WriteLine($"  failed: {exception.Message}");
+                if (useSpectre)
+                    Ed2kSearchUi.ShowNotice($"{server.Endpoint} failed: {exception.Message}");
+                else
+                    Console.WriteLine($"  failed: {exception.Message}");
             }
         }
 
         if (connection is null)
         {
-            Console.Error.WriteLine("No eD2k server accepted the connection.");
+            if (useSpectre)
+                Ed2kSearchUi.ShowFailure("No eD2k server accepted the connection.");
+            else
+                Console.Error.WriteLine("No eD2k server accepted the connection.");
             return 1;
         }
 
-        Console.WriteLine(
-            $"Connected to {connection.Server}; " +
-            $"{(connection.IsHighId ? "HighID" : "LowID")} {connection.ClientId}; " +
-            $"port {connection.AssignedPort}.");
+        if (useSpectre)
+        {
+            Ed2kSearchUi.ShowConnection(connection);
+        }
+        else
+        {
+            Console.WriteLine(
+                $"Connected to {connection.Server}; " +
+                $"{(connection.IsHighId ? "HighID" : "LowID")} {connection.ClientId}; " +
+                $"port {connection.AssignedPort}.");
+        }
+
+        var stopwatch = Stopwatch.StartNew();
         IReadOnlyList<Ed2kSearchResult> results;
         try
         {
-            results = await session.SearchAsync(query, timeout.Token);
+            results = useSpectre
+                ? await Ed2kSearchUi.RunStatusAsync(
+                    $"Searching for {options.Query}...",
+                    () => session.SearchAsync(options.Query, timeout.Token))
+                : await session.SearchAsync(options.Query, timeout.Token);
         }
         catch (Exception exception) when (
             exception is IOException or InvalidDataException or OperationCanceledException)
         {
-            Console.Error.WriteLine($"The search failed: {exception.Message}");
+            if (useSpectre)
+                Ed2kSearchUi.ShowFailure($"The search failed: {exception.Message}");
+            else
+                Console.Error.WriteLine($"The search failed: {exception.Message}");
             return 1;
         }
+        finally
+        {
+            stopwatch.Stop();
+        }
 
-        Console.WriteLine($"Search results for \"{query}\": {results.Count}");
-        foreach (var result in results)
+        var page = results
+            .Skip(options.Skip)
+            .Take(options.Take)
+            .ToArray();
+        if (useSpectre)
+        {
+            Ed2kSearchUi.ShowSearchSummary(
+                options.Query,
+                results.Count,
+                options.Skip,
+                options.Take,
+                stopwatch.Elapsed);
+            Ed2kSearchUi.ShowResults(page, options.Skip);
+        }
+        else
         {
             Console.WriteLine(
-                $"{result.Name}\t{result.Size} bytes\t{result.FileId}\t" +
-                $"{result.SourceCount} sources\t{result.ClientId}:{result.Port}");
+                $"Search results for \"{options.Query}\": {results.Count}; " +
+                $"showing {page.Length} after skip {options.Skip}.");
+            foreach (var result in page)
+            {
+                Console.WriteLine(
+                    $"{result.Name}\t{result.Size} bytes\t{result.FileId}\t" +
+                    $"{result.SourceCount} sources\t{result.ClientId}:{result.Port}\t" +
+                    $"{Ed2kSearchUi.GetTransferReadiness(result)}");
+            }
         }
 
         return 0;
     }
 
-    private static bool TryReadArguments(
-        IReadOnlyList<string> args,
-        out string serverPath,
-        out string query,
-        out string serverUrl)
-    {
-        serverPath = string.Empty;
-        query = string.Empty;
-        serverUrl = DefaultServerListUrl;
-        for (var index = 0; index < args.Count - 1; index++)
-        {
-            if (args[index].Equals("--servers", StringComparison.OrdinalIgnoreCase))
-                serverPath = args[index + 1];
-            else if (args[index].Equals("--query", StringComparison.OrdinalIgnoreCase))
-                query = args[index + 1];
-            else if (args[index].Equals("--server-url", StringComparison.OrdinalIgnoreCase))
-                serverUrl = args[index + 1];
-        }
-
-        return !string.IsNullOrWhiteSpace(serverPath) && !string.IsNullOrWhiteSpace(query);
-    }
-
     private static async Task<ServerList> LoadServerListAsync(
         string serverPath,
         string serverUrl,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Action<string> notice)
     {
         if (File.Exists(serverPath))
         {
@@ -123,13 +193,13 @@ internal static class Ed2kSearchLab
             if (local.Servers.Count > 0)
                 return local;
 
-            Console.WriteLine(
+            notice(
                 $"The local server list at {Path.GetFullPath(serverPath)} is empty; " +
                 $"downloading {serverUrl}.");
         }
         else
         {
-            Console.WriteLine(
+            notice(
                 $"The local server list at {Path.GetFullPath(serverPath)} was not found; " +
                 $"downloading {serverUrl}.");
         }
@@ -137,14 +207,16 @@ internal static class Ed2kSearchLab
         return await DownloadServerListAsync(
                 serverPath,
                 serverUrl,
-                cancellationToken)
+                cancellationToken,
+                notice)
             .ConfigureAwait(false);
     }
 
     private static async Task<ServerList> DownloadServerListAsync(
         string serverPath,
         string serverUrl,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Action<string> notice)
     {
         if (!Uri.TryCreate(serverUrl, UriKind.Absolute, out var uri) ||
             !uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
@@ -197,7 +269,7 @@ internal static class Ed2kSearchLab
             throw new InvalidDataException("The downloaded server list contained no usable endpoints.");
 
         await CacheServerListAsync(serverPath, bytes, cancellationToken).ConfigureAwait(false);
-        Console.WriteLine(
+        notice(
             $"Downloaded {servers.Servers.Count} server endpoint(s) and cached them at " +
             $"{Path.GetFullPath(serverPath)}.");
         return servers;

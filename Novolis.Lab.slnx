@@ -24,6 +24,7 @@
   </Folder>
   <Folder Name="/transports/">
     <Project Path="labs/transports/Ed2kSearchLab/Ed2kSearchLab.csproj" />
+    <Project Path="labs/transports/NetworkPathLab/NetworkPathLab.csproj" />
   </Folder>
   <Folder Name="/raylib/">
     <Project Path="labs/raylib/RaylibHello/RaylibHello.csproj" />

@@ -3,9 +3,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Novolis.Lab.Ed2kSearch</RootNamespace>
     <AssemblyName>Novolis.Lab.Ed2kSearch</AssemblyName>
-    <Description>Connect to a user-supplied eD2k server list and run one search.</Description>
+    <Description>Connect to an eD2k server list, search, and preview transfer readiness without downloading files.</Description>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Spectre.Console" />
     <LibraryReference Include="Novolis.Transports.Ed2k" />
   </ItemGroup>
 </Project>
