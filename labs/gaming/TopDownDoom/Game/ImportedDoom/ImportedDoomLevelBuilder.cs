@@ -8,7 +8,6 @@ namespace TopDownDoom.Game.ImportedDoom;
 internal static class ImportedDoomLevelBuilder
 {
     private const float MapScale = 1f / 32f;
-    private const float WallHeightScale = 1f / 96f;
     private const float WallThickness = 0.06f;
 
     public static ImportedDoomLevelBuild Build(PlanarScene scene, ImportedDoomPackage package)
@@ -134,24 +133,19 @@ internal static class ImportedDoomLevelBuilder
                 continue;
             }
 
-            var height = WallHeight(map, frontSector, backSector);
             var footprint = WallFootprint(start, end, WallThickness);
             var color = solid ? new Rgba32(70, 62, 78) : new Rgba32(52, 48, 62);
             var faceTexture = catalog.TryLoad(scene.Textures, "textures", textureName, out var texture)
                 ? texture
                 : default;
             var visualStart = scene.StaticPolygons.Count;
-            PlanarWallComposer.Add(
-                scene,
-                footprint.Extrude(PlanarElevation.Offset(height)),
-                faceTexture,
-                2f,
-                false);
-            var visuals = scene.StaticPolygons.Skip(visualStart).ToArray();
-            foreach (var visual in visuals)
+            scene.StaticPolygons.Add(new PlanarStaticPolygon(footprint, color)
             {
-                visual.SortKey = 200 + lineIndex;
-            }
+                Texture = faceTexture,
+                TextureMeters = 2f,
+                SortKey = 200 + lineIndex,
+            });
+            var visuals = scene.StaticPolygons.Skip(visualStart).ToArray();
             if (solid)
             {
                 var collider = new PlanarCollider(footprint);
@@ -254,21 +248,6 @@ internal static class ImportedDoomLevelBuilder
             left?.LowerTexture,
         };
         return candidates.FirstOrDefault(candidate => !string.IsNullOrWhiteSpace(candidate) && candidate != "-") ?? string.Empty;
-    }
-
-    private static float WallHeight(ImportedDoomMap map, int frontSector, int backSector)
-    {
-        var sector = frontSector >= 0 && frontSector < map.Sectors.Length
-            ? map.Sectors[frontSector]
-            : default;
-        var height = sector.CeilingHeight - sector.FloorHeight;
-        if (backSector >= 0 && backSector < map.Sectors.Length)
-        {
-            var back = map.Sectors[backSector];
-            height = Math.Max(height, back.CeilingHeight - back.FloorHeight);
-        }
-
-        return Math.Clamp(height * WallHeightScale, 0.25f, 2.8f);
     }
 
     private static Polygon WallFootprint(Vector3 start, Vector3 end, float thickness)

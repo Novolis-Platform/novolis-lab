@@ -83,8 +83,10 @@ internal sealed class HouseholdTrampVentureAgent : IEconomicAgent
       return;
     }
 
+    var simulation = context.Simulation
+      ?? throw new InvalidOperationException("Household venture agent requires a simulation context.");
     var rng = new DeterministicRandom(
-      context.Simulation.State.Seed ^ _rngSalt ^ (ulong)_nextVenture ^ (ulong)context.Clock.HourIndex);
+      simulation.State.Seed ^ _rngSalt ^ (ulong)_nextVenture ^ (ulong)context.Clock.HourIndex);
     var candidates = world.Cohorts
       .Where(c => c.Definition.HouseholdFirmId is not null
                   && world.IsAboveComfort(c)
