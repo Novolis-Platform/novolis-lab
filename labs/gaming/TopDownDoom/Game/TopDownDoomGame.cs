@@ -43,7 +43,9 @@ internal sealed class TopDownDoomGame
             $"Top-Down Doom — {_art.SourceLabel}" +
             (_level.UsesImportedLevel ? $" — {_runtimeOptions.MapName}" : string.Empty));
 
-        scene.Camera.WorldUnitsPerPixel = 1f / 30f;
+        scene.Camera.ViewportWidth = Math.Max(1, frame.Width);
+        scene.Camera.ViewportHeight = Math.Max(1, frame.Height);
+        scene.Camera.WorldUnitsPerPixel = WorldUnitsPerPixel;
         scene.Menus.Push(new PlanarMenuScreen("TOP-DOWN DOOM", [
             new PlanarMenuItem("FIGHT", Tag: "play", OnSelect: () =>
             {
@@ -92,8 +94,10 @@ internal sealed class TopDownDoomGame
             return;
         }
 
+        scene.Camera.ViewportWidth = Math.Max(1, frame.Width);
+        scene.Camera.ViewportHeight = Math.Max(1, frame.Height);
         var move = ReadMove(frame, scene);
-        var aimWorld = ReadAimWorld(frame, scene);
+        var aimWorld = ReadAimWorld(frame, scene, _world.PlayerPosition);
         var shoot = frame.IsMouseButtonDown(MouseButton.Left);
         var dash = frame.IsKeyPressed(Key.ShiftLeft) || frame.IsKeyPressed(Key.ShiftRight);
         var interact = frame.IsKeyPressed(Key.E);
@@ -119,9 +123,12 @@ internal sealed class TopDownDoomGame
         ApplyLevelScript(scene);
 
         _combatZoom = float.Lerp(_combatZoom, _world.Monsters.Count > 0 ? CombatZoomFactor : ExploreZoomFactor, 1f - MathF.Exp(-6f * frame.DeltaSeconds));
-        scene.Camera.WorldUnitsPerPixel = (1f / 30f) * _combatZoom;
+        scene.Camera.WorldUnitsPerPixel = WorldUnitsPerPixel * _combatZoom;
 
-        var camTarget = _world.PlayerPosition + new Vector3(0f, 0f, 1.2f);
+        var aimDirection = aimWorld.LengthSquared() > 0.01f
+            ? Vector3.Normalize(new Vector3(aimWorld.X, 0f, aimWorld.Y))
+            : Vector3.Zero;
+        var camTarget = _world.PlayerPosition + aimDirection * CameraLookAhead;
         var t = 1f - MathF.Exp(-10f * frame.DeltaSeconds);
         var shake = _world.Juice.Shake;
         var shakeOffset = shake > 0.01f
@@ -248,12 +255,10 @@ internal sealed class TopDownDoomGame
         return new Vector2(x, z);
     }
 
-    private static Vector2 ReadAimWorld(SilkFrame frame, PlanarScene scene)
+    private static Vector2 ReadAimWorld(SilkFrame frame, PlanarScene scene, Vector3 playerPosition)
     {
-        var mouse = frame.MousePosition;
-        var world = scene.Camera.ScreenToWorld(mouse.X, mouse.Y);
-        var flat = new Vector2(world.X - scene.Camera.Position.X, world.Z - scene.Camera.Position.Z);
-        return flat;
+        var aim = ViewportAim.DeltaXz(scene.Camera, frame.MouseX, frame.MouseY, playerPosition);
+        return new Vector2(aim.X, aim.Z);
     }
 
     private void DrawCombatHints(PlanarScene scene)
