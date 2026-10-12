@@ -13,8 +13,10 @@ namespace TopDownDoom.Game;
 internal sealed class TopDownDoomGame
 {
     private const float PlayerRadius = 0.35f;
-    private const float CombatZoomFactor = 0.88f;
+    private const float WorldUnitsPerPixel = 1f / 48f;
+    private const float CombatZoomFactor = 0.84f;
     private const float ExploreZoomFactor = 1f;
+    private const float CameraLookAhead = 0.8f;
 
     private readonly TopDownCombatWorld _world = new();
     private readonly DoomLevelState _level = new();

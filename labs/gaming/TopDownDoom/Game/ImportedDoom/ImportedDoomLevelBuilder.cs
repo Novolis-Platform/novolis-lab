@@ -78,21 +78,33 @@ internal static class ImportedDoomLevelBuilder
                     continue;
                 }
 
-                var polygon = new Polygon(loop.Select(index => ToWorld(map, map.Vertices[index].X, map.Vertices[index].Y)));
-                var light = Math.Clamp(sector.LightLevel, (short)0, (short)255);
-                var tint = (byte)Math.Clamp(28 + light / 4, 28, 96);
-                var floor = new PlanarStaticPolygon(polygon, new Rgba32(tint, tint, (byte)Math.Clamp(tint + 8, 0, 255)))
+                var vertices = loop
+                    .Where(index => index < map.Vertices.Length)
+                    .Select(index => ToWorld(map, map.Vertices[index].X, map.Vertices[index].Y))
+                    .ToArray();
+                var triangles = TriangulateLoop(vertices);
+                if (triangles.Count == 0)
                 {
-                    DrawFilled = true,
-                    SortKey = 0,
-                };
-                if (catalog.TryLoad(scene.Textures, "flats", sector.FloorFlat, out var texture))
-                {
-                    floor.Texture = texture;
-                    floor.TextureMeters = 2f;
+                    continue;
                 }
 
-                scene.StaticPolygons.Add(floor);
+                var light = Math.Clamp(sector.LightLevel, (short)0, (short)255);
+                var tint = (byte)Math.Clamp(28 + light / 4, 28, 96);
+                var floorTexture = catalog.TryLoad(scene.Textures, "flats", sector.FloorFlat, out var texture)
+                    ? texture
+                    : default;
+                foreach (var triangle in triangles)
+                {
+                    var floor = new PlanarStaticPolygon(triangle, new Rgba32(tint, tint, (byte)Math.Clamp(tint + 8, 0, 255)))
+                    {
+                        DrawFilled = true,
+                        Layer = PlanarDrawLayer.Background,
+                        SortKey = floorTexture.IsValid ? floorTexture.Value : 0,
+                        Texture = floorTexture,
+                        TextureMeters = 2f,
+                    };
+                    scene.StaticPolygons.Add(floor);
+                }
             }
         }
     }
@@ -143,7 +155,8 @@ internal static class ImportedDoomLevelBuilder
             {
                 Texture = faceTexture,
                 TextureMeters = 2f,
-                SortKey = 200 + lineIndex,
+                WallPart = PlanarWallPartKind.Side,
+                SortKey = 1000 + (faceTexture.IsValid ? faceTexture.Value : 0),
             });
             var visuals = scene.StaticPolygons.Skip(visualStart).ToArray();
             if (solid)
@@ -174,6 +187,143 @@ internal static class ImportedDoomLevelBuilder
                 }
             }
         }
+    }
+
+    private static List<Polygon> TriangulateLoop(IReadOnlyList<Vector3> source)
+    {
+        var points = new List<Vector3>(source.Count);
+        foreach (var point in source)
+        {
+            if (points.Count == 0 || Vector3.DistanceSquared(points[^1], point) > 1e-8f)
+            {
+                points.Add(point);
+            }
+        }
+
+        if (points.Count > 1 && Vector3.DistanceSquared(points[0], points[^1]) <= 1e-8f)
+        {
+            points.RemoveAt(points.Count - 1);
+        }
+
+        if (points.Count < 3)
+        {
+            return [];
+        }
+
+        var area = SignedArea(points);
+        if (MathF.Abs(area) <= 1e-6f)
+        {
+            return [];
+        }
+
+        var winding = area > 0f ? 1f : -1f;
+        var indices = Enumerable.Range(0, points.Count).ToList();
+        var triangles = new List<Polygon>(points.Count - 2);
+        var guard = points.Count * points.Count;
+        while (indices.Count > 3 && guard-- > 0)
+        {
+            var clipped = false;
+            for (var i = 0; i < indices.Count; i++)
+            {
+                var previous = indices[(i + indices.Count - 1) % indices.Count];
+                var current = indices[i];
+                var next = indices[(i + 1) % indices.Count];
+                var cross = Cross(points[previous], points[current], points[next]);
+                if (cross * winding <= 1e-6f)
+                {
+                    continue;
+                }
+
+                var containsVertex = false;
+                for (var j = 0; j < indices.Count; j++)
+                {
+                    var candidate = indices[j];
+                    if (candidate == previous || candidate == current || candidate == next)
+                    {
+                        continue;
+                    }
+
+                    if (PointInTriangle(points[candidate], points[previous], points[current], points[next]))
+                    {
+                        containsVertex = true;
+                        break;
+                    }
+                }
+
+                if (containsVertex)
+                {
+                    continue;
+                }
+
+                triangles.Add(new Polygon([points[previous], points[current], points[next]]));
+                indices.RemoveAt(i);
+                clipped = true;
+                break;
+            }
+
+            if (clipped)
+            {
+                continue;
+            }
+
+            var collinear = -1;
+            for (var i = 0; i < indices.Count; i++)
+            {
+                var previous = indices[(i + indices.Count - 1) % indices.Count];
+                var current = indices[i];
+                var next = indices[(i + 1) % indices.Count];
+                if (MathF.Abs(Cross(points[previous], points[current], points[next])) <= 1e-6f)
+                {
+                    collinear = i;
+                    break;
+                }
+            }
+
+            if (collinear < 0)
+            {
+                return [];
+            }
+
+            indices.RemoveAt(collinear);
+        }
+
+        if (indices.Count == 3)
+        {
+            var a = points[indices[0]];
+            var b = points[indices[1]];
+            var c = points[indices[2]];
+            if (MathF.Abs(Cross(a, b, c)) > 1e-6f)
+            {
+                triangles.Add(new Polygon([a, b, c]));
+            }
+        }
+
+        return triangles;
+    }
+
+    private static float SignedArea(IReadOnlyList<Vector3> points)
+    {
+        var area = 0f;
+        for (var i = 0; i < points.Count; i++)
+        {
+            var a = points[i];
+            var b = points[(i + 1) % points.Count];
+            area += a.X * b.Z - b.X * a.Z;
+        }
+
+        return area * 0.5f;
+    }
+
+    private static float Cross(Vector3 a, Vector3 b, Vector3 c) =>
+        (b.X - a.X) * (c.Z - a.Z) - (b.Z - a.Z) * (c.X - a.X);
+
+    private static bool PointInTriangle(Vector3 point, Vector3 a, Vector3 b, Vector3 c)
+    {
+        var ab = Cross(a, b, point);
+        var bc = Cross(b, c, point);
+        var ca = Cross(c, a, point);
+        return (ab >= -1e-6f && bc >= -1e-6f && ca >= -1e-6f)
+            || (ab <= 1e-6f && bc <= 1e-6f && ca <= 1e-6f);
     }
 
     private static bool IsDoorSpecial(short special) =>
