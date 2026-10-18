@@ -33,6 +33,9 @@ The bottom Raw activity log records configuration wire traffic and live reports
 from the exact Keytron's keyboard, consumer-control, and rotary input
 interfaces. It includes timestamps, interface usages, report IDs, raw report
 bytes, and named parsed values, with copy and clear actions.
+On Windows it also registers a VID:PID-filtered Raw Input fallback, because
+the operating system may reserve the Keytron's `\kbd` interfaces from direct
+HID opening.
 
 Other firmware variants may expose the newer WebHub protocol (64-byte,
 report-ID-free frames); those are handled separately when their report shape

@@ -62,6 +62,7 @@ internal sealed class MainWindow : Window
     private readonly List<ConnectedHidInputReader> _inputReaders = [];
     private readonly List<Task> _inputMonitorTasks = [];
 
+    private KeytronRawInputMonitor? _rawInputMonitor;
     private WebHubMacroPad? _target;
     private WebHubMacroPadSession? _session;
     private KeytronLegacySession? _legacySession;
@@ -486,6 +487,7 @@ internal sealed class MainWindow : Window
         Closed += (_, _) =>
         {
             _closing = true;
+            StopRawInputMonitoring();
             StopInputMonitoring();
             _session?.Dispose();
             _legacySession?.Dispose();
@@ -496,6 +498,7 @@ internal sealed class MainWindow : Window
 
     private void RefreshDevices()
     {
+        StopRawInputMonitoring();
         StopInputMonitoring();
         DisposeSession();
         _devices.Clear();
@@ -546,6 +549,7 @@ internal sealed class MainWindow : Window
                       $"{_target.Device.Descriptor.ProductName}{Environment.NewLine}" +
                       _target.ProtocolSupportDescription));
             StartInputMonitoring();
+            StartRawInputMonitoring();
         }
         catch (Exception exception)
         {
@@ -554,6 +558,43 @@ internal sealed class MainWindow : Window
         }
 
         UpdateRawKvp();
+    }
+
+    private void StartRawInputMonitoring()
+    {
+        if (_target is null || !OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var platformHandle = TryGetPlatformHandle();
+        if (platformHandle is null)
+        {
+            AppendActivity("RAWINPUT monitor unavailable: the lab window has no native handle.");
+            return;
+        }
+
+        try
+        {
+            _rawInputMonitor = KeytronRawInputMonitor.Start(
+                platformHandle.Handle,
+                WebHubMacroPad.VendorId,
+                WebHubMacroPad.ProductId,
+                AppendActivity);
+            AppendActivity(
+                "RAWINPUT monitor registered for this exact Keytron " +
+                "(keyboard, mouse, and consumer-control usages).");
+        }
+        catch (Exception exception)
+        {
+            AppendActivity($"RAWINPUT monitor unavailable: {exception.Message}");
+        }
+    }
+
+    private void StopRawInputMonitoring()
+    {
+        _rawInputMonitor?.Dispose();
+        _rawInputMonitor = null;
     }
 
     private void StartInputMonitoring()
