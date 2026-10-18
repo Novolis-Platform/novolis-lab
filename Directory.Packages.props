@@ -6,6 +6,7 @@
   <ItemGroup>
     <PackageVersion Include="AssimpNet" Version="4.1.0" />
     <PackageVersion Include="Avalonia" Version="12.1.4" />
+    <PackageVersion Include="Avalonia.Controls.ColorPicker" Version="12.1.4" />
     <PackageVersion Include="Avalonia.Android" Version="12.1.4" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
     <PackageVersion Include="Avalonia.Desktop" Version="12.1.4" />

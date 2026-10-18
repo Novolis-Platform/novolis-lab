@@ -43,10 +43,12 @@ internal sealed class MainWindow : Window
     private readonly Button _writeAllButton;
     private readonly Button _stageSafeButton;
     private readonly Button _profileButton;
-    private readonly TextBox _lightingMode;
-    private readonly TextBox _lightingBrightness;
-    private readonly TextBox _lightingSpeed;
-    private readonly TextBox _lightingHex;
+    private readonly ComboBox _lightingMode;
+    private readonly Slider _lightingBrightness;
+    private readonly Slider _lightingSpeed;
+    private readonly ColorPicker _lightingColor;
+    private readonly TextBlock _lightingBrightnessValue;
+    private readonly TextBlock _lightingSpeedValue;
     private readonly CheckBox _lightingCustom;
     private readonly TextBlock _lightingSummary;
     private readonly Button _readLightingButton;
@@ -259,18 +261,32 @@ internal sealed class MainWindow : Window
             ItemsSource = Enumerable.Range(0, 8).Select(index => $"Profile {index}").ToArray(),
             SelectedIndex = 0,
         };
-        _lightingMode = CreateHexBox("01");
-        _lightingBrightness = CreateHexBox("40");
-        _lightingSpeed = CreateHexBox("00");
-        _lightingHex = new TextBox
+        _lightingMode = new ComboBox
         {
-            Text = "#FF0000",
-            PlaceholderText = "#RRGGBB",
-            FontFamily = Profile.MonoFont,
+            ItemsSource = CreateLightingModeChoices(),
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
         };
+        _lightingBrightness = CreateLightingSlider();
+        _lightingSpeed = CreateLightingSlider();
+        _lightingColor = new ColorPicker
+        {
+            Color = Colors.Red,
+            IsAlphaEnabled = false,
+            IsAlphaVisible = false,
+            IsColorPaletteVisible = true,
+            IsColorSpectrumVisible = true,
+            IsColorComponentsVisible = true,
+            IsComponentSliderVisible = true,
+            IsComponentTextInputVisible = false,
+            IsHexInputVisible = false,
+            IsColorModelVisible = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+        _lightingBrightnessValue = CreateLightingValueLabel();
+        _lightingSpeedValue = CreateLightingValueLabel();
         _lightingCustom = new CheckBox
         {
-            Content = "Use custom color instead of the effect palette",
+            Content = "Use the selected color",
             IsChecked = true,
             Foreground = Profile.TextBrush,
         };
@@ -279,8 +295,12 @@ internal sealed class MainWindow : Window
             TextWrapping = TextWrapping.Wrap,
             Foreground = Profile.ActionBrush,
         };
-        _readLightingButton = CreateButton("Read RGB lighting", ReadLighting);
-        _writeLightingButton = CreateButton("Write RGB lighting", WriteLighting);
+        _lightingMode.SelectionChanged += (_, _) => UpdateLightingEditorSummary();
+        _lightingBrightness.ValueChanged += (_, _) => UpdateLightingEditorSummary();
+        _lightingSpeed.ValueChanged += (_, _) => UpdateLightingEditorSummary();
+        _lightingColor.ColorChanged += (_, _) => UpdateLightingEditorSummary();
+        _readLightingButton = CreateButton("Read lighting from Keytron", ReadLighting);
+        _writeLightingButton = CreateButton("Apply lighting to Keytron", WriteLighting);
         ApplyLightingSettingsToEditor();
         devicePanel.Children.Add(new Separator { Margin = new Thickness(0, 8) });
         devicePanel.Children.Add(Heading("RGB lighting"));
@@ -291,18 +311,34 @@ internal sealed class MainWindow : Window
                     "Device-wide lighting belongs to the connected Keytron, not to an " +
                     "individual key. Effect selects the pattern, brightness is the master " +
                     "LED level, speed affects animated effects, and custom color selects " +
-                    "the HSV color below. Raw bytes remain available in Raw KVP.",
+                    "the selected color. The firmware details stay in Raw KVP.",
                 TextWrapping = TextWrapping.Wrap,
                 Foreground = Profile.MutedBrush,
             });
         devicePanel.Children.Add(_lightingSummary);
-        devicePanel.Children.Add(Field("Effect / pattern code (hex)", _lightingMode));
-        devicePanel.Children.Add(Field("Master brightness (hex)", _lightingBrightness));
-        devicePanel.Children.Add(Field("Animation speed (hex)", _lightingSpeed));
-        devicePanel.Children.Add(Field("Custom color (#RRGGBB)", _lightingHex));
+        devicePanel.Children.Add(Field("Lighting effect", _lightingMode));
+        devicePanel.Children.Add(
+            Field(
+                "Brightness",
+                LightingSliderField(_lightingBrightness, _lightingBrightnessValue)));
+        devicePanel.Children.Add(
+            Field(
+                "Animation speed",
+                LightingSliderField(_lightingSpeed, _lightingSpeedValue)));
+        devicePanel.Children.Add(Field("Color", _lightingColor));
         devicePanel.Children.Add(_lightingCustom);
-        devicePanel.Children.Add(_readLightingButton);
-        devicePanel.Children.Add(_writeLightingButton);
+        var lightingButtons = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("*,*"),
+            ColumnSpacing = 8,
+            Children =
+            {
+                _readLightingButton,
+                _writeLightingButton,
+            },
+        };
+        Grid.SetColumn(_writeLightingButton, 1);
+        devicePanel.Children.Add(lightingButtons);
         _profileButton = CreateButton("Select profile", SelectProfile);
         _saveButton = CreateButton("Write selected action", SaveSelectedAction);
         _stageSafeButton = CreateButton("Stage safe testing map", StageSafeTestingMap);
@@ -1169,6 +1205,10 @@ internal sealed class MainWindow : Window
     {
         if (_legacySession is null)
         {
+            SetStatus(
+                "Read the connected Keytron configuration before reading lighting.",
+                Profile.WarningBrush);
+            AppendActivity("LIGHTING read ignored: no factory configuration session.");
             return;
         }
 
@@ -1195,38 +1235,62 @@ internal sealed class MainWindow : Window
 
     private async void WriteLighting(object? sender, RoutedEventArgs args)
     {
-        if (_legacySession is null || !TryReadLightingEditor(out var settings))
+        if (_legacySession is null)
+        {
+            SetStatus(
+                "Read the connected Keytron configuration before applying lighting.",
+                Profile.WarningBrush);
+            AppendActivity("LIGHTING write ignored: no factory configuration session.");
+            return;
+        }
+
+        if (!TryReadLightingEditor(out var settings))
         {
             return;
         }
 
         var confirmed = await ConfirmAsync(
             "Write RGB lighting?",
-            $"Write effect 0x{settings.EffectMode:X2}, " +
-            $"brightness 0x{settings.MasterBrightness:X2}, " +
-            $"color #{settings.ToRgb().Red:X2}{settings.ToRgb().Green:X2}{settings.ToRgb().Blue:X2}?");
+            $"Apply {DescribeLightingSettings(settings)} to the connected Keytron?");
         if (!confirmed)
         {
+            AppendActivity("LIGHTING write cancelled by user.");
             return;
         }
 
         try
         {
+            SetStatus("Applying lighting to the Keytron…", Profile.WarningBrush);
+            AppendActivity($"LIGHTING write requested: {DescribeLightingSettings(settings)}");
+            var requested = settings;
             _legacyLighting = _legacySession.WriteLighting(settings);
-            if (_legacyLighting.TryGetSettings(out var accepted))
+            var hasEcho = _legacyLighting.TryGetSettings(out var accepted);
+            if (hasEcho)
             {
                 settings = accepted;
             }
 
             _lightingSettings = settings;
             ApplyLightingSettingsToEditor();
-            SetStatus("RGB lighting written; the device echoed the command.", Profile.AccentFillBrush);
-            AppendDiagnostic($"FACTORY LIGHTING WRITE: {_legacyLighting.RawHex}");
+            var verification = hasEcho
+                ? accepted == requested
+                    ? "verified: device echoed the requested settings"
+                    : $"warning: device echoed {DescribeLightingSettings(accepted)}"
+                : "response received; firmware did not echo the full settings record";
+            SetStatus(
+                $"Lighting command completed ({verification}).",
+                verification.StartsWith("verified", StringComparison.Ordinal)
+                    ? Profile.AccentFillBrush
+                    : Profile.WarningBrush);
+            AppendDiagnostic(
+                $"FACTORY LIGHTING WRITE: {_legacyLighting.RawHex}{Environment.NewLine}" +
+                $"LIGHTING RESULT: {verification}");
             UpdateRawKvp();
         }
         catch (Exception exception)
         {
-            SetStatus($"RGB lighting write failed: {exception.Message}", Profile.DangerBrush);
+            SetStatus($"Lighting write failed: {exception.Message}", Profile.DangerBrush);
+            AppendActivity($"LIGHTING write failed: {exception}");
             AppendDiagnostic(exception.ToString());
             UpdateRawKvp();
         }
@@ -1235,25 +1299,20 @@ internal sealed class MainWindow : Window
     private bool TryReadLightingEditor(out KeytronLegacyLightingSettings settings)
     {
         settings = _lightingSettings;
-        if (!TryReadByte(_lightingMode.Text, out var mode)
-            || !TryReadByte(_lightingBrightness.Text, out var brightness)
-            || !TryReadByte(_lightingSpeed.Text, out var speed)
-            || !TryReadRgbHex(_lightingHex.Text, out var red, out var green, out var blue))
+        if (_lightingMode.SelectedItem is not LightingModeChoice effect)
         {
-            SetStatus(
-                "Enter effect, brightness, and animation speed as hex bytes; " +
-                "enter color as #RRGGBB.",
-                Profile.WarningBrush);
+            SetStatus("Choose a lighting effect first.", Profile.WarningBrush);
             return false;
         }
 
+        var color = _lightingColor.Color;
         settings = KeytronLegacyLightingSettings.FromRgb(
-            red,
-            green,
-            blue,
-            mode,
-            brightness,
-            speed) with
+            color.R,
+            color.G,
+            color.B,
+            effect.Value,
+            ToLightingByte(_lightingBrightness.Value),
+            ToLightingByte(_lightingSpeed.Value)) with
         {
             Custom = _lightingCustom.IsChecked == true,
         };
@@ -1262,39 +1321,15 @@ internal sealed class MainWindow : Window
 
     private void ApplyLightingSettingsToEditor()
     {
-        _lightingMode.Text =
-            _lightingSettings.EffectMode.ToString("X2", CultureInfo.InvariantCulture);
-        _lightingBrightness.Text =
-            _lightingSettings.MasterBrightness.ToString("X2", CultureInfo.InvariantCulture);
-        _lightingSpeed.Text =
-            _lightingSettings.AnimationSpeed.ToString("X2", CultureInfo.InvariantCulture);
+        _lightingMode.SelectedItem = _lightingMode.Items
+            .OfType<LightingModeChoice>()
+            .FirstOrDefault(choice => choice.Value == _lightingSettings.EffectMode);
+        _lightingBrightness.Value = _lightingSettings.MasterBrightness;
+        _lightingSpeed.Value = _lightingSettings.AnimationSpeed;
         _lightingCustom.IsChecked = _lightingSettings.UseCustomColor;
         var (red, green, blue) = _lightingSettings.ToRgb();
-        _lightingHex.Text = $"#{red:X2}{green:X2}{blue:X2}";
-        _lightingSummary.Text =
-            $"Effect 0x{_lightingSettings.EffectMode:X2} · " +
-            $"HSV 0x{_lightingSettings.ColorHue:X2}/0x{_lightingSettings.ColorSaturation:X2}/" +
-            $"0x{_lightingSettings.ColorValue:X2} · " +
-            $"RGB #{red:X2}{green:X2}{blue:X2}";
-    }
-
-    private static bool TryReadRgbHex(
-        string? text,
-        out byte red,
-        out byte green,
-        out byte blue)
-    {
-        red = green = blue = 0;
-        var normalized = (text ?? string.Empty).Trim();
-        if (normalized.StartsWith('#'))
-        {
-            normalized = normalized[1..];
-        }
-
-        return normalized.Length == 6
-            && TryReadByte(normalized[..2], out red)
-            && TryReadByte(normalized[2..4], out green)
-            && TryReadByte(normalized[4..], out blue);
+        _lightingColor.Color = Color.FromRgb(red, green, blue);
+        UpdateLightingEditorSummary();
     }
 
     private async void SaveSelectedAction(object? sender, RoutedEventArgs args)
@@ -2001,11 +2036,102 @@ internal sealed class MainWindow : Window
         _lightingMode.IsEnabled = readEnabled || writeEnabled;
         _lightingBrightness.IsEnabled = readEnabled || writeEnabled;
         _lightingSpeed.IsEnabled = readEnabled || writeEnabled;
-        _lightingHex.IsEnabled = readEnabled || writeEnabled;
+        _lightingColor.IsEnabled = readEnabled || writeEnabled;
         _lightingCustom.IsEnabled = readEnabled || writeEnabled;
         _readLightingButton.IsEnabled = readEnabled;
         _writeLightingButton.IsEnabled = writeEnabled;
     }
+
+    private void UpdateLightingEditorSummary()
+    {
+        if (_lightingMode.SelectedItem is not LightingModeChoice effect)
+        {
+            return;
+        }
+
+        var color = _lightingColor.Color;
+        _lightingBrightnessValue.Text =
+            $"{ToLightingByte(_lightingBrightness.Value) / 255d:P0}";
+        _lightingSpeedValue.Text =
+            $"{ToLightingByte(_lightingSpeed.Value) / 255d:P0}";
+        _lightingSummary.Text =
+            $"{effect.Label} · " +
+            $"brightness {_lightingBrightnessValue.Text} · " +
+            $"speed {_lightingSpeedValue.Text} · " +
+            $"color {DescribeColor(color)}";
+    }
+
+    private static Slider CreateLightingSlider() =>
+        new()
+        {
+            Minimum = 0,
+            Maximum = byte.MaxValue,
+            TickFrequency = 16,
+            IsSnapToTickEnabled = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+
+    private static TextBlock CreateLightingValueLabel() =>
+        new()
+        {
+            Foreground = Profile.ActionBrush,
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
+
+    private static Control LightingSliderField(
+        Slider slider,
+        TextBlock valueLabel)
+    {
+        Grid.SetColumn(valueLabel, 1);
+        return new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("*,Auto"),
+            ColumnSpacing = 8,
+            Children =
+            {
+                slider,
+                valueLabel,
+            },
+        };
+    }
+
+    private static IReadOnlyList<LightingModeChoice> CreateLightingModeChoices()
+    {
+        var choices = new List<LightingModeChoice>(byte.MaxValue + 1)
+        {
+            new(0, "Off"),
+            new(1, "Solid / selected color"),
+        };
+        for (var value = 2; value <= byte.MaxValue; value++)
+        {
+            choices.Add(new((byte)value, $"Pattern {value}"));
+        }
+
+        return choices;
+    }
+
+    private static byte ToLightingByte(double value) =>
+        (byte)Math.Clamp((int)Math.Round(value), 0, byte.MaxValue);
+
+    private static string DescribeLightingSettings(
+        KeytronLegacyLightingSettings settings)
+    {
+        var (red, green, blue) = settings.ToRgb();
+        return $"{DescribeLightingEffect(settings.EffectMode)}, " +
+            $"brightness {settings.MasterBrightness / 255d:P0}, " +
+            $"speed {settings.AnimationSpeed / 255d:P0}, " +
+            $"{(settings.UseCustomColor ? "selected color" : "effect palette")} " +
+            $"{DescribeColor(Color.FromRgb(red, green, blue))}";
+    }
+
+    private static string DescribeLightingEffect(byte mode) =>
+        CreateLightingModeChoices()
+            .FirstOrDefault(choice => choice.Value == mode)
+            ?.Label
+        ?? $"Pattern {mode}";
+
+    private static string DescribeColor(Color color) =>
+        $"RGB {color.R}, {color.G}, {color.B}";
 
     private void UpdateActionButton(int index)
     {
@@ -2292,11 +2418,20 @@ internal sealed class MainWindow : Window
                 {
                     Add("legacy.lighting.effectMode", $"0x{lightingSettings.EffectMode:X2}");
                     Add(
+                        "legacy.lighting.effect",
+                        DescribeLightingEffect(lightingSettings.EffectMode));
+                    Add(
                         "legacy.lighting.masterBrightness",
                         $"0x{lightingSettings.MasterBrightness:X2}");
                     Add(
+                        "legacy.lighting.masterBrightnessPercent",
+                        $"{lightingSettings.MasterBrightness / 255d:P0}");
+                    Add(
                         "legacy.lighting.animationSpeed",
                         $"0x{lightingSettings.AnimationSpeed:X2}");
+                    Add(
+                        "legacy.lighting.animationSpeedPercent",
+                        $"{lightingSettings.AnimationSpeed / 255d:P0}");
                     Add("legacy.lighting.useCustomColor", lightingSettings.UseCustomColor);
                     Add("legacy.lighting.colorHue", $"0x{lightingSettings.ColorHue:X2}");
                     Add(
@@ -2305,6 +2440,9 @@ internal sealed class MainWindow : Window
                     Add("legacy.lighting.colorValue", $"0x{lightingSettings.ColorValue:X2}");
                     var rgb = lightingSettings.ToRgb();
                     Add("legacy.lighting.rgb", $"#{rgb.Red:X2}{rgb.Green:X2}{rgb.Blue:X2}");
+                    Add(
+                        "legacy.lighting.rgbNamed",
+                        $"red={rgb.Red}, green={rgb.Green}, blue={rgb.Blue}");
                 }
             }
             Add("legacy.actionRecordLength", 3);
@@ -2496,6 +2634,11 @@ internal sealed class MainWindow : Window
     }
 
     private sealed record InputChoice<T>(T Value, string Label)
+    {
+        public override string ToString() => Label;
+    }
+
+    private sealed record LightingModeChoice(byte Value, string Label)
     {
         public override string ToString() => Label;
     }
