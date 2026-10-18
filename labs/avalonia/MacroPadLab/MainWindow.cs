@@ -21,6 +21,7 @@ internal sealed class MainWindow : Window
     private readonly StackPanel _knobPanel;
     private readonly TextBlock _actionSummary;
     private readonly ComboBox _actionType;
+    private readonly ComboBox _legacyActionType;
     private readonly TextBox _parameter1;
     private readonly TextBox _parameter2;
     private readonly TextBox _parameter3;
@@ -38,14 +39,19 @@ internal sealed class MainWindow : Window
 
     private WebHubMacroPad? _target;
     private WebHubMacroPadSession? _session;
+    private KeytronLegacySession? _legacySession;
     private WebHubMacroPadAction[] _actions =
         Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
     private WebHubMacroPadAction[] _loadedActions =
         Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
     private WebHubMacroPadDeviceInfo? _deviceInfo;
+    private KeytronLegacyDeviceInfo? _legacyInfo;
     private WebHubMacroPadProbeResult? _probe;
     private ConnectedHidReportDescriptor? _targetReportDescriptor;
     private byte[]? _rawReportDescriptor;
+    private KeytronLegacyAction[] _legacyActions = [];
+    private KeytronLegacyAction[] _loadedLegacyActions = [];
+    private bool _legacyMode;
     private int _selectedAction = -1;
 
     public MainWindow()
@@ -167,6 +173,13 @@ internal sealed class MainWindow : Window
             SelectedItem = WebHubMacroPadActionType.Disabled,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
         };
+        _legacyActionType = new ComboBox
+        {
+            ItemsSource = Enum.GetValues<KeytronLegacyActionType>(),
+            SelectedItem = KeytronLegacyActionType.Disabled,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            IsVisible = false,
+        };
         _parameter1 = CreateHexBox();
         _parameter2 = CreateHexBox();
         _parameter3 = CreateHexBox();
@@ -211,13 +224,15 @@ internal sealed class MainWindow : Window
                 Heading("Action editor"),
                 new TextBlock
                 {
-                    Text = "The friendly action view is backed by the four raw firmware bytes below. " +
-                        "Writes are explicit and read back for verification.",
+                    Text = "The friendly action view is backed by the device's raw action bytes. " +
+                        "The current factory firmware stores three bytes per slot; newer WebHub " +
+                        "firmware stores four. Writes are explicit and read back for verification.",
                     TextWrapping = TextWrapping.Wrap,
                     Foreground = Profile.MutedBrush,
                 },
                 _actionSummary,
                 Field("Action type", _actionType),
+                Field("Factory action type", _legacyActionType),
                 Field("Parameter 1", _parameter1),
                 Field("Parameter 2", _parameter2),
                 Field("Parameter 3", _parameter3),
@@ -307,6 +322,7 @@ internal sealed class MainWindow : Window
         Closed += (_, _) =>
         {
             _session?.Dispose();
+            _legacySession?.Dispose();
             _catalog.Dispose();
         };
         Opened += (_, _) => RefreshDevices();
@@ -318,11 +334,19 @@ internal sealed class MainWindow : Window
         _devices.Clear();
         _target = null;
         _deviceInfo = null;
+        _legacyInfo = null;
         _probe = null;
         _targetReportDescriptor = null;
         _rawReportDescriptor = null;
+        _legacyMode = false;
+        _legacyActions = [];
+        _loadedLegacyActions = [];
         _actions = Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
         _loadedActions = Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
+        _actionType.IsVisible = true;
+        _legacyActionType.IsVisible = false;
+        _profileBox.IsVisible = true;
+        _profileButton.IsVisible = true;
         SetActionControlsEnabled(false);
         try
         {
@@ -408,6 +432,13 @@ internal sealed class MainWindow : Window
         }
 
         UpdateRawKvp();
+        if (isTarget)
+        {
+            // Reading is safe and makes the lab immediately useful when the
+            // exact device is already connected; writes still require explicit
+            // user actions and confirmation.
+            ReadConfiguration();
+        }
     }
 
     private void ReadConfiguration()
@@ -419,6 +450,12 @@ internal sealed class MainWindow : Window
 
         try
         {
+            if (_target.SupportsLegacyFrames)
+            {
+                ReadLegacyConfiguration();
+                return;
+            }
+
             if (!_target.SupportsWebHubFrames)
             {
                 var probe = _target.ProbeReadOnly();
@@ -476,8 +513,46 @@ internal sealed class MainWindow : Window
         }
     }
 
+    private void ReadLegacyConfiguration()
+    {
+        DisposeSession();
+        _legacySession = _target!.OpenLegacySession();
+        _legacyInfo = _legacySession.ReadDeviceInfo();
+        _deviceInfo = null;
+        _probe = null;
+        _legacyMode = true;
+        _actionType.IsVisible = false;
+        _legacyActionType.IsVisible = true;
+        _profileBox.IsVisible = false;
+        _profileButton.IsVisible = false;
+
+        var actions = _legacySession.ReadActions();
+        _legacyActions = actions.ToArray();
+        _loadedLegacyActions = actions.ToArray();
+        for (var index = 0; index < _legacyActions.Length; index++)
+        {
+            UpdateActionButton(index);
+        }
+
+        SetActionControlsEnabled(true);
+        SetStatus(
+            "Factory action table loaded. Writes are flash-backed and read back for verification.",
+            Profile.WarningBrush);
+        AppendDiagnostic(
+            $"FACTORY INFO response: {_legacyInfo.RawHex}{Environment.NewLine}" +
+            $"Factory action record length: 3 bytes{Environment.NewLine}" +
+            $"Factory action count: {_legacyActions.Length}");
+        UpdateRawKvp();
+    }
+
     private async void SaveSelectedAction(object? sender, RoutedEventArgs args)
     {
+        if (_legacyMode)
+        {
+            await SaveSelectedLegacyAction();
+            return;
+        }
+
         if (_session is null || _selectedAction < 0)
         {
             return;
@@ -527,6 +602,58 @@ internal sealed class MainWindow : Window
         }
     }
 
+    private async Task SaveSelectedLegacyAction()
+    {
+        if (_legacySession is null || _selectedAction < 0)
+        {
+            return;
+        }
+
+        if (!TryReadLegacyEditor(out var action))
+        {
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(
+            "Write factory-firmware action?",
+            $"Write action {_selectedAction} ({ActionLabel(_selectedAction)}) to flash?");
+        if (!confirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            _legacySession.WriteAction(_selectedAction, action);
+            var readBack = _legacySession.ReadActions().ToArray();
+            _legacyActions = readBack;
+            _loadedLegacyActions = readBack.ToArray();
+            for (var index = 0; index < _legacyActions.Length; index++)
+            {
+                UpdateActionButton(index);
+            }
+
+            var verified = _legacyActions[_selectedAction] == action;
+            SetStatus(
+                verified
+                    ? "Factory action written and verified."
+                    : "Factory write completed, but read-back differed.",
+                verified ? Profile.AccentFillBrush : Profile.WarningBrush);
+            AppendDiagnostic(
+                $"FACTORY WRITE action {_selectedAction}: " +
+                $"{Convert.ToHexString(action.ToByteArray())}{Environment.NewLine}" +
+                $"READ-BACK: " +
+                $"{Convert.ToHexString(_legacyActions[_selectedAction].ToByteArray())}");
+            UpdateRawKvp();
+        }
+        catch (Exception exception)
+        {
+            SetStatus($"Factory action write failed: {exception.Message}", Profile.DangerBrush);
+            AppendDiagnostic(exception.ToString());
+            UpdateRawKvp();
+        }
+    }
+
     private async void SelectProfile(object? sender, RoutedEventArgs args)
     {
         if (_session is null || _profileBox.SelectedIndex < 0)
@@ -557,6 +684,12 @@ internal sealed class MainWindow : Window
 
     private void StageUsefulKnobMap(object? sender, RoutedEventArgs args)
     {
+        if (_legacyMode)
+        {
+            StageUsefulLegacyKnobMap();
+            return;
+        }
+
         if (_session is null || _loadedActions.Length != 25)
         {
             SetStatus("Read the Keytron action table before staging a knob map.", Profile.WarningBrush);
@@ -592,8 +725,47 @@ internal sealed class MainWindow : Window
         UpdateRawKvp();
     }
 
+    private void StageUsefulLegacyKnobMap()
+    {
+        if (_legacySession is null || _loadedLegacyActions.Length != 25)
+        {
+            SetStatus(
+                "Read the factory Keytron action table before staging a knob map.",
+                Profile.WarningBrush);
+            return;
+        }
+
+        var preset = KeytronLegacyPresets.CreateUsefulMap();
+        for (var index = 16; index < _legacyActions.Length; index++)
+        {
+            _legacyActions[index] = preset[index];
+            UpdateActionButton(index);
+        }
+
+        _writeAllButton.IsEnabled = HasPendingChanges();
+        SetStatus(
+            "Staged: clockwise volume down, counter-clockwise volume up; " +
+            "presses now control media, brightness, and navigation.",
+            Profile.WarningBrush);
+        AppendDiagnostic(
+            "STAGED factory useful knob map (not written): " +
+            string.Join(
+                " | ",
+                preset.Skip(16).Select(
+                    (action, index) =>
+                        $"{ActionLabel(16 + index)}={action.Description} " +
+                        $"[{Convert.ToHexString(action.ToByteArray())}]")));
+        UpdateRawKvp();
+    }
+
     private async void WriteStagedActions(object? sender, RoutedEventArgs args)
     {
+        if (_legacyMode)
+        {
+            await WriteStagedLegacyActions();
+            return;
+        }
+
         if (_session is null)
         {
             return;
@@ -653,9 +825,69 @@ internal sealed class MainWindow : Window
         }
     }
 
+    private async Task WriteStagedLegacyActions()
+    {
+        if (_legacySession is null)
+        {
+            return;
+        }
+
+        var pending = Enumerable.Range(0, _legacyActions.Length)
+            .Where(index => _legacyActions[index] != _loadedLegacyActions[index])
+            .ToArray();
+        if (pending.Length == 0)
+        {
+            SetStatus("There are no staged factory action changes.", Profile.MutedBrush);
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(
+            "Write factory-firmware changes?",
+            $"Write {pending.Length} staged action(s) to Keytron flash?");
+        if (!confirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            _legacySession.WriteActions(_legacyActions);
+            var readBack = _legacySession.ReadActions().ToArray();
+            var verified = pending.All(index => readBack[index] == _legacyActions[index]);
+            _legacyActions = readBack;
+            _loadedLegacyActions = readBack.ToArray();
+            for (var index = 0; index < _legacyActions.Length; index++)
+            {
+                UpdateActionButton(index);
+            }
+
+            SetStatus(
+                verified
+                    ? $"Wrote and read back {pending.Length} factory action(s)."
+                    : "Factory write completed, but read-back differed.",
+                verified ? Profile.AccentFillBrush : Profile.WarningBrush);
+            AppendDiagnostic(
+                $"FACTORY WRITE staged actions: {string.Join(", ", pending)}{Environment.NewLine}" +
+                $"READ-BACK action count: {_legacyActions.Length}");
+            UpdateRawKvp();
+        }
+        catch (Exception exception)
+        {
+            SetStatus($"Factory staged write failed: {exception.Message}", Profile.DangerBrush);
+            AppendDiagnostic(exception.ToString());
+            UpdateRawKvp();
+        }
+    }
+
     private void SelectAction(int index)
     {
         _selectedAction = index;
+        if (_legacyMode)
+        {
+            SelectLegacyAction(index);
+            return;
+        }
+
         var action = _actions[index];
         _actionType.SelectedItem = action.Type;
         _parameter1.Text = action.Parameter1.ToString("X2", CultureInfo.InvariantCulture);
@@ -666,6 +898,23 @@ internal sealed class MainWindow : Window
             $"Parameters: {WebHubMacroPadActionDescriptions.DescribeParameters(action)}{Environment.NewLine}" +
             $"Raw: {Convert.ToHexString(action.ToByteArray())}" +
             (action == _loadedActions[index] ? " (loaded)" : " (staged)");
+        _saveButton.IsEnabled = _session is not null;
+        SetStatus($"Editing {ActionLabel(index)}.", Profile.AccentFillBrush);
+    }
+
+    private void SelectLegacyAction(int index)
+    {
+        var action = _legacyActions[index];
+        _legacyActionType.SelectedItem = action.Type;
+        _parameter1.Text = action.Parameter1.ToString("X2", CultureInfo.InvariantCulture);
+        _parameter2.Text = action.Parameter2.ToString("X2", CultureInfo.InvariantCulture);
+        _parameter3.Text = "00";
+        _actionSummary.Text =
+            $"{ActionLabel(index)} — {action.Description}{Environment.NewLine}" +
+            $"Parameters: p1=0x{action.Parameter1:X2}, p2=0x{action.Parameter2:X2}{Environment.NewLine}" +
+            $"Raw: {Convert.ToHexString(action.ToByteArray())}" +
+            (action == _loadedLegacyActions[index] ? " (loaded)" : " (staged)");
+        _saveButton.IsEnabled = _legacySession is not null;
         SetStatus($"Editing {ActionLabel(index)}.", Profile.AccentFillBrush);
     }
 
@@ -685,10 +934,34 @@ internal sealed class MainWindow : Window
         return true;
     }
 
-    private bool HasPendingChanges() =>
-        _actions.Length == _loadedActions.Length
-        && Enumerable.Range(0, _actions.Length)
-            .Any(index => _actions[index] != _loadedActions[index]);
+    private bool TryReadLegacyEditor(out KeytronLegacyAction action)
+    {
+        action = KeytronLegacyAction.Disabled;
+        if (_legacyActionType.SelectedItem is not KeytronLegacyActionType type
+            || !TryReadByte(_parameter1.Text, out var parameter1)
+            || !TryReadByte(_parameter2.Text, out var parameter2))
+        {
+            SetStatus("Enter three valid factory action bytes.", Profile.WarningBrush);
+            return false;
+        }
+
+        action = new KeytronLegacyAction(type, parameter1, parameter2);
+        return true;
+    }
+
+    private bool HasPendingChanges()
+    {
+        if (_legacyMode)
+        {
+            return _legacyActions.Length == _loadedLegacyActions.Length
+                && Enumerable.Range(0, _legacyActions.Length)
+                    .Any(index => _legacyActions[index] != _loadedLegacyActions[index]);
+        }
+
+        return _actions.Length == _loadedActions.Length
+            && Enumerable.Range(0, _actions.Length)
+                .Any(index => _actions[index] != _loadedActions[index]);
+    }
 
     private void SetActionControlsEnabled(bool enabled)
     {
@@ -706,6 +979,16 @@ internal sealed class MainWindow : Window
     {
         if (index < 0 || index >= _actionButtons.Count)
         {
+            return;
+        }
+
+        if (_legacyMode)
+        {
+            _actionButtons[index].Content =
+                $"{ActionLabel(index)}{Environment.NewLine}" +
+                $"{_legacyActions[index].Description}{Environment.NewLine}" +
+                $"{Convert.ToHexString(_legacyActions[index].ToByteArray())}" +
+                (_legacyActions[index] == _loadedLegacyActions[index] ? string.Empty : "  *");
             return;
         }
 
@@ -819,6 +1102,7 @@ internal sealed class MainWindow : Window
         Add("target.maxFeatureReportLength", deviceInfo.MaxFeatureReportLength);
         Add("protocol.configurationUsage", $"0x{WebHubMacroPad.ConfigurationUsage:X8}");
         Add("protocol.supportsWebHubFrames", _target.SupportsWebHubFrames);
+        Add("protocol.supportsLegacyFrames", _target.SupportsLegacyFrames);
         Add("protocol.description", _target.ProtocolSupportDescription);
 
         try
@@ -892,20 +1176,43 @@ internal sealed class MainWindow : Window
             Add("deviceInfo.activeProfile", _deviceInfo.ActiveProfile);
         }
 
-        Add("actions.count", _actions.Length);
-        for (var index = 0; index < _actions.Length; index++)
+        if (_legacyInfo is not null)
         {
-            var action = _actions[index];
-            Add($"action[{index:D2}].control", ActionLabel(index));
-            Add($"action[{index:D2}].type", $"0x{(byte)action.Type:X2}");
-            Add($"action[{index:D2}].parameter1", $"0x{action.Parameter1:X2}");
-            Add($"action[{index:D2}].parameter2", $"0x{action.Parameter2:X2}");
-            Add($"action[{index:D2}].parameter3", $"0x{action.Parameter3:X2}");
-            Add($"action[{index:D2}].raw", Convert.ToHexString(action.ToByteArray()));
-            Add($"action[{index:D2}].meaning", action.Description);
-            Add(
-                $"action[{index:D2}].state",
-                action == _loadedActions[index] ? "loaded" : "staged");
+            Add("legacy.deviceInfo.raw", _legacyInfo.RawHex);
+            Add("legacy.deviceInfo.command", $"0x{_legacyInfo.Command:X2}");
+            Add("legacy.actionRecordLength", 3);
+            Add("legacy.actions.count", _legacyActions.Length);
+            for (var index = 0; index < _legacyActions.Length; index++)
+            {
+                var action = _legacyActions[index];
+                Add($"legacy.action[{index:D2}].control", ActionLabel(index));
+                Add($"legacy.action[{index:D2}].type", $"0x{(byte)action.Type:X2}");
+                Add($"legacy.action[{index:D2}].parameter1", $"0x{action.Parameter1:X2}");
+                Add($"legacy.action[{index:D2}].parameter2", $"0x{action.Parameter2:X2}");
+                Add($"legacy.action[{index:D2}].raw", Convert.ToHexString(action.ToByteArray()));
+                Add($"legacy.action[{index:D2}].meaning", action.Description);
+                Add(
+                    $"legacy.action[{index:D2}].state",
+                    action == _loadedLegacyActions[index] ? "loaded" : "staged");
+            }
+        }
+        else
+        {
+            Add("actions.count", _actions.Length);
+            for (var index = 0; index < _actions.Length; index++)
+            {
+                var action = _actions[index];
+                Add($"action[{index:D2}].control", ActionLabel(index));
+                Add($"action[{index:D2}].type", $"0x{(byte)action.Type:X2}");
+                Add($"action[{index:D2}].parameter1", $"0x{action.Parameter1:X2}");
+                Add($"action[{index:D2}].parameter2", $"0x{action.Parameter2:X2}");
+                Add($"action[{index:D2}].parameter3", $"0x{action.Parameter3:X2}");
+                Add($"action[{index:D2}].raw", Convert.ToHexString(action.ToByteArray()));
+                Add($"action[{index:D2}].meaning", action.Description);
+                Add(
+                    $"action[{index:D2}].state",
+                    action == _loadedActions[index] ? "loaded" : "staged");
+            }
         }
 
         Add("actions.pending", HasPendingChanges());
@@ -923,7 +1230,10 @@ internal sealed class MainWindow : Window
     private void DisposeSession()
     {
         _session?.Dispose();
+        _legacySession?.Dispose();
         _session = null;
+        _legacySession = null;
+        _legacyMode = false;
         _saveButton.IsEnabled = false;
         _stageKnobButton.IsEnabled = false;
         _writeAllButton.IsEnabled = false;

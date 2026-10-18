@@ -4,7 +4,7 @@
     <RootNamespace>MacroPadLab</RootNamespace>
     <AssemblyName>Novolis.Lab.MacroPad</AssemblyName>
     <IsPackable>false</IsPackable>
-    <Description>Avalonia lab for discovering and safely configuring WebHub 4x4 macro pads.</Description>
+    <Description>Avalonia lab for discovering and safely configuring the exact 4x4 Keytron.</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />
