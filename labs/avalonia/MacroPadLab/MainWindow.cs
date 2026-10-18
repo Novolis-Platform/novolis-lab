@@ -6,6 +6,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Novolis.IO.ConnectedDevices;
 using Profile = Novolis.Avalonia.GraphicalProfile.GraphicalProfile;
 
@@ -25,6 +26,12 @@ internal sealed class MainWindow : Window
     private readonly TextBlock _parameter1Label;
     private readonly TextBlock _parameter2Label;
     private readonly TextBlock _parameter3Label;
+    private readonly ComboBox _modifierChoice;
+    private readonly ComboBox _keyboardUsageChoice;
+    private readonly ComboBox _consumerUsageChoice;
+    private readonly Control _modifierChoiceField;
+    private readonly Control _keyboardUsageChoiceField;
+    private readonly Control _consumerUsageChoiceField;
     private readonly IReadOnlyList<ActionTypeChoice<WebHubMacroPadActionType>> _actionTypeChoices;
     private readonly IReadOnlyList<ActionTypeChoice<KeytronLegacyActionType>> _legacyActionTypeChoices;
     private readonly TextBox _parameter1;
@@ -46,9 +53,14 @@ internal sealed class MainWindow : Window
     private readonly Button _writeLightingButton;
     private readonly TextBox _diagnostics;
     private readonly TextBox _rawKvp;
+    private readonly TextBox _activityLog;
     private readonly Button _copyRawButton;
+    private readonly Button _copyActivityButton;
+    private readonly Button _clearActivityButton;
     private readonly List<Button> _actionButtons = [];
     private readonly List<ConnectedHidDevice> _devices = [];
+    private readonly List<ConnectedHidInputReader> _inputReaders = [];
+    private readonly List<Task> _inputMonitorTasks = [];
 
     private WebHubMacroPad? _target;
     private WebHubMacroPadSession? _session;
@@ -67,6 +79,9 @@ internal sealed class MainWindow : Window
     private KeytronLegacyLightingResponse? _legacyLighting;
     private KeytronLegacyLightingSettings _lightingSettings =
         KeytronLegacyLightingSettings.Default;
+    private CancellationTokenSource? _inputMonitorCancellation;
+    private bool _updatingInputChoices;
+    private bool _closing;
     private bool _legacyMode;
     private int _selectedAction = -1;
 
@@ -216,6 +231,27 @@ internal sealed class MainWindow : Window
         _parameter1Label = CreateParameterLabel();
         _parameter2Label = CreateParameterLabel();
         _parameter3Label = CreateParameterLabel();
+        _modifierChoice = new ComboBox
+        {
+            ItemsSource = CreateModifierChoices(),
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+        };
+        _keyboardUsageChoice = new ComboBox
+        {
+            ItemsSource = CreateKeyboardUsageChoices(),
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+        };
+        _consumerUsageChoice = new ComboBox
+        {
+            ItemsSource = CreateConsumerUsageChoices(),
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+        };
+        _modifierChoiceField = Field("Modifier preset", _modifierChoice);
+        _keyboardUsageChoiceField = Field("Named keyboard key", _keyboardUsageChoice);
+        _consumerUsageChoiceField = Field("Named media/control action", _consumerUsageChoice);
+        _modifierChoice.SelectionChanged += (_, _) => ApplyNamedInputChoices();
+        _keyboardUsageChoice.SelectionChanged += (_, _) => ApplyNamedInputChoices();
+        _consumerUsageChoice.SelectionChanged += (_, _) => ApplyNamedInputChoices();
         UpdateParameterLabels();
         _profileBox = new ComboBox
         {
@@ -293,6 +329,20 @@ internal sealed class MainWindow : Window
             Foreground = Profile.TextBrush,
         };
         _copyRawButton = CreateButton("Copy raw KVP", CopyRawKvp);
+        _activityLog = new TextBox
+        {
+            IsReadOnly = true,
+            AcceptsReturn = true,
+            TextWrapping = TextWrapping.NoWrap,
+            FontFamily = Profile.MonoFont,
+            MinHeight = 120,
+            Background = Profile.BackgroundBrush,
+            Foreground = Profile.TextBrush,
+        };
+        _copyActivityButton = CreateButton("Copy raw log", CopyActivityLog);
+        _copyActivityButton.HorizontalAlignment = HorizontalAlignment.Left;
+        _clearActivityButton = CreateButton("Clear raw log", ClearActivityLog);
+        _clearActivityButton.HorizontalAlignment = HorizontalAlignment.Left;
 
         var actionEditorPanel = new StackPanel
         {
@@ -315,6 +365,9 @@ internal sealed class MainWindow : Window
                 Field(_parameter1Label, _parameter1),
                 Field(_parameter2Label, _parameter2),
                 Field(_parameter3Label, _parameter3),
+                _modifierChoiceField,
+                _keyboardUsageChoiceField,
+                _consumerUsageChoiceField,
                 _saveButton,
                 _stageSafeButton,
                 _writeAllButton,
@@ -371,16 +424,48 @@ internal sealed class MainWindow : Window
             },
         };
 
+        var activityToolbar = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 8,
+            Children =
+            {
+                Heading("Raw activity log"),
+                _copyActivityButton,
+                _clearActivityButton,
+            },
+        };
+        var activityPanel = new Border
+        {
+            Background = Profile.SurfaceBrush,
+            BorderBrush = Profile.BorderBrush,
+            BorderThickness = new Thickness(1),
+            Padding = new Thickness(12),
+            Child = new DockPanel
+            {
+                LastChildFill = true,
+                Children =
+                {
+                    activityToolbar,
+                    _activityLog,
+                },
+            },
+        };
+        DockPanel.SetDock(activityToolbar, Dock.Top);
+
         var body = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("320,*,390"),
-            RowDefinitions = new RowDefinitions("*,Auto"),
+            RowDefinitions = new RowDefinitions("*,180,Auto"),
             ColumnSpacing = 12,
             Margin = new Thickness(12),
         };
         AddPanel(body, devicePanel, 0);
         AddPanel(body, padPanel, 1);
         AddPanel(body, detailTabs, 2);
+        Grid.SetRow(activityPanel, 1);
+        Grid.SetColumnSpan(activityPanel, 3);
+        body.Children.Add(activityPanel);
 
         var note = new TextBlock
         {
@@ -388,7 +473,7 @@ internal sealed class MainWindow : Window
             Foreground = Profile.MutedBrush,
             Margin = new Thickness(0, 8, 0, 0),
         };
-        Grid.SetRow(note, 1);
+        Grid.SetRow(note, 2);
         Grid.SetColumnSpan(note, 3);
         body.Children.Add(note);
 
@@ -400,6 +485,8 @@ internal sealed class MainWindow : Window
 
         Closed += (_, _) =>
         {
+            _closing = true;
+            StopInputMonitoring();
             _session?.Dispose();
             _legacySession?.Dispose();
             _catalog.Dispose();
@@ -409,6 +496,7 @@ internal sealed class MainWindow : Window
 
     private void RefreshDevices()
     {
+        StopInputMonitoring();
         DisposeSession();
         _devices.Clear();
         _target = null;
@@ -457,6 +545,7 @@ internal sealed class MainWindow : Window
                     : $"Target: {_target.Device.Descriptor.HardwareId} " +
                       $"{_target.Device.Descriptor.ProductName}{Environment.NewLine}" +
                       _target.ProtocolSupportDescription));
+            StartInputMonitoring();
         }
         catch (Exception exception)
         {
@@ -466,6 +555,395 @@ internal sealed class MainWindow : Window
 
         UpdateRawKvp();
     }
+
+    private void StartInputMonitoring()
+    {
+        if (_target is null)
+        {
+            return;
+        }
+
+        var cancellation = new CancellationTokenSource();
+        _inputMonitorCancellation = cancellation;
+        var configurationPath = _target.Device.Descriptor.DevicePath;
+        IReadOnlyList<ConnectedHidDevice> candidates;
+        try
+        {
+            candidates = _catalog.EnumerateHidDevices(
+                new ConnectedDeviceFilter
+                {
+                    VendorId = WebHubMacroPad.VendorId,
+                    ProductId = WebHubMacroPad.ProductId,
+                });
+        }
+        catch (Exception exception)
+        {
+            AppendActivity($"INPUT monitor enumeration failed: {exception.Message}");
+            return;
+        }
+
+        var monitored = 0;
+        foreach (var candidate in candidates)
+        {
+            if (string.Equals(
+                    candidate.Descriptor.DevicePath,
+                    configurationPath,
+                    StringComparison.OrdinalIgnoreCase)
+                || !IsUserInputInterface(candidate))
+            {
+                continue;
+            }
+
+            try
+            {
+                var reader = candidate.OpenInputReader();
+                _inputReaders.Add(reader);
+                monitored++;
+                AppendActivity(
+                    $"INPUT monitor opened: {DescribeInputInterfaceSafe(candidate)}");
+                _inputMonitorTasks.Add(
+                    Task.Run(
+                        () => MonitorInputAsync(candidate, reader, cancellation.Token),
+                        cancellation.Token));
+            }
+            catch (Exception exception)
+            {
+                AppendActivity(
+                    $"INPUT monitor unavailable: {DescribeInputInterfaceSafe(candidate)}; " +
+                    $"{exception.Message}");
+            }
+        }
+
+        if (monitored == 0)
+        {
+            AppendActivity(
+                "INPUT monitor found no readable keyboard, consumer-control, or mouse " +
+                "interface for this exact Keytron.");
+        }
+    }
+
+    private void StopInputMonitoring()
+    {
+        _inputMonitorCancellation?.Cancel();
+        _inputMonitorCancellation?.Dispose();
+        _inputMonitorCancellation = null;
+        foreach (var reader in _inputReaders)
+        {
+            reader.Dispose();
+        }
+
+        _inputReaders.Clear();
+        _inputMonitorTasks.Clear();
+    }
+
+    private async Task MonitorInputAsync(
+        ConnectedHidDevice device,
+        ConnectedHidInputReader reader,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            while (!cancellation.IsCancellationRequested && reader.IsRunning)
+            {
+                if (!reader.WaitForInput(TimeSpan.FromMilliseconds(250)))
+                {
+                    continue;
+                }
+
+                while (!cancellation.IsCancellationRequested
+                    && reader.TryRead(out var report)
+                    && report is not null)
+                {
+                    AppendActivity(
+                        $"INPUT {DescribeInputInterface(device)} " +
+                        $"reportId={report.ReportId} " +
+                        $"raw={Convert.ToHexString(report.ToArray())} " +
+                        $"values={DescribeInputValues(report)}");
+                }
+            }
+        }
+        catch (Exception exception) when (
+            cancellation.IsCancellationRequested
+                || exception is ObjectDisposedException
+                || exception is IOException)
+        {
+        }
+        catch (Exception exception)
+        {
+            AppendActivity(
+                $"INPUT monitor stopped for {DescribeInputInterfaceSafe(device)}: " +
+                exception.Message);
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private static bool IsUserInputInterface(ConnectedHidDevice device)
+    {
+        try
+        {
+            var descriptor = device.GetReportDescriptor();
+            return descriptor.MaxInputReportLength > 0
+                && descriptor.Collections.Any(
+                    collection => collection.Usages.Any(IsUserInputUsage));
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or InvalidOperationException
+                or NotSupportedException
+                or ObjectDisposedException)
+        {
+            return false;
+        }
+    }
+
+    private static bool IsUserInputUsage(uint usage) =>
+        usage is 0x00010001
+            or 0x00010002
+            or 0x00010006
+            or 0x000C0001;
+
+    private static string DescribeInputInterface(ConnectedHidDevice device)
+    {
+        var descriptor = device.GetReportDescriptor();
+        var usages = descriptor.Collections
+            .SelectMany(collection => collection.Usages)
+            .Where(IsUserInputUsage)
+            .Distinct()
+            .Select(DescribeUsage)
+            .ToArray();
+        return $"{device.Descriptor.HardwareId} " +
+            $"{device.Descriptor.ProductName ?? device.Descriptor.FriendlyName} " +
+            $"[{string.Join(", ", usages)}]";
+    }
+
+    private static string DescribeInputInterfaceSafe(ConnectedHidDevice device)
+    {
+        try
+        {
+            return DescribeInputInterface(device);
+        }
+        catch (Exception)
+        {
+            return DescribeDevice(device);
+        }
+    }
+
+    private static string DescribeInputValues(ConnectedHidInputReport report)
+    {
+        if (report.Values.Count == 0)
+        {
+            return "none";
+        }
+
+        return string.Join(
+            "; ",
+            report.Values.Select(
+                value =>
+                {
+                    var usages = value.Usages.Count == 0
+                        ? "no-usage"
+                        : string.Join(",", value.Usages.Select(DescribeUsage));
+                    var logical = value.LogicalValue?.ToString(CultureInfo.InvariantCulture)
+                        ?? (value.IsNull ? "null" : "invalid");
+                    return $"{usages}=logical:{logical}";
+                }));
+    }
+
+    private static string DescribeUsage(uint usage)
+    {
+        var page = (ushort)(usage >> 16);
+        var id = (byte)usage;
+        return page switch
+        {
+            0x0007 => DescribeKeyboardUsage(id),
+            0x0009 => $"Button {id}",
+            0x000C => DescribeConsumerUsage((ushort)usage),
+            0x0001 => id switch
+            {
+                0x30 => "X axis",
+                0x31 => "Y axis",
+                0x32 => "Z axis",
+                0x37 => "Dial",
+                0x38 => "Wheel",
+                _ => $"Generic desktop 0x{id:X2}",
+            },
+            _ => $"HID usage 0x{usage:X8}",
+        };
+    }
+
+    private static string DescribeKeyboardUsage(byte usage)
+        => usage switch
+        {
+            >= 0x04 and <= 0x1D => ((char)('A' + usage - 0x04)).ToString(),
+            >= 0x1E and <= 0x27 => usage == 0x27
+                ? "0"
+                : ((char)('1' + usage - 0x1E)).ToString(),
+            0x28 => "Enter",
+            0x29 => "Escape",
+            0x2A => "Backspace",
+            0x2B => "Tab",
+            0x2C => "Space",
+            0x2D => "Minus",
+            0x2E => "Equals",
+            0x2F => "Left bracket",
+            0x30 => "Right bracket",
+            0x31 => "Backslash",
+            0x32 => "Non-US hash / tilde",
+            0x33 => "Semicolon",
+            0x34 => "Apostrophe",
+            0x35 => "Grave accent",
+            0x36 => "Comma",
+            0x37 => "Period",
+            0x38 => "Slash",
+            0x39 => "Caps Lock",
+            >= 0x3A and <= 0x45 => $"F{usage - 0x39}",
+            0x46 => "Print Screen",
+            0x47 => "Scroll Lock",
+            0x48 => "Pause",
+            0x49 => "Insert",
+            0x4A => "Home",
+            0x4B => "Page Up",
+            0x4C => "Delete",
+            0x4D => "End",
+            0x4E => "Page Down",
+            0x4F => "Right arrow",
+            0x50 => "Left arrow",
+            0x51 => "Down arrow",
+            0x52 => "Up arrow",
+            0x53 => "Num Lock",
+            0x54 => "Keypad divide",
+            0x55 => "Keypad multiply",
+            0x56 => "Keypad subtract",
+            0x57 => "Keypad add",
+            0x58 => "Keypad Enter",
+            >= 0x59 and <= 0x62 => $"Keypad {(usage - 0x59 + 1) % 10}",
+            0x63 => "Keypad decimal",
+            0x64 => "Non-US backslash",
+            0x65 => "Application / context menu",
+            0x66 => "Power",
+            0x67 => "Keypad equals",
+            >= 0x68 and <= 0x73 => $"F{usage - 0x5B}",
+            0x74 => "Execute",
+            0x75 => "Help",
+            0x76 => "Menu",
+            0x77 => "Select",
+            0x78 => "Stop",
+            0x79 => "Again",
+            0x7A => "Undo",
+            0x7B => "Cut",
+            0x7C => "Copy",
+            0x7D => "Paste",
+            0x7E => "Find",
+            0x7F => "Mute",
+            0x80 => "Volume up",
+            0x81 => "Volume down",
+            0x82 => "Locking Caps Lock",
+            0x83 => "Locking Num Lock",
+            0x84 => "Locking Scroll Lock",
+            0x85 => "Keypad comma",
+            0x86 => "Keypad equals (alternate)",
+            >= 0x87 and <= 0x8F => $"International {usage - 0x86}",
+            >= 0x90 and <= 0x98 => $"Language {usage - 0x8F}",
+            0x99 => "Alt erase",
+            0x9A => "SysReq / attention",
+            0x9B => "Cancel",
+            0x9C => "Clear",
+            0x9D => "Prior",
+            0x9E => "Return",
+            0x9F => "Separator",
+            0xA0 => "Out",
+            0xA1 => "Oper",
+            0xA2 => "Clear / again",
+            0xA3 => "CrSel / props",
+            0xA4 => "ExSel",
+            0xB0 => "Keypad 00",
+            0xB1 => "Keypad 000",
+            0xB2 => "Thousands separator",
+            0xB3 => "Decimal separator",
+            0xB4 => "Currency unit",
+            0xB5 => "Currency sub-unit",
+            0xB6 => "Keypad left parenthesis",
+            0xB7 => "Keypad right parenthesis",
+            0xB8 => "Keypad left brace",
+            0xB9 => "Keypad right brace",
+            >= 0xBA and <= 0xC1 => $"Keypad function {usage - 0xB9}",
+            0xC2 => "Keypad XOR",
+            0xC3 => "Keypad caret",
+            0xC4 => "Keypad percent",
+            0xC5 => "Keypad less-than",
+            0xC6 => "Keypad greater-than",
+            0xC7 => "Keypad ampersand",
+            0xC8 => "Keypad double ampersand",
+            0xC9 => "Keypad double pipe",
+            0xCA => "Keypad colon",
+            0xCB => "Keypad hash",
+            0xCC => "Keypad space",
+            0xCD => "Keypad at",
+            0xCE => "Keypad exclamation",
+            0xCF => "Keypad memory store",
+            0xD0 => "Keypad memory recall",
+            0xD1 => "Keypad memory clear",
+            0xD2 => "Keypad memory add",
+            0xD3 => "Keypad memory subtract",
+            0xD4 => "Keypad memory multiply",
+            0xD5 => "Keypad memory divide",
+            0xD6 => "Keypad plus/minus",
+            0xD7 => "Keypad clear",
+            0xD8 => "Keypad clear entry",
+            0xD9 => "Keypad binary",
+            0xDA => "Keypad octal",
+            0xDB => "Keypad decimal",
+            0xDC => "Keypad hexadecimal",
+            0xE0 => "Left Ctrl",
+            0xE1 => "Left Shift",
+            0xE2 => "Left Alt",
+            0xE3 => "Left GUI / Windows",
+            0xE4 => "Right Ctrl",
+            0xE5 => "Right Shift",
+            0xE6 => "Right Alt",
+            0xE7 => "Right GUI / Windows",
+            _ => $"Reserved / vendor keyboard usage 0x{usage:X2}",
+        };
+
+    private static string DescribeConsumerUsage(ushort usage)
+        => usage switch
+        {
+            0x00B0 => "Play",
+            0x00B1 => "Pause",
+            0x00B2 => "Record",
+            0x00B3 => "Fast forward",
+            0x00B4 => "Rewind",
+            0x00B5 => "Next track",
+            0x00B6 => "Previous track",
+            0x00B7 => "Stop",
+            0x00B8 => "Eject",
+            0x00B9 => "Random play",
+            0x00BA => "Repeat",
+            0x00CD => "Play / pause",
+            0x00E2 => "Mute",
+            0x00E9 => "Volume up",
+            0x00EA => "Volume down",
+            0x006F => "Brightness up",
+            0x0070 => "Brightness down",
+            0x00EF => "Bass boost",
+            0x00F0 => "Loudness",
+            0x00F1 => "Volume",
+            0x0183 => "AL Consumer Control",
+            0x018A => "AL Email reader",
+            0x018B => "AL Calculator",
+            0x0192 => "AL Audio player",
+            0x0194 => "AL Local browser",
+            0x0196 => "AL Internet browser",
+            0x0199 => "AC Search",
+            0x019A => "AC Home",
+            0x019B => "AC Back",
+            0x019C => "AC Forward",
+            0x019D => "AC Stop",
+            0x019E => "AC Refresh",
+            0x019F => "AC Bookmarks",
+            _ => $"Reserved / vendor consumer usage 0x{usage:X4}",
+        };
 
     private void SelectDevice()
     {
@@ -1212,16 +1690,202 @@ internal sealed class MainWindow : Window
         {
             SetParameterLabels(LegacyParameterLabels(legacyChoice.Value));
             _parameter3.IsEnabled = false;
-            return;
         }
-
-        if (_actionType.SelectedItem
+        else if (_actionType.SelectedItem
             is ActionTypeChoice<WebHubMacroPadActionType> actionChoice)
         {
             SetParameterLabels(WebHubParameterLabels(actionChoice.Value));
+            _parameter3.IsEnabled = true;
         }
 
-        _parameter3.IsEnabled = true;
+        var legacyType = _legacyMode
+            && _legacyActionType.SelectedItem
+                is ActionTypeChoice<KeytronLegacyActionType> selectedLegacy
+            ? selectedLegacy.Value
+            : (KeytronLegacyActionType?)null;
+        var actionType = !_legacyMode
+            && _actionType.SelectedItem
+                is ActionTypeChoice<WebHubMacroPadActionType> selectedAction
+            ? selectedAction.Value
+            : (WebHubMacroPadActionType?)null;
+        var keyboard = legacyType is KeytronLegacyActionType.BareKeyboard
+            or KeytronLegacyActionType.Keyboard
+            || actionType == WebHubMacroPadActionType.Keyboard;
+        var consumer = legacyType == KeytronLegacyActionType.Consumer
+            || actionType == WebHubMacroPadActionType.Media;
+
+        _modifierChoiceField.IsVisible = keyboard;
+        _keyboardUsageChoiceField.IsVisible = keyboard;
+        _consumerUsageChoiceField.IsVisible = consumer;
+        SyncNamedInputChoices();
+    }
+
+    private void SyncNamedInputChoices()
+    {
+        if (_updatingInputChoices)
+        {
+            return;
+        }
+
+        _updatingInputChoices = true;
+        try
+        {
+            if (!TryReadByte(_parameter1.Text, out var parameter1))
+            {
+                parameter1 = 0;
+            }
+
+            if (!TryReadByte(_parameter2.Text, out var parameter2))
+            {
+                parameter2 = 0;
+            }
+
+            SelectChoice(_modifierChoice, parameter1);
+            SelectChoice(_keyboardUsageChoice, parameter2);
+            SelectChoice(
+                _consumerUsageChoice,
+                (ushort)(parameter1 | parameter2 << 8));
+        }
+        finally
+        {
+            _updatingInputChoices = false;
+        }
+    }
+
+    private static void SelectChoice<T>(ComboBox comboBox, T value)
+    {
+        comboBox.SelectedItem = comboBox.Items
+            .OfType<InputChoice<T>>()
+            .FirstOrDefault(choice => EqualityComparer<T>.Default.Equals(choice.Value, value));
+    }
+
+    private void ApplyNamedInputChoices()
+    {
+        if (_updatingInputChoices)
+        {
+            return;
+        }
+
+        _updatingInputChoices = true;
+        try
+        {
+            if (_modifierChoiceField.IsVisible
+                && _modifierChoice.SelectedItem is InputChoice<byte> modifier)
+            {
+                _parameter1.Text = modifier.Value.ToString("X2", CultureInfo.InvariantCulture);
+            }
+
+            if (_keyboardUsageChoiceField.IsVisible
+                && _keyboardUsageChoice.SelectedItem is InputChoice<byte> keyboardUsage)
+            {
+                _parameter2.Text = keyboardUsage.Value.ToString("X2", CultureInfo.InvariantCulture);
+            }
+
+            if (_consumerUsageChoiceField.IsVisible
+                && _consumerUsageChoice.SelectedItem is InputChoice<ushort> consumerUsage)
+            {
+                _parameter1.Text = ((byte)consumerUsage.Value).ToString(
+                    "X2",
+                    CultureInfo.InvariantCulture);
+                _parameter2.Text = ((byte)(consumerUsage.Value >> 8)).ToString(
+                    "X2",
+                    CultureInfo.InvariantCulture);
+            }
+        }
+        finally
+        {
+            _updatingInputChoices = false;
+        }
+
+        UpdateRawKvp();
+    }
+
+    private static IReadOnlyList<InputChoice<byte>> CreateModifierChoices()
+    {
+        var choices = new List<InputChoice<byte>>(256);
+        for (var value = 0; value <= byte.MaxValue; value++)
+        {
+            var mask = (byte)value;
+            choices.Add(new(mask, DescribeModifierMask(mask)));
+        }
+
+        return choices;
+    }
+
+    private static IReadOnlyList<InputChoice<byte>> CreateKeyboardUsageChoices()
+    {
+        var choices = new List<InputChoice<byte>>(256);
+        for (var value = 0; value <= byte.MaxValue; value++)
+        {
+            var usage = (byte)value;
+            choices.Add(new(usage, DescribeKeyboardUsage(usage)));
+        }
+
+        return choices;
+    }
+
+    private static IReadOnlyList<InputChoice<ushort>> CreateConsumerUsageChoices() =>
+    [
+        new(0x00B0, "Play"),
+        new(0x00B1, "Pause"),
+        new(0x00B2, "Record"),
+        new(0x00B3, "Fast forward"),
+        new(0x00B4, "Rewind"),
+        new(0x00B5, "Next track"),
+        new(0x00B6, "Previous track"),
+        new(0x00B7, "Stop"),
+        new(0x00B8, "Eject"),
+        new(0x00B9, "Random play"),
+        new(0x00BA, "Repeat"),
+        new(0x00CD, "Play / pause"),
+        new(0x00E2, "Mute"),
+        new(0x00E9, "Volume up"),
+        new(0x00EA, "Volume down"),
+        new(0x006F, "Brightness up"),
+        new(0x0070, "Brightness down"),
+        new(0x00EF, "Bass boost"),
+        new(0x00F0, "Loudness"),
+        new(0x00F1, "Volume"),
+        new(0x0183, "AL Consumer Control"),
+        new(0x018A, "AL Email reader"),
+        new(0x018B, "AL Calculator"),
+        new(0x0192, "AL Audio player"),
+        new(0x0194, "AL Local browser"),
+        new(0x0196, "AL Internet browser"),
+        new(0x0199, "AC Search"),
+        new(0x019A, "AC Home"),
+        new(0x019B, "AC Back"),
+        new(0x019C, "AC Forward"),
+        new(0x019D, "AC Stop"),
+        new(0x019E, "AC Refresh"),
+        new(0x019F, "AC Bookmarks"),
+    ];
+
+    private static string DescribeModifierMask(byte mask)
+    {
+        if (mask == 0)
+        {
+            return "No modifiers";
+        }
+
+        var modifiers = new List<string>(8);
+        AddModifier(0x01, "Left Ctrl");
+        AddModifier(0x02, "Left Shift");
+        AddModifier(0x04, "Left Alt");
+        AddModifier(0x08, "Left GUI / Windows");
+        AddModifier(0x10, "Right Ctrl");
+        AddModifier(0x20, "Right Shift");
+        AddModifier(0x40, "Right Alt");
+        AddModifier(0x80, "Right GUI / Windows");
+        return string.Join(" + ", modifiers);
+
+        void AddModifier(byte bit, string name)
+        {
+            if ((mask & bit) != 0)
+            {
+                modifiers.Add(name);
+            }
+        }
     }
 
     private void SetParameterLabels(
@@ -1398,6 +2062,73 @@ internal sealed class MainWindow : Window
         }
     }
 
+    private async void CopyActivityLog(object? sender, RoutedEventArgs args)
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is null)
+        {
+            SetStatus("Clipboard is not available.", Profile.WarningBrush);
+            return;
+        }
+
+        try
+        {
+            var text = _activityLog.Text ?? string.Empty;
+            await clipboard.SetTextAsync(text);
+            SetStatus($"Copied {text.Length:N0} characters of raw activity.", Profile.AccentFillBrush);
+        }
+        catch (Exception exception)
+        {
+            SetStatus($"Copy failed: {exception.Message}", Profile.DangerBrush);
+        }
+    }
+
+    private void ClearActivityLog(object? sender, RoutedEventArgs args)
+    {
+        _activityLog.Text = string.Empty;
+        UpdateRawKvp();
+        SetStatus("Raw activity log cleared.", Profile.MutedBrush);
+    }
+
+    private void AppendActivity(string text)
+    {
+        if (_closing)
+        {
+            return;
+        }
+
+        void Append()
+        {
+            if (_closing)
+            {
+                return;
+            }
+
+            var line = $"{DateTime.Now:HH:mm:ss.fff} {text.Replace(
+                Environment.NewLine,
+                " | ",
+                StringComparison.Ordinal)}";
+            var current = _activityLog.Text;
+            var combined = string.IsNullOrWhiteSpace(current)
+                ? line
+                : $"{current}{Environment.NewLine}{line}";
+            _activityLog.Text = combined.Length <= 200_000
+                ? combined
+                : combined[^200_000..];
+            _activityLog.CaretIndex = _activityLog.Text?.Length ?? 0;
+            UpdateRawKvp();
+        }
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            Append();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(Append);
+        }
+    }
+
     private void UpdateRawKvp() => _rawKvp.Text = BuildRawKvp();
 
     private string BuildRawKvp()
@@ -1409,6 +2140,11 @@ internal sealed class MainWindow : Window
             $"target.expected={WebHubMacroPad.VendorId:X4}:{WebHubMacroPad.ProductId:X4}",
             $"target.connected={_target is not null}",
         };
+        Add("activityLog.present", !string.IsNullOrWhiteSpace(_activityLog.Text));
+        Add("activityLog.text", (_activityLog.Text ?? string.Empty).Replace(
+            Environment.NewLine,
+            " | ",
+            StringComparison.Ordinal));
 
         if (_target is null)
         {
@@ -1609,6 +2345,7 @@ internal sealed class MainWindow : Window
             ? text
             : $"{_diagnostics.Text}{Environment.NewLine}{Environment.NewLine}{text}";
         _diagnostics.CaretIndex = _diagnostics.Text?.Length ?? 0;
+        AppendActivity($"WIRE {text}");
     }
 
     private void SetStatus(string text, IBrush? background = null)
@@ -1715,6 +2452,11 @@ internal sealed class MainWindow : Window
         };
         Grid.SetColumn(panel, column);
         grid.Children.Add(panel);
+    }
+
+    private sealed record InputChoice<T>(T Value, string Label)
+    {
+        public override string ToString() => Label;
     }
 
     private sealed record ActionTypeChoice<T>(T Value, string Label)

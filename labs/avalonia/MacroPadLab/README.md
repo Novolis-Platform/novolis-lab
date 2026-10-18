@@ -24,7 +24,15 @@ custom-color selection, and an `#RRGGBB` color. The color is converted to the
 firmware's 0–255 HSV representation. Action parameters are named by their
 meaning (modifier mask, keyboard usage, consumer usage, mouse delta, and so on)
 while their raw bytes remain available. The raw lighting response and accepted
-write echo are included in the KVP and wire log.
+write echo are included in the KVP and wire log. Keyboard editing offers a
+friendly choice for every byte-sized HID keyboard usage plus every modifier
+combination; media/control editing offers the known consumer controls while
+retaining the little-endian raw usage bytes.
+
+The bottom Raw activity log records configuration wire traffic and live reports
+from the exact Keytron's keyboard, consumer-control, and rotary input
+interfaces. It includes timestamps, interface usages, report IDs, raw report
+bytes, and named parsed values, with copy and clear actions.
 
 Other firmware variants may expose the newer WebHub protocol (64-byte,
 report-ID-free frames); those are handled separately when their report shape
