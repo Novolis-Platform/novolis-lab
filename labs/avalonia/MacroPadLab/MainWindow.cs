@@ -22,6 +22,11 @@ internal sealed class MainWindow : Window
     private readonly TextBlock _actionSummary;
     private readonly ComboBox _actionType;
     private readonly ComboBox _legacyActionType;
+    private readonly TextBlock _parameter1Label;
+    private readonly TextBlock _parameter2Label;
+    private readonly TextBlock _parameter3Label;
+    private readonly IReadOnlyList<ActionTypeChoice<WebHubMacroPadActionType>> _actionTypeChoices;
+    private readonly IReadOnlyList<ActionTypeChoice<KeytronLegacyActionType>> _legacyActionTypeChoices;
     private readonly TextBox _parameter1;
     private readonly TextBox _parameter2;
     private readonly TextBox _parameter3;
@@ -178,22 +183,40 @@ internal sealed class MainWindow : Window
             },
         };
 
+        _actionTypeChoices = Enum.GetValues<WebHubMacroPadActionType>()
+            .Select(type => new ActionTypeChoice<WebHubMacroPadActionType>(
+                type,
+                WebHubMacroPadActionDescriptions.DescribeType(type)))
+            .ToArray();
+        _legacyActionTypeChoices = Enum.GetValues<KeytronLegacyActionType>()
+            .Select(type => new ActionTypeChoice<KeytronLegacyActionType>(
+                type,
+                KeytronLegacyActionDescriptions.DescribeType(type)))
+            .ToArray();
         _actionType = new ComboBox
         {
-            ItemsSource = Enum.GetValues<WebHubMacroPadActionType>(),
-            SelectedItem = WebHubMacroPadActionType.Disabled,
+            ItemsSource = _actionTypeChoices,
+            SelectedItem = _actionTypeChoices.First(
+                choice => choice.Value == WebHubMacroPadActionType.Disabled),
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
         };
         _legacyActionType = new ComboBox
         {
-            ItemsSource = Enum.GetValues<KeytronLegacyActionType>(),
-            SelectedItem = KeytronLegacyActionType.Disabled,
+            ItemsSource = _legacyActionTypeChoices,
+            SelectedItem = _legacyActionTypeChoices.First(
+                choice => choice.Value == KeytronLegacyActionType.Disabled),
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
             IsVisible = false,
         };
+        _actionType.SelectionChanged += (_, _) => UpdateParameterLabels();
+        _legacyActionType.SelectionChanged += (_, _) => UpdateParameterLabels();
         _parameter1 = CreateHexBox();
         _parameter2 = CreateHexBox();
         _parameter3 = CreateHexBox();
+        _parameter1Label = CreateParameterLabel();
+        _parameter2Label = CreateParameterLabel();
+        _parameter3Label = CreateParameterLabel();
+        UpdateParameterLabels();
         _profileBox = new ComboBox
         {
             ItemsSource = Enumerable.Range(0, 8).Select(index => $"Profile {index}").ToArray(),
@@ -210,7 +233,7 @@ internal sealed class MainWindow : Window
         };
         _lightingCustom = new CheckBox
         {
-            Content = "Use custom color",
+            Content = "Use custom color instead of the effect palette",
             IsChecked = true,
             Foreground = Profile.TextBrush,
         };
@@ -222,6 +245,27 @@ internal sealed class MainWindow : Window
         _readLightingButton = CreateButton("Read RGB lighting", ReadLighting);
         _writeLightingButton = CreateButton("Write RGB lighting", WriteLighting);
         ApplyLightingSettingsToEditor();
+        devicePanel.Children.Add(new Separator { Margin = new Thickness(0, 8) });
+        devicePanel.Children.Add(Heading("RGB lighting"));
+        devicePanel.Children.Add(
+            new TextBlock
+            {
+                Text =
+                    "Device-wide lighting belongs to the connected Keytron, not to an " +
+                    "individual key. Effect selects the pattern, brightness is the master " +
+                    "LED level, speed affects animated effects, and custom color selects " +
+                    "the HSV color below. Raw bytes remain available in Raw KVP.",
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = Profile.MutedBrush,
+            });
+        devicePanel.Children.Add(_lightingSummary);
+        devicePanel.Children.Add(Field("Effect / pattern code (hex)", _lightingMode));
+        devicePanel.Children.Add(Field("Master brightness (hex)", _lightingBrightness));
+        devicePanel.Children.Add(Field("Animation speed (hex)", _lightingSpeed));
+        devicePanel.Children.Add(Field("Custom color (#RRGGBB)", _lightingHex));
+        devicePanel.Children.Add(_lightingCustom);
+        devicePanel.Children.Add(_readLightingButton);
+        devicePanel.Children.Add(_writeLightingButton);
         _profileButton = CreateButton("Select profile", SelectProfile);
         _saveButton = CreateButton("Write selected action", SaveSelectedAction);
         _stageSafeButton = CreateButton("Stage safe testing map", StageSafeTestingMap);
@@ -260,37 +304,20 @@ internal sealed class MainWindow : Window
                 {
                     Text = "The friendly action view is backed by the device's raw action bytes. " +
                         "The current factory firmware stores three bytes per slot; newer WebHub " +
-                        "firmware stores four. Writes are explicit and read back for verification.",
+                        "firmware stores four. Parameter labels follow the selected action type, " +
+                        "while raw bytes remain visible. Writes are explicit and read back for verification.",
                     TextWrapping = TextWrapping.Wrap,
                     Foreground = Profile.MutedBrush,
                 },
                 _actionSummary,
                 Field("Action type", _actionType),
                 Field("Factory action type", _legacyActionType),
-                Field("Parameter 1", _parameter1),
-                Field("Parameter 2", _parameter2),
-                Field("Parameter 3", _parameter3),
+                Field(_parameter1Label, _parameter1),
+                Field(_parameter2Label, _parameter2),
+                Field(_parameter3Label, _parameter3),
                 _saveButton,
                 _stageSafeButton,
                 _writeAllButton,
-                new Separator { Margin = new Thickness(0, 8) },
-                Heading("RGB lighting"),
-                new TextBlock
-                {
-                    Text = "Factory firmware accepts an animation mode plus brightness, " +
-                        "speed, and a custom HSV color. The hex color is converted to HSV " +
-                        "for the device; raw responses remain in the KVP and wire log.",
-                    TextWrapping = TextWrapping.Wrap,
-                    Foreground = Profile.MutedBrush,
-                },
-                _lightingSummary,
-                Field("Mode byte", _lightingMode),
-                Field("Brightness (hex)", _lightingBrightness),
-                Field("Speed (hex)", _lightingSpeed),
-                Field("Custom RGB color", _lightingHex),
-                _lightingCustom,
-                _readLightingButton,
-                _writeLightingButton,
                 new Separator { Margin = new Thickness(0, 8) },
                 Heading("Stored profile"),
                 _profileBox,
@@ -656,7 +683,8 @@ internal sealed class MainWindow : Window
 
         var confirmed = await ConfirmAsync(
             "Write RGB lighting?",
-            $"Write mode 0x{settings.Mode:X2}, brightness 0x{settings.Brightness:X2}, " +
+            $"Write effect 0x{settings.EffectMode:X2}, " +
+            $"brightness 0x{settings.MasterBrightness:X2}, " +
             $"color #{settings.ToRgb().Red:X2}{settings.ToRgb().Green:X2}{settings.ToRgb().Blue:X2}?");
         if (!confirmed)
         {
@@ -694,7 +722,8 @@ internal sealed class MainWindow : Window
             || !TryReadRgbHex(_lightingHex.Text, out var red, out var green, out var blue))
         {
             SetStatus(
-                "Enter mode, brightness, speed as hex bytes and color as #RRGGBB.",
+                "Enter effect, brightness, and animation speed as hex bytes; " +
+                "enter color as #RRGGBB.",
                 Profile.WarningBrush);
             return false;
         }
@@ -714,17 +743,19 @@ internal sealed class MainWindow : Window
 
     private void ApplyLightingSettingsToEditor()
     {
-        _lightingMode.Text = _lightingSettings.Mode.ToString("X2", CultureInfo.InvariantCulture);
+        _lightingMode.Text =
+            _lightingSettings.EffectMode.ToString("X2", CultureInfo.InvariantCulture);
         _lightingBrightness.Text =
-            _lightingSettings.Brightness.ToString("X2", CultureInfo.InvariantCulture);
+            _lightingSettings.MasterBrightness.ToString("X2", CultureInfo.InvariantCulture);
         _lightingSpeed.Text =
-            _lightingSettings.Speed.ToString("X2", CultureInfo.InvariantCulture);
-        _lightingCustom.IsChecked = _lightingSettings.Custom;
+            _lightingSettings.AnimationSpeed.ToString("X2", CultureInfo.InvariantCulture);
+        _lightingCustom.IsChecked = _lightingSettings.UseCustomColor;
         var (red, green, blue) = _lightingSettings.ToRgb();
         _lightingHex.Text = $"#{red:X2}{green:X2}{blue:X2}";
         _lightingSummary.Text =
-            $"HSV 0x{_lightingSettings.Hue:X2}/0x{_lightingSettings.Saturation:X2}/" +
-            $"0x{_lightingSettings.Value:X2} · " +
+            $"Effect 0x{_lightingSettings.EffectMode:X2} · " +
+            $"HSV 0x{_lightingSettings.ColorHue:X2}/0x{_lightingSettings.ColorSaturation:X2}/" +
+            $"0x{_lightingSettings.ColorValue:X2} · " +
             $"RGB #{red:X2}{green:X2}{blue:X2}";
     }
 
@@ -1091,10 +1122,12 @@ internal sealed class MainWindow : Window
         }
 
         var action = _actions[index];
-        _actionType.SelectedItem = action.Type;
+        _actionType.SelectedItem = _actionTypeChoices.FirstOrDefault(
+            choice => choice.Value == action.Type);
         _parameter1.Text = action.Parameter1.ToString("X2", CultureInfo.InvariantCulture);
         _parameter2.Text = action.Parameter2.ToString("X2", CultureInfo.InvariantCulture);
         _parameter3.Text = action.Parameter3.ToString("X2", CultureInfo.InvariantCulture);
+        UpdateParameterLabels();
         _actionSummary.Text =
             $"{ActionLabel(index)} — {action.Description}{Environment.NewLine}" +
             $"Parameters: {WebHubMacroPadActionDescriptions.DescribeParameters(action)}{Environment.NewLine}" +
@@ -1107,13 +1140,15 @@ internal sealed class MainWindow : Window
     private void SelectLegacyAction(int index)
     {
         var action = _legacyActions[index];
-        _legacyActionType.SelectedItem = action.Type;
+        _legacyActionType.SelectedItem = _legacyActionTypeChoices.FirstOrDefault(
+            choice => choice.Value == action.Type);
         _parameter1.Text = action.Parameter1.ToString("X2", CultureInfo.InvariantCulture);
         _parameter2.Text = action.Parameter2.ToString("X2", CultureInfo.InvariantCulture);
         _parameter3.Text = "00";
+        UpdateParameterLabels();
         _actionSummary.Text =
             $"{ActionLabel(index)} — {action.Description}{Environment.NewLine}" +
-            $"Parameters: p1=0x{action.Parameter1:X2}, p2=0x{action.Parameter2:X2}{Environment.NewLine}" +
+            $"Parameters: {KeytronLegacyActionDescriptions.DescribeParameters(action)}{Environment.NewLine}" +
             $"Raw: {Convert.ToHexString(action.ToByteArray())}" +
             (action == _loadedLegacyActions[index] ? " (loaded)" : " (staged)");
         _saveButton.IsEnabled = _legacySession is not null;
@@ -1123,7 +1158,7 @@ internal sealed class MainWindow : Window
     private bool TryReadEditor(out WebHubMacroPadAction action)
     {
         action = WebHubMacroPadAction.Disabled;
-        if (_actionType.SelectedItem is not WebHubMacroPadActionType type
+        if (_actionType.SelectedItem is not ActionTypeChoice<WebHubMacroPadActionType> choice
             || !TryReadByte(_parameter1.Text, out var parameter1)
             || !TryReadByte(_parameter2.Text, out var parameter2)
             || !TryReadByte(_parameter3.Text, out var parameter3))
@@ -1132,14 +1167,18 @@ internal sealed class MainWindow : Window
             return false;
         }
 
-        action = new WebHubMacroPadAction(type, parameter1, parameter2, parameter3);
+        action = new WebHubMacroPadAction(
+            choice.Value,
+            parameter1,
+            parameter2,
+            parameter3);
         return true;
     }
 
     private bool TryReadLegacyEditor(out KeytronLegacyAction action)
     {
         action = KeytronLegacyAction.Disabled;
-        if (_legacyActionType.SelectedItem is not KeytronLegacyActionType type
+        if (_legacyActionType.SelectedItem is not ActionTypeChoice<KeytronLegacyActionType> choice
             || !TryReadByte(_parameter1.Text, out var parameter1)
             || !TryReadByte(_parameter2.Text, out var parameter2))
         {
@@ -1147,7 +1186,7 @@ internal sealed class MainWindow : Window
             return false;
         }
 
-        action = new KeytronLegacyAction(type, parameter1, parameter2);
+        action = new KeytronLegacyAction(choice.Value, parameter1, parameter2);
         return true;
     }
 
@@ -1164,6 +1203,81 @@ internal sealed class MainWindow : Window
             && Enumerable.Range(0, _actions.Length)
                 .Any(index => _actions[index] != _loadedActions[index]);
     }
+
+    private void UpdateParameterLabels()
+    {
+        if (_legacyMode
+            && _legacyActionType.SelectedItem
+                is ActionTypeChoice<KeytronLegacyActionType> legacyChoice)
+        {
+            SetParameterLabels(LegacyParameterLabels(legacyChoice.Value));
+            _parameter3.IsEnabled = false;
+            return;
+        }
+
+        if (_actionType.SelectedItem
+            is ActionTypeChoice<WebHubMacroPadActionType> actionChoice)
+        {
+            SetParameterLabels(WebHubParameterLabels(actionChoice.Value));
+        }
+
+        _parameter3.IsEnabled = true;
+    }
+
+    private void SetParameterLabels(
+        (string First, string Second, string Third) labels)
+    {
+        _parameter1Label.Text = labels.First;
+        _parameter2Label.Text = labels.Second;
+        _parameter3Label.Text = labels.Third;
+    }
+
+    private static (string First, string Second, string Third) LegacyParameterLabels(
+        KeytronLegacyActionType type) =>
+        type switch
+        {
+            KeytronLegacyActionType.Disabled =>
+                ("Unused byte 1 (hex)", "Unused byte 2 (hex)", "Not stored by factory firmware"),
+            KeytronLegacyActionType.BareKeyboard or KeytronLegacyActionType.Keyboard =>
+                ("Modifier mask (hex)", "Keyboard usage (hex)", "Not stored by factory firmware"),
+            KeytronLegacyActionType.Consumer =>
+                ("Consumer usage low byte (hex)", "Consumer usage high byte (hex)",
+                    "Not stored by factory firmware"),
+            KeytronLegacyActionType.Mouse =>
+                ("Mouse byte 1 (hex)", "Mouse byte 2 (hex)", "Not stored by factory firmware"),
+            KeytronLegacyActionType.System =>
+                ("System usage low byte (hex)", "System usage high byte (hex)",
+                    "Not stored by factory firmware"),
+            _ =>
+                ("Unknown byte 1 (hex)", "Unknown byte 2 (hex)", "Not stored by factory firmware"),
+        };
+
+    private static (string First, string Second, string Third) WebHubParameterLabels(
+        WebHubMacroPadActionType type) =>
+        type switch
+        {
+            WebHubMacroPadActionType.Disabled =>
+                ("Unused byte 1 (hex)", "Unused byte 2 (hex)", "Unused byte 3 (hex)"),
+            WebHubMacroPadActionType.Keyboard =>
+                ("Modifier flags (hex)", "Keyboard usage (hex)", "Reserved byte (hex)"),
+            WebHubMacroPadActionType.Media =>
+                ("Consumer usage low byte (hex)", "Consumer usage high byte (hex)",
+                    "Reserved byte (hex)"),
+            WebHubMacroPadActionType.MouseButton =>
+                ("Button mask low byte (hex)", "Button mask middle byte (hex)",
+                    "Button mask high byte (hex)"),
+            WebHubMacroPadActionType.MouseMove =>
+                ("X delta (hex)", "Y delta (hex)", "Wheel delta (hex)"),
+            WebHubMacroPadActionType.Power =>
+                ("Power/system code (hex)", "Reserved byte (hex)", "Reserved byte (hex)"),
+            WebHubMacroPadActionType.Macro =>
+                ("Macro index (hex)", "Repeat count (hex)", "Extra macro byte (hex)"),
+            WebHubMacroPadActionType.OpenWebsite =>
+                ("URL reference byte 1 (hex)", "URL reference byte 2 (hex)",
+                    "URL reference byte 3 (hex)"),
+            _ =>
+                ("Unknown byte 1 (hex)", "Unknown byte 2 (hex)", "Unknown byte 3 (hex)"),
+        };
 
     private void SetActionControlsEnabled(bool enabled)
     {
@@ -1399,13 +1513,19 @@ internal sealed class MainWindow : Window
                 Add("legacy.lighting.response.command", $"0x{_legacyLighting.Command:X2}");
                 if (_legacyLighting.TryGetSettings(out var lightingSettings))
                 {
-                    Add("legacy.lighting.mode", $"0x{lightingSettings.Mode:X2}");
-                    Add("legacy.lighting.brightness", $"0x{lightingSettings.Brightness:X2}");
-                    Add("legacy.lighting.speed", $"0x{lightingSettings.Speed:X2}");
-                    Add("legacy.lighting.custom", lightingSettings.Custom);
-                    Add("legacy.lighting.hue", $"0x{lightingSettings.Hue:X2}");
-                    Add("legacy.lighting.saturation", $"0x{lightingSettings.Saturation:X2}");
-                    Add("legacy.lighting.value", $"0x{lightingSettings.Value:X2}");
+                    Add("legacy.lighting.effectMode", $"0x{lightingSettings.EffectMode:X2}");
+                    Add(
+                        "legacy.lighting.masterBrightness",
+                        $"0x{lightingSettings.MasterBrightness:X2}");
+                    Add(
+                        "legacy.lighting.animationSpeed",
+                        $"0x{lightingSettings.AnimationSpeed:X2}");
+                    Add("legacy.lighting.useCustomColor", lightingSettings.UseCustomColor);
+                    Add("legacy.lighting.colorHue", $"0x{lightingSettings.ColorHue:X2}");
+                    Add(
+                        "legacy.lighting.colorSaturation",
+                        $"0x{lightingSettings.ColorSaturation:X2}");
+                    Add("legacy.lighting.colorValue", $"0x{lightingSettings.ColorValue:X2}");
                     var rgb = lightingSettings.ToRgb();
                     Add("legacy.lighting.rgb", $"#{rgb.Red:X2}{rgb.Green:X2}{rgb.Blue:X2}");
                 }
@@ -1417,8 +1537,14 @@ internal sealed class MainWindow : Window
                 var action = _legacyActions[index];
                 Add($"legacy.action[{index:D2}].control", ActionLabel(index));
                 Add($"legacy.action[{index:D2}].type", $"0x{(byte)action.Type:X2}");
+                Add(
+                    $"legacy.action[{index:D2}].typeName",
+                    KeytronLegacyActionDescriptions.DescribeType(action.Type));
                 Add($"legacy.action[{index:D2}].parameter1", $"0x{action.Parameter1:X2}");
                 Add($"legacy.action[{index:D2}].parameter2", $"0x{action.Parameter2:X2}");
+                Add(
+                    $"legacy.action[{index:D2}].parameters",
+                    KeytronLegacyActionDescriptions.DescribeParameters(action));
                 Add($"legacy.action[{index:D2}].raw", Convert.ToHexString(action.ToByteArray()));
                 Add($"legacy.action[{index:D2}].meaning", action.Description);
                 Add(
@@ -1434,9 +1560,15 @@ internal sealed class MainWindow : Window
                 var action = _actions[index];
                 Add($"action[{index:D2}].control", ActionLabel(index));
                 Add($"action[{index:D2}].type", $"0x{(byte)action.Type:X2}");
+                Add(
+                    $"action[{index:D2}].typeName",
+                    WebHubMacroPadActionDescriptions.DescribeType(action.Type));
                 Add($"action[{index:D2}].parameter1", $"0x{action.Parameter1:X2}");
                 Add($"action[{index:D2}].parameter2", $"0x{action.Parameter2:X2}");
                 Add($"action[{index:D2}].parameter3", $"0x{action.Parameter3:X2}");
+                Add(
+                    $"action[{index:D2}].parameters",
+                    WebHubMacroPadActionDescriptions.DescribeParameters(action));
                 Add($"action[{index:D2}].raw", Convert.ToHexString(action.ToByteArray()));
                 Add($"action[{index:D2}].meaning", action.Description);
                 Add(
@@ -1519,14 +1651,29 @@ internal sealed class MainWindow : Window
         };
 
     private static Control Field(string label, Control editor) =>
+        Field(
+            new TextBlock
+            {
+                Text = label,
+                Foreground = Profile.MutedBrush,
+            },
+            editor);
+
+    private static Control Field(TextBlock label, Control editor) =>
         new StackPanel
         {
             Spacing = 3,
             Children =
             {
-                new TextBlock { Text = label, Foreground = Profile.MutedBrush },
+                label,
                 editor,
             },
+        };
+
+    private static TextBlock CreateParameterLabel() =>
+        new()
+        {
+            Foreground = Profile.MutedBrush,
         };
 
     private static TextBox CreateHexBox(string text = "00") =>
@@ -1568,6 +1715,11 @@ internal sealed class MainWindow : Window
         };
         Grid.SetColumn(panel, column);
         grid.Children.Add(panel);
+    }
+
+    private sealed record ActionTypeChoice<T>(T Value, string Label)
+    {
+        public override string ToString() => Label;
     }
 
     private static string DescribeDevice(ConnectedHidDevice device) =>

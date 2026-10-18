@@ -18,10 +18,13 @@ keys and consumer/media controls to the remaining keys and all knobs. It also
 corrects the inverted volume direction. “Write staged changes” is the explicit
 flash write.
 
-The RGB lighting section reads the factory lighting response and lets you write
-the mode, brightness, speed, custom-color flag, and an `#RRGGBB` color. The
-color is converted to the firmware's 0–255 HSV representation. The raw
-lighting response and accepted write echo are included in the KVP and wire log.
+The left-side RGB lighting section reads the factory lighting response and lets
+you write the effect/pattern code, master brightness, animation speed,
+custom-color selection, and an `#RRGGBB` color. The color is converted to the
+firmware's 0–255 HSV representation. Action parameters are named by their
+meaning (modifier mask, keyboard usage, consumer usage, mouse delta, and so on)
+while their raw bytes remain available. The raw lighting response and accepted
+write echo are included in the KVP and wire log.
 
 Other firmware variants may expose the newer WebHub protocol (64-byte,
 report-ID-free frames); those are handled separately when their report shape
