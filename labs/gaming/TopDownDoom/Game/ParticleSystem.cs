@@ -8,10 +8,15 @@ internal sealed class ParticleSystem
     private const int MaxCount = 2800;
 
     public readonly List<Particle> Particles = [];
+    private int _replaceIndex;
 
     public int Count => Particles.Count;
 
-    public void Clear() => Particles.Clear();
+    public void Clear()
+    {
+        Particles.Clear();
+        _replaceIndex = 0;
+    }
 
     public void Tick(float dt)
     {
@@ -35,15 +40,17 @@ internal sealed class ParticleSystem
 
     public void Emit(in Particle particle)
     {
-        if (Particles.Count >= MaxCount)
-        {
-            Particles.RemoveAt(0);
-        }
-
         var p = particle;
         if (p.MaxLife > 0f)
         {
             p.Life = p.MaxLife;
+        }
+
+        if (Particles.Count >= MaxCount)
+        {
+            Particles[_replaceIndex] = p;
+            _replaceIndex = (_replaceIndex + 1) % MaxCount;
+            return;
         }
 
         Particles.Add(p);

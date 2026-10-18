@@ -8,11 +8,18 @@ namespace TopDownDoom.Game;
 internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
 {
     private readonly Dictionary<Monster, PlanarAnimatedSprite> _monsterSprites = new();
+    private readonly HashSet<Monster> _liveMonsters = [];
+    private readonly List<Monster> _staleMonsters = [];
+    private readonly List<PlanarSpriteInstance> _pickupSprites = [];
+    private readonly List<PlanarSpriteInstance> _barrelSprites = [];
+    private readonly List<PlanarSpriteInstance> _projectileSprites = [];
     private PlanarAnimatedSprite? _playerSprite;
+    private bool _spritePoolsAttached;
     private float _shootDisplayTimer;
 
     public void Sync(PlanarScene scene, TopDownCombatWorld world, float dt)
     {
+        EnsureSpritePoolsAttached(scene);
         _shootDisplayTimer = MathF.Max(0f, _shootDisplayTimer - dt);
         if (world.FireCooldown > world.ActiveWeapon.FireInterval - TimeSpan.FromMilliseconds(120))
         {
@@ -41,6 +48,22 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
         }
 
         scene.Sprites.RemoveAll(s => s.SortKey is >= 30 and < 200);
+        foreach (var sprite in _pickupSprites)
+        {
+            sprite.Enabled = false;
+        }
+
+        foreach (var sprite in _barrelSprites)
+        {
+            sprite.Enabled = false;
+        }
+
+        foreach (var sprite in _projectileSprites)
+        {
+            sprite.Enabled = false;
+        }
+
+        _spritePoolsAttached = false;
     }
 
     private void SyncPlayer(PlanarScene scene, TopDownCombatWorld world)
@@ -60,14 +83,25 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
 
     private void SyncMonsters(PlanarScene scene, TopDownCombatWorld world)
     {
-        var live = new HashSet<Monster>(world.Monsters);
-        foreach (var pair in _monsterSprites.ToArray())
+        _liveMonsters.Clear();
+        foreach (var monster in world.Monsters)
         {
-            if (!live.Contains(pair.Key))
+            _liveMonsters.Add(monster);
+        }
+
+        _staleMonsters.Clear();
+        foreach (var pair in _monsterSprites)
+        {
+            if (!_liveMonsters.Contains(pair.Key))
             {
-                scene.AnimatedSprites.Remove(pair.Value);
-                _monsterSprites.Remove(pair.Key);
+                _staleMonsters.Add(pair.Key);
             }
+        }
+
+        foreach (var monster in _staleMonsters)
+        {
+            scene.AnimatedSprites.Remove(_monsterSprites[monster]);
+            _monsterSprites.Remove(monster);
         }
 
         foreach (var monster in world.Monsters)
@@ -130,9 +164,17 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
 
     private void SyncPickups(PlanarScene scene, TopDownCombatWorld world)
     {
-        scene.Sprites.RemoveAll(s => s.SortKey is >= 40 and < 60);
-        foreach (var pickup in world.Pickups)
+        EnsurePoolSize(scene, _pickupSprites, world.Pickups.Count, 45);
+        for (var i = 0; i < _pickupSprites.Count; i++)
         {
+            var sprite = _pickupSprites[i];
+            if (i >= world.Pickups.Count)
+            {
+                sprite.Enabled = false;
+                continue;
+            }
+
+            var pickup = world.Pickups[i];
             var tex = pickup.Kind switch
             {
                 PickupKind.Health => art.HealthIcon,
@@ -142,55 +184,99 @@ internal sealed class SpriteScenePresenter(CharacterArtLibrary art)
                 PickupKind.Exit => art.ExitIcon,
                 _ => art.AmmoIcon,
             };
-            AddWorldSprite(scene, pickup.Position, tex, 0.38f, 45);
+            ConfigureWorldSprite(sprite, pickup.Position, tex, 0.38f, 45);
         }
     }
 
     private void SyncBarrels(PlanarScene scene, TopDownCombatWorld world)
     {
-        scene.Sprites.RemoveAll(s => s.SortKey is >= 50 and < 70);
-        foreach (var barrel in world.Barrels)
+        EnsurePoolSize(scene, _barrelSprites, world.Barrels.Count, 55);
+        for (var i = 0; i < _barrelSprites.Count; i++)
         {
-            AddWorldSprite(scene, barrel.Position, art.BarrelIcon, 0.42f, 55);
+            var sprite = _barrelSprites[i];
+            if (i >= world.Barrels.Count)
+            {
+                sprite.Enabled = false;
+                continue;
+            }
+
+            ConfigureWorldSprite(sprite, world.Barrels[i].Position, art.BarrelIcon, 0.42f, 55);
         }
     }
 
     private void SyncProjectiles(PlanarScene scene, TopDownCombatWorld world)
     {
-        scene.Sprites.RemoveAll(s => s.SortKey is >= 70 and < 85);
-        foreach (var shot in world.Projectiles)
+        EnsurePoolSize(scene, _projectileSprites, world.Projectiles.Count, 80);
+        for (var i = 0; i < _projectileSprites.Count; i++)
         {
+            var sprite = _projectileSprites[i];
+            if (i >= world.Projectiles.Count)
+            {
+                sprite.Enabled = false;
+                continue;
+            }
+
+            var shot = world.Projectiles[i];
             var rocket = shot.SplashRadius > 1.5f;
             var size = rocket ? 0.22f : 0.14f;
             var tint = shot.FromPlayer
                 ? new Novolis.Math.Geometry.Rgba32(255, 240, 120, 240)
                 : new Novolis.Math.Geometry.Rgba32(255, 90, 90, 240);
-            scene.Sprites.Add(new PlanarSpriteInstance
-            {
-                Texture = art.Particles.Spark,
-                SortKey = rocket ? 84 : 80,
-                Tint = tint,
-                Transform =
-                {
-                    Position = shot.Position,
-                    Scale = new Vector3(size, 1f, size),
-                },
-            });
+            ConfigureWorldSprite(sprite, shot.Position, art.Particles.Spark, size, rocket ? 84 : 80);
+            sprite.Tint = tint;
         }
     }
 
-    private static void AddWorldSprite(PlanarScene scene, Vector3 pos, PlanarTextureId tex, float halfSize, int sort)
+    private void EnsureSpritePoolsAttached(PlanarScene scene)
     {
-        scene.Sprites.Add(new PlanarSpriteInstance
+        if (_spritePoolsAttached)
         {
-            Texture = tex,
-            SortKey = sort,
-            Transform =
+            return;
+        }
+
+        AttachPool(scene, _pickupSprites);
+        AttachPool(scene, _barrelSprites);
+        AttachPool(scene, _projectileSprites);
+        _spritePoolsAttached = true;
+    }
+
+    private static void AttachPool(PlanarScene scene, List<PlanarSpriteInstance> pool)
+    {
+        foreach (var sprite in pool)
+        {
+            if (!scene.Sprites.Contains(sprite))
             {
-                Position = pos,
-                Scale = new Vector3(halfSize, 1f, halfSize),
-            },
-        });
+                scene.Sprites.Add(sprite);
+            }
+        }
+    }
+
+    private static void EnsurePoolSize(
+        PlanarScene scene,
+        List<PlanarSpriteInstance> pool,
+        int count,
+        int sortKey)
+    {
+        while (pool.Count < count)
+        {
+            var sprite = new PlanarSpriteInstance
+            {
+                Enabled = false,
+                SortKey = sortKey,
+            };
+            pool.Add(sprite);
+            scene.Sprites.Add(sprite);
+        }
+    }
+
+    private static void ConfigureWorldSprite(PlanarSpriteInstance sprite, Vector3 pos, PlanarTextureId tex, float halfSize, int sort)
+    {
+        sprite.Enabled = true;
+        sprite.Texture = tex;
+        sprite.SortKey = sort;
+        sprite.Tint = Novolis.Math.Geometry.Rgba32.White;
+        sprite.Transform.Position = pos;
+        sprite.Transform.Scale = new Vector3(halfSize, 1f, halfSize);
     }
 
     private static float Distance(Vector3 a, Vector3 b)

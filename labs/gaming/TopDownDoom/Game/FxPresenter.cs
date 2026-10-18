@@ -8,14 +8,34 @@ namespace TopDownDoom.Game;
 internal sealed class FxPresenter(CharacterArtLibrary art)
 {
     private const int ParticleSortBase = 180;
+    private readonly List<PlanarSpriteInstance> _particleSprites = [];
 
     public void Sync(PlanarScene scene, CombatJuice juice)
     {
-        scene.Sprites.RemoveAll(s => s.SortKey is >= ParticleSortBase and < 220);
         scene.AnimatedSprites.RemoveAll(s => s.SortKey is >= 210 and < 215);
 
         var pool = juice.Particles.Particles;
         var n = pool.Count;
+        if (scene.ParticleSprites.Count != _particleSprites.Count)
+        {
+            scene.ParticleSprites.Clear();
+            scene.ParticleSprites.AddRange(_particleSprites);
+        }
+
+        while (_particleSprites.Count < n)
+        {
+            var sprite = new PlanarSpriteInstance();
+            _particleSprites.Add(sprite);
+            scene.ParticleSprites.Add(sprite);
+        }
+
+        while (_particleSprites.Count > n)
+        {
+            var last = _particleSprites.Count - 1;
+            scene.ParticleSprites.RemoveAt(last);
+            _particleSprites.RemoveAt(last);
+        }
+
         for (var i = 0; i < n; i++)
         {
             var p = pool[i];
@@ -30,18 +50,13 @@ internal sealed class FxPresenter(CharacterArtLibrary art)
                 _ => art.Particles.SoftGlow,
             };
 
-            scene.Sprites.Add(new PlanarSpriteInstance
-            {
-                Texture = tex,
-                SortKey = ParticleSortBase + (int)(t * 30),
-                Tint = color,
-                Transform =
-                {
-                    Position = p.Position,
-                    RotationY = p.Rotation,
-                    Scale = new Vector3(size, 1f, size),
-                },
-            });
+            var sprite = _particleSprites[i];
+            sprite.Texture = tex;
+            sprite.SortKey = ParticleSortBase + (int)(t * 30);
+            sprite.Tint = color;
+            sprite.Transform.Position = p.Position;
+            sprite.Transform.RotationY = p.Rotation;
+            sprite.Transform.Scale = new Vector3(size, 1f, size);
         }
 
         foreach (var fx in juice.SpriteBursts)

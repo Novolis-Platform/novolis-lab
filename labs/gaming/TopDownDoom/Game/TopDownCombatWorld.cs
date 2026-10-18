@@ -233,6 +233,7 @@ internal sealed class TopDownCombatWorld
                 {
                     TrySplash(p, includePlayer: p.CausesSelfDamage);
                     Projectiles.RemoveAt(i);
+                    continue;
                 }
             }
             else
@@ -254,13 +255,11 @@ internal sealed class TopDownCombatWorld
     private void TrySplash(Projectile p, bool includePlayer)
     {
         Juice.Boom(p.Position, p.SplashRadius > 2f ? 1.5f : 1.1f);
-        var hit = false;
         for (var m = Monsters.Count - 1; m >= 0; m--)
         {
             if (DistanceXZ(p.Position, Monsters[m].Position) <= p.SplashRadius)
             {
                 DamageMonster(m, p.Damage, p.Position);
-                hit = true;
             }
         }
 
@@ -269,7 +268,6 @@ internal sealed class TopDownCombatWorld
             if (DistanceXZ(p.Position, Barrels[b].Position) <= p.SplashRadius)
             {
                 DetonateBarrel(b);
-                hit = true;
             }
         }
 
@@ -278,10 +276,6 @@ internal sealed class TopDownCombatWorld
             ApplyPlayerDamage(p.Damage / 2);
         }
 
-        if (hit || p.Life <= 0f)
-        {
-            Projectiles.Remove(p);
-        }
     }
 
     private void TickMonsters(float dt)
@@ -521,8 +515,13 @@ internal sealed class TopDownCombatWorld
     private void MoveMonster(Monster monster, Vector2 direction, float speed, float dt)
     {
         var delta = new Vector3(direction.X * speed * dt, 0f, direction.Y * speed * dt);
-        monster.Position = _collision?.MoveCircle(monster.Position, delta, 0.32f)
-            ?? monster.Position + delta;
+        if (_collision is null)
+        {
+            monster.Position += delta;
+            return;
+        }
+
+        monster.Position = _collision.MoveCircle(monster.Position, delta, 0.32f);
     }
 
     private bool TryHitWall(Vector3 origin, Vector3 direction, float length, out PlanarHit hit)

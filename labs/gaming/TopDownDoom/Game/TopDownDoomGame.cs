@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Numerics;
+using Novolis.Agent.Core;
 using Novolis.Game.Scenes;
 using Novolis.Game.MenuFlows;
 using Novolis.Math.Geometry;
@@ -30,6 +32,7 @@ internal sealed class TopDownDoomGame
     private bool _playing;
     private bool _paused;
     private float _combatZoom;
+    private int _agentStartRequested;
 
     public void Initialize(SilkFrame frame, PlanarScene scene)
     {
@@ -57,8 +60,42 @@ internal sealed class TopDownDoomGame
         ]));
     }
 
+    internal AgentSnapshot CreateAgentSnapshot() =>
+        new()
+        {
+            HubId = _runtimeOptions.MapName,
+            HubName = _level.UsesImportedLevel ? "Imported Doom map" : "Authored demo map",
+            PauseReason = !_playing ? "Menu" : _paused ? "Paused" : "Running",
+            Underway = _playing && !_paused,
+            Complete = _world.ExitUnlocked,
+            SoftFail = _world.Health <= 0,
+            StatusLines = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["health"] = _world.Health.ToString(CultureInfo.InvariantCulture),
+                ["armor"] = _world.Armor.ToString(CultureInfo.InvariantCulture),
+                ["ammo"] = _world.Ammo.ToString(CultureInfo.InvariantCulture),
+                ["monsters"] = _world.Monsters.Count.ToString(CultureInfo.InvariantCulture),
+                ["projectiles"] = _world.Projectiles.Count.ToString(CultureInfo.InvariantCulture),
+                ["barrels"] = _world.Barrels.Count.ToString(CultureInfo.InvariantCulture),
+                ["particles"] = _world.Juice.Particles.Count.ToString(CultureInfo.InvariantCulture),
+            },
+        };
+
+    internal void RequestStart() =>
+        Interlocked.Exchange(ref _agentStartRequested, 1);
+
     public void Update(SilkFrame frame, PlanarScene scene)
     {
+        if (Interlocked.Exchange(ref _agentStartRequested, 0) != 0)
+        {
+            _playing = true;
+            _paused = false;
+            if (scene.Menus.IsActive)
+            {
+                scene.Menus.Pop();
+            }
+        }
+
         if (frame.IsKeyPressed(Key.Escape))
         {
             if (_playing && !_paused)
@@ -184,6 +221,7 @@ internal sealed class TopDownDoomGame
         scene.StaticPolygons.Clear();
         scene.Collision.Clear();
         scene.Sprites.Clear();
+        scene.ParticleSprites.Clear();
         scene.AnimatedSprites.Clear();
         scene.StaticPolygons.RemoveAll(p => p.SortKey is >= 30 and < 200);
         _level.ResetProgress();
