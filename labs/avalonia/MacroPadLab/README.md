@@ -24,7 +24,10 @@ and choose a color with the Avalonia color picker. The selected RGB color is
 converted to the firmware's 0–255 HSV representation. Action parameters are
 named by their meaning (modifier mask, keyboard usage, consumer usage, mouse
 delta, and so on) while their raw bytes remain available. The raw lighting
-response and accepted write echo are included in the KVP and wire log. Keyboard editing offers a
+response and write response are included in the KVP and wire log. The factory
+firmware may return an incomplete response to a lighting read, so the app
+distinguishes protocol acknowledgement from independently verified LED state.
+Keyboard editing offers a
 friendly choice for every byte-sized HID keyboard usage plus every modifier
 combination; media/control editing offers the known consumer controls while
 retaining the little-endian raw usage bytes.

@@ -1215,14 +1215,27 @@ internal sealed class MainWindow : Window
         try
         {
             _legacyLighting = _legacySession.ReadLighting();
-            if (_legacyLighting.TryGetSettings(out var settings))
+            var hasSettings = _legacyLighting.TryGetSettings(out var settings);
+            if (hasSettings)
             {
                 _lightingSettings = settings;
                 ApplyLightingSettingsToEditor();
+                SetStatus("Read factory RGB lighting settings.", Profile.AccentFillBrush);
+                AppendDiagnostic(
+                    $"FACTORY LIGHTING READ: {_legacyLighting.RawHex}{Environment.NewLine}" +
+                    "LIGHTING READ RESULT: full settings returned");
+            }
+            else
+            {
+                SetStatus(
+                    "Lighting response received; firmware did not return full settings. " +
+                    "Keeping the last known values.",
+                    Profile.WarningBrush);
+                AppendDiagnostic(
+                    $"FACTORY LIGHTING READ: {_legacyLighting.RawHex}{Environment.NewLine}" +
+                    "LIGHTING READ RESULT: incomplete settings response; no editor values changed");
             }
 
-            SetStatus("Read factory RGB lighting response.", Profile.AccentFillBrush);
-            AppendDiagnostic($"FACTORY LIGHTING READ: {_legacyLighting.RawHex}");
             UpdateRawKvp();
         }
         catch (Exception exception)
@@ -1274,14 +1287,12 @@ internal sealed class MainWindow : Window
             ApplyLightingSettingsToEditor();
             var verification = hasEcho
                 ? accepted == requested
-                    ? "verified: device echoed the requested settings"
+                    ? "acknowledged: device echoed the requested settings; LED effect remains unconfirmed"
                     : $"warning: device echoed {DescribeLightingSettings(accepted)}"
                 : "response received; firmware did not echo the full settings record";
             SetStatus(
                 $"Lighting command completed ({verification}).",
-                verification.StartsWith("verified", StringComparison.Ordinal)
-                    ? Profile.AccentFillBrush
-                    : Profile.WarningBrush);
+                Profile.WarningBrush);
             AppendDiagnostic(
                 $"FACTORY LIGHTING WRITE: {_legacyLighting.RawHex}{Environment.NewLine}" +
                 $"LIGHTING RESULT: {verification}");
@@ -2414,7 +2425,14 @@ internal sealed class MainWindow : Window
             {
                 Add("legacy.lighting.response.raw", _legacyLighting.RawHex);
                 Add("legacy.lighting.response.command", $"0x{_legacyLighting.Command:X2}");
-                if (_legacyLighting.TryGetSettings(out var lightingSettings))
+                var hasLightingSettings = _legacyLighting.TryGetSettings(out var lightingSettings);
+                Add("legacy.lighting.response.hasFullSettings", hasLightingSettings);
+                Add(
+                    "legacy.lighting.response.interpretation",
+                    hasLightingSettings
+                        ? "full settings record available"
+                        : "incomplete response; editor retains last known settings");
+                if (hasLightingSettings)
                 {
                     Add("legacy.lighting.effectMode", $"0x{lightingSettings.EffectMode:X2}");
                     Add(
