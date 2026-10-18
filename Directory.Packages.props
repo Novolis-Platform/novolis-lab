@@ -5,29 +5,29 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AssimpNet" Version="4.1.0" />
-    <PackageVersion Include="Avalonia" Version="12.1.3" />
-    <PackageVersion Include="Avalonia.Android" Version="12.1.3" />
+    <PackageVersion Include="Avalonia" Version="12.1.4" />
+    <PackageVersion Include="Avalonia.Android" Version="12.1.4" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
-    <PackageVersion Include="Avalonia.Desktop" Version="12.1.3" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.3" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.4" />
     <PackageVersion Include="AdvancedSharpAdbClient" Version="3.6.16" />
     <PackageVersion Include="Optris.Icons.Avalonia" Version="12.0.7" />
     <PackageVersion Include="Optris.Icons.Avalonia.FontAwesome" Version="12.0.7" />
     <PackageVersion Include="Spectre.Console" Version="0.57.2" />
     <PackageVersion Include="System.IO.Abstractions" Version="22.3.0" />
     <PackageVersion Include="Novolis.IO.Workspace.Abstractions" Version="2026.1.*" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.13" />
     <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.110" />
     <PackageVersion Include="Xamarin.AndroidX.AppCompat" Version="1.8.0" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.3" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.8.0-preview.1" />
-    <PackageVersion Include="MessagePack" Version="3.1.11" />
-    <PackageVersion Include="NAudio" Version="3.1.0" />
-    <PackageVersion Include="NAudio.Wasapi" Version="3.1.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.402" />
+    <PackageVersion Include="ModelContextProtocol" Version="2.2.0" />
+    <PackageVersion Include="MessagePack" Version="3.1.12" />
+    <PackageVersion Include="NAudio" Version="3.2.0" />
+    <PackageVersion Include="NAudio.Wasapi" Version="3.2.0" />
     <PackageVersion Include="MeltySynth" Version="2.4.1" />
     <PackageVersion Include="Novolis.Audio" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Audio.Abstractions" Version="2026.1.*" />
@@ -95,8 +95,8 @@
     <PackageVersion Include="SIPSorceryMedia.Abstractions" Version="10.0.17" />
     <PackageVersion Include="SIPSorceryMedia.Windows" Version="10.0.17" />
     <PackageVersion Include="SIPSorceryMedia.Encoders" Version="10.0.4" />
-    <!-- Pin away from vulnerable SQLitePCLRaw.lib.e_sqlite3 2.1.11 (NU1903 / GHSA-2m69-gcr7-jv3q). -->
-    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.13" />
+    <!-- Keep the native SQLite provider on the current major line. -->
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
     <PackageVersion Include="Novolis.IO.Git" Version="2026.1.*" />
     <PackageVersion Include="Novolis.IO.GitHub" Version="2026.1.*" />
     <PackageVersion Include="Novolis.IO.Mobile.Android" Version="2026.1.*" />
@@ -147,9 +147,9 @@
     <PackageVersion Include="Novolis.Game.Identity.AspNetCore" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Game.MenuFlows" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Game.Multiplayer.Abstractions" Version="2026.1.*" />
-    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.13" />
     <PackageVersion Include="Novolis.Security.SecureText" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Messaging.SecureText" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Chat.Abstractions" Version="2026.1.*" />
@@ -255,6 +255,6 @@
     <PackageVersion Include="Novolis.Transports.Torrent" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Transports.LocalIpc" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Transports.Ed2k" Version="2026.1.*" />
-    <PackageVersion Include="TUnit" Version="1.72.16" />
+    <PackageVersion Include="TUnit" Version="1.75.0" />
   </ItemGroup>
 </Project>
