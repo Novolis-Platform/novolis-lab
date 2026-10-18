@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>MacroPadLab</RootNamespace>
+    <AssemblyName>Novolis.Lab.MacroPad</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <Description>Avalonia lab for discovering and safely configuring WebHub 4x4 macro pads.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
+    <LibraryReference Include="Novolis.IO.ConnectedDevices" />
+  </ItemGroup>
+</Project>

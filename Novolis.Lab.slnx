@@ -109,6 +109,7 @@
     <Project Path="labs/avalonia/CharacterLab/CharacterLab.csproj" />
     <Project Path="labs/avalonia/KatoriLab/KatoriLab.csproj" />
     <Project Path="labs/avalonia/KatoriLab.Tests/KatoriLab.Tests.csproj" />
+    <Project Path="labs/avalonia/MacroPadLab/MacroPadLab.csproj" />
 
 
     <Project Path="labs/avalonia/FriendLab/FriendLab.csproj" />

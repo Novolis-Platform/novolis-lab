@@ -99,6 +99,7 @@
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
     <PackageVersion Include="Novolis.IO.Git" Version="2026.1.*" />
     <PackageVersion Include="Novolis.IO.GitHub" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.IO.ConnectedDevices" Version="2026.1.*" />
     <PackageVersion Include="Novolis.IO.Mobile.Android" Version="2026.1.*" />
     <PackageVersion Include="Novolis.IO.Paths" Version="2026.1.*" />
     <PackageVersion Include="Novolis.IO.Processes" Version="2026.1.*" />
