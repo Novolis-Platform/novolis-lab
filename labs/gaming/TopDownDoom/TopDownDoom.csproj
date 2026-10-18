@@ -7,6 +7,7 @@
     <LibraryReference Include="Novolis.Game.MenuFlows" />
     <LibraryReference Include="Novolis.Game.Scenes" />
     <LibraryReference Include="Novolis.Agent.Surface" />
+    <LibraryReference Include="Novolis.Rendering.Planar" />
     <LibraryReference Include="Novolis.Silk" />
   </ItemGroup>
   <ItemGroup>
