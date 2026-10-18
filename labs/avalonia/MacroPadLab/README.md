@@ -18,6 +18,11 @@ keys and consumer/media controls to the remaining keys and all knobs. It also
 corrects the inverted volume direction. “Write staged changes” is the explicit
 flash write.
 
+The RGB lighting section reads the factory lighting response and lets you write
+the mode, brightness, speed, custom-color flag, and an `#RRGGBB` color. The
+color is converted to the firmware's 0–255 HSV representation. The raw
+lighting response and accepted write echo are included in the KVP and wire log.
+
 Other firmware variants may expose the newer WebHub protocol (64-byte,
 report-ID-free frames); those are handled separately when their report shape
 is present. No firmware-update, reset, or generic-HID layout commands are

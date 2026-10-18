@@ -31,6 +31,14 @@ internal sealed class MainWindow : Window
     private readonly Button _writeAllButton;
     private readonly Button _stageSafeButton;
     private readonly Button _profileButton;
+    private readonly TextBox _lightingMode;
+    private readonly TextBox _lightingBrightness;
+    private readonly TextBox _lightingSpeed;
+    private readonly TextBox _lightingHex;
+    private readonly CheckBox _lightingCustom;
+    private readonly TextBlock _lightingSummary;
+    private readonly Button _readLightingButton;
+    private readonly Button _writeLightingButton;
     private readonly TextBox _diagnostics;
     private readonly TextBox _rawKvp;
     private readonly Button _copyRawButton;
@@ -51,6 +59,9 @@ internal sealed class MainWindow : Window
     private byte[]? _rawReportDescriptor;
     private KeytronLegacyAction[] _legacyActions = [];
     private KeytronLegacyAction[] _loadedLegacyActions = [];
+    private KeytronLegacyLightingResponse? _legacyLighting;
+    private KeytronLegacyLightingSettings _lightingSettings =
+        KeytronLegacyLightingSettings.Default;
     private bool _legacyMode;
     private int _selectedAction = -1;
 
@@ -188,6 +199,29 @@ internal sealed class MainWindow : Window
             ItemsSource = Enumerable.Range(0, 8).Select(index => $"Profile {index}").ToArray(),
             SelectedIndex = 0,
         };
+        _lightingMode = CreateHexBox("01");
+        _lightingBrightness = CreateHexBox("40");
+        _lightingSpeed = CreateHexBox("00");
+        _lightingHex = new TextBox
+        {
+            Text = "#FF0000",
+            PlaceholderText = "#RRGGBB",
+            FontFamily = Profile.MonoFont,
+        };
+        _lightingCustom = new CheckBox
+        {
+            Content = "Use custom color",
+            IsChecked = true,
+            Foreground = Profile.TextBrush,
+        };
+        _lightingSummary = new TextBlock
+        {
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = Profile.ActionBrush,
+        };
+        _readLightingButton = CreateButton("Read RGB lighting", ReadLighting);
+        _writeLightingButton = CreateButton("Write RGB lighting", WriteLighting);
+        ApplyLightingSettingsToEditor();
         _profileButton = CreateButton("Select profile", SelectProfile);
         _saveButton = CreateButton("Write selected action", SaveSelectedAction);
         _stageSafeButton = CreateButton("Stage safe testing map", StageSafeTestingMap);
@@ -239,6 +273,24 @@ internal sealed class MainWindow : Window
                 _saveButton,
                 _stageSafeButton,
                 _writeAllButton,
+                new Separator { Margin = new Thickness(0, 8) },
+                Heading("RGB lighting"),
+                new TextBlock
+                {
+                    Text = "Factory firmware accepts an animation mode plus brightness, " +
+                        "speed, and a custom HSV color. The hex color is converted to HSV " +
+                        "for the device; raw responses remain in the KVP and wire log.",
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = Profile.MutedBrush,
+                },
+                _lightingSummary,
+                Field("Mode byte", _lightingMode),
+                Field("Brightness (hex)", _lightingBrightness),
+                Field("Speed (hex)", _lightingSpeed),
+                Field("Custom RGB color", _lightingHex),
+                _lightingCustom,
+                _readLightingButton,
+                _writeLightingButton,
                 new Separator { Margin = new Thickness(0, 8) },
                 Heading("Stored profile"),
                 _profileBox,
@@ -341,6 +393,9 @@ internal sealed class MainWindow : Window
         _legacyMode = false;
         _legacyActions = [];
         _loadedLegacyActions = [];
+        _legacyLighting = null;
+        _lightingSettings = KeytronLegacyLightingSettings.Default;
+        ApplyLightingSettingsToEditor();
         _actions = Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
         _loadedActions = Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
         _actionType.IsVisible = true;
@@ -348,6 +403,7 @@ internal sealed class MainWindow : Window
         _profileBox.IsVisible = true;
         _profileButton.IsVisible = true;
         SetActionControlsEnabled(false);
+        SetLightingControlsEnabled(false);
         try
         {
             // This lab is deliberately not a generic HID browser. It only
@@ -420,6 +476,7 @@ internal sealed class MainWindow : Window
             _stageSafeButton.IsEnabled = false;
             _writeAllButton.IsEnabled = false;
             _profileButton.IsEnabled = false;
+            SetLightingControlsEnabled(true, false);
         }
         else
         {
@@ -429,6 +486,7 @@ internal sealed class MainWindow : Window
             _stageSafeButton.IsEnabled = false;
             _writeAllButton.IsEnabled = false;
             _profileButton.IsEnabled = false;
+            SetLightingControlsEnabled(false);
         }
 
         UpdateRawKvp();
@@ -534,7 +592,23 @@ internal sealed class MainWindow : Window
             UpdateActionButton(index);
         }
 
+        try
+        {
+            _legacyLighting = _legacySession.ReadLighting();
+            if (_legacyLighting.TryGetSettings(out var lightingSettings))
+            {
+                _lightingSettings = lightingSettings;
+                ApplyLightingSettingsToEditor();
+            }
+            AppendDiagnostic($"FACTORY LIGHTING READ: {_legacyLighting.RawHex}");
+        }
+        catch (Exception exception)
+        {
+            AppendDiagnostic($"FACTORY LIGHTING READ FAILED: {exception.Message}");
+        }
+
         SetActionControlsEnabled(true);
+        SetLightingControlsEnabled(true, true);
         SetStatus(
             "Factory action table loaded. Writes are flash-backed and read back for verification.",
             Profile.WarningBrush);
@@ -543,6 +617,134 @@ internal sealed class MainWindow : Window
             $"Factory action record length: 3 bytes{Environment.NewLine}" +
             $"Factory action count: {_legacyActions.Length}");
         UpdateRawKvp();
+    }
+
+    private void ReadLighting(object? sender, RoutedEventArgs args)
+    {
+        if (_legacySession is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _legacyLighting = _legacySession.ReadLighting();
+            if (_legacyLighting.TryGetSettings(out var settings))
+            {
+                _lightingSettings = settings;
+                ApplyLightingSettingsToEditor();
+            }
+
+            SetStatus("Read factory RGB lighting response.", Profile.AccentFillBrush);
+            AppendDiagnostic($"FACTORY LIGHTING READ: {_legacyLighting.RawHex}");
+            UpdateRawKvp();
+        }
+        catch (Exception exception)
+        {
+            SetStatus($"RGB lighting read failed: {exception.Message}", Profile.DangerBrush);
+            AppendDiagnostic(exception.ToString());
+            UpdateRawKvp();
+        }
+    }
+
+    private async void WriteLighting(object? sender, RoutedEventArgs args)
+    {
+        if (_legacySession is null || !TryReadLightingEditor(out var settings))
+        {
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(
+            "Write RGB lighting?",
+            $"Write mode 0x{settings.Mode:X2}, brightness 0x{settings.Brightness:X2}, " +
+            $"color #{settings.ToRgb().Red:X2}{settings.ToRgb().Green:X2}{settings.ToRgb().Blue:X2}?");
+        if (!confirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            _legacyLighting = _legacySession.WriteLighting(settings);
+            if (_legacyLighting.TryGetSettings(out var accepted))
+            {
+                settings = accepted;
+            }
+
+            _lightingSettings = settings;
+            ApplyLightingSettingsToEditor();
+            SetStatus("RGB lighting written; the device echoed the command.", Profile.AccentFillBrush);
+            AppendDiagnostic($"FACTORY LIGHTING WRITE: {_legacyLighting.RawHex}");
+            UpdateRawKvp();
+        }
+        catch (Exception exception)
+        {
+            SetStatus($"RGB lighting write failed: {exception.Message}", Profile.DangerBrush);
+            AppendDiagnostic(exception.ToString());
+            UpdateRawKvp();
+        }
+    }
+
+    private bool TryReadLightingEditor(out KeytronLegacyLightingSettings settings)
+    {
+        settings = _lightingSettings;
+        if (!TryReadByte(_lightingMode.Text, out var mode)
+            || !TryReadByte(_lightingBrightness.Text, out var brightness)
+            || !TryReadByte(_lightingSpeed.Text, out var speed)
+            || !TryReadRgbHex(_lightingHex.Text, out var red, out var green, out var blue))
+        {
+            SetStatus(
+                "Enter mode, brightness, speed as hex bytes and color as #RRGGBB.",
+                Profile.WarningBrush);
+            return false;
+        }
+
+        settings = KeytronLegacyLightingSettings.FromRgb(
+            red,
+            green,
+            blue,
+            mode,
+            brightness,
+            speed) with
+        {
+            Custom = _lightingCustom.IsChecked == true,
+        };
+        return true;
+    }
+
+    private void ApplyLightingSettingsToEditor()
+    {
+        _lightingMode.Text = _lightingSettings.Mode.ToString("X2", CultureInfo.InvariantCulture);
+        _lightingBrightness.Text =
+            _lightingSettings.Brightness.ToString("X2", CultureInfo.InvariantCulture);
+        _lightingSpeed.Text =
+            _lightingSettings.Speed.ToString("X2", CultureInfo.InvariantCulture);
+        _lightingCustom.IsChecked = _lightingSettings.Custom;
+        var (red, green, blue) = _lightingSettings.ToRgb();
+        _lightingHex.Text = $"#{red:X2}{green:X2}{blue:X2}";
+        _lightingSummary.Text =
+            $"HSV 0x{_lightingSettings.Hue:X2}/0x{_lightingSettings.Saturation:X2}/" +
+            $"0x{_lightingSettings.Value:X2} · " +
+            $"RGB #{red:X2}{green:X2}{blue:X2}";
+    }
+
+    private static bool TryReadRgbHex(
+        string? text,
+        out byte red,
+        out byte green,
+        out byte blue)
+    {
+        red = green = blue = 0;
+        var normalized = (text ?? string.Empty).Trim();
+        if (normalized.StartsWith('#'))
+        {
+            normalized = normalized[1..];
+        }
+
+        return normalized.Length == 6
+            && TryReadByte(normalized[..2], out red)
+            && TryReadByte(normalized[2..4], out green)
+            && TryReadByte(normalized[4..], out blue);
     }
 
     private async void SaveSelectedAction(object? sender, RoutedEventArgs args)
@@ -975,6 +1177,17 @@ internal sealed class MainWindow : Window
         _writeAllButton.IsEnabled = enabled && HasPendingChanges();
     }
 
+    private void SetLightingControlsEnabled(bool readEnabled, bool writeEnabled = false)
+    {
+        _lightingMode.IsEnabled = readEnabled || writeEnabled;
+        _lightingBrightness.IsEnabled = readEnabled || writeEnabled;
+        _lightingSpeed.IsEnabled = readEnabled || writeEnabled;
+        _lightingHex.IsEnabled = readEnabled || writeEnabled;
+        _lightingCustom.IsEnabled = readEnabled || writeEnabled;
+        _readLightingButton.IsEnabled = readEnabled;
+        _writeLightingButton.IsEnabled = writeEnabled;
+    }
+
     private void UpdateActionButton(int index)
     {
         if (index < 0 || index >= _actionButtons.Count)
@@ -1180,6 +1393,23 @@ internal sealed class MainWindow : Window
         {
             Add("legacy.deviceInfo.raw", _legacyInfo.RawHex);
             Add("legacy.deviceInfo.command", $"0x{_legacyInfo.Command:X2}");
+            if (_legacyLighting is not null)
+            {
+                Add("legacy.lighting.response.raw", _legacyLighting.RawHex);
+                Add("legacy.lighting.response.command", $"0x{_legacyLighting.Command:X2}");
+                if (_legacyLighting.TryGetSettings(out var lightingSettings))
+                {
+                    Add("legacy.lighting.mode", $"0x{lightingSettings.Mode:X2}");
+                    Add("legacy.lighting.brightness", $"0x{lightingSettings.Brightness:X2}");
+                    Add("legacy.lighting.speed", $"0x{lightingSettings.Speed:X2}");
+                    Add("legacy.lighting.custom", lightingSettings.Custom);
+                    Add("legacy.lighting.hue", $"0x{lightingSettings.Hue:X2}");
+                    Add("legacy.lighting.saturation", $"0x{lightingSettings.Saturation:X2}");
+                    Add("legacy.lighting.value", $"0x{lightingSettings.Value:X2}");
+                    var rgb = lightingSettings.ToRgb();
+                    Add("legacy.lighting.rgb", $"#{rgb.Red:X2}{rgb.Green:X2}{rgb.Blue:X2}");
+                }
+            }
             Add("legacy.actionRecordLength", 3);
             Add("legacy.actions.count", _legacyActions.Length);
             for (var index = 0; index < _legacyActions.Length; index++)
@@ -1238,6 +1468,7 @@ internal sealed class MainWindow : Window
         _stageSafeButton.IsEnabled = false;
         _writeAllButton.IsEnabled = false;
         _profileButton.IsEnabled = false;
+        SetLightingControlsEnabled(false);
     }
 
     private void AppendDiagnostic(string text)
@@ -1298,10 +1529,10 @@ internal sealed class MainWindow : Window
             },
         };
 
-    private static TextBox CreateHexBox() =>
+    private static TextBox CreateHexBox(string text = "00") =>
         new()
         {
-            Text = "00",
+            Text = text,
             PlaceholderText = "00",
             FontFamily = Profile.MonoFont,
         };
