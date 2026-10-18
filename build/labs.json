@@ -185,6 +185,18 @@
       ]
     },
     {
+      "Key": "avalonia-MacroPadLab",
+      "DisplayName": "avalonia Macro Pad Lab",
+      "Projects": [
+        "labs/avalonia/MacroPadLab/MacroPadLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/avalonia/MacroPadLab/**",
+        "labs/shared/**"
+      ]
+    },
+    {
       "Key": "avalonia-MobilityLab",
       "DisplayName": "avalonia Mobility Lab",
       "Projects": [
@@ -909,6 +921,18 @@
       "Tests": [],
       "ChangedPathGlobs": [
         "labs/simulation/ClothPlay/**",
+        "labs/shared/**"
+      ]
+    },
+    {
+      "Key": "simulation-DigitalLogicLab",
+      "DisplayName": "simulation Digital Logic Lab",
+      "Projects": [
+        "labs/simulation/DigitalLogicLab/DigitalLogicLab.csproj"
+      ],
+      "Tests": [],
+      "ChangedPathGlobs": [
+        "labs/simulation/DigitalLogicLab/**",
         "labs/shared/**"
       ]
     },
