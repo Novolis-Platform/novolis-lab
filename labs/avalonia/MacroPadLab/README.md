@@ -13,9 +13,10 @@ not exposed.
 This Keytron's attached interface is factory firmware: usage `0xFF00/0x01`,
 report ID `2`, 32-byte reports, and three-byte action records. The lab
 recognizes that protocol, reads the complete 25-slot table, and can write and
-verify it. The “Stage useful knob map” action corrects the inverted volume
-direction and replaces mute presses with play/pause, track, brightness, and
-navigation actions. “Write staged changes” is the explicit flash write.
+verify it. The “Stage safe testing map” action assigns F13–F24 to the first 12
+keys and consumer/media controls to the remaining keys and all knobs. It also
+corrects the inverted volume direction. “Write staged changes” is the explicit
+flash write.
 
 Other firmware variants may expose the newer WebHub protocol (64-byte,
 report-ID-free frames); those are handled separately when their report shape

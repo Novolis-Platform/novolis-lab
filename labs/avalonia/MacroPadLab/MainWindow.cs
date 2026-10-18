@@ -29,7 +29,7 @@ internal sealed class MainWindow : Window
     private readonly Button _readButton;
     private readonly Button _saveButton;
     private readonly Button _writeAllButton;
-    private readonly Button _stageKnobButton;
+    private readonly Button _stageSafeButton;
     private readonly Button _profileButton;
     private readonly TextBox _diagnostics;
     private readonly TextBox _rawKvp;
@@ -190,7 +190,7 @@ internal sealed class MainWindow : Window
         };
         _profileButton = CreateButton("Select profile", SelectProfile);
         _saveButton = CreateButton("Write selected action", SaveSelectedAction);
-        _stageKnobButton = CreateButton("Stage useful knob map", StageUsefulKnobMap);
+        _stageSafeButton = CreateButton("Stage safe testing map", StageSafeTestingMap);
         _writeAllButton = CreateButton("Write staged changes", WriteStagedActions);
 
         _diagnostics = new TextBox
@@ -237,7 +237,7 @@ internal sealed class MainWindow : Window
                 Field("Parameter 2", _parameter2),
                 Field("Parameter 3", _parameter3),
                 _saveButton,
-                _stageKnobButton,
+                _stageSafeButton,
                 _writeAllButton,
                 new Separator { Margin = new Thickness(0, 8) },
                 Heading("Stored profile"),
@@ -417,7 +417,7 @@ internal sealed class MainWindow : Window
                 : Profile.WarningBrush);
             _readButton.IsEnabled = true;
             _saveButton.IsEnabled = false;
-            _stageKnobButton.IsEnabled = false;
+            _stageSafeButton.IsEnabled = false;
             _writeAllButton.IsEnabled = false;
             _profileButton.IsEnabled = false;
         }
@@ -426,7 +426,7 @@ internal sealed class MainWindow : Window
             SetStatus("Select the 6D7D:DCFC vendor configuration interface.");
             _readButton.IsEnabled = false;
             _saveButton.IsEnabled = false;
-            _stageKnobButton.IsEnabled = false;
+            _stageSafeButton.IsEnabled = false;
             _writeAllButton.IsEnabled = false;
             _profileButton.IsEnabled = false;
         }
@@ -682,11 +682,11 @@ internal sealed class MainWindow : Window
         }
     }
 
-    private void StageUsefulKnobMap(object? sender, RoutedEventArgs args)
+    private void StageSafeTestingMap(object? sender, RoutedEventArgs args)
     {
         if (_legacyMode)
         {
-            StageUsefulLegacyKnobMap();
+            StageSafeLegacyMap();
             return;
         }
 
@@ -713,10 +713,10 @@ internal sealed class MainWindow : Window
 
         _writeAllButton.IsEnabled = HasPendingChanges();
         SetStatus(
-            "Staged: volume down is CCW, volume up is CW; presses now control media, navigation, or workspace.",
+            "Staged safe knob actions: volume is reversed to match the physical dial.",
             Profile.WarningBrush);
         AppendDiagnostic(
-            "STAGED useful knob map (not written): " +
+            "STAGED safe knob actions (not written): " +
             string.Join(
                 " | ",
                 knobActions.Select(
@@ -725,7 +725,7 @@ internal sealed class MainWindow : Window
         UpdateRawKvp();
     }
 
-    private void StageUsefulLegacyKnobMap()
+    private void StageSafeLegacyMap()
     {
         if (_legacySession is null || _loadedLegacyActions.Length != 25)
         {
@@ -736,7 +736,7 @@ internal sealed class MainWindow : Window
         }
 
         var preset = KeytronLegacyPresets.CreateUsefulMap();
-        for (var index = 16; index < _legacyActions.Length; index++)
+        for (var index = 0; index < _legacyActions.Length; index++)
         {
             _legacyActions[index] = preset[index];
             UpdateActionButton(index);
@@ -744,16 +744,16 @@ internal sealed class MainWindow : Window
 
         _writeAllButton.IsEnabled = HasPendingChanges();
         SetStatus(
-            "Staged: clockwise volume down, counter-clockwise volume up; " +
-            "presses now control media, brightness, and navigation.",
+            "Staged safe map: keys 1–12 are F13–F24; keys 13–16 and all knobs " +
+            "use consumer/media controls only.",
             Profile.WarningBrush);
         AppendDiagnostic(
-            "STAGED factory useful knob map (not written): " +
+            "STAGED factory safe testing map (not written): " +
             string.Join(
                 " | ",
-                preset.Skip(16).Select(
+                preset.Select(
                     (action, index) =>
-                        $"{ActionLabel(16 + index)}={action.Description} " +
+                        $"{ActionLabel(index)}={action.Description} " +
                         $"[{Convert.ToHexString(action.ToByteArray())}]")));
         UpdateRawKvp();
     }
@@ -971,7 +971,7 @@ internal sealed class MainWindow : Window
         }
 
         _saveButton.IsEnabled = enabled && _selectedAction >= 0;
-        _stageKnobButton.IsEnabled = enabled;
+        _stageSafeButton.IsEnabled = enabled;
         _writeAllButton.IsEnabled = enabled && HasPendingChanges();
     }
 
@@ -1235,7 +1235,7 @@ internal sealed class MainWindow : Window
         _legacySession = null;
         _legacyMode = false;
         _saveButton.IsEnabled = false;
-        _stageKnobButton.IsEnabled = false;
+        _stageSafeButton.IsEnabled = false;
         _writeAllButton.IsEnabled = false;
         _profileButton.IsEnabled = false;
     }
