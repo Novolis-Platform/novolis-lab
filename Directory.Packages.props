@@ -241,6 +241,7 @@
     <PackageVersion Include="Novolis.Rendering.Runtime" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Rendering.Scene" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Rendering.Planar" Version="2026.1.*" />
+    <PackageVersion Include="Novolis.Simulation.Logic" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Simulation.Kinematics" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Simulation.Racing" Version="2026.1.*" />
     <PackageVersion Include="Novolis.Simulation.SpaceCombat" Version="2026.1.*" />

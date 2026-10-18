@@ -57,6 +57,7 @@
     <Project Path="labs/documents/HelloMarkdownPdf/HelloMarkdownPdf.csproj" />
   </Folder>
   <Folder Name="/simulation/">
+    <Project Path="labs/simulation/DigitalLogicLab/DigitalLogicLab.csproj" />
     <Project Path="labs/simulation/DoomLite3D/DoomLite3D.csproj" />
     <Project Path="labs/simulation/BouncingBall/BouncingBall.csproj" />
     <Project Path="labs/simulation/ArtillerySimulator/ArtillerySimulator.csproj" />

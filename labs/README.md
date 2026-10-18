@@ -88,6 +88,16 @@ Same tile demo as PlatformerHop, but **planar XZ** via `PlanarAgent` and **Silk 
 dotnet run --project labs/simulation/PlatformerPlanar
 ```
 
+## Digital Logic Lab
+
+Unity-free Avalonia circuit editor backed by `Novolis.Simulation.Logic`:
+deterministic gates, editable wires, signal diagnostics, undo/redo, and
+versioned JSON save/load.
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\DigitalLogicLab\DigitalLogicLab.csproj -p:NovolisUseProjectReferences=true
+```
+
 ## RtsLitePlanar
 
 Top-down RTS on **orthographic Planar** (shared sim with `RtsLite`; sand field + tiberium patches, tank markers). **Mouse:** LMB select, RMB orders. Classic **diagonal RA camera + sprites:** `RtsLite` (Raylib).

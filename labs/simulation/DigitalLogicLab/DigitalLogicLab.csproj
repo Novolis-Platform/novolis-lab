@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>DigitalLogicLab</RootNamespace>
+    <AssemblyName>DigitalLogicLab</AssemblyName>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationTitle>Digital Logic Lab</ApplicationTitle>
+    <Description>Unity-free deterministic digital logic circuit editor and simulator.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
+    <LibraryReference Include="Novolis.Simulation.Logic" />
+  </ItemGroup>
+</Project>
