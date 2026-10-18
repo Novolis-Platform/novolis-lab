@@ -2,6 +2,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -18,6 +19,7 @@ internal sealed class MainWindow : Window
     private readonly Border _statusBar;
     private readonly UniformGrid _actionGrid;
     private readonly StackPanel _knobPanel;
+    private readonly TextBlock _actionSummary;
     private readonly ComboBox _actionType;
     private readonly TextBox _parameter1;
     private readonly TextBox _parameter2;
@@ -25,8 +27,12 @@ internal sealed class MainWindow : Window
     private readonly ComboBox _profileBox;
     private readonly Button _readButton;
     private readonly Button _saveButton;
+    private readonly Button _writeAllButton;
+    private readonly Button _stageKnobButton;
     private readonly Button _profileButton;
     private readonly TextBox _diagnostics;
+    private readonly TextBox _rawKvp;
+    private readonly Button _copyRawButton;
     private readonly List<Button> _actionButtons = [];
     private readonly List<ConnectedHidDevice> _devices = [];
 
@@ -34,6 +40,12 @@ internal sealed class MainWindow : Window
     private WebHubMacroPadSession? _session;
     private WebHubMacroPadAction[] _actions =
         Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
+    private WebHubMacroPadAction[] _loadedActions =
+        Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
+    private WebHubMacroPadDeviceInfo? _deviceInfo;
+    private WebHubMacroPadProbeResult? _probe;
+    private ConnectedHidReportDescriptor? _targetReportDescriptor;
+    private byte[]? _rawReportDescriptor;
     private int _selectedAction = -1;
 
     public MainWindow()
@@ -58,14 +70,14 @@ internal sealed class MainWindow : Window
             Child = _statusText,
         };
 
-        var refreshButton = CreateButton("Refresh devices", (_, _) => RefreshDevices());
+        var refreshButton = CreateButton("Refresh Keytron", (_, _) => RefreshDevices());
         _deviceList = new ListBox
         {
             Background = Profile.BackgroundBrush,
             BorderBrush = Profile.BorderBrush,
             BorderThickness = new Thickness(1),
             Padding = new Thickness(4),
-            MinHeight = 160,
+            MinHeight = 100,
         };
         _deviceList.SelectionChanged += (_, _) => SelectDevice();
 
@@ -74,10 +86,11 @@ internal sealed class MainWindow : Window
             Spacing = 8,
             Children =
             {
-                Heading("Connected HID interfaces"),
+                Heading("Keytron target"),
                 new TextBlock
                 {
-                    Text = "The highlighted vendor interface is the full 4×4 Keytron configuration channel.",
+                    Text = "Only the exact full 4×4 Keytron target (VID:PID 6D7D:DCFC) is considered. " +
+                        "Other HID devices are intentionally ignored.",
                     TextWrapping = TextWrapping.Wrap,
                     Foreground = Profile.MutedBrush,
                 },
@@ -104,14 +117,22 @@ internal sealed class MainWindow : Window
         for (var knob = 0; knob < 3; knob++)
         {
             var row = new UniformGrid { Columns = 3 };
-            AddActionButton(row, 18 + knob * 3, $"Knob {knob + 1} ←");
+            AddActionButton(row, 18 + knob * 3, $"Knob {knob + 1}\nCCW");
             AddActionButton(row, 16 + knob * 3, $"Knob {knob + 1} press");
-            AddActionButton(row, 17 + knob * 3, $"Knob {knob + 1} →");
+            AddActionButton(row, 17 + knob * 3, $"Knob {knob + 1}\nCW");
             _knobPanel.Children.Add(row);
         }
 
+        _actionSummary = new TextBlock
+        {
+            Text = "Select a key or knob control to inspect its action.",
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = Profile.ActionBrush,
+            FontWeight = FontWeight.Bold,
+        };
+
         var readInfoButton = CreateButton(
-            "Read device (safe probe)",
+            "Read Keytron",
             (_, _) => ReadConfiguration());
         _readButton = readInfoButton;
 
@@ -123,7 +144,9 @@ internal sealed class MainWindow : Window
                 Heading("Key and knob actions"),
                 new TextBlock
                 {
-                    Text = "Select a control to edit its four-byte firmware action record.",
+                    Text = "This view is the Keytron's 25 action slots: 16 keys plus three controls " +
+                        "per knob. Direction is shown as clockwise (CW) and counter-clockwise (CCW).",
+                    TextWrapping = TextWrapping.Wrap,
                     Foreground = Profile.MutedBrush,
                 },
                 _actionGrid,
@@ -154,19 +177,33 @@ internal sealed class MainWindow : Window
         };
         _profileButton = CreateButton("Select profile", SelectProfile);
         _saveButton = CreateButton("Write selected action", SaveSelectedAction);
+        _stageKnobButton = CreateButton("Stage useful knob map", StageUsefulKnobMap);
+        _writeAllButton = CreateButton("Write staged changes", WriteStagedActions);
 
         _diagnostics = new TextBox
         {
             IsReadOnly = true,
             AcceptsReturn = true,
-            TextWrapping = TextWrapping.Wrap,
+            TextWrapping = TextWrapping.NoWrap,
             FontFamily = Profile.MonoFont,
-            MinHeight = 230,
+            MinHeight = 450,
             Background = Profile.BackgroundBrush,
             Foreground = Profile.TextBrush,
         };
 
-        var editorPanel = new StackPanel
+        _rawKvp = new TextBox
+        {
+            IsReadOnly = true,
+            AcceptsReturn = true,
+            TextWrapping = TextWrapping.NoWrap,
+            FontFamily = Profile.MonoFont,
+            MinHeight = 450,
+            Background = Profile.BackgroundBrush,
+            Foreground = Profile.TextBrush,
+        };
+        _copyRawButton = CreateButton("Copy raw KVP", CopyRawKvp);
+
+        var actionEditorPanel = new StackPanel
         {
             Spacing = 8,
             Children =
@@ -174,22 +211,69 @@ internal sealed class MainWindow : Window
                 Heading("Action editor"),
                 new TextBlock
                 {
-                    Text = "Type-specific parameters are entered as hexadecimal bytes.",
+                    Text = "The friendly action view is backed by the four raw firmware bytes below. " +
+                        "Writes are explicit and read back for verification.",
                     TextWrapping = TextWrapping.Wrap,
                     Foreground = Profile.MutedBrush,
                 },
+                _actionSummary,
                 Field("Action type", _actionType),
                 Field("Parameter 1", _parameter1),
                 Field("Parameter 2", _parameter2),
                 Field("Parameter 3", _parameter3),
                 _saveButton,
+                _stageKnobButton,
+                _writeAllButton,
                 new Separator { Margin = new Thickness(0, 8) },
                 Heading("Stored profile"),
                 _profileBox,
                 _profileButton,
-                new Separator { Margin = new Thickness(0, 8) },
-                Heading("Protocol diagnostics"),
+            },
+        };
+
+        var rawPanel = new StackPanel
+        {
+            Spacing = 8,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = "Copyable key/value evidence for this exact Keytron interface. " +
+                        "It includes HID shape, raw descriptor, protocol responses, and every action record.",
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = Profile.MutedBrush,
+                },
+                _copyRawButton,
+                new ScrollViewer
+                {
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    Content = _rawKvp,
+                },
+            },
+        };
+
+        var wirePanel = new StackPanel
+        {
+            Spacing = 8,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = "Protocol activity and failures. No other HID traffic is shown here.",
+                    Foreground = Profile.MutedBrush,
+                },
                 _diagnostics,
+            },
+        };
+
+        var detailTabs = new TabControl
+        {
+            Items =
+            {
+                new TabItem { Header = "Action editor", Content = actionEditorPanel },
+                new TabItem { Header = "Raw KVP", Content = rawPanel },
+                new TabItem { Header = "Wire log", Content = wirePanel },
             },
         };
 
@@ -202,7 +286,7 @@ internal sealed class MainWindow : Window
         };
         AddPanel(body, devicePanel, 0);
         AddPanel(body, padPanel, 1);
-        AddPanel(body, editorPanel, 2);
+        AddPanel(body, detailTabs, 2);
 
         var note = new TextBlock
         {
@@ -232,31 +316,35 @@ internal sealed class MainWindow : Window
     {
         DisposeSession();
         _devices.Clear();
+        _target = null;
+        _deviceInfo = null;
+        _probe = null;
+        _targetReportDescriptor = null;
+        _rawReportDescriptor = null;
+        _actions = Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
+        _loadedActions = Enumerable.Repeat(WebHubMacroPadAction.Disabled, 25).ToArray();
+        SetActionControlsEnabled(false);
         try
         {
-            _devices.AddRange(_catalog.EnumerateHidDevices());
+            // This lab is deliberately not a generic HID browser. It only
+            // considers the known full-size Keytron target.
+            _target = WebHubMacroPad.Find(_catalog);
+            if (_target is not null)
+            {
+                _devices.Add(_target.Device);
+            }
+
             _deviceList.ItemsSource = _devices
                 .Select(DescribeDevice)
                 .ToArray();
-            _target = WebHubMacroPad.Find(_catalog);
-
-            var targetIndex = _target is null
-                ? -1
-                : _devices.FindIndex(device =>
-                    string.Equals(
-                        device.Descriptor.DevicePath,
-                        _target.Device.Descriptor.DevicePath,
-                        StringComparison.OrdinalIgnoreCase));
-            _deviceList.SelectedIndex = targetIndex >= 0
-                ? targetIndex
-                : (_devices.Count > 0 ? 0 : -1);
+            _deviceList.SelectedIndex = _target is null ? -1 : 0;
 
             SetStatus(
                 _target is null
-                    ? "No 6D7D:DCFC full-size macro pad found."
-                    : "Keytron found. Select the vendor interface for protocol details.");
+                    ? "The exact 6D7D:DCFC Keytron is not connected."
+                    : "The exact 6D7D:DCFC Keytron is connected.");
             AppendDiagnostic(
-                $"Enumerated {_devices.Count} HID interfaces.{Environment.NewLine}" +
+                $"Target scan: exact VID:PID 6D7D:DCFC only.{Environment.NewLine}" +
                 (_target is null
                     ? "Target: not found."
                     : $"Target: {_target.Device.Descriptor.HardwareId} " +
@@ -268,6 +356,8 @@ internal sealed class MainWindow : Window
             SetStatus($"Device scan failed: {exception.Message}", Profile.DangerBrush);
             AppendDiagnostic(exception.ToString());
         }
+
+        UpdateRawKvp();
     }
 
     private void SelectDevice()
@@ -280,11 +370,13 @@ internal sealed class MainWindow : Window
 
         var device = _devices[_deviceList.SelectedIndex];
         var descriptor = device.GetReportDescriptor();
+        _targetReportDescriptor = descriptor;
         var details =
             $"{device.Descriptor.HardwareId} {device.Descriptor.ProductName}{Environment.NewLine}" +
             $"Path: {device.Descriptor.DevicePath}{Environment.NewLine}" +
             $"Reports: input {descriptor.MaxInputReportLength} B, " +
             $"output {descriptor.MaxOutputReportLength} B, " +
+            $"feature {descriptor.MaxFeatureReportLength} B, " +
             $"report IDs {(descriptor.ReportsUseId ? "yes" : "no")}{Environment.NewLine}" +
             $"Collections: {string.Join(", ", descriptor.Collections.SelectMany(item => item.Usages).Select(value => $"0x{value:X8}"))}";
         AppendDiagnostic(details);
@@ -301,6 +393,8 @@ internal sealed class MainWindow : Window
                 : Profile.WarningBrush);
             _readButton.IsEnabled = true;
             _saveButton.IsEnabled = false;
+            _stageKnobButton.IsEnabled = false;
+            _writeAllButton.IsEnabled = false;
             _profileButton.IsEnabled = false;
         }
         else
@@ -308,8 +402,12 @@ internal sealed class MainWindow : Window
             SetStatus("Select the 6D7D:DCFC vendor configuration interface.");
             _readButton.IsEnabled = false;
             _saveButton.IsEnabled = false;
+            _stageKnobButton.IsEnabled = false;
+            _writeAllButton.IsEnabled = false;
             _profileButton.IsEnabled = false;
         }
+
+        UpdateRawKvp();
     }
 
     private void ReadConfiguration()
@@ -324,6 +422,9 @@ internal sealed class MainWindow : Window
             if (!_target.SupportsWebHubFrames)
             {
                 var probe = _target.ProbeReadOnly();
+                _probe = probe;
+                _deviceInfo = null;
+                SetActionControlsEnabled(false);
                 SetStatus(
                     "Read-only probe completed; configuration writes remain disabled.",
                     Profile.WarningBrush);
@@ -332,12 +433,15 @@ internal sealed class MainWindow : Window
                     $"PROBE response (report {probe.ReportId}): " +
                     $"{Convert.ToHexString(probe.Response.ToArray())}{Environment.NewLine}" +
                     _target.ProtocolSupportDescription);
+                UpdateRawKvp();
                 return;
             }
 
             DisposeSession();
             _session = _target.OpenSession();
             var info = _session.ReadDeviceInfo();
+            _deviceInfo = info;
+            _probe = null;
             if (info.ActiveProfile < _profileBox.ItemCount)
             {
                 _profileBox.SelectedIndex = info.ActiveProfile;
@@ -345,12 +449,13 @@ internal sealed class MainWindow : Window
 
             var actions = _session.ReadActions();
             _actions = actions.ToArray();
+            _loadedActions = actions.ToArray();
             for (var index = 0; index < _actions.Length; index++)
             {
                 UpdateActionButton(index);
             }
 
-            _saveButton.IsEnabled = true;
+            SetActionControlsEnabled(true);
             _profileButton.IsEnabled = true;
             SetStatus(
                 $"Read {actions.Count} actions from profile {info.ActiveProfile}.",
@@ -359,12 +464,15 @@ internal sealed class MainWindow : Window
                 $"INFO response: {Convert.ToHexString(info.RawData.ToArray())}{Environment.NewLine}" +
                 $"Action record length: {info.ButtonFunctionLength}{Environment.NewLine}" +
                 $"Active profile: {info.ActiveProfile}");
+            UpdateRawKvp();
         }
         catch (Exception exception)
         {
             DisposeSession();
+            SetActionControlsEnabled(false);
             SetStatus($"Configuration read failed: {exception.Message}", Profile.DangerBrush);
             AppendDiagnostic(exception.ToString());
+            UpdateRawKvp();
         }
     }
 
@@ -393,6 +501,7 @@ internal sealed class MainWindow : Window
             _session.WriteAction(_selectedAction, action, (byte)_profileBox.SelectedIndex);
             var readBack = _session.ReadActions();
             _actions = readBack.ToArray();
+            _loadedActions = readBack.ToArray();
             for (var index = 0; index < _actions.Length; index++)
             {
                 UpdateActionButton(index);
@@ -408,11 +517,13 @@ internal sealed class MainWindow : Window
             AppendDiagnostic(
                 $"WRITE action {_selectedAction}: {Convert.ToHexString(action.ToByteArray())}{Environment.NewLine}" +
                 $"READ-BACK: {Convert.ToHexString(_actions[_selectedAction].ToByteArray())}");
+            UpdateRawKvp();
         }
         catch (Exception exception)
         {
             SetStatus($"Action write failed: {exception.Message}", Profile.DangerBrush);
             AppendDiagnostic(exception.ToString());
+            UpdateRawKvp();
         }
     }
 
@@ -434,11 +545,111 @@ internal sealed class MainWindow : Window
             _session.SelectProfile((byte)profile);
             SetStatus($"Selected profile {profile}.", Profile.AccentFillBrush);
             AppendDiagnostic($"PROFILE SELECT: {profile:X2}");
+            UpdateRawKvp();
         }
         catch (Exception exception)
         {
             SetStatus($"Profile selection failed: {exception.Message}", Profile.DangerBrush);
             AppendDiagnostic(exception.ToString());
+            UpdateRawKvp();
+        }
+    }
+
+    private void StageUsefulKnobMap(object? sender, RoutedEventArgs args)
+    {
+        if (_session is null || _loadedActions.Length != 25)
+        {
+            SetStatus("Read the Keytron action table before staging a knob map.", Profile.WarningBrush);
+            return;
+        }
+
+        var knobActions = WebHubMacroPadPresets.CreateUsefulKnobActions();
+        for (var knob = 0; knob < 3; knob++)
+        {
+            var source = knob * 3;
+            var target = 16 + knob * 3;
+            _actions[target] = knobActions[source];
+            _actions[target + 1] = knobActions[source + 1];
+            _actions[target + 2] = knobActions[source + 2];
+        }
+
+        for (var index = 16; index < _actions.Length; index++)
+        {
+            UpdateActionButton(index);
+        }
+
+        _writeAllButton.IsEnabled = HasPendingChanges();
+        SetStatus(
+            "Staged: volume down is CCW, volume up is CW; presses now control media, navigation, or workspace.",
+            Profile.WarningBrush);
+        AppendDiagnostic(
+            "STAGED useful knob map (not written): " +
+            string.Join(
+                " | ",
+                knobActions.Select(
+                    (action, index) =>
+                        $"{ActionLabel(16 + index)}={action.Description} [{Convert.ToHexString(action.ToByteArray())}]")));
+        UpdateRawKvp();
+    }
+
+    private async void WriteStagedActions(object? sender, RoutedEventArgs args)
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        var pending = Enumerable.Range(0, _actions.Length)
+            .Where(index => _actions[index] != _loadedActions[index])
+            .ToArray();
+        if (pending.Length == 0)
+        {
+            SetStatus("There are no staged action changes.", Profile.MutedBrush);
+            return;
+        }
+
+        var confirmed = await ConfirmAsync(
+            "Write staged changes?",
+            $"Write {pending.Length} action(s) to Keytron profile {_profileBox.SelectedIndex}?");
+        if (!confirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            foreach (var index in pending)
+            {
+                _session.WriteAction(
+                    index,
+                    _actions[index],
+                    (byte)_profileBox.SelectedIndex);
+            }
+
+            var readBack = _session.ReadActions().ToArray();
+            var verified = pending.All(index => readBack[index] == _actions[index]);
+            _actions = readBack;
+            _loadedActions = readBack.ToArray();
+            for (var index = 0; index < _actions.Length; index++)
+            {
+                UpdateActionButton(index);
+            }
+
+            SetStatus(
+                verified
+                    ? $"Wrote and read back {pending.Length} staged action(s)."
+                    : "Write completed, but read-back differed.",
+                verified ? Profile.AccentFillBrush : Profile.WarningBrush);
+            AppendDiagnostic(
+                $"WRITE staged actions: {string.Join(", ", pending)}{Environment.NewLine}" +
+                $"READ-BACK action count: {_actions.Length}");
+            UpdateRawKvp();
+        }
+        catch (Exception exception)
+        {
+            SetStatus($"Staged write failed: {exception.Message}", Profile.DangerBrush);
+            AppendDiagnostic(exception.ToString());
+            UpdateRawKvp();
         }
     }
 
@@ -450,6 +661,11 @@ internal sealed class MainWindow : Window
         _parameter1.Text = action.Parameter1.ToString("X2", CultureInfo.InvariantCulture);
         _parameter2.Text = action.Parameter2.ToString("X2", CultureInfo.InvariantCulture);
         _parameter3.Text = action.Parameter3.ToString("X2", CultureInfo.InvariantCulture);
+        _actionSummary.Text =
+            $"{ActionLabel(index)} — {action.Description}{Environment.NewLine}" +
+            $"Parameters: {WebHubMacroPadActionDescriptions.DescribeParameters(action)}{Environment.NewLine}" +
+            $"Raw: {Convert.ToHexString(action.ToByteArray())}" +
+            (action == _loadedActions[index] ? " (loaded)" : " (staged)");
         SetStatus($"Editing {ActionLabel(index)}.", Profile.AccentFillBrush);
     }
 
@@ -469,6 +685,23 @@ internal sealed class MainWindow : Window
         return true;
     }
 
+    private bool HasPendingChanges() =>
+        _actions.Length == _loadedActions.Length
+        && Enumerable.Range(0, _actions.Length)
+            .Any(index => _actions[index] != _loadedActions[index]);
+
+    private void SetActionControlsEnabled(bool enabled)
+    {
+        foreach (var button in _actionButtons)
+        {
+            button.IsEnabled = enabled;
+        }
+
+        _saveButton.IsEnabled = enabled && _selectedAction >= 0;
+        _stageKnobButton.IsEnabled = enabled;
+        _writeAllButton.IsEnabled = enabled && HasPendingChanges();
+    }
+
     private void UpdateActionButton(int index)
     {
         if (index < 0 || index >= _actionButtons.Count)
@@ -477,7 +710,10 @@ internal sealed class MainWindow : Window
         }
 
         _actionButtons[index].Content =
-            $"{ActionLabel(index)}{Environment.NewLine}{_actions[index]}";
+            $"{ActionLabel(index)}{Environment.NewLine}" +
+            $"{_actions[index].Description}{Environment.NewLine}" +
+            $"{Convert.ToHexString(_actions[index].ToByteArray())}" +
+            (_actions[index] == _loadedActions[index] ? string.Empty : "  *");
     }
 
     private static bool TryReadByte(string? text, out byte value)
@@ -531,11 +767,166 @@ internal sealed class MainWindow : Window
         return await dialog.ShowDialog<bool?>(this) == true;
     }
 
+    private async void CopyRawKvp(object? sender, RoutedEventArgs args)
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is null)
+        {
+            SetStatus("Clipboard is not available.", Profile.WarningBrush);
+            return;
+        }
+
+        try
+        {
+            var text = _rawKvp.Text ?? BuildRawKvp();
+            await clipboard.SetTextAsync(text);
+            SetStatus($"Copied {text.Length:N0} characters of raw KVP.", Profile.AccentFillBrush);
+        }
+        catch (Exception exception)
+        {
+            SetStatus($"Copy failed: {exception.Message}", Profile.DangerBrush);
+        }
+    }
+
+    private void UpdateRawKvp() => _rawKvp.Text = BuildRawKvp();
+
+    private string BuildRawKvp()
+    {
+        var lines = new List<string>
+        {
+            "snapshot.version=1",
+            $"status={_statusText.Text ?? string.Empty}",
+            $"target.expected={WebHubMacroPad.VendorId:X4}:{WebHubMacroPad.ProductId:X4}",
+            $"target.connected={_target is not null}",
+        };
+
+        if (_target is null)
+        {
+            return string.Join(Environment.NewLine, lines);
+        }
+
+        var device = _target.Device;
+        var deviceInfo = device.Descriptor;
+        Add("target.hardwareId", deviceInfo.HardwareId);
+        Add("target.manufacturer", deviceInfo.Manufacturer);
+        Add("target.productName", deviceInfo.ProductName);
+        Add("target.friendlyName", deviceInfo.FriendlyName);
+        Add("target.serialNumber", deviceInfo.SerialNumber);
+        Add("target.releaseNumberBcd", $"0x{deviceInfo.ReleaseNumberBcd:X4}");
+        Add("target.devicePath", deviceInfo.DevicePath);
+        Add("target.maxInputReportLength", deviceInfo.MaxInputReportLength);
+        Add("target.maxOutputReportLength", deviceInfo.MaxOutputReportLength);
+        Add("target.maxFeatureReportLength", deviceInfo.MaxFeatureReportLength);
+        Add("protocol.configurationUsage", $"0x{WebHubMacroPad.ConfigurationUsage:X8}");
+        Add("protocol.supportsWebHubFrames", _target.SupportsWebHubFrames);
+        Add("protocol.description", _target.ProtocolSupportDescription);
+
+        try
+        {
+            _targetReportDescriptor ??= device.GetReportDescriptor();
+            Add("hid.reportsUseId", _targetReportDescriptor.ReportsUseId);
+            Add("hid.maxInputReportLength", _targetReportDescriptor.MaxInputReportLength);
+            Add("hid.maxOutputReportLength", _targetReportDescriptor.MaxOutputReportLength);
+            Add("hid.maxFeatureReportLength", _targetReportDescriptor.MaxFeatureReportLength);
+
+            for (var index = 0; index < _targetReportDescriptor.Collections.Count; index++)
+            {
+                var collection = _targetReportDescriptor.Collections[index];
+                Add($"hid.collection[{index}].type", collection.CollectionType);
+                Add(
+                    $"hid.collection[{index}].usages",
+                    string.Join(",", collection.Usages.Select(value => $"0x{value:X8}")));
+                Add(
+                    $"hid.collection[{index}].inputReports",
+                    string.Join(
+                        ",",
+                        collection.InputReports.Select(
+                            report => $"id={report.ReportId}:len={report.Length}")));
+                Add(
+                    $"hid.collection[{index}].outputReports",
+                    string.Join(
+                        ",",
+                        collection.OutputReports.Select(
+                            report => $"id={report.ReportId}:len={report.Length}")));
+            }
+
+            Add(
+                "hid.inputReports",
+                string.Join(
+                    ",",
+                    _targetReportDescriptor.InputReports.Select(
+                        report => $"id={report.ReportId}:len={report.Length}")));
+            Add(
+                "hid.outputReports",
+                string.Join(
+                    ",",
+                    _targetReportDescriptor.OutputReports.Select(
+                        report => $"id={report.ReportId}:len={report.Length}")));
+        }
+        catch (Exception exception)
+        {
+            Add("hid.descriptor.error", exception.Message);
+        }
+
+        try
+        {
+            _rawReportDescriptor ??= device.GetRawReportDescriptor();
+            Add("hid.rawReportDescriptor", Convert.ToHexString(_rawReportDescriptor!));
+        }
+        catch (Exception exception)
+        {
+            Add("hid.rawReportDescriptor.error", exception.Message);
+        }
+
+        if (_probe is not null)
+        {
+            Add("probe.reportId", _probe.ReportId);
+            Add("probe.request", Convert.ToHexString(_probe.Request.ToArray()));
+            Add("probe.response", Convert.ToHexString(_probe.Response.ToArray()));
+        }
+
+        if (_deviceInfo is not null)
+        {
+            Add("deviceInfo.raw", Convert.ToHexString(_deviceInfo.RawData.ToArray()));
+            Add("deviceInfo.buttonFunctionLength", _deviceInfo.ButtonFunctionLength);
+            Add("deviceInfo.activeProfile", _deviceInfo.ActiveProfile);
+        }
+
+        Add("actions.count", _actions.Length);
+        for (var index = 0; index < _actions.Length; index++)
+        {
+            var action = _actions[index];
+            Add($"action[{index:D2}].control", ActionLabel(index));
+            Add($"action[{index:D2}].type", $"0x{(byte)action.Type:X2}");
+            Add($"action[{index:D2}].parameter1", $"0x{action.Parameter1:X2}");
+            Add($"action[{index:D2}].parameter2", $"0x{action.Parameter2:X2}");
+            Add($"action[{index:D2}].parameter3", $"0x{action.Parameter3:X2}");
+            Add($"action[{index:D2}].raw", Convert.ToHexString(action.ToByteArray()));
+            Add($"action[{index:D2}].meaning", action.Description);
+            Add(
+                $"action[{index:D2}].state",
+                action == _loadedActions[index] ? "loaded" : "staged");
+        }
+
+        Add("actions.pending", HasPendingChanges());
+        Add("wireLog.present", !string.IsNullOrWhiteSpace(_diagnostics.Text));
+        Add("wireLog.text", (_diagnostics.Text ?? string.Empty).Replace(
+            Environment.NewLine,
+            " | ",
+            StringComparison.Ordinal));
+        return string.Join(Environment.NewLine, lines);
+
+        void Add(string key, object? value) =>
+            lines.Add($"{key}={value?.ToString() ?? "(null)"}");
+    }
+
     private void DisposeSession()
     {
         _session?.Dispose();
         _session = null;
         _saveButton.IsEnabled = false;
+        _stageKnobButton.IsEnabled = false;
+        _writeAllButton.IsEnabled = false;
         _profileButton.IsEnabled = false;
     }
 
