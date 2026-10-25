@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Numerics;
+using Novolis.Agent.Surface;
 using Novolis.Physics.Ballistics;
 using Novolis.Raylib.Game;
 using Novolis.Raylib.Interact;
@@ -51,6 +52,49 @@ internal sealed class ArtillerySimulatorGame
     private float _muzzleFlash;
     private float _burstAge = -1f;
     private Vector3 _burstAt;
+    private readonly ArtilleryLiveHost _agent;
+    private AgentSurface? _surface;
+
+    public ArtillerySimulatorGame()
+    {
+        _agent = new ArtilleryLiveHost(this);
+    }
+
+    internal GunModel Gun => _gun;
+    internal TerrainWorld Terrain => _terrain;
+    internal BallisticTrajectoryRunner Shot => _shot;
+    internal CameraMode CameraMode => _camera.Mode;
+    internal string PaceText => PaceLabel();
+    internal float PredictedRangeMeters => HorizontalRange(_terrain.GunBaseline, PredictedImpact());
+
+    internal void AimAt(float elevation, float azimuth)
+    {
+        _gun.NudgeElevation(elevation - _gun.ElevationDegrees);
+        _gun.NudgeAzimuth(azimuth - _gun.AzimuthDegrees);
+    }
+
+    internal void SetDrag(bool enabled)
+    {
+        if (_gun.DragEnabled != enabled)
+            _gun.ToggleDrag();
+    }
+
+    internal void SetPace(int index) => _paceIndex = Math.Clamp(index, 0, PaceSteps.Length - 1);
+
+    internal void SetFollowCamera(bool follow) =>
+        _camera.Use(follow ? CameraMode.Orbit : CameraMode.Freecam);
+
+    internal bool TryFire()
+    {
+        if (_shot.Phase == BallisticTrajectoryPhase.InFlight)
+            return false;
+
+        var muzzle = _gun.MuzzlePosition(_terrain.GunBaseline);
+        _shot.Begin(_gun.CreateProjectileState(muzzle, _gun.BarrelDirection()));
+        _muzzleFlash = 0.22f;
+        _burstAge = -1f;
+        return true;
+    }
 
     public void Initialize(RayGameContext ctx)
     {
@@ -63,9 +107,20 @@ internal sealed class ArtillerySimulatorGame
         _shot.Reset();
         _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         RebuildAimPreview();
+        _surface = AgentSurface.AttachAll(
+            _agent,
+            AgentSurfaceDefinition.From<IArtillerySurface>(),
+            new AgentAttachOptions { EnableStdio = false, EnableMcpStdio = false });
+        _ = _surface;
     }
 
     public void Update(RayGameContext ctx)
+    {
+        _agent.RunFrame(() => Simulate(ctx));
+        Render(ctx);
+    }
+
+    private void Simulate(RayGameContext ctx)
     {
         HandleInput(ctx);
 
@@ -97,16 +152,17 @@ internal sealed class ArtillerySimulatorGame
             RebuildAimPreview();
 
         _camera.Update(ctx, _terrain.GunBaseline, _shot);
+    }
 
+    private void Render(RayGameContext ctx)
+    {
         ctx.Clear(Background);
         var cam = _camera.Build(ctx.DeltaSeconds);
         RaylibClipPlanes.ApplyForExtent(cam.Position, _terrain.ExtentMeters);
         ctx.BeginWorld(cam);
         DrawSky(ctx);
         _terrain.Draw(ctx);
-        _terrain.DrawGunPad(ctx, _terrain.GunBaseline);
         var predicted = PredictedImpact();
-        _terrain.DrawAimCorridor(ctx, _terrain.GunBaseline, _gun.AzimuthDegrees, predicted);
         DrawAimPreview(ctx);
         _gun.Draw(ctx, _terrain.GunBaseline, showPivotGlow: _shot.Phase == BallisticTrajectoryPhase.Ready);
         DrawMuzzleFlash(ctx);
@@ -200,16 +256,8 @@ internal sealed class ArtillerySimulatorGame
             _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         }
 
-        if (ctx.IsKeyPressed(KeyboardKey.Space) && _shot.Phase != BallisticTrajectoryPhase.InFlight)
-        {
-            var muzzle = _gun.MuzzlePosition(_terrain.GunBaseline);
-            var state = _gun.CreateProjectileState(muzzle, _gun.BarrelDirection());
-            _shot.Begin(state);
-            _muzzleFlash = 0.22f;
-            _burstAge = -1f;
-            if (_flatTerrain && !_gun.DragEnabled)
-                LogVacuumFlatSanity(state.Velocity);
-        }
+        if (ctx.IsKeyPressed(KeyboardKey.Space) && TryFire() && _flatTerrain && !_gun.DragEnabled)
+            LogVacuumFlatSanity(_gun.CreateProjectileState(_gun.MuzzlePosition(_terrain.GunBaseline), _gun.BarrelDirection()).Velocity);
     }
 
     private static void LogVacuumFlatSanity(Vector3 velocity)

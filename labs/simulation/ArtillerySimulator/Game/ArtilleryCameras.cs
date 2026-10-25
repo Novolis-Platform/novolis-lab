@@ -19,9 +19,14 @@ internal sealed class ArtilleryCameras
 
     public CameraMode Mode { get; private set; } = CameraMode.Orbit;
 
-    public void ToggleMode()
+    public void ToggleMode() => Use(Mode == CameraMode.Freecam ? CameraMode.Orbit : CameraMode.Freecam);
+
+    public void Use(CameraMode mode)
     {
-        Mode = Mode == CameraMode.Freecam ? CameraMode.Orbit : CameraMode.Freecam;
+        if (Mode == mode)
+            return;
+
+        Mode = mode;
         _orbit.ResetSmoothing();
     }
 

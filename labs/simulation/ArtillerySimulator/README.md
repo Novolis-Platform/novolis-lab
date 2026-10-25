@@ -9,7 +9,7 @@ cd novolis-lab
 dotnet run --project labs/simulation/ArtillerySimulator
 ```
 
-`--agent` skips the window and drives the same gun, atmosphere, and terrain through the agent protocol: typed aim and charge, a receipt per shot, and a watch on `artillery.gun`.
+The window listens on `http://127.0.0.1:18770`. Snapshot `GET /agent/snapshot`, then `POST /agent/command` with `artillery.aim`, `artillery.charge`, `artillery.drag`, `artillery.fire`, `artillery.pace`, or `artillery.camera`. `--agent` runs the same gun and ground without the window.
 
 ## Controls
 
@@ -29,9 +29,7 @@ dotnet run --project labs/simulation/ArtillerySimulator
 | R | Reseed terrain |
 | WASD + mouse | Fly / look in freecam |
 
-The opening view sits behind the piece. A dashed corridor and 2 km stakes show the line of fire, and the card shows the predicted range before the shot and the impact range after it.
-
-On-screen HUD shows elevation, charge, atmosphere, trajectory, and impact stats.
+The opening view sits behind the piece. The card shows the predicted range before the shot and the impact range after it. The ground mesh is the original heightfield.
 
 ## ProjectRef note
 
