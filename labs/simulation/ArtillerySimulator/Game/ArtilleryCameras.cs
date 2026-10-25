@@ -15,7 +15,9 @@ internal sealed class ArtilleryCameras
     private readonly FreeLookCameraRig _free = new();
     private readonly OrbitCameraRig _orbit = new();
 
-    public CameraMode Mode { get; private set; } = CameraMode.Freecam;
+    private float _zoom = 1f;
+
+    public CameraMode Mode { get; private set; } = CameraMode.Orbit;
 
     public void ToggleMode()
     {
@@ -25,11 +27,16 @@ internal sealed class ArtilleryCameras
 
     public void SnapToGun(Vector3 gunPivot, Vector3 barrelDir)
     {
-        var orbitTarget = gunPivot + new Vector3(0f, 4f, 0f);
+        var orbitTarget = gunPivot + new Vector3(0f, 2.2f, 0f);
+        _orbit.MinDistance = 16f;
+        _orbit.MaxDistance = 16_000f;
+        _orbit.FieldOfViewDegrees = 36f;
+        _orbit.SmoothRate = 3.5f;
         _orbit.SnapTarget(orbitTarget);
-        _orbit.Yaw = MathF.Atan2(barrelDir.X, barrelDir.Z);
-        _orbit.Pitch = 0.3f;
-        _orbit.Distance = 500f;
+        _orbit.Yaw = MathF.Atan2(-barrelDir.X, -barrelDir.Z) + 0.7f;
+        _orbit.Pitch = 0.52f;
+        _orbit.Distance = 150f;
+        _zoom = 1f;
 
         _free.Position = gunPivot + SimulationUnits.FixedCamEyeOffset;
         _free.Yaw = _orbit.Yaw + MathF.PI * 0.15f;
@@ -44,13 +51,10 @@ internal sealed class ArtilleryCameras
             UpdateOrbit(ctx, gunPivot, shot);
     }
 
-    public RayCamera Build(float deltaSeconds, Vector3 gunPivot, BallisticTrajectoryRunner shot)
+    public RayCamera Build(float deltaSeconds)
     {
         if (Mode == CameraMode.Orbit)
         {
-            _orbit.Target = shot.Phase != BallisticTrajectoryPhase.Ready
-                ? shot.CurrentPosition + new Vector3(0f, 6f, 0f)
-                : gunPivot + new Vector3(0f, 4f, 0f);
             var pose = _orbit.BuildViewPose(deltaSeconds);
             return RayCamera.Perspective(pose.Position, pose.Target, pose.Up, pose.FieldOfViewDegrees);
         }
@@ -61,8 +65,11 @@ internal sealed class ArtilleryCameras
 
     private void UpdateFreecam(RayGameContext ctx)
     {
-        var delta = ctx.MouseDelta;
-        _free.AddLookDelta(-delta.X * MouseSensitivity, -delta.Y * MouseSensitivity);
+        if (ctx.IsMouseDown(MouseButton.Right))
+        {
+            var delta = ctx.MouseDelta;
+            _free.AddLookDelta(-delta.X * MouseSensitivity, -delta.Y * MouseSensitivity);
+        }
 
         var move = Vector3.Zero;
         var forward = _free.GetLookDirection();
@@ -86,16 +93,41 @@ internal sealed class ArtilleryCameras
 
     private void UpdateOrbit(RayGameContext ctx, Vector3 gunPivot, BallisticTrajectoryRunner shot)
     {
-        _orbit.Target = shot.Phase != BallisticTrajectoryPhase.Ready
-            ? shot.CurrentPosition + new Vector3(0f, 6f, 0f)
-            : gunPivot + new Vector3(0f, 4f, 0f);
+        Frame(gunPivot, shot);
+
+        if (ctx.IsKeyDown(KeyboardKey.H))
+            _zoom = Math.Clamp(_zoom - 0.85f * ctx.DeltaSeconds, 0.4f, 2.6f);
+        if (ctx.IsKeyDown(KeyboardKey.M))
+            _zoom = Math.Clamp(_zoom + 0.85f * ctx.DeltaSeconds, 0.4f, 2.6f);
+
+        if (!ctx.IsMouseDown(MouseButton.Right))
+            return;
 
         var delta = ctx.MouseDelta;
         _orbit.AddLookDelta(-delta.X * MouseSensitivity, -delta.Y * MouseSensitivity);
+    }
 
-        if (ctx.IsKeyDown(KeyboardKey.H))
-            _orbit.AdjustDistance(-900f * ctx.DeltaSeconds);
-        if (ctx.IsKeyDown(KeyboardKey.M))
-            _orbit.AdjustDistance(900f * ctx.DeltaSeconds);
+    private void Frame(Vector3 gunPivot, BallisticTrajectoryRunner shot)
+    {
+        Vector3 focus;
+        float desired;
+        if (shot.Phase == BallisticTrajectoryPhase.Ready)
+        {
+            focus = gunPivot + new Vector3(0f, 3f, 0f);
+            desired = 150f;
+        }
+        else
+        {
+            var flat = shot.CurrentPosition - gunPivot;
+            flat.Y = 0f;
+            var span = flat.Length();
+            var altitude = MathF.Max(0f, shot.CurrentPosition.Y - gunPivot.Y);
+            focus = Vector3.Lerp(gunPivot + new Vector3(0f, 6f, 0f), shot.CurrentPosition, 0.42f);
+            focus.Y = MathF.Max(focus.Y, gunPivot.Y + altitude * 0.45f);
+            desired = Math.Clamp(120f + span * 0.55f + altitude * 0.5f, 120f, 9_000f);
+        }
+
+        _orbit.Target = focus;
+        _orbit.Distance = Math.Clamp(desired * _zoom, _orbit.MinDistance, _orbit.MaxDistance);
     }
 }

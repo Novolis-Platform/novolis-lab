@@ -10,5 +10,7 @@
     <LibraryReference Include="Novolis.Simulation.World" />
     <LibraryReference Include="Novolis.Simulation.World.Builders" />
     <LibraryReference Include="Novolis.Simulation.View" />
+    <LibraryReference Include="Novolis.Agent.Core" />
+    <LibraryReference Include="Novolis.Agent.Surface" />
   </ItemGroup>
 </Project>

@@ -50,22 +50,62 @@ internal sealed class GunModel
   {
     var dir = BarrelDirection();
     var muzzle = MuzzlePosition(gunPivot);
-    var carriage = Color.FromArgb(255, 90, 95, 100);
-    var tube = Color.FromArgb(255, 150, 155, 165);
-    var plate = Color.FromArgb(255, 70, 75, 80);
+    var carriage = Color.FromArgb(255, 78, 86, 64);
+    var tube = Color.FromArgb(255, 186, 176, 154);
+    var copper = Color.FromArgb(255, 210, 132, 72);
+    var right = Lateral(dir);
+    var horizontal = Vector3.Normalize(new Vector3(dir.X, 0f, dir.Z));
+    var trunnion = gunPivot + new Vector3(0f, 0.95f, 0f);
+    var axle = gunPivot - new Vector3(0f, 0.85f, 0f);
 
-    var right = Vector3.Normalize(Vector3.Cross(dir, Vector3.UnitY));
-    if (right.LengthSquared() < 1e-6f)
-      right = Vector3.UnitX;
+    DrawBundle(ctx, trunnion, muzzle, dir, 0.09f, tube);
+    DrawRing(ctx, muzzle, dir, 0.16f, copper);
+    DrawRing(ctx, trunnion, dir, 0.12f, carriage);
 
-    var plateHalf = 2.2f;
-    ctx.DrawBolt(gunPivot - right * plateHalf, gunPivot + right * plateHalf, plate);
-    ctx.DrawBolt(gunPivot - Vector3.UnitZ * plateHalf, gunPivot + Vector3.UnitZ * plateHalf, plate);
-    ctx.DrawBolt(gunPivot, gunPivot + new Vector3(0f, 1.1f, 0f), carriage);
-    ctx.DrawBolt(gunPivot + new Vector3(0f, 0.75f, 0f), muzzle, tube);
-    ctx.DrawGlowSphereWires(muzzle, MuzzleRadius * 1.35f, Color.FromArgb(255, 180, 190, 200));
+    var trailEnd = gunPivot - horizontal * 3.6f - new Vector3(0f, 0.55f, 0f);
+    DrawBundle(ctx, axle + right * 0.35f, trailEnd + right * 0.7f, horizontal, 0.05f, carriage);
+    DrawBundle(ctx, axle - right * 0.35f, trailEnd - right * 0.7f, horizontal, 0.05f, carriage);
+    DrawRing(ctx, axle + right * 1.15f, right, 0.72f, carriage);
+    DrawRing(ctx, axle - right * 1.15f, right, 0.72f, carriage);
+
+    var shield = trunnion + horizontal * 0.45f;
+    ctx.DrawBolt(shield + right * 0.85f + Vector3.UnitY * 0.55f, shield - right * 0.85f + Vector3.UnitY * 0.55f, copper);
+    ctx.DrawBolt(shield + right * 0.85f - Vector3.UnitY * 0.15f, shield - right * 0.85f - Vector3.UnitY * 0.15f, carriage);
+    ctx.DrawBolt(shield + right * 0.85f + Vector3.UnitY * 0.55f, shield + right * 0.85f - Vector3.UnitY * 0.15f, carriage);
+    ctx.DrawBolt(shield - right * 0.85f + Vector3.UnitY * 0.55f, shield - right * 0.85f - Vector3.UnitY * 0.15f, carriage);
 
     if (showPivotGlow)
-      ctx.DrawGlowSphereWires(gunPivot, 0.45f, Color.FromArgb(255, 100, 140, 120));
+      ctx.DrawGlowSphere(muzzle, 1.1f, copper);
+  }
+
+  private static Vector3 Lateral(Vector3 dir)
+  {
+    var right = Vector3.Cross(dir, Vector3.UnitY);
+    return right.LengthSquared() < 1e-6f ? Vector3.UnitZ : Vector3.Normalize(right);
+  }
+
+  private static void DrawBundle(RayGameContext ctx, Vector3 from, Vector3 to, Vector3 axis, float radius, Color color)
+  {
+    var side = Lateral(axis);
+    var up = Vector3.Normalize(Vector3.Cross(axis, side));
+    ctx.DrawBolt(from, to, color);
+    ctx.DrawBolt(from + side * radius, to + side * radius, color);
+    ctx.DrawBolt(from - side * radius, to - side * radius, color);
+    ctx.DrawBolt(from + up * radius, to + up * radius, color);
+  }
+
+  private static void DrawRing(RayGameContext ctx, Vector3 center, Vector3 axis, float radius, Color color)
+  {
+    var side = Lateral(axis);
+    var up = Vector3.Normalize(Vector3.Cross(axis, side));
+    const int segments = 12;
+    var previous = center + side * radius;
+    for (var i = 1; i <= segments; i++)
+    {
+      var angle = i / (float)segments * MathF.Tau;
+      var next = center + side * (MathF.Cos(angle) * radius) + up * (MathF.Sin(angle) * radius);
+      ctx.DrawBolt(previous, next, color);
+      previous = next;
+    }
   }
 }
