@@ -4,12 +4,12 @@ HTML blueprint sheets are emitted by **C#** only:
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --blueprints
+```
 
-CAD + Wavefront OBJ from this lock (sibling dogfood):
+`--blueprints` also refreshes the manufacturer HTML under `docs/manufacturer`. CAD + Wavefront OBJ from this lock:
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoInternalsCad\CalypsoInternalsCad.csproj -p:NovolisUseProjectReferences=true
-```
 ```
 
 | Sheet | Content |

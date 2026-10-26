@@ -27,6 +27,7 @@ internal sealed class CalypsoRenderer
     private static readonly Color AccentCyan = Color.FromArgb(255, 90, 170, 190);
     private static readonly Color OpeningFrame = Color.FromArgb(255, 140, 120, 70);
     private static readonly Vector3 LightDir = Vector3.Normalize(new Vector3(-0.25f, 0.85f, 0.35f));
+    private static readonly Guid LayerStruct = Guid.Parse("d1000000-0000-4000-8000-00000000000a");
 
     private readonly CalypsoSession _session;
     private readonly OrbitCameraRig _orbit = new()
@@ -103,20 +104,6 @@ internal sealed class CalypsoRenderer
                 SetOrbitPose(new Vector3(0f, 2.2f, -28f), 38f, MathF.PI, 0.12f);
                 _session.CutPlaneLongitudinal = true;
                 break;
-            case "pod-port":
-                // Port side pod: engines aft + FTL graviton stack mid-fore.
-                SetOrbitPose(new Vector3(-12f, 3.6f, -2f), 42f, MathF.PI * 0.72f, 0.18f);
-                _session.CutPlaneLongitudinal = true;
-                break;
-            case "pod-stbd":
-                SetOrbitPose(new Vector3(12f, 3.6f, -2f), 42f, MathF.PI * 0.28f, 0.18f);
-                _session.CutPlaneLongitudinal = true;
-                break;
-            case "pod-ftl":
-                // Close look at starboard FTL graviton emitter rings.
-                SetOrbitPose(new Vector3(14f, 3.6f, 6f), 28f, MathF.PI * 0.35f, 0.1f);
-                _session.CutPlaneLongitudinal = true;
-                break;
             case "three-quarter-high":
                 SetOrbitPose(new Vector3(0f, 6f, 4f), 105f, 0.95f, 0.55f);
                 _session.CutPlaneLongitudinal = true;
@@ -181,13 +168,13 @@ internal sealed class CalypsoRenderer
         _session.DeckFilter = null;
 
         var cargoVoid = _session.Spaces.FirstOrDefault(s =>
-            string.Equals(s.Name, "Cargo Void", StringComparison.OrdinalIgnoreCase) && s.Flags?.Hollow == true);
+            string.Equals(s.Name, "HOLD", StringComparison.OrdinalIgnoreCase));
         var catwalk = _session.Spaces.FirstOrDefault(s =>
-            string.Equals(s.Name, "Cargo Catwalk", StringComparison.OrdinalIgnoreCase) && s.Deck == 0);
+            string.Equals(s.Name, "HOLD", StringComparison.OrdinalIgnoreCase) && s.Deck == 0);
         var portCorr = _session.Spaces.FirstOrDefault(s =>
-            string.Equals(s.Name, "Port Corridor", StringComparison.OrdinalIgnoreCase) && s.Deck == 0);
+            string.Equals(s.Name, "CORR_P", StringComparison.OrdinalIgnoreCase) && s.Deck == 0);
         var stbdCorr = _session.Spaces.FirstOrDefault(s =>
-            string.Equals(s.Name, "Starboard Corridor", StringComparison.OrdinalIgnoreCase) && s.Deck == 0);
+            string.Equals(s.Name, "CORR_S", StringComparison.OrdinalIgnoreCase) && s.Deck == 0);
 
         if (cargoVoid is null)
         {
@@ -400,8 +387,7 @@ internal sealed class CalypsoRenderer
 
     private static bool IsCargoVoidHollow(CadEntity? space) =>
         space is not null
-        && space.Flags?.Hollow == true
-        && string.Equals(space.Name, "Cargo Void", StringComparison.OrdinalIgnoreCase);
+        && string.Equals(space.Name, "HOLD", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>High port-fore corner looking aft down the side aisle (look ray stays in-aisle, not into the pack).</summary>
     private static void PlaceCargoHoldCamera(
@@ -556,20 +542,27 @@ internal sealed class CalypsoRenderer
         // Cutaway: exterior triangles on the camera side of the invisible plane are culled.
         if (solidOrbit)
         {
-            CadShipExterior.Draw(_session.Document);
+            if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
+                CadShipExterior.Draw(_session.Document);
         }
         else
         {
             if (cutaway || _session.ViewMode == CalypsoViewMode.Orbit)
             {
-                if (cutaway)
-                    CadShipExterior.Draw(_session.Document, frameCutPt, frameCutN);
-                else
-                    CadShipExterior.Draw(_session.Document);
+                if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
+                {
+                    if (cutaway)
+                        CadShipExterior.Draw(_session.Document, frameCutPt, frameCutN);
+                    else
+                        CadShipExterior.Draw(_session.Document);
+                }
             }
 
             foreach (var entity in _session.Document.Entities)
             {
+                if (!IsEntityVisibleForLayers(entity))
+                    continue;
+
                 if (entity.Kind == "wall" && deckForWalls is { } walls && !WallVisibleOnDecks(entity, walls))
                     continue;
 
@@ -605,6 +598,11 @@ internal sealed class CalypsoRenderer
                                     DrawOpeningFrame(entity);
                             }
                         }
+                        else if (_session.ViewMode == CalypsoViewMode.Plan)
+                        {
+                            if (deckForSpaces is null || entity.Deck == deckForSpaces)
+                                DrawOpeningPlanSymbol(entity);
+                        }
                         else if (string.Equals(entity.OpeningType, "ramp", StringComparison.OrdinalIgnoreCase)
                                  || (entity.Name?.Contains("Armored", StringComparison.OrdinalIgnoreCase) ?? false))
                             DrawOpeningFrame(entity);
@@ -614,6 +612,11 @@ internal sealed class CalypsoRenderer
                         if (cutaway
                             && _session.ViewMode == CalypsoViewMode.Orbit
                             && (entity.Name?.StartsWith("C40", StringComparison.OrdinalIgnoreCase) ?? false))
+                            break;
+                        if (cutaway
+                            && _session.ViewMode == CalypsoViewMode.Orbit
+                            && entity.Name is { } hatchBox
+                            && hatchBox.StartsWith("outfit-hatch-", StringComparison.OrdinalIgnoreCase))
                             break;
                         DrawSolidBox(entity);
                         break;
@@ -629,6 +632,12 @@ internal sealed class CalypsoRenderer
                         break;
                 }
             }
+
+            if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.PassagewayCutouts)
+                && cutaway
+                && (_session.ViewMode == CalypsoViewMode.Orbit
+                    || _session.ViewMode == CalypsoViewMode.Interior))
+                DrawPassagewayCutoutHighlights();
         }
 
         if (_session.ViewMode == CalypsoViewMode.Interior && _session.SelectedHook is { Position: { } hp } && hp.Length >= 3)
@@ -647,7 +656,7 @@ internal sealed class CalypsoRenderer
             8, 8, 14, Hud);
         Graphics.DrawText(_session.StatusText, 8, 28, 12, Hud);
         Graphics.DrawText(
-            "P plan  O orbit  I interior  W wire  C cutaway  S solid  [ ] slide cut  L/B cut axis  1/2/3 decks  0 all  F fit  E export",
+            "P plan  O orbit  I interior  G layers  W wire  C cutaway  S solid  [ ] slide cut  L/B cut axis  1/2/3 decks  0 all  F fit  E export",
             8, 48, 12, Hud);
     }
 
@@ -667,6 +676,10 @@ internal sealed class CalypsoRenderer
     private void DrawSpace(CadEntity space)
     {
         if (space.Points is not { Count: >= 3 } pts)
+            return;
+        var showFinish = _session.VisualLayers.HasFlag(CalypsoVisualLayers.SpaceFinish);
+        var showSpacePartitions = _session.VisualLayers.HasFlag(CalypsoVisualLayers.Partitions);
+        if (!showFinish && !showSpacePartitions)
             return;
 
         var selected = space.Id == _session.SelectedSpaceId;
@@ -725,6 +738,9 @@ internal sealed class CalypsoRenderer
         if (wire)
             return;
 
+        if (!showFinish)
+            goto skipFinish;
+
         if (interior && !InteriorSpaceVisible(space, selected))
             return;
 
@@ -742,35 +758,28 @@ internal sealed class CalypsoRenderer
             }
             else if (cutaway && !interior)
             {
-                // Cutaway orbit: single muted slab (no tile grid — tiles z-fight under outlines).
-                var muted = Color.FromArgb(100, DeckPlate.R, DeckPlate.G, DeckPlate.B);
-                World.DrawCube(
-                    new Vector3(center.X, min.Y + 0.03f, center.Z),
-                    Math.Max(0.4f, size.X),
-                    0.06f,
-                    Math.Max(0.4f, size.Z),
-                    muted);
+                // Cutaway orbit: footprint polygon only — AABB slabs poke through bow chamfer.
+                var muted = Color.FromArgb(88, DeckPlate.R, DeckPlate.G, DeckPlate.B);
+                DrawPolygonFloor(ring, min, max, min.Y + 0.03f, muted, tile: 1.1f);
             }
             else if (interior)
             {
-                // Single slab floor (no tile grid gaps that read as CAD wires).
                 var deck = ShadeColor(Color.FromArgb(255, 72, 76, 82), 0.65f, 0.12f, Vector3.UnitY, LightDir);
-                World.DrawCube(
-                    new Vector3(center.X, min.Y + 0.04f, center.Z),
-                    Math.Max(0.4f, size.X),
-                    0.08f,
-                    Math.Max(0.4f, size.Z),
-                    deck);
+                DrawPolygonFloor(ring, min, max, min.Y + 0.04f, deck, tile: 1.05f);
             }
             // Solid orbit: no open room floors — closed shell carries the silhouette.
         }
 
-        if (interior)
+        skipFinish:
+        if (interior && showSpacePartitions)
         {
-            // No deck panel wire grid — it reads as CAD construction lines.
-            DrawCeilingAndLightStrip(center, size, encloseH, cutaway, cutPt, cutN);
+            if (showFinish)
+            {
+                DrawCeilingAndLightStrip(center, size, encloseH, cutaway, cutPt, cutN);
+            }
+
             DrawPerimeterBulkheads(ring, encloseH, openings, cutaway, cutPt, cutN);
-            if (InteriorSpaceVisible(space, selected))
+            if (showFinish && InteriorSpaceVisible(space, selected))
                 DrawCompartmentProps(space, center, size, min, max, encloseH);
         }
     }
@@ -874,7 +883,8 @@ internal sealed class CalypsoRenderer
         if (_interiorEnsemble == "catwalk-dk0")
             return true;
         var sel = _session.SelectedSpace?.Name ?? "";
-        return sel.Contains("Cargo", StringComparison.OrdinalIgnoreCase);
+        return sel.Contains("HOLD", StringComparison.OrdinalIgnoreCase)
+               || sel.Contains("Cargo", StringComparison.OrdinalIgnoreCase);
     }
 
     private bool InteriorSpaceVisible(CadEntity space, bool selected)
@@ -896,19 +906,30 @@ internal sealed class CalypsoRenderer
             return false;
 
         var nm = space.Name ?? "";
-        if (string.Equals(nm, "Cargo Void", StringComparison.OrdinalIgnoreCase) && space.Flags?.Hollow == true)
-            return true;
-        if (string.Equals(nm, "Cargo Catwalk", StringComparison.OrdinalIgnoreCase) && space.Deck == 0)
+        if (string.Equals(nm, "HOLD", StringComparison.OrdinalIgnoreCase))
             return true;
         if (space.Deck != 0)
             return false;
-        return nm is "Port Corridor" or "Starboard Corridor" or "Crossing Hallway"
-            or "VEST-P" or "VEST-S" or "VEST-BR" or "Engineering";
+        return nm is "CORR_P" or "CORR_S" or "CROSSING" or "ENG";
     }
 
     private void DrawCompartmentProps(CadEntity space, Vector3 center, Vector3 size, Vector3 min, Vector3 max, float h)
     {
+        if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.Outfit))
+            return;
+
         var name = space.Name ?? "";
+        // Generator outfit solids are authoritative — skip renderer-only duplicates that can poke past the shell.
+        if (_session.Document.Entities.Any(e =>
+                e.Name?.StartsWith($"outfit-{name}", StringComparison.OrdinalIgnoreCase) == true))
+            return;
+        if (name.StartsWith("CREW_", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("PAX_", StringComparison.OrdinalIgnoreCase)
+            || name is "BRIDGE" or "GALLEY" or "ENG" or "LOUNGE" or "INFIRMARY" or "HOLD"
+            || name.StartsWith("CORR_", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("STAIRS", StringComparison.OrdinalIgnoreCase))
+            return;
+
         var console = ShadeColor(Color.FromArgb(255, 48, 52, 58), 0.5f, 0.35f, Vector3.UnitY, LightDir);
         var glow = ShadeColor(AccentCyan, 0.3f, 0.5f, Vector3.UnitY, LightDir);
         var steel = ShadeColor(Steel, 0.45f, 0.55f, Vector3.UnitY, LightDir);
@@ -1111,6 +1132,11 @@ internal sealed class CalypsoRenderer
     {
         // Points[0]=center, Points[1]=halfExtents (or Thickness/Height fallback).
         if (box.Points is not { Count: >= 2 })
+            return;
+        if (IsStructureBox(box) && !_session.VisualLayers.HasFlag(CalypsoVisualLayers.Structure))
+            return;
+        if (box.Name?.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase) == true
+            && !_session.VisualLayers.HasFlag(CalypsoVisualLayers.Outfit))
             return;
         var c = SvgCoords.FromArray(box.Points[0]);
         var he = SvgCoords.FromArray(box.Points[1]);
@@ -1481,8 +1507,28 @@ internal sealed class CalypsoRenderer
         World.DrawCube(lintel, Math.Max(0.2f, span), 0.12f, 0.14f, frame);
     }
 
+    private static void DrawOpeningPlanSymbol(CadEntity opening)
+    {
+        if (opening.Footprint is not { Count: >= 3 } fp)
+            return;
+        var ring = fp.Select(SvgCoords.FromArray).ToArray();
+        BoundsOf(ring, out var min, out var max);
+        var c = (min + max) * 0.5f;
+        c.Y = min.Y + 0.06f;
+        var sx = Math.Max(0.35f, max.X - min.X);
+        var sz = Math.Max(0.35f, max.Z - min.Z);
+        var gap = Color.FromArgb(220, 28, 32, 38);
+        var leaf = ShipCad.GetLeafState(opening) == ShipLeafState.Open
+            ? Color.FromArgb(200, 72, 118, 88)
+            : Color.FromArgb(200, 110, 92, 58);
+        World.DrawCube(c, sx * 1.02f, 0.05f, sz * 1.02f, gap);
+        World.DrawCube(c + new Vector3(0, 0.04f, 0), sx * 0.35f, 0.02f, sz * 0.12f, leaf);
+    }
+
     private void DrawOpeningFrame(CadEntity opening)
     {
+        if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.Openings))
+            return;
         if (opening.Footprint is not { Count: >= 3 } fp)
             return;
         var ring = fp.Select(SvgCoords.FromArray).ToArray();
@@ -1561,6 +1607,9 @@ internal sealed class CalypsoRenderer
 
     private void DrawWall(CadEntity wall)
     {
+        if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.Partitions))
+            return;
+
         var segments = GetBaseline(wall);
         if (segments.Count == 0)
             return;
@@ -1608,6 +1657,17 @@ internal sealed class CalypsoRenderer
                     continue;
                 if (interior)
                     continue;
+            }
+
+            if (cutaway && !interior)
+            {
+                var panelH = wall.Name is { } wn
+                             && (wn.StartsWith("w-HOLD", StringComparison.OrdinalIgnoreCase)
+                                 || wn.StartsWith("w-ENG", StringComparison.OrdinalIgnoreCase))
+                    ? h
+                    : Math.Min(h, 3.5f);
+                DrawInteriorWallPanel(a, b, panelH, ribs: false);
+                continue;
             }
 
             var offset = normalA * (halfT * 0.55f);
@@ -1859,6 +1919,82 @@ internal sealed class CalypsoRenderer
         var dist = MathF.Sqrt(ddx * ddx + ddz * ddz);
 
         return dist <= radius * 1.15f + 0.03f;
+    }
+
+    private static bool IsStructureBox(CadEntity box)
+    {
+        if (box.LayerId == LayerStruct)
+            return true;
+        var n = box.Name ?? "";
+        return n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsEntityVisibleForLayers(CadEntity entity)
+    {
+        var layers = _session.VisualLayers;
+        return entity.Kind switch
+        {
+            "wall" => layers.HasFlag(CalypsoVisualLayers.Partitions),
+            "opening" => layers.HasFlag(CalypsoVisualLayers.Openings),
+            "space" => layers.HasFlag(CalypsoVisualLayers.SpaceFinish)
+                       || layers.HasFlag(CalypsoVisualLayers.Partitions),
+            "box" => IsStructureBox(entity)
+                ? layers.HasFlag(CalypsoVisualLayers.Structure)
+                : entity.Name?.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase) == true
+                    ? layers.HasFlag(CalypsoVisualLayers.Outfit)
+                    : true,
+            _ => true,
+        };
+    }
+
+    private void DrawPassagewayCutoutHighlights()
+    {
+        GetCutPlane(true, out var cutPt, out var cutN);
+        var voidColor = Color.FromArgb(56, 90, 170, 190);
+        foreach (var opening in _session.Document.Entities.Where(e => e.Kind == "opening"))
+        {
+            if (opening.Footprint is not { Count: >= 3 } fp)
+                continue;
+            var ring = fp.Select(SvgCoords.FromArray).ToArray();
+            BoundsOf(ring, out var min, out var max);
+            var c = (min + max) * 0.5f;
+            c.Y = min.Y + Math.Max(0.08f, (max.Y - min.Y) * 0.5f);
+            if (CulledByCutPlane(c, cutPt, cutN))
+                continue;
+            World.DrawCube(
+                c,
+                Math.Max(0.45f, max.X - min.X + 0.08f),
+                Math.Max(0.45f, max.Y - min.Y + 0.08f),
+                Math.Max(0.25f, max.Z - min.Z + 0.08f),
+                voidColor);
+        }
+
+        foreach (var space in _session.Spaces.Where(s =>
+                     s.Name is "CORR_P" or "CORR_S" or "CROSSING"))
+        {
+            if (space.Points is not { Count: >= 3 })
+                continue;
+            var ring = space.Points.Select(SvgCoords.FromArray).ToArray();
+            BoundsOf(ring, out var min, out var max);
+            var y = min.Y + 0.06f;
+            var stripe = Color.FromArgb(72, 110, 180, 200);
+            for (var i = 0; i < ring.Length; i++)
+            {
+                var a = ring[i];
+                var b = ring[(i + 1) % ring.Length];
+                var mid = (a + b) * 0.5f;
+                mid.Y = y;
+                if (CulledByCutPlane(mid, cutPt, cutN))
+                    continue;
+                var len = Vector3.Distance(new Vector3(a.X, 0, a.Z), new Vector3(b.X, 0, b.Z));
+                if (len < 0.4f)
+                    continue;
+                World.DrawCube(mid, Math.Max(0.35f, len * 0.92f), 0.04f, 0.35f, stripe);
+            }
+        }
     }
 
     private static List<(Vector3 A, Vector3 B)> GetBaseline(CadEntity wall)

@@ -1,8 +1,9 @@
-using System.Numerics;
 using Avalonia;
+using CalypsoCad.Agent;
 using CalypsoCad.Generation;
 using CalypsoCad.Models;
 using CalypsoCad.Services;
+using Novolis.Agent.Surface;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -21,6 +22,14 @@ internal static class Program
         var jsonOnly = args.Any(a => string.Equals(a, "--json-only", StringComparison.OrdinalIgnoreCase));
         var acceptance = args.Any(a => string.Equals(a, "--acceptance", StringComparison.OrdinalIgnoreCase));
         var blueprints = args.Any(a => string.Equals(a, "--blueprints", StringComparison.OrdinalIgnoreCase));
+        var mcp = args.Any(a => string.Equals(a, "--mcp", StringComparison.OrdinalIgnoreCase));
+        var stdio = args.Any(a => string.Equals(a, "--stdio", StringComparison.OrdinalIgnoreCase));
+
+        if (mcp || stdio)
+        {
+            Environment.ExitCode = RunAgent(mcp).GetAwaiter().GetResult();
+            return;
+        }
 
         if (blueprints)
         {
@@ -31,6 +40,39 @@ internal static class Program
         if (acceptance)
         {
             Environment.ExitCode = RunAcceptance();
+            return;
+        }
+
+        var dnvReview = args.Any(a => string.Equals(a, "--dnv-review", StringComparison.OrdinalIgnoreCase));
+        if (dnvReview)
+        {
+            var withHeadless = args.Any(a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase));
+            try
+            {
+                var html = CalypsoDnvReviewEmitter.Emit(runHeadlessExports: withHeadless);
+                Console.WriteLine($"Wrote DNV-style design review package:{Environment.NewLine}{html}");
+                Environment.ExitCode = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                Environment.ExitCode = 1;
+            }
+
+            return;
+        }
+
+        var emitCanvasIdx = Array.FindIndex(args, a =>
+            string.Equals(a, "--emit-functional-canvas", StringComparison.OrdinalIgnoreCase));
+        if (emitCanvasIdx >= 0)
+        {
+            var path = emitCanvasIdx + 1 < args.Length && !args[emitCanvasIdx + 1].StartsWith('-')
+                ? args[emitCanvasIdx + 1]
+                : Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    ".cursor", "projects", "d-novolis", "canvases", "calypso-functional-vessel.canvas.tsx");
+            var written = CalypsoFunctionalCanvasEmitter.Emit(path);
+            Console.WriteLine($"Wrote functional vessel canvas:{Environment.NewLine}{written}");
             return;
         }
 
@@ -71,6 +113,7 @@ internal static class Program
         try
         {
             CalypsoCad.Generation.Blueprints.InternalsBlueprintEmitter.Emit();
+            CalypsoCad.Generation.Blueprints.ManufacturerSheetEmitter.Emit();
             return 0;
         }
         catch (Exception ex)
@@ -105,136 +148,8 @@ internal static class Program
             File.ReadAllText(cadPath), CadJson.Options)
             ?? throw new InvalidOperationException("Failed to deserialize calypso.cadjson");
 
-        var loa = Novolis.Ship.Primitives.ShipDocumentMetrics.GetLoaMeters(doc);
-        Check("LOA 69", Math.Abs(loa - 69f) < 0.01f, $"got {loa}");
-
-        var hull = doc.Entities.FirstOrDefault(e =>
-            string.Equals(e.Name, "ext-oml-hull", StringComparison.OrdinalIgnoreCase));
-        Check(
-            "faceted OML mesh (not blob box)",
-            hull is { Kind: var k }
-            && string.Equals(k, "mesh", StringComparison.OrdinalIgnoreCase)
-            && hull.MeshIndices is { Count: >= 90 },
-            hull is null ? "missing" : $"kind={hull.Kind} inds={hull.MeshIndices?.Count ?? 0}");
-
-        Check(
-            "IML nest shell present",
-            doc.Entities.Any(e => string.Equals(e.Name, "int-iml-hull", StringComparison.OrdinalIgnoreCase)));
-
-        Check(
-            "no fake exterior pods",
-            !doc.Entities.Any(e =>
-                (e.Name?.Contains("nacelle", StringComparison.OrdinalIgnoreCase) ?? false)
-                || (e.Name?.Contains("airlock-blister", StringComparison.OrdinalIgnoreCase) ?? false)));
-
-        var clipped = doc.Entities.Count(e =>
-            string.Equals(e.Kind, "space", StringComparison.OrdinalIgnoreCase)
-            && e.Properties is not null
-            && e.Properties.TryGetValue("clippedToManufacturerHull", out var c)
-            && c.ValueKind == System.Text.Json.JsonValueKind.True);
-        Check("fore interiors clipped into hull", clipped >= 1, $"clipped={clipped}");
-
-        Check(
-            "outerHull property = manufacturer",
-            doc.Properties is not null
-            && doc.Properties.TryGetValue("outerHull", out var oh)
-            && oh.GetString()?.Contains("manufacturer", StringComparison.OrdinalIgnoreCase) == true);
-
-        var crew = Novolis.Ship.Primitives.ShipCad.Spaces(doc)
-            .Where(s => s.Name is not null && s.Name.StartsWith("CREW_", StringComparison.OrdinalIgnoreCase) && s.Deck == 0)
-            .Select(s => s.Name!)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        Check("five CREW_1..5 (DK-001 C1–C5)", crew.Count == 5, string.Join(",", crew));
-
-        var pax = Novolis.Ship.Primitives.ShipCad.Spaces(doc)
-            .Where(s => s.Name is not null && s.Name.StartsWith("PAX_", StringComparison.OrdinalIgnoreCase) && s.Deck == 1)
-            .Select(s => s.Name!)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        Check("five PAX_1..5 (DK-001 P1–P5)", pax.Count == 5, string.Join(",", pax));
-
-        var crew1 = Novolis.Ship.Primitives.ShipCad.Spaces(doc)
-            .FirstOrDefault(s => s.Name == "CREW_1" && s.Deck == 0);
-        if (crew1?.Points is { Count: >= 4 } cpts)
-        {
-            var ys = cpts.Select(p => p[0]).ToList();
-            var zs = cpts.Select(p => p[2]).ToList();
-            var clearW = ys.Max() - ys.Min();
-            var clearD = zs.Max() - zs.Min();
-            Check("CREW_1 clear W ≈ 1.92", clearW is >= 1.85f and <= 2.05f, $"got {clearW:0.###}");
-            Check("CREW_1 clear F–A ≈ 7.2", clearD is >= 7.0f and <= 7.4f, $"got {clearD:0.###}");
-        }
-        else
-        {
-            Check("CREW_1 present", false);
-        }
-
-        var corrP = Novolis.Ship.Primitives.ShipCad.Spaces(doc)
-            .FirstOrDefault(s => s.Name == "CORR_P" && s.Deck == 0);
-        if (corrP?.Points is { Count: >= 4 } pts)
-        {
-            var xs = pts.Select(p => p[0]).ToList();
-            var clear = xs.Max() - xs.Min();
-            Check("CORR_P clear ≥ 3 m (DK-001)", clear >= 2.95f, $"got {clear:0.###}");
-        }
-        else
-        {
-            Check("CORR_P present", false);
-        }
-
-        Check(
-            "deck drawing property",
-            doc.Properties is not null
-            && doc.Properties.TryGetValue("deckDrawing", out var dd)
-            && dd.GetString()?.Contains("CAL-INT-DK-001", StringComparison.OrdinalIgnoreCase) == true);
-
-        Check("structure mass attached", Novolis.Ship.Structure.ShipStructureDocument.TryGetMass(doc, out var mass)
-                                         && mass is not null && mass.MassKg > 240_000f);
-
-        var d3 = Novolis.Ship.Primitives.ShipCad.Openings(doc)
-            .FirstOrDefault(o => o.Name is not null && o.Name.StartsWith("D3-", StringComparison.OrdinalIgnoreCase));
-        Check("D3 vacuum-assisted", d3 is not null && Novolis.Ship.Primitives.ShipCad.IsVacuumAssisted(d3!));
-        Check(
-            "D3 closed under vacuum",
-            d3 is not null
-            && Novolis.Ship.Primitives.ShipCad.GetLeafState(d3!) == Novolis.Ship.Primitives.ShipLeafState.Closed);
-
-        var holdHatch = Novolis.Ship.Primitives.ShipCad.Openings(doc)
-            .FirstOrDefault(o => string.Equals(o.Name, "HOLD-P-DKM1", StringComparison.OrdinalIgnoreCase));
-        Check(
-            "HOLD-P-DKM1 standard open hatch",
-            holdHatch is not null
-            && Novolis.Ship.Primitives.ShipCad.IsStandardHatch(holdHatch!)
-            && Novolis.Ship.Primitives.ShipCad.GetLeafState(holdHatch!) == Novolis.Ship.Primitives.ShipLeafState.Open
-            && Novolis.Ship.Primitives.ShipCad.GetOpeningConnects(holdHatch!).Count >= 2);
-
-        var walk = Novolis.Ship.Topology.ShipWalk.BuildDeckMinusOneAftTour(doc);
-        Check("walk tour from HOLD aft", walk.Count >= 8, $"waypoints={walk.Count}");
-        Check(
-            "walk eyes clamped (no wall pass-through)",
-            walk.All(wp =>
-            {
-                var space = doc.Entities.FirstOrDefault(e => e.Id == wp.SpaceId);
-                if (space is null)
-                    return false;
-                var clamped = Novolis.Ship.Topology.ShipWalk.ClampToSpace(space, wp.Eye, Novolis.Ship.Topology.ShipWalk.DefaultInset);
-                return Vector3.Distance(wp.Eye, clamped) < 0.05f;
-            }),
-            $"waypoints={walk.Count}");
-
-        var topo = Novolis.Ship.Topology.ShipTopology.Analyze(doc);
-        Check("topology has spaces", topo.SpaceIds.Count > 0, $"count={topo.SpaceIds.Count}");
-        Novolis.Ship.Topology.ShipTopology.ApplySpaceFlags(doc, topo);
-
-        var validation = Novolis.Ship.Validation.ShipValidator.Validate(doc, topo);
-        var hardErrors = validation.Issues
-            .Where(i => i.Severity == Novolis.Ship.Validation.ShipValidationSeverity.Error)
-            .ToList();
-        // Orphan openings / clear-width must not fail the lock seed; report only true Errors.
-        Check("validator no errors", hardErrors.Count == 0,
-            string.Join("; ", hardErrors.Select(i => $"{i.Code}:{i.Message}")));
+        foreach (var check in CalypsoAcceptance.Evaluate(doc, dir))
+            Check(check.Name, check.Ok, check.Detail);
 
         doc.Entities.Add(new Novolis.Cad.Primitives.CadEntity
         {
@@ -330,6 +245,26 @@ internal static class Program
             Console.Error.WriteLine($"Headless export failed: {ex.Message}");
             return 2;
         }
+    }
+
+    /// <summary>
+    /// Serves the Calypso CAD profile on stdio. WinExe still receives the redirected
+    /// standard handles when an MCP client spawns the process.
+    /// </summary>
+    private static async Task<int> RunAgent(bool mcp)
+    {
+        var host = new CalypsoCadAgentHost();
+        var definition = AgentSurfaceDefinition.From<ICalypsoCadSurface>();
+        if (mcp)
+        {
+            await using var transport = new AgentMcpStdioTransport(host, definition);
+            await transport.RunUntilEofAsync(CancellationToken.None).ConfigureAwait(false);
+            return 0;
+        }
+
+        await using var stdio = new AgentStdioHost(host);
+        await stdio.RunUntilEofAsync(CancellationToken.None).ConfigureAwait(false);
+        return 0;
     }
 
     public static AppBuilder BuildAvaloniaApp()

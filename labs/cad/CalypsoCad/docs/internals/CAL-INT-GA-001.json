@@ -4302,5 +4302,121 @@
     "CABIN_CLEAR_W": 1.92,
     "CABIN_CLEAR_D": 7.2,
     "CABIN_WALL_T": 0.08
-  }
+  },
+  "frames": {
+    "webM": 0.15,
+    "depthM": 0.25,
+    "stringerCount": 4,
+    "stationIds": [
+      "ST0",
+      "ST1",
+      "ST2",
+      "ST3",
+      "MB1",
+      "MB2",
+      "AFT"
+    ]
+  },
+  "outfit": [
+    {
+      "compartment": "BRIDGE",
+      "role": "console",
+      "dx": 0,
+      "dy": 0.9,
+      "dz": 0.4,
+      "sx": 2.2,
+      "sy": 0.7,
+      "sz": 0.45
+    },
+    {
+      "compartment": "CREW_1",
+      "role": "berth",
+      "dx": 0,
+      "dy": 0.45,
+      "dz": 0,
+      "sx": 0.8,
+      "sy": 0.35,
+      "sz": 2.0
+    },
+    {
+      "compartment": "GALLEY",
+      "role": "appliances",
+      "dx": 0,
+      "dy": 0.9,
+      "dz": 0,
+      "sx": 0.6,
+      "sy": 0.9,
+      "sz": 2.0
+    },
+    {
+      "compartment": "ENG",
+      "role": "tank",
+      "dx": 0,
+      "dy": 1.2,
+      "dz": 0,
+      "sx": 0.7,
+      "sy": 1.6,
+      "sz": 0.7
+    },
+    {
+      "compartment": "HOLD",
+      "role": "gantry",
+      "dx": 0,
+      "dy": 6.0,
+      "dz": 0,
+      "sx": 8.0,
+      "sy": 0.2,
+      "sz": 0.25
+    },
+    {
+      "compartment": "CORR_P",
+      "role": "trunk",
+      "dx": 0,
+      "dy": 2.8,
+      "dz": 0,
+      "sx": 0.22,
+      "sy": 0.08,
+      "sz": 4.0
+    },
+    {
+      "compartment": "LOUNGE",
+      "role": "bar",
+      "dx": 0,
+      "dy": 0.55,
+      "dz": 0,
+      "sx": 2.0,
+      "sy": 0.5,
+      "sz": 0.45
+    },
+    {
+      "compartment": "AIRLOCK_A_port",
+      "role": "leaf",
+      "dx": 0,
+      "dy": 1.1,
+      "dz": 0,
+      "sx": 0.9,
+      "sy": 1.8,
+      "sz": 0.08
+    },
+    {
+      "compartment": "AIRLOCK_A_stbd",
+      "role": "leaf",
+      "dx": 0,
+      "dy": 1.1,
+      "dz": 0,
+      "sx": 0.9,
+      "sy": 1.8,
+      "sz": 0.08
+    },
+    {
+      "compartment": "PAX_1",
+      "role": "berth",
+      "dx": 0,
+      "dy": 0.45,
+      "dz": 0,
+      "sx": 0.8,
+      "sy": 0.35,
+      "sz": 2.0
+    }
+  ]
 }

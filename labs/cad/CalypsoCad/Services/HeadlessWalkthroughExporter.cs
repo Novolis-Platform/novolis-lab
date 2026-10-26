@@ -83,14 +83,14 @@ internal static class HeadlessWalkthroughExporter
                     CaptureFrame(renderer, capture, framesDir, ref frameIndex, frames);
                 }
 
-                // --- Act 1b: stern ramp + side pods ---
+                // --- Act 1b: stern ramp ---
                 const int detailFrames = 24;
                 for (var i = 0; i < detailFrames; i++)
                 {
                     var t = i / (float)(detailFrames - 1);
                     var yaw = MathF.PI * (0.85f + t * 0.35f);
                     renderer.SetOrbitPose(new Vector3(0f, 2.8f, -20f), 48f - 6f * t, yaw, 0.14f + 0.08f * t);
-                    session.StatusText = $"walkthrough:ramp-pods:{i + 1}/{detailFrames}";
+                    session.StatusText = $"walkthrough:ramp:{i + 1}/{detailFrames}";
                     CaptureFrame(renderer, capture, framesDir, ref frameIndex, frames);
                 }
 
@@ -175,7 +175,7 @@ internal static class HeadlessWalkthroughExporter
 
                 CopyKeyframe(frames, exportsDir, 0, "walkthrough-orbit-start.png", outputs);
                 CopyKeyframe(frames, exportsDir, Math.Min(orbitFrames / 2, frames.Count - 1), "walkthrough-orbit-mid.png", outputs);
-                CopyKeyframe(frames, exportsDir, Math.Min(orbitFrames + detailFrames / 2, frames.Count - 1), "walkthrough-ramp-pods.png", outputs);
+                CopyKeyframe(frames, exportsDir, Math.Min(orbitFrames + detailFrames / 2, frames.Count - 1), "walkthrough-ramp.png", outputs);
                 CopyKeyframe(frames, exportsDir, Math.Min(orbitFrames + detailFrames + cutFrames / 2, frames.Count - 1), "walkthrough-cutaway.png", outputs);
                 CopyKeyframe(frames, exportsDir, Math.Min(orbitFrames + detailFrames + cutFrames + 8, frames.Count - 1), "walkthrough-walk-start.png", outputs);
                 CopyKeyframe(frames, exportsDir, frames.Count - 1, "walkthrough-catwalk-end.png", outputs);

@@ -20,6 +20,7 @@ internal sealed class CalypsoSession
     public Guid? SelectedSpaceId { get; set; }
     public Guid? SelectedHookId { get; set; }
     public CalypsoWireMeshMode WireMeshMode { get; set; } = CalypsoWireMeshMode.CutawayPartial;
+    public CalypsoVisualLayers VisualLayers { get; set; } = CalypsoVisualLayers.DefaultOrbit;
     public string StatusText { get; set; } = "";
 
     /// <summary>World cutaway plane origin (used when <see cref="WireMeshMode"/> is CutawayPartial).</summary>
@@ -64,6 +65,21 @@ internal sealed class CalypsoSession
 
             return null;
         }
+    }
+
+    public bool TryLoadExisting(string? directory = null)
+    {
+        var dir = directory ?? CalypsoLockGenerator.DefaultOutputDirectory;
+        if (!File.Exists(Path.Combine(dir, "calypso.cadjson")))
+            return false;
+
+        GeneratedDirectory = dir;
+        (LayersCatalog, Shapes, Document) = CadDocumentStore.ReadAll(dir);
+        ShapeById = Shapes.Shapes.ToDictionary(s => s.Id);
+        SelectedSpaceId = Spaces.FirstOrDefault(s => s.Name == "BRIDGE" && s.Deck == 0)?.Id
+                          ?? Spaces.FirstOrDefault()?.Id;
+        StatusText = $"Loaded → {dir}";
+        return true;
     }
 
     public void RegenerateAndLoad()

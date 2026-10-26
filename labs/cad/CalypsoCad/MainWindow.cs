@@ -26,6 +26,8 @@ internal sealed class MainWindow : Window
     private readonly ListBox _hookList = new();
     private readonly TextBlock _status = new() { Margin = new Thickness(8, 4), TextWrapping = TextWrapping.Wrap };
     private readonly TextBlock _path = new() { Margin = new Thickness(8, 0, 8, 8), Opacity = 0.75, FontSize = 11, TextWrapping = TextWrapping.Wrap };
+    private int _orbitLayerPresetIndex;
+    private string _layerPresetLabel = "all";
 
     public MainWindow(CalypsoSession session, CalypsoRenderer renderer)
     {
@@ -313,7 +315,7 @@ internal sealed class MainWindow : Window
         var exportNote = string.IsNullOrWhiteSpace(_session.StatusText) ? "" : $" · {_session.StatusText}";
         var hookNote = _session.SelectedHook?.Tag is { } tag ? $" · hook={tag}" : "";
         _status.Text =
-            $"{_session.ViewMode} · deck filter={_session.DeckFilter?.ToString() ?? "all"} · entities={_session.Document.Entities.Count}{exportNote}{hookNote}";
+            $"{_session.ViewMode} · layers={_layerPresetLabel} · deck filter={_session.DeckFilter?.ToString() ?? "all"} · entities={_session.Document.Entities.Count}{exportNote}{hookNote}";
         if (string.IsNullOrWhiteSpace(_path.Text) || !_path.Text.Contains("exports", StringComparison.OrdinalIgnoreCase))
             _path.Text = _session.GeneratedDirectory;
     }
@@ -397,7 +399,31 @@ internal sealed class MainWindow : Window
             case Key.E:
                 _ = ExportCurrentPngAsync();
                 break;
+            case Key.G:
+                CycleVisualLayers();
+                break;
         }
+    }
+
+    private void CycleVisualLayers()
+    {
+        if (_session.ViewMode == CalypsoViewMode.Interior)
+        {
+            _session.VisualLayers = CalypsoVisualLayerPresets.ToggleInteriorCorridor(
+                _session.VisualLayers,
+                out _layerPresetLabel);
+            if (_session.VisualLayers == CalypsoVisualLayers.CorridorStructure)
+                _session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
+        }
+        else
+        {
+            _orbitLayerPresetIndex = (_orbitLayerPresetIndex + 1) % CalypsoVisualLayerPresets.OrbitPresetCount;
+            _session.VisualLayers = CalypsoVisualLayerPresets.CycleOrbit(_orbitLayerPresetIndex, out _layerPresetLabel);
+            if (_session.VisualLayers is CalypsoVisualLayers.StructureOnlyCutaway or CalypsoVisualLayers.FitoutCutaway)
+                _session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
+        }
+
+        UpdateStatus();
     }
 
     private sealed record SpaceItem(Guid Id, string Label)
