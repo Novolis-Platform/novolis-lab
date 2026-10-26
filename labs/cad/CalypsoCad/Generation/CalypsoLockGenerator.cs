@@ -1940,8 +1940,9 @@ internal static class CalypsoLockGenerator
         float zFromStem,
         float halfY,
         float halfUp,
-        float halfZ) =>
-        TryAddBar(entities, loa, name, y, up, zFromStem, halfY, halfUp, halfZ);
+        float halfZ,
+        string? fabPartId = null) =>
+        TryAddBar(entities, loa, name, y, up, zFromStem, halfY, halfUp, halfZ, fabPartId);
 
     private static void TryAddBar(
         List<CadEntity> entities,
@@ -1952,7 +1953,8 @@ internal static class CalypsoLockGenerator
         float zFromStem,
         float halfY,
         float halfUp,
-        float halfZ)
+        float halfZ,
+        string? fabPartId = null)
     {
         var hy = MathF.Abs(halfY);
         var hu = MathF.Abs(halfUp);
@@ -1963,7 +1965,7 @@ internal static class CalypsoLockGenerator
         {
             if (BoxFits(y, up, zFromStem, hy, hu, hz))
             {
-                AddFrameBar(entities, loa, name, y, up, zFromStem, hy, hu, hz);
+                AddFrameBar(entities, loa, name, y, up, zFromStem, hy, hu, hz, fabPartId);
                 return;
             }
 
@@ -1983,10 +1985,11 @@ internal static class CalypsoLockGenerator
         float zFromStem,
         float halfY,
         float halfUp,
-        float halfZ)
+        float halfZ,
+        string? fabPartId = null)
     {
         var center = LockToWorld(y, up, zFromStem, loa);
-        entities.Add(MakeSolid(name, LayerStruct, ShapeHullInt, center, new Vector3(MathF.Abs(halfY), MathF.Abs(halfUp), MathF.Abs(halfZ)), [0.55f, 0.58f, 0.62f], "structure"));
+        entities.Add(MakeSolid(name, LayerStruct, ShapeHullInt, center, new Vector3(MathF.Abs(halfY), MathF.Abs(halfUp), MathF.Abs(halfZ)), [0.55f, 0.58f, 0.62f], "structure", fabPartId));
     }
 
     private static void AddOutfit(List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa)
@@ -2292,8 +2295,25 @@ internal static class CalypsoLockGenerator
         }
     }
 
-    private static CadEntity MakeSolid(string name, Guid layer, Guid shape, Vector3 center, Vector3 half, float[] color, string role) =>
-        new()
+    private static CadEntity MakeSolid(
+        string name,
+        Guid layer,
+        Guid shape,
+        Vector3 center,
+        Vector3 half,
+        float[] color,
+        string role,
+        string? fabPartId = null)
+    {
+        var props = new Dictionary<string, JsonElement>
+        {
+            ["interiorOnly"] = JsonSerializer.SerializeToElement(true),
+            ["exterior"] = JsonSerializer.SerializeToElement(false),
+            ["role"] = JsonSerializer.SerializeToElement(role),
+        };
+        if (!string.IsNullOrEmpty(fabPartId))
+            props[ShipPropertyKeys.FabPartId] = JsonSerializer.SerializeToElement(fabPartId);
+        return new CadEntity
         {
             Kind = "box",
             Name = name,
@@ -2307,13 +2327,9 @@ internal static class CalypsoLockGenerator
             ],
             Height = half.Y * 2f,
             Thickness = half.X * 2f,
-            Properties = new Dictionary<string, JsonElement>
-            {
-                ["interiorOnly"] = JsonSerializer.SerializeToElement(true),
-                ["exterior"] = JsonSerializer.SerializeToElement(false),
-                ["role"] = JsonSerializer.SerializeToElement(role),
-            },
+            Properties = props,
         };
+    }
 
     /// <summary>
     /// Intentionally empty: manufacturer OML is the only outer hull.

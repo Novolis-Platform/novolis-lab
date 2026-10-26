@@ -20,7 +20,7 @@ Ship Designer Lab (`d:\novolis\novolis-lab\labs\cad\ShipDesignerLab`) imports th
 | Outfit | `outfit-{compartment}-{role}` boxes from the lock `outfit` schedule |
 | Deck SoT | `docs/internals/CAL-INT-DK-001.html` + `CAL-INT-GA-001.json` |
 
-DXF nests, GD&T, and STEP stay a later revision.
+**CAL-MFG-001** (`--fab-release`) emits hull/structure/partition DXF nests and `calypso-fab-manifest.json`. GD&T and STEP AP242 stay a later revision — see `docs/internals/CAL-MFG-001.md`.
 
 ## Holistic quality gate
 

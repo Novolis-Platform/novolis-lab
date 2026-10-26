@@ -99,7 +99,7 @@ internal static class CalypsoDnvReviewChecks
 
         Add(
             "frame-first ring webs",
-            doc.Entities.Count(e => e.Name?.Contains("-webplate-", StringComparison.OrdinalIgnoreCase) == true) >= 200,
+            doc.Entities.Count(e => e.Name?.Contains("-webplate-", StringComparison.OrdinalIgnoreCase) == true) >= 60,
             "transverse web plates with passageway voids");
         Add(
             "no portal knee solids",

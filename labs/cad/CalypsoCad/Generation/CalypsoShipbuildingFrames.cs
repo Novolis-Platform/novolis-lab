@@ -30,7 +30,8 @@ internal static class CalypsoShipbuildingFrames
         if (upMax <= upMin + 0.2f)
             return;
 
-        const float slice = 0.16f;
+        var fabPartId = FrameFabPartId(frameId);
+        const float slice = 0.85f;
         var sliceIndex = 0;
         for (var up = upMin; up <= upMax; up += slice)
         {
@@ -53,7 +54,8 @@ internal static class CalypsoShipbuildingFrames
                     zStem,
                     hy,
                     slice * 0.48f,
-                    halfDepthZ);
+                    halfDepthZ,
+                    fabPartId);
             }
 
             sliceIndex++;
@@ -116,6 +118,14 @@ internal static class CalypsoShipbuildingFrames
         }
     }
 
+    private static string FrameFabPartId(string frameId)
+    {
+        var id = frameId.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+            ? frameId["frame-".Length..]
+            : frameId;
+        return $"P-FRAME-{id.Replace('.', '-')}-WEB";
+    }
+
     public static (float Y, float Up)[] InnerOctagonRing(float zStem, float skinInset)
     {
         CalypsoLockGenerator.SectionAtPublic(zStem, out var halfB, out var halfH, out var mid, out var cx, out var cy);
@@ -149,12 +159,12 @@ internal static class CalypsoShipbuildingFrames
             gaps.Add((-halfY - 0.05f, -halfY + ShellDoorReliefM));
         }
 
-        if (up >= 3.8f && up <= 7.6f && gaps.Count > 0)
+        if (up >= 3.2f && up <= 8.2f && athwartGaps.Count > 0)
         {
             foreach (var g in athwartGaps)
             {
                 var cy = (g.Y0 + g.Y1) * 0.5f;
-                var hw = (g.Y1 - g.Y0) * 0.5f + 0.12f;
+                var hw = (g.Y1 - g.Y0) * 0.5f + 0.35f;
                 gaps.Add((cy - hw, cy + hw));
             }
         }

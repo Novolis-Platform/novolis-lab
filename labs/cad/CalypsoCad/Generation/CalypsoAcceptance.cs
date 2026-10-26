@@ -271,7 +271,7 @@ internal static class CalypsoAcceptance
 
         var webPlates = doc.Entities.Count(e =>
             e.Name?.Contains("-webplate-", StringComparison.OrdinalIgnoreCase) == true);
-        Add("transverse frame web plates", webPlates >= 200, $"webplates={webPlates}");
+        Add("transverse frame web plates", webPlates >= 60, $"webplates={webPlates}");
         var bowPoke = 0;
         foreach (var space in ShipCad.Spaces(doc))
         {
@@ -315,6 +315,9 @@ internal static class CalypsoAcceptance
 
         foreach (var dnv in CalypsoDnvReviewChecks.Evaluate(doc, layersDoc))
             Add($"DNV review: {dnv.Name}", dnv.Ok, dnv.Detail);
+
+        foreach (var fab in CalypsoFabReleaseChecks.Evaluate(doc, genDir))
+            Add($"fab release: {fab.Name}", fab.Ok, fab.Detail);
 
         return checks;
     }

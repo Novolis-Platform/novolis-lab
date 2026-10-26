@@ -43,6 +43,24 @@ internal static class Program
             return;
         }
 
+        var fabRelease = args.Any(a => string.Equals(a, "--fab-release", StringComparison.OrdinalIgnoreCase));
+        if (fabRelease)
+        {
+            try
+            {
+                var html = CalypsoFabReleaseEmitter.Emit();
+                Console.WriteLine($"Wrote CAL-MFG-001 fabrication release:{Environment.NewLine}{html}");
+                Environment.ExitCode = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                Environment.ExitCode = 1;
+            }
+
+            return;
+        }
+
         var dnvReview = args.Any(a => string.Equals(a, "--dnv-review", StringComparison.OrdinalIgnoreCase));
         if (dnvReview)
         {
@@ -143,6 +161,16 @@ internal static class Program
         var dir = CalypsoLockGenerator.Generate();
         var cadPath = Path.Combine(dir, "calypso.cadjson");
         Check("generate calypso.cadjson", File.Exists(cadPath));
+
+        try
+        {
+            CalypsoFabReleaseEmitter.Emit(generatedCadDirectory: dir);
+            Check("emit CAL-MFG-001", Directory.Exists(Path.Combine(dir, "CAL-MFG-001")));
+        }
+        catch (Exception ex)
+        {
+            Check("emit CAL-MFG-001", false, ex.Message);
+        }
 
         var doc = System.Text.Json.JsonSerializer.Deserialize<Novolis.Cad.Primitives.CadDocument>(
             File.ReadAllText(cadPath), CadJson.Options)
