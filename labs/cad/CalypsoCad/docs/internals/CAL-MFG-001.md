@@ -1,4 +1,6 @@
-# CAL-MFG-001 — automated fabrication release
+# CAL-MFG-001 — automated fabrication release (superseded)
+
+**Superseded by [CAL-MFG-002](CAL-MFG-002.md).** Retained for history; regenerate with `--fab-release` to emit **CAL-MFG-002**.
 
 Full-vessel manufacturing bundle for orbital/ground automated plate cutting and install sequencing.
 

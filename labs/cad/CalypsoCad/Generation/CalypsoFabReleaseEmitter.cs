@@ -8,16 +8,18 @@ using Novolis.Ship.Structure;
 
 namespace CalypsoCad.Generation;
 
-/// <summary>CAL-MFG-001 automated fabrication release (full vessel).</summary>
+/// <summary>CAL-MFG-002 automated fabrication release (full vessel).</summary>
 public static class CalypsoFabReleaseEmitter
 {
+    public const string PackageId = "CAL-MFG-002";
+
     public static string DefaultOutputDirectory =>
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Novolis",
             "CalypsoCad",
             "generated",
-            "CAL-MFG-001");
+            PackageId);
 
     public static string Emit(string? outputDirectory = null, string? generatedCadDirectory = null)
     {
@@ -26,7 +28,7 @@ public static class CalypsoFabReleaseEmitter
             "Novolis",
             "CalypsoCad",
             "generated");
-        var outDir = outputDirectory ?? Path.Combine(genDir, "CAL-MFG-001");
+        var outDir = outputDirectory ?? Path.Combine(genDir, PackageId);
         Directory.CreateDirectory(outDir);
 
         CalypsoLockGenerator.Generate(genDir);
@@ -64,6 +66,8 @@ public static class CalypsoFabReleaseEmitter
             .Sum(p => cuts.FirstOrDefault(c => c.PartId == p.PartId)?.AreaM2 ?? 0f);
         var manifest = new FabReleaseManifest
         {
+            PackageId = PackageId,
+            Revision = "002",
             GeneratedAtUtc = DateTime.UtcNow.ToString("o"),
             Parts = parts,
             Cuts = cuts,
@@ -90,8 +94,8 @@ public static class CalypsoFabReleaseEmitter
 
         var bom = new ShipBom
         {
-            Drawing = "CAL-MFG-001",
-            Rev = "001",
+            Drawing = PackageId,
+            Rev = "002",
             Lines = bomLines,
         };
         var bomPath = Path.Combine(outDir, "bom.json");
@@ -104,7 +108,7 @@ public static class CalypsoFabReleaseEmitter
         ShipFabReleaseDocument.Attach(cad, manifest);
         File.WriteAllText(cadPath, JsonSerializer.Serialize(cad, CadJson.Options));
 
-        var htmlPath = Path.Combine(outDir, "CAL-MFG-001.html");
+        var htmlPath = Path.Combine(outDir, $"{PackageId}.html");
         WriteHtml(htmlPath, manifest, hull);
         File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest, FabricationJson.Options));
 
@@ -125,13 +129,13 @@ public static class CalypsoFabReleaseEmitter
 
         if (!Directory.Exists(docsDir))
             return;
-        var pointer = Path.Combine(docsDir, "CAL-MFG-001.json");
+        var pointer = Path.Combine(docsDir, $"{PackageId}.json");
         File.WriteAllText(
             pointer,
             JsonSerializer.Serialize(new
             {
-                packageId = "CAL-MFG-001",
-                note = "Full release emitted to LocalAppData; regenerate with --fab-release",
+                packageId = PackageId,
+                note = "Full release emitted to LocalAppData; regenerate with --fab-release. STEP/GD&T: CAL-MFG-003.",
                 output = outDir,
             }, FabricationJson.Options));
     }
@@ -139,9 +143,9 @@ public static class CalypsoFabReleaseEmitter
     private static void WriteHtml(string path, FabReleaseManifest manifest, ManufacturerHullDocument hull)
     {
         var sb = new StringBuilder();
-        sb.Append("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"/><title>CAL-MFG-001</title></head><body>");
-        sb.Append("<h1>CAL-MFG-001 — automated fabrication release</h1>");
-        sb.Append("<p>Flat-plate pepakura hull (AISI 316L, t=8 mm) plus structure, partitions, and outfit install kit.</p>");
+        sb.Append($"<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"/><title>{PackageId}</title></head><body>");
+        sb.Append($"<h1>{PackageId} — automated fabrication release</h1>");
+        sb.Append("<p>Flat-plate pepakura hull (AISI 316L, t=8 mm) plus profile-based structure cuts, partitions, and outfit install kit.</p>");
         sb.Append("<h2>Totals</h2><table><tr><th>Item</th><th>Value</th></tr>");
         sb.Append($"<tr><td>Parts</td><td>{manifest.Totals?.PartCount}</td></tr>");
         sb.Append($"<tr><td>Cut parts</td><td>{manifest.Totals?.CutPartCount}</td></tr>");
@@ -151,7 +155,7 @@ public static class CalypsoFabReleaseEmitter
         sb.Append($"<tr><td>Hull skin area m²</td><td>{manifest.Totals?.HullSkinAreaM2:F2}</td></tr>");
         sb.Append($"<tr><td>Golden hull area m²</td><td>{hull.GoldenSkinAreaM2:F2}</td></tr>");
         sb.Append("</table>");
-        sb.Append("<h2>Out of scope (v1)</h2><ul><li>STEP AP242</li><li>GD&amp;T / flight allowables</li><li>Fastener torque sheets</li></ul>");
+        sb.Append("<h2>Out of scope (CAL-MFG-003)</h2><ul><li>STEP AP242</li><li>GD&amp;T / flight allowables</li><li>Fastener torque sheets</li></ul>");
         sb.Append("</body></html>");
         File.WriteAllText(path, sb.ToString());
     }

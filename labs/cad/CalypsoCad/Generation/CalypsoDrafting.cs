@@ -36,6 +36,43 @@ internal static class CalypsoDrafting
         return merged;
     }
 
+    /// <summary>Bow compartment spine midpoints + loft fore + uniform grid + loft aft.</summary>
+    public static List<(string Id, float ZStem)> BuildBowFrameSchedule(
+        IEnumerable<(string Id, float Z0, float Z1)> bowCompartments,
+        IEnumerable<(string Id, float ZStem)> loftStations,
+        float loa,
+        float frameBay = 4f)
+    {
+        var list = new List<(string Id, float ZStem)>();
+        foreach (var (id, z0, z1) in bowCompartments)
+        {
+            if (string.IsNullOrEmpty(id))
+                continue;
+            if (z1 > 18.5f)
+                continue;
+            var zMid = (z0 + z1) * 0.5f;
+            list.Add(($"frame-{id}", zMid));
+        }
+
+        foreach (var (id, z) in loftStations.OrderBy(s => s.ZStem))
+        {
+            if (z <= 17.5f)
+                list.Add((id, z));
+        }
+
+        const float gridAnchor = 17f;
+        for (var z = gridAnchor; z <= loa - frameBay * 0.5f - 0.2f; z += frameBay)
+            list.Add(($"F{z:0}", z));
+
+        foreach (var (id, z) in loftStations.OrderBy(s => s.ZStem))
+        {
+            if (z > 17.5f)
+                list.Add((id, z));
+        }
+
+        return DeduplicateStations(list);
+    }
+
     /// <summary>Loft bow stations + uniform 4 m grid (anchor 17 m) + loft aft — no double bays.</summary>
     public static List<(string Id, float ZStem)> BuildFrameSchedule(
         IEnumerable<(string Id, float ZStem)> loftStations,

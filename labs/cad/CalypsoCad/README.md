@@ -20,7 +20,16 @@ Ship Designer Lab (`d:\novolis\novolis-lab\labs\cad\ShipDesignerLab`) imports th
 | Outfit | `outfit-{compartment}-{role}` boxes from the lock `outfit` schedule |
 | Deck SoT | `docs/internals/CAL-INT-DK-001.html` + `CAL-INT-GA-001.json` |
 
-**CAL-MFG-001** (`--fab-release`) emits hull/structure/partition DXF nests and `calypso-fab-manifest.json`. GD&T and STEP AP242 stay a later revision — see `docs/internals/CAL-MFG-001.md`.
+**CAL-MFG-002** (`--fab-release`) emits profile-based structure DXF, hull/ partition nests, weld program JSON, and `calypso-fab-manifest.json`. STEP AP242 / GD&T are **CAL-MFG-003** — see `docs/internals/CAL-MFG-002.md`.
+
+Holistic fab gate:
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --acceptance
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --fab-release
+dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-fab-release.cs
+dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-visual-gate.cs
+```
 
 ## Holistic quality gate
 

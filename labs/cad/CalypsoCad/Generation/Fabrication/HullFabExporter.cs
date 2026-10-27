@@ -31,6 +31,7 @@ internal static class HullFabExporter
 
             var partId = ToPartId(face.Id);
             var profile = HullFaceUnfolder.UnfoldQuad(p0, p1, p2, p3);
+            var closure = HullFaceUnfolder.VerifyQuadEdgeClosure(p0, p1, p2, p3, profile);
             var area = HullFaceUnfolder.PolygonAreaM2(profile);
             var bounds = HullFaceUnfolder.Bounds(profile);
             var w = bounds.MaxX - bounds.MinX;
@@ -44,6 +45,8 @@ internal static class HullFabExporter
                 OuterLoop = profile,
                 BendAllowed = false,
                 AreaM2 = area,
+                DevelopabilityPass = closure.Pass,
+                EdgeClosureMaxDeltaM = closure.MaxDeltaM,
             });
             parts.Add(new FabPart
             {
@@ -90,7 +93,14 @@ internal static class HullFabExporter
             seamIndex++;
         }
 
-        var packed = SheetNester.Pack(nestItems, hull.SheetWidthM, hull.SheetHeightM);
+        var packed = SheetNester.Pack(
+            nestItems,
+            hull.SheetWidthM,
+            hull.SheetHeightM,
+            margin: 0.05f,
+            kerfM: hull.KerfM,
+            partGapM: hull.PartGapM,
+            grainLocked: hull.GrainLocked);
         var nestDir = Path.Combine(outputRoot, "nests");
         Directory.CreateDirectory(nestDir);
         var sheetIdx = 0;
@@ -119,6 +129,11 @@ internal static class HullFabExporter
         }
 
         _ = sheetIdx;
+
+        FabWeldProgramExporter.Write(
+            Path.Combine(outputRoot, "welds", "hull-program.json"),
+            hull,
+            welds);
     }
 
     private static void WriteNestSheet(string path, List<IReadOnlyList<(float X, float Y)>> polys)

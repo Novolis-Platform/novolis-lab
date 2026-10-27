@@ -236,6 +236,7 @@ internal static class CalypsoAcceptance
         var bridgeSeats = doc.Entities.Count(e =>
             e.Name?.StartsWith("outfit-BRIDGE-seat-", StringComparison.OrdinalIgnoreCase) == true);
         Add("bridge watch seats (8)", bridgeSeats >= 8, $"seats={bridgeSeats}");
+        Add("bridge pilot forward of captain", CalypsoBridgeChecks.PilotsForwardOfCaptain(doc, loa));
         var frameZs = doc.Entities
             .Where(e => e.Name?.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase) == true)
             .Select(e =>
@@ -269,9 +270,13 @@ internal static class CalypsoAcceptance
             doc.Entities.Any(e => string.Equals(e.Name, "outfit-AIRLOCK_A_port-leaf", StringComparison.OrdinalIgnoreCase))
             && doc.Entities.Any(e => string.Equals(e.Name, "outfit-AIRLOCK_A_stbd-leaf", StringComparison.OrdinalIgnoreCase)));
 
-        var webPlates = doc.Entities.Count(e =>
-            e.Name?.Contains("-webplate-", StringComparison.OrdinalIgnoreCase) == true);
-        Add("transverse frame web plates", webPlates >= 60, $"webplates={webPlates}");
+        var webSolids = doc.Entities.Count(e =>
+            e.Name?.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase) == true);
+        var webProfiles = FrameWebPlateRegistry.All.Count;
+        Add("transverse frame web plates", webSolids >= 40 && webProfiles >= 10,
+            $"solids={webSolids} profiles={webProfiles}");
+        Add("structure/outfit inside IML", CalypsoImfSolidChecks.CountViolations(doc, loa) == 0,
+            $"violations={CalypsoImfSolidChecks.CountViolations(doc, loa)}");
         var bowPoke = 0;
         foreach (var space in ShipCad.Spaces(doc))
         {

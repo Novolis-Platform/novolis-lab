@@ -134,6 +134,22 @@ internal static class CalypsoLockGenerator
         return false;
     }
 
+    internal static bool CorridorClearAtFrameSamples(float loa)
+    {
+        var lockDoc = LoadLock();
+        var corrW = lockDoc.Circulation?.CorrW is > 0 ? (float)lockDoc.Circulation.CorrW : 3f;
+        var minClear = corrW - 0.12f;
+        for (var z = 17f; z <= loa - 4f; z += 4f)
+        {
+            var gaps = CollectAthwartPassageGaps(lockDoc, z, 0.28f);
+            var widest = gaps.Count == 0 ? 0f : gaps.Max(g => g.Y1 - g.Y0);
+            if (widest < minClear)
+                return false;
+        }
+
+        return true;
+    }
+
     private static CalypsoLockDocument LoadLock()
     {
         foreach (var path in CandidateLockPaths())
@@ -245,6 +261,7 @@ internal static class CalypsoLockGenerator
 
     private static CadDocument BuildCad(string stamp, CalypsoLockDocument lockDoc)
     {
+        FrameWebPlateRegistry.Clear();
         UseLoftStations(lockDoc);
         var env = lockDoc.Envelope ?? throw new InvalidOperationException("Lock missing envelope");
         var loa = (float)env.Loa;
@@ -453,6 +470,8 @@ internal static class CalypsoLockGenerator
         cad.Properties["cabinClearW"] = JsonSerializer.SerializeToElement(
             lockDoc.Stations?.CabinClearW is > 0 ? lockDoc.Stations.CabinClearW : 1.92);
         cad.Properties["units"] = JsonSerializer.SerializeToElement("m");
+        cad.Properties["maturity"] = JsonSerializer.SerializeToElement("fab-002");
+        cad.Properties["fabReleaseTarget"] = JsonSerializer.SerializeToElement("CAL-MFG-002");
         cad.Properties["reviewDrawingPackage"] = JsonSerializer.SerializeToElement("CAL-DNV-REVIEW-001");
         cad.Properties["classificationIntent"] = JsonSerializer.SerializeToElement(
             "Concept design package for third-party review — not DNV plan approval or rule calculation.");
@@ -1797,7 +1816,10 @@ internal static class CalypsoLockGenerator
         var loftZs = stations
             .Where(s => wanted is null or { Count: 0 } || wanted.Contains(s.Id ?? "", StringComparer.OrdinalIgnoreCase))
             .Select(s => (s.Id ?? "st", (float)s.ZFromStem));
-        foreach (var (id, zStem) in CalypsoDrafting.BuildFrameSchedule(loftZs, loa, frameBay))
+        var bowComps = (lockDoc.Compartments ?? [])
+            .Where(c => c.Id is not null)
+            .Select(c => (c.Id!, (float)c.Z0, (float)c.Z1));
+        foreach (var (id, zStem) in CalypsoDrafting.BuildBowFrameSchedule(bowComps, loftZs, loa, frameBay))
         {
             var bow = zStem < 18f;
             PlaceFrame(id, zStem, bow);
@@ -2026,10 +2048,10 @@ internal static class CalypsoLockGenerator
         float spanZ)
     {
         var midY = (minY + maxY) * 0.5f;
-        var forwardZ = minStem + spanZ * 0.1f;
-        var captainZ = minStem + spanZ * 0.28f;
-        var seatRowA = minStem + spanZ * 0.52f;
-        var seatRowB = minStem + spanZ * 0.78f;
+        var forwardZ = minStem + spanZ * 0.14f;
+        var captainZ = minStem + spanZ * 0.68f;
+        var seatRowA = minStem + spanZ * 0.48f;
+        var seatRowB = minStem + spanZ * 0.82f;
         float[] console = [0.38f, 0.42f, 0.48f];
         float[] seat = [0.32f, 0.36f, 0.42f];
         float[] glow = [0.45f, 0.72f, 0.82f];

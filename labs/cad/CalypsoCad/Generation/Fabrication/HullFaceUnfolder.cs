@@ -65,4 +65,47 @@ internal static class HullFaceUnfolder
 
         return (minX, minY, maxX, maxY);
     }
+
+    public static (bool Pass, float MaxDeltaM) VerifyQuadEdgeClosure(
+        Vector3 p0,
+        Vector3 p1,
+        Vector3 p2,
+        Vector3 p3,
+        IReadOnlyList<(float X, float Y)> profile,
+        float epsilon = 0.02f)
+    {
+        if (profile.Count < 4)
+            return (false, float.PositiveInfinity);
+        float[] d3 =
+        [
+            Vector3.Distance(p0, p1),
+            Vector3.Distance(p1, p2),
+            Vector3.Distance(p2, p3),
+            Vector3.Distance(p3, p0),
+        ];
+        float[] d2 =
+        [
+            Dist(profile[0], profile[1]),
+            Dist(profile[1], profile[2]),
+            Dist(profile[2], profile[3]),
+            Dist(profile[3], profile[0]),
+        ];
+        var max = 0f;
+        for (var i = 0; i < 4; i++)
+        {
+            var tol = MathF.Max(epsilon, d3[i] * 0.03f);
+            max = MathF.Max(max, MathF.Abs(d3[i] - d2[i]));
+            if (MathF.Abs(d3[i] - d2[i]) > tol)
+                return (false, max);
+        }
+
+        return (true, max);
+    }
+
+    private static float Dist((float X, float Y) a, (float X, float Y) b)
+    {
+        var dx = a.X - b.X;
+        var dy = a.Y - b.Y;
+        return MathF.Sqrt(dx * dx + dy * dy);
+    }
 }

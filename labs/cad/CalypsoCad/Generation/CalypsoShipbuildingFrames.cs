@@ -8,10 +8,6 @@ namespace CalypsoCad.Generation;
 internal static class CalypsoShipbuildingFrames
 {
     internal const float DefaultSkinInset = 0.13f;
-    private const float ShellDoorBandUp0 = 3.6f;
-    private const float ShellDoorBandUp1 = 7.4f;
-    private const float ShellDoorReliefM = 1.15f;
-
     /// <summary>Solid transverse web: scan-filled plate on inner octagon with corridor/hatch/door voids.</summary>
     public static void AddTransverseFrameWeb(
         List<CadEntity> entities,
@@ -30,43 +26,12 @@ internal static class CalypsoShipbuildingFrames
         if (upMax <= upMin + 0.2f)
             return;
 
-        var fabPartId = FrameFabPartId(frameId);
-        const float slice = 0.85f;
-        var sliceIndex = 0;
-        for (var up = upMin; up <= upMax; up += slice)
-        {
-            var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, up, inset) - web * 0.35f;
-            if (halfY < 0.2f)
-                continue;
-            var gaps = GapsForSlice(athwartGaps, up, halfY);
-            foreach (var (ya, yb) in CalypsoLockGenerator.SolidSpansPublic(-halfY, halfY, gaps))
-            {
-                var cy = (ya + yb) * 0.5f;
-                var hy = (yb - ya) * 0.5f;
-                if (hy < 0.05f)
-                    continue;
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities,
-                    loa,
-                    $"{frameId}-webplate-{sliceIndex}-y{ya:0.#}",
-                    cy,
-                    up,
-                    zStem,
-                    hy,
-                    slice * 0.48f,
-                    halfDepthZ,
-                    fabPartId);
-            }
-
-            sliceIndex++;
-        }
-
-        if (!bowAligned)
-            AddFlangeStiffener(entities, loa, frameId, zStem, web, halfDepthZ, upMin, upMax, inset);
+        FrameWebPlateBuilder.Emit(
+            entities, loa, frameId, zStem, web, halfDepthZ, athwartGaps, bowAligned);
     }
 
     /// <summary>Continuous athwart stiffener on outer ring (reads as frame flange against shell).</summary>
-    private static void AddFlangeStiffener(
+    public static void AddFlangeStiffenerPublic(
         List<CadEntity> entities,
         float loa,
         string frameId,
@@ -118,14 +83,6 @@ internal static class CalypsoShipbuildingFrames
         }
     }
 
-    private static string FrameFabPartId(string frameId)
-    {
-        var id = frameId.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
-            ? frameId["frame-".Length..]
-            : frameId;
-        return $"P-FRAME-{id.Replace('.', '-')}-WEB";
-    }
-
     public static (float Y, float Up)[] InnerOctagonRing(float zStem, float skinInset)
     {
         CalypsoLockGenerator.SectionAtPublic(zStem, out var halfB, out var halfH, out var mid, out var cx, out var cy);
@@ -145,41 +102,6 @@ internal static class CalypsoShipbuildingFrames
             (-halfB, mid - halfH + cy),
             (-halfB, mid + halfH - cy),
         ];
-    }
-
-    private static List<(float Y0, float Y1)> GapsForSlice(
-        IReadOnlyList<(float Y0, float Y1)> athwartGaps,
-        float up,
-        float halfY)
-    {
-        var gaps = new List<(float Y0, float Y1)>(athwartGaps);
-        if (up >= ShellDoorBandUp0 && up <= ShellDoorBandUp1)
-        {
-            gaps.Add((halfY - ShellDoorReliefM, halfY + 0.05f));
-            gaps.Add((-halfY - 0.05f, -halfY + ShellDoorReliefM));
-        }
-
-        if (up >= 3.2f && up <= 8.2f && athwartGaps.Count > 0)
-        {
-            foreach (var g in athwartGaps)
-            {
-                var cy = (g.Y0 + g.Y1) * 0.5f;
-                var hw = (g.Y1 - g.Y0) * 0.5f + 0.35f;
-                gaps.Add((cy - hw, cy + hw));
-            }
-        }
-
-        gaps.Sort((a, b) => a.Y0.CompareTo(b.Y0));
-        var merged = new List<(float Y0, float Y1)>();
-        foreach (var g in gaps)
-        {
-            if (merged.Count == 0 || g.Y0 > merged[^1].Y1 + 0.04f)
-                merged.Add(g);
-            else
-                merged[^1] = (merged[^1].Y0, MathF.Max(merged[^1].Y1, g.Y1));
-        }
-
-        return merged;
     }
 
     public static void AddDeckLongitudinalGirders(

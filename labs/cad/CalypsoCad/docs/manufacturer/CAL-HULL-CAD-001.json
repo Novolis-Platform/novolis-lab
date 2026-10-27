@@ -9,6 +9,9 @@
       2,
       6
     ],
+    "kerf_m": 0.002,
+    "nest_part_gap_m": 0.008,
+    "grain_locked": true,
     "thickness_m": 0.008
   },
   "material": {

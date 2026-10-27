@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Text.Json;
+using CalypsoCad.Generation;
 using CalypsoCad.Models;
 using Novolis.Cad.Primitives;
 using Novolis.Ship.Primitives;
@@ -9,7 +10,6 @@ namespace CalypsoCad.Generation.Fabrication;
 
 internal static class CadFabPartCollector
 {
-    private const float DefaultDensity = 8000f;
     private const float WallThickness = 0.08f;
 
     public static void CollectFromDocument(
@@ -29,21 +29,25 @@ internal static class CadFabPartCollector
 
         var seenParts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        foreach (var (fabId, entry) in FrameWebPlateRegistry.All)
+        {
+            if (!seenParts.Add(fabId))
+                continue;
+            ExportFrameWebProfile(entry, fabId, loa, cutStructDir, parts, cuts, bomLines, sequence, ref sequenceIndex);
+        }
+
         foreach (var e in doc.Entities)
         {
             if (e.Name is null)
                 continue;
 
+            if (e.Name.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase)
+                || e.Name.EndsWith("-web-profile", StringComparison.OrdinalIgnoreCase))
+                continue;
+
             if (e.Name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
                 && e.Name.Contains("-webplate-", StringComparison.OrdinalIgnoreCase))
-            {
-                var fabId = GetFabPartId(e) ?? FrameWebPartId(e.Name);
-                if (!seenParts.Add(fabId))
-                    continue;
-                ExportStructureBar(doc, e, loa, fabId, cutStructDir, parts, cuts, bomLines, sequence, ref sequenceIndex,
-                    0.15f, "CAL-INT-GA-001.json");
                 continue;
-            }
 
             if (e.Name.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
                 || e.Name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
@@ -102,18 +106,21 @@ internal static class CadFabPartCollector
         var rel = $"cuts/structure/{fabId}.dxf";
         DxfWriter.WritePolyline(Path.Combine(cutDir, $"{fabId}.dxf"), profile);
         cuts.Add(new FabCutProfile { PartId = fabId, OuterLoop = profile, AreaM2 = area, BendAllowed = false });
-        var mass = area * thickness * DefaultDensity;
+        var density = CalypsoMaterialMap.DensityKgM3("structure");
+        var mass = area * thickness * density;
         parts.Add(new FabPart
         {
             PartId = fabId,
             Process = FabPartProcess.Cut,
             ThicknessM = thickness,
+            MaterialDesignation = CalypsoMaterialMap.Designation("structure"),
             SourceDrawing = drawing,
             CutFileRelative = rel,
             MassKg = mass,
             CadEntityName = e.Name,
         });
-        bomLines.Add(new PlateBomLine(fabId, "structure", area, thickness, 1, mass));
+        bomLines.Add(new PlateBomLine(
+            fabId, "structure", area, thickness, 1, mass, CalypsoMaterialMap.Designation("structure")));
         sequence.Add(MakeInstance(fabId, seq++, y, up, zStem, loa));
     }
 
@@ -136,7 +143,8 @@ internal static class CadFabPartCollector
         var rel = $"cuts/partition/{fabId}.dxf";
         DxfWriter.WritePolyline(Path.Combine(cutDir, $"{fabId}.dxf"), profile);
         cuts.Add(new FabCutProfile { PartId = fabId, OuterLoop = profile, AreaM2 = area, BendAllowed = false });
-        var mass = area * WallThickness * DefaultDensity;
+        var density = CalypsoMaterialMap.DensityKgM3("partition");
+        var mass = area * WallThickness * density;
         parts.Add(new FabPart
         {
             PartId = fabId,
@@ -144,11 +152,13 @@ internal static class CadFabPartCollector
             ThicknessM = WallThickness,
             SourceDrawing = "CAL-INT-GA-001.json",
             LockRef = e.Name,
+            MaterialDesignation = CalypsoMaterialMap.Designation("partition"),
             CutFileRelative = rel,
             MassKg = mass,
             CadEntityName = e.Name,
         });
-        bomLines.Add(new PlateBomLine(fabId, "partition", area, WallThickness, 1, mass));
+        bomLines.Add(new PlateBomLine(
+            fabId, "partition", area, WallThickness, 1, mass, CalypsoMaterialMap.Designation("partition")));
         sequence.Add(MakeInstance(fabId, seq++, y, up, zStem, loa));
     }
 
@@ -163,18 +173,54 @@ internal static class CadFabPartCollector
         if (!TryBoxLockFrame(e, loa, out var y, out var up, out var zStem, out var hy, out var hu, out var hz))
             return;
         var vol = 8f * hy * hu * hz;
-        var mass = vol * 2700f;
+        var density = CalypsoMaterialMap.DensityKgM3("outfit");
+        var mass = vol * density;
         parts.Add(new FabPart
         {
             PartId = fabId,
             Process = FabPartProcess.Install,
             ThicknessM = 0f,
+            MaterialDesignation = CalypsoMaterialMap.Designation("outfit"),
             SourceDrawing = "CAL-INT-GA-001.json",
             LockRef = e.Name,
             MassKg = mass,
             CadEntityName = e.Name,
         });
         sequence.Add(MakeInstance(fabId, seq++, y, up, zStem, loa));
+    }
+
+    private static void ExportFrameWebProfile(
+        FrameWebPlateRegistry.Entry entry,
+        string fabId,
+        float loa,
+        string cutDir,
+        List<FabPart> parts,
+        List<FabCutProfile> cuts,
+        List<PlateBomLine> bomLines,
+        List<FabAssemblyInstance> sequence,
+        ref int seq)
+    {
+        var profile = entry.Profile;
+        var holes = profile.Holes.Select(h => (IReadOnlyList<(float X, float Y)>)h).ToList();
+        var rel = $"cuts/structure/{fabId}.dxf";
+        DxfWriter.WritePolyline(Path.Combine(cutDir, $"{fabId}.dxf"), profile.OuterLoop, holes);
+        cuts.Add(profile);
+        var density = CalypsoMaterialMap.DensityKgM3("structure");
+        var mass = profile.AreaM2 * entry.ThicknessM * density;
+        parts.Add(new FabPart
+        {
+            PartId = fabId,
+            Process = FabPartProcess.Cut,
+            ThicknessM = entry.ThicknessM,
+            MaterialDesignation = CalypsoMaterialMap.Designation("structure"),
+            SourceDrawing = entry.DrawingRef,
+            CutFileRelative = rel,
+            MassKg = mass,
+            CadEntityName = fabId,
+        });
+        bomLines.Add(new PlateBomLine(
+            fabId, "structure", profile.AreaM2, entry.ThicknessM, 1, mass, CalypsoMaterialMap.Designation("structure")));
+        sequence.Add(MakeInstance(fabId, seq++, 0f, 0f, entry.ZStem, loa));
     }
 
     private static FabAssemblyInstance MakeInstance(string partId, int seq, float y, float up, float zStem, float loa) =>
@@ -248,13 +294,6 @@ internal static class CadFabPartCollector
         if (e.Properties.TryGetValue(ShipPropertyKeys.FabPartId, out var el))
             return el.GetString();
         return null;
-    }
-
-    private static string FrameWebPartId(string entityName)
-    {
-        var idx = entityName.IndexOf("-webplate-", StringComparison.OrdinalIgnoreCase);
-        var frame = idx > 0 ? entityName[..idx] : entityName;
-        return $"P-FRAME-{Sanitize(frame)}-WEB";
     }
 
     private static string Sanitize(string s) =>

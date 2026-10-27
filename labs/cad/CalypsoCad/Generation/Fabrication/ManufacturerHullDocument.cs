@@ -17,6 +17,12 @@ internal sealed class ManufacturerHullDocument
 
     public float SheetHeightM { get; init; }
 
+    public float KerfM { get; init; }
+
+    public float PartGapM { get; init; }
+
+    public bool GrainLocked { get; init; }
+
     public string MaterialDesignation { get; init; } = "AISI 316L";
 
     public string WeldProcess { get; init; } = "GTAW";
@@ -71,6 +77,19 @@ internal sealed class ManufacturerHullDocument
             sheetH = (float)stock[1].GetDouble();
         }
 
+        var kerf = 0.002f;
+        var partGap = 0.008f;
+        var grainLocked = true;
+        if (root.TryGetProperty("process", out proc))
+        {
+            if (proc.TryGetProperty("kerf_m", out var km))
+                kerf = (float)km.GetDouble();
+            if (proc.TryGetProperty("nest_part_gap_m", out var ng))
+                partGap = (float)ng.GetDouble();
+            if (proc.TryGetProperty("grain_locked", out var gl))
+                grainLocked = gl.GetBoolean();
+        }
+
         var golden = 0f;
         if (root.TryGetProperty("massProperties", out var mp) && mp.TryGetProperty("outerSkinArea_m2", out var a))
             golden = (float)a.GetDouble();
@@ -93,6 +112,9 @@ internal sealed class ManufacturerHullDocument
             DensityKgM3 = density,
             SheetWidthM = sheetW,
             SheetHeightM = sheetH,
+            KerfM = kerf,
+            PartGapM = partGap,
+            GrainLocked = grainLocked,
             MaterialDesignation = matName,
             WeldProcess = weldProc,
             WeldFiller = filler,

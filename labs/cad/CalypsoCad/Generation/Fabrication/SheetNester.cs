@@ -6,9 +6,13 @@ internal static class SheetNester
         IReadOnlyList<NestItem> items,
         float sheetW,
         float sheetH,
-        float margin = 0.05f)
+        float margin = 0.05f,
+        float kerfM = 0f,
+        float partGapM = 0f,
+        bool grainLocked = true)
     {
-        var sorted = items.OrderByDescending(i => MathF.Max(i.Width, i.Height)).ToList();
+        var inflate = kerfM + partGapM;
+        var sorted = items.OrderByDescending(i => MathF.Max(i.Width + inflate, i.Height + inflate)).ToList();
         var sheets = new List<(string SheetId, List<FabNestRow> Rows)>();
         var sheetIndex = 0;
         float cursorX = margin;
@@ -18,8 +22,9 @@ internal static class SheetNester
 
         foreach (var item in sorted)
         {
-            var w = item.Width + margin;
-            var h = item.Height + margin;
+            var w = item.Width + inflate + margin;
+            var h = item.Height + inflate + margin;
+            _ = grainLocked;
             if (cursorX + w > sheetW - margin)
             {
                 cursorX = margin;
