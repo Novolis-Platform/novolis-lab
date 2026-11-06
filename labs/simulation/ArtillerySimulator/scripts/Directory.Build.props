@@ -1,5 +1,4 @@
 <Project>
-  <!-- Private lab tool: pin package versions locally; skip lab CPM + SourceLink Version-less ref. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>

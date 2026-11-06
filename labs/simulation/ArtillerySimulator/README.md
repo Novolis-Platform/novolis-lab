@@ -11,15 +11,10 @@ Flight uses `Novolis.Physics.Ballistics` with boat-tail drag, ISA at altitude, a
 Regenerate map sources:
 
 ```powershell
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\extract-artillery-map.cs -- --scenario kristiansand
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\build-kristiansand-map.cs -p:NovolisUseProjectReferences=true
 ```
 
-Cutout bbox comes from `map/kristiansand-norgeskart-cutout.json`. **Ground truth** (peaks, spawn roads, bridge heights): `map/kristiansand-ground-truth.json`. Regenerate with NDH + anchor IDW + optional hillshade fusion:
-
-```powershell
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\extract-artillery-map.cs -- --scenario kristiansand --fuse-hillshade
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\analyze-artillery-map-images.cs -- --write-alignment
-```
+Cutout bbox comes from `map/kristiansand-norgeskart-cutout.json`. Map tooling is under **`scripts/`** (file-based apps, excluded from this project’s compile).
 
 `--hillshade …\kristiansand-hillshade.jpg` replaces NDH with luminance-only DEM; `--fuse-hillshade` keeps NDH and blends your grey relief JPG for coast/nodata fixes. `--open-meteo` is coarse fallback.
 
@@ -53,24 +48,10 @@ Startup camera matches **[Kommunekart 3D](https://3d.kommunekart.com/?x=58.03807
 Set your two Norgeskart PDF paths in `map/kristiansand-norgeskart-source-pdfs.json`, then:
 
 ```powershell
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\sync-artillery-map-stack.cs
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\extract-artillery-map.cs -- --scenario kristiansand
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\compose-artillery-map-stack-preview.cs
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\build-kristiansand-map.cs -p:NovolisUseProjectReferences=true
 ```
 
-Or pass PDFs on the command line (overrides the config):
-
-```powershell
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\sync-artillery-map-stack.cs -- --heightmap-pdf "C:\Users\frank\Downloads\<heightmap>.pdf" --roads-pdf "C:\Users\frank\Downloads\<roads>.pdf"
-```
-
-Map tooling lives under **`tools/`** next to this app (governance `scripts/*artillery*` only forwards). Exports from the PDF are **north-up** (row 0 = north, column 0 = west), matching `pixelOrigin: topLeftNorthWest` in `kristiansand-map-stack.json`.
-
-Edit marker WGS84 when you have grid labels from the PDF; re-run sync + extract. Optional: `dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\InspectNorgeskartPdf` for PDF tile dumps.
-
-`kristiansand-map-stack-preview.png` is a **multi-panel QA sheet** (relief, overlay, mask stacked). For one image that matches the chart window, open `kristiansand-reference.png`, or run `compose-artillery-map-stack-preview.cs` to also emit **`kristiansand-relief-roads-composite.png`** (single relief + roads overlay).
-
-**Land/sea** mask is pixel-aligned to the **relief** layer via the stack. QA: `kristiansand-land-sea-mask.png`.
+PDF paths: `map/kristiansand-norgeskart-source-pdfs.json`. Outputs: `map/layers/{elevation,shoreline,roads,placenames}.png`, layered composite, land/sea mask, and game elevation grid. North-up (`pixelOrigin: topLeftNorthWest`).
 
 The window listens on `http://127.0.0.1:18770`. Snapshot lists threats, green defenders, Kvadraturen, rivers, and roads. `--agent` runs headless flat terrain without the Kristiansand mission.
 

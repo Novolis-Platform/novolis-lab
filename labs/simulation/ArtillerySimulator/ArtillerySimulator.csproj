@@ -5,6 +5,9 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="map\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="map" />
+    <!-- File-based map pipeline apps; not part of the game compile. -->
+    <Compile Remove="scripts\**\*" />
+    <None Include="scripts\**\*" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp" />

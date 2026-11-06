@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>ArtillerySimulator.MapPipeline</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" />
+    <LibraryReference Include="Novolis.Pdf.Core" />
+    <LibraryReference Include="Novolis.Pdf.Parsing" />
+    <LibraryReference Include="Novolis.Pdf.Rendering" />
+    <LibraryReference Include="Novolis.Pdf.Rendering.Skia" />
+    <LibraryReference Include="Novolis.Pdf.Text" />
+    <LibraryReference Include="Novolis.WorkflowEngine.Pipeline" />
+  </ItemGroup>
+</Project>

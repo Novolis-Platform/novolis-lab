@@ -1,92 +1,59 @@
 {
-  "schema": "novolis.artillery.map-stack/1",
-  "citation": "",
+  "schema": "novolis.artillery.map-stack/2",
+  "citation": "Built only from relief\u002Broads Norgeskart PDFs via scripts/build-kristiansand-map.cs",
   "world": {
     "northUp": true,
     "origin": "southwest_corner_meters",
-    "wgs84": {
-      "south": 57.99259942363112,
-      "north": 58.277400576368876,
-      "west": 7.819999999999998,
-      "east": 8.240000000000004
-    },
     "eastMeters": 24682.56549591608,
-    "northMeters": 16737.197870861823,
-    "extentSource": "relief-crop-aspect-matched-east"
+    "northMeters": 16720.907035317643,
+    "wgs84": {
+      "south": 58.059770061569495,
+      "north": 58.2102299384305,
+      "west": 7.82,
+      "east": 8.24
+    },
+    "extentSource": "relief-images-only-aspect"
   },
-  "markers": [],
   "layers": [
     {
-      "id": "relief",
-      "role": "land_sea_mask",
-      "imageFile": "kristiansand-reference.png",
-      "sourcePdf": "63271497-8460-4ad9-9552-201b4e5ce72e.pdf",
-      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf",
-      "dpi": 220,
-      "pixelWidth": 3470,
-      "pixelHeight": 2353,
+      "id": "elevation",
+      "imageFile": "layers/elevation.png",
+      "role": "elevation",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
-      "pdfMapFrame": {
-        "left": 28.319999995468798,
-        "bottom": 44.6080799928626,
-        "right": 1163.99999981376,
-        "top": 814.5280798696754
-      },
-      "markerPixels": {
-        "nw": {
-          "x": 0,
-          "y": 0
-        },
-        "ne": {
-          "x": 3469,
-          "y": 0
-        },
-        "sw": {
-          "x": 0,
-          "y": 2352
-        },
-        "se": {
-          "x": 3469,
-          "y": 2352
-        }
-      }
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+    },
+    {
+      "id": "shoreline",
+      "imageFile": "layers/shoreline.png",
+      "role": "shoreline",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
     },
     {
       "id": "roads",
-      "role": "roads_overlay",
-      "imageFile": "kristiansand-roads-reference.png",
-      "sourcePdf": "5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
-      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
-      "dpi": 220,
-      "pixelWidth": 3470,
-      "pixelHeight": 2353,
+      "imageFile": "layers/roads.png",
+      "role": "roads",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
-      "pdfMapFrame": {
-        "left": 29.279999995315197,
-        "bottom": 45.08807999278579,
-        "right": 1163.5199998138366,
-        "top": 813.5680798698289
-      },
-      "markerPixels": {
-        "nw": {
-          "x": 0,
-          "y": 0
-        },
-        "ne": {
-          "x": 3469,
-          "y": 0
-        },
-        "sw": {
-          "x": 0,
-          "y": 2352
-        },
-        "se": {
-          "x": 3469,
-          "y": 2352
-        }
-      }
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf"
+    },
+    {
+      "id": "placenames",
+      "imageFile": "layers/placenames.png",
+      "role": "placenames",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf"
     }
   ]
 }

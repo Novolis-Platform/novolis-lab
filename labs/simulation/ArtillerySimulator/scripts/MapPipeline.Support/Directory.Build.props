@@ -1,0 +1,3 @@
+<Project>
+  <!-- Private support for file-based map scripts; strip Version-less SourceLink when CPM is on. -->
+</Project>
