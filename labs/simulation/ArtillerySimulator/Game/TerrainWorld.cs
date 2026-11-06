@@ -22,7 +22,7 @@ internal sealed class TerrainWorld
         ExtentMeters = KristiansandHeightSampler.EastMeters,
         ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
         CollisionCells = 512,
-        DrawCells = 256,
+        DrawCells = 512,
     };
 
     private BoundedHeightfield _field = null!;
@@ -56,7 +56,7 @@ internal sealed class TerrainWorld
             ExtentMeters = KristiansandHeightSampler.EastMeters,
             ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
             CollisionCells = 512,
-            DrawCells = 256,
+            DrawCells = 512,
         };
 
         _sampler = flat

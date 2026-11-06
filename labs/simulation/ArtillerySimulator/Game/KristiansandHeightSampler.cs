@@ -26,6 +26,11 @@ internal sealed class KristiansandHeightSampler : IHeightSampler
 
     public static float MapExtentMeters { get; } = MathF.Max(EastMeters, NorthMeters);
 
+    /// <summary>
+    /// Wireframe / gameplay Y scale. Raw DEM peaks ~180 m over ~24 km; without this the mesh reads as a flat plate.
+    /// </summary>
+    public const float VisualReliefScale = 12f;
+
     public float SampleHeight(float x, float z)
     {
         if (KristiansandLandSeaMask.IsWater(x, z))
@@ -46,7 +51,7 @@ internal sealed class KristiansandHeightSampler : IHeightSampler
         var h11 = At(i1, j1);
         var south = h00 + (h10 - h00) * tx;
         var north = h01 + (h11 - h01) * tx;
-        return south + (north - south) * tz;
+        return (south + (north - south) * tz) * VisualReliefScale;
     }
 
     private static float At(int i, int j) => KristiansandElevation.Meters[j * KristiansandElevation.Count + i];
