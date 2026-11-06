@@ -2,7 +2,7 @@ namespace ArtillerySimulator.Game;
 
 /// <summary>
 /// Copernicus DEM elevations for 57,99–58,28 N, 7,82–8,24 E (Kristiansand).
-/// Kartverket Nasjonal detaljert høydemodell (NDH) DTM 1 m, EPSG:25833, hoydedata.no ImageServer export; ground-truth IDW anchor correction. Generated 2026-10-26. 81 by 81, row-major, south to north,
+/// Kartverket Nasjonal detaljert høydemodell (NDH) DTM 1 m, EPSG:25833, hoydedata.no ImageServer export; ground-truth IDW anchor correction. Generated 2026-11-06. 81 by 81, row-major, south to north,
 /// west to east within each row. Values are meters from that source.
 /// </summary>
 internal static class KristiansandElevation

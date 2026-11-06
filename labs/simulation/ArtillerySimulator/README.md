@@ -50,12 +50,24 @@ Startup camera matches **[Kommunekart 3D](https://3d.kommunekart.com/?x=58.03807
 - **Map area** = PDF map tile union (cropped), not the full print page with legend.
 - **One scale**: world `eastMeters` × `northMeters` matches relief crop aspect (no letterbox when stack is synced).
 
+Set your two Norgeskart PDF paths in `map/kristiansand-norgeskart-source-pdfs.json`, then:
+
 ```powershell
-dotnet run --file d:\novolis\novolis-governance\scripts\sync-artillery-map-stack.cs -- --heightmap-pdf "C:\Users\frank\Downloads\<heightmap>.pdf" --roads-pdf "C:\Users\frank\Downloads\<roads>.pdf"
+dotnet run --file d:\novolis\novolis-governance\scripts\sync-artillery-map-stack.cs
 dotnet run --file d:\novolis\novolis-governance\scripts\extract-artillery-map.cs -- --scenario kristiansand
 ```
 
+Or pass PDFs on the command line (overrides the config):
+
+```powershell
+dotnet run --file d:\novolis\novolis-governance\scripts\sync-artillery-map-stack.cs -- --heightmap-pdf "C:\Users\frank\Downloads\<heightmap>.pdf" --roads-pdf "C:\Users\frank\Downloads\<roads>.pdf"
+```
+
+Exports from the PDF are **north-up** (row 0 = north, column 0 = west), matching `pixelOrigin: topLeftNorthWest` in `kristiansand-map-stack.json`. If your tree still has an older upside-down `kristiansand-reference.png`, re-run **sync** then **extract** so pixels and the land/sea mask agree.
+
 Edit marker WGS84 when you have grid labels from the PDF; re-run sync + extract. Optional: `InspectNorgeskartPdf --dump-spans <pdf>` for label positions (font decode still weak).
+
+`kristiansand-map-stack-preview.png` is a **multi-panel QA sheet** (relief, overlay, mask stacked). For one image that matches the chart window, open `kristiansand-reference.png`, or run `compose-artillery-map-stack-preview.cs` to also emit **`kristiansand-relief-roads-composite.png`** (single relief + roads overlay).
 
 **Land/sea** mask is pixel-aligned to the **relief** layer via the stack. QA: `kristiansand-land-sea-mask.png`.
 

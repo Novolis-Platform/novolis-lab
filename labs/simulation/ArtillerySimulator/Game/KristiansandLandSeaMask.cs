@@ -28,19 +28,13 @@ internal static class KristiansandLandSeaMask
         if (!EnsureLoaded() || _water is null)
             return false;
 
-        int ix;
-        int iy;
-        if (ArtilleryMapStackGeoref.TryWorldToReliefPixel(xMeters, zMeters, out ix, out iy))
-        {
-            if (ix < 0 || iy < 0 || ix >= _imageWidth || iy >= _imageHeight)
-                return false;
-            return _water[iy * _imageWidth + ix] != 0;
-        }
-
+        // Mask bytes and georef come from extract-artillery-map (same letterboxing as kristiansand-reference.png).
+        // Do not use ArtilleryMapStackGeoref.TryWorldToReliefPixel here: stack JSON pixel sizes can differ from
+        // the exported PNG, and full-bleed u/v mapping ignores offsetPx — both yield wrong rows (visible seam).
         var px = xMeters * _pixelsPerMeter + _offsetPxX;
         var py = _offsetPxY + (_scenarioNorthMeters - zMeters) * _pixelsPerMeter;
-        ix = (int)MathF.Round(px);
-        iy = (int)MathF.Round(py);
+        var ix = (int)MathF.Round(px);
+        var iy = (int)MathF.Round(py);
         if (ix < 0 || iy < 0 || ix >= _imageWidth || iy >= _imageHeight)
             return false;
 
@@ -69,7 +63,7 @@ internal static class KristiansandLandSeaMask
             _pixelsPerMeter = reader.ReadSingle();
             _offsetPxX = reader.ReadSingle();
             _offsetPxY = reader.ReadSingle();
-            _ = reader.ReadSingle();
+            _ = reader.ReadSingle(); // scenario east (m); mask georef uses ppm + offsets only
             _scenarioNorthMeters = reader.ReadSingle();
             var count = _imageWidth * _imageHeight;
             _water = reader.ReadBytes(count);

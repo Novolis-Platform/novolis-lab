@@ -10,28 +10,20 @@ internal sealed class KristiansandHeightSampler : IHeightSampler
 {
     public const double SouthLatitude = 57.99259942363112;
     public const double NorthLatitude = 58.277400576368876;
-    public const double WestLongitude = 7.82;
-    public const double EastLongitude = 8.24;
+    public const double WestLongitude = 7.819999999999998;
+    public const double EastLongitude = 8.240000000000004;
     public const double MeanLatitudeDegrees = (SouthLatitude + NorthLatitude) / 2.0;
     public const double MetersPerDegreeLatitude = 111_132.0;
     public const double MetersPerDegreeLongitudeAtEquator = 111_320.0;
 
-    private static readonly float FallbackEastMeters = (float)(
+    public static float EastMeters { get; } = (float)(
         (EastLongitude - WestLongitude)
         * MetersPerDegreeLongitudeAtEquator
         * Math.Cos(MeanLatitudeDegrees * Math.PI / 180.0));
 
-    private static readonly float FallbackNorthMeters =
-        (float)((NorthLatitude - SouthLatitude) * MetersPerDegreeLatitude);
+    public static float NorthMeters { get; } = (float)((NorthLatitude - SouthLatitude) * MetersPerDegreeLatitude);
 
-    /// <summary>Matches <c>kristiansand-map-stack.json</c> when present (relief crop), not raw WGS84 bbox span.</summary>
-    public static float EastMeters =>
-        ArtilleryMapStackGeoref.TryGetScenarioMeters(out var east, out _) ? east : FallbackEastMeters;
-
-    public static float NorthMeters =>
-        ArtilleryMapStackGeoref.TryGetScenarioMeters(out _, out var north) ? north : FallbackNorthMeters;
-
-    public static float MapExtentMeters => MathF.Max(EastMeters, NorthMeters);
+    public static float MapExtentMeters { get; } = MathF.Max(EastMeters, NorthMeters);
 
     public float SampleHeight(float x, float z)
     {
@@ -60,13 +52,8 @@ internal sealed class KristiansandHeightSampler : IHeightSampler
 
     public static Vector2 ToWorldMeters(double latitudeDegrees, double longitudeDegrees)
     {
-        if (ArtilleryMapStackGeoref.TryProjectWgs84(latitudeDegrees, longitudeDegrees, out var x, out var z))
-            return new Vector2(x, z);
-
-        var east = FallbackEastMeters;
-        var north = FallbackNorthMeters;
-        var wx = (float)((longitudeDegrees - WestLongitude) / (EastLongitude - WestLongitude) * east);
-        var wz = (float)((latitudeDegrees - SouthLatitude) / (NorthLatitude - SouthLatitude) * north);
-        return new Vector2(wx, wz);
+        var x = (float)((longitudeDegrees - WestLongitude) / (EastLongitude - WestLongitude) * EastMeters);
+        var z = (float)((latitudeDegrees - SouthLatitude) / (NorthLatitude - SouthLatitude) * NorthMeters);
+        return new Vector2(x, z);
     }
 }

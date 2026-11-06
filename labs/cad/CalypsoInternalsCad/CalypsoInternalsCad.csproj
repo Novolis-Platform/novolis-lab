@@ -54,7 +54,7 @@
     <LibraryReference Include="Novolis.Cad.Primitives" />
     <LibraryReference Include="Novolis.Cad.SceneBridge" />
     <LibraryReference Include="Novolis.Math.Geometry" />
-    <PackageReference Include="Novolis.Raylib" />
+    <LibraryReference Include="Novolis.Raylib" />
     <LibraryReference Include="Novolis.Raylib.Bindings" />
     <LibraryReference Include="Novolis.Raylib.Runtime" />
     <LibraryReference Include="Novolis.Ship.Primitives" />

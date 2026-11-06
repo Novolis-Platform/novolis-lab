@@ -3,7 +3,7 @@ using System.Numerics;
 namespace ArtillerySimulator.Game;
 
 /// <summary>
-/// OpenStreetMap for 57,99–58,28 N, 7,82–8,24 E, retrieved 2026-10-26.
+/// OpenStreetMap for 57,99–58,28 N, 7,82–8,24 E, retrieved 2026-11-06.
 /// Defense of Kristiansand scenario window · 58.05–58.22°N, 7.82–8.24°E (plan + canvas). Re-export Norgeskart reference prints to this WGS84 box.
 /// © OpenStreetMap contributors. Points are world meters, X east and Z north, on the Kristiansand elevation grid.
 /// </summary>

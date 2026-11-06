@@ -7,8 +7,8 @@
     "wgs84": {
       "south": 57.99259942363112,
       "north": 58.277400576368876,
-      "west": 7.82,
-      "east": 8.24
+      "west": 7.819999999999998,
+      "east": 8.240000000000004
     },
     "eastMeters": 24682.56549591608,
     "northMeters": 16737.197870861823,
@@ -21,6 +21,7 @@
       "role": "land_sea_mask",
       "imageFile": "kristiansand-reference.png",
       "sourcePdf": "63271497-8460-4ad9-9552-201b4e5ce72e.pdf",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf",
       "dpi": 220,
       "pixelWidth": 3470,
       "pixelHeight": 2353,
@@ -56,6 +57,7 @@
       "role": "roads_overlay",
       "imageFile": "kristiansand-roads-reference.png",
       "sourcePdf": "5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
       "dpi": 220,
       "pixelWidth": 3466,
       "pixelHeight": 2348,
