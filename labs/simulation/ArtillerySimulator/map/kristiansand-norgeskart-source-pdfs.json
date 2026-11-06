@@ -2,5 +2,5 @@
   "reliefPdf": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf",
   "roadsPdf": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
   "dpi": 220,
-  "citation": "Source-of-truth Norgeskart prints: relief/land–sea (hillshade + water) vs roads+labels. Edit paths here, then run sync-artillery-map-stack.cs with no PDF args."
+  "citation": "Source-of-truth Norgeskart prints: relief/land–sea (hillshade + water) vs roads+labels. Edit paths here, then run tools/sync-artillery-map-stack.cs with no PDF args."
 }

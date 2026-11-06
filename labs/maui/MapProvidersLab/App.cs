@@ -3,7 +3,7 @@ using Novolis.Maui.GraphicalProfile;
 namespace Novolis.Lab.MapProviders;
 
 /// <summary>Application root for the map provider comparison lab.</summary>
-public sealed class App : Application
+public sealed partial class App : Application
 {
     readonly MainPage _mainPage;
 

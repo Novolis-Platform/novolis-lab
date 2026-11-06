@@ -59,8 +59,8 @@
       "sourcePdf": "5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
       "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
       "dpi": 220,
-      "pixelWidth": 3466,
-      "pixelHeight": 2348,
+      "pixelWidth": 3470,
+      "pixelHeight": 2353,
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
       "pdfMapFrame": {
@@ -75,16 +75,16 @@
           "y": 0
         },
         "ne": {
-          "x": 3465,
+          "x": 3469,
           "y": 0
         },
         "sw": {
           "x": 0,
-          "y": 2347
+          "y": 2352
         },
         "se": {
-          "x": 3465,
-          "y": 2347
+          "x": 3469,
+          "y": 2352
         }
       }
     }

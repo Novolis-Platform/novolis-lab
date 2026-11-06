@@ -22,7 +22,7 @@ namespace Novolis.Lab.MapProviders;
 /// Each tab uses the same interaction, overlay, and measurement surface with
 /// a different raster source, including a non-map procedural source.
 /// </summary>
-public sealed class MainPage : TabbedPage, IDisposable
+public sealed partial class MainPage : TabbedPage, IDisposable
 {
     static readonly GeoCoordinate DefaultCenter = new(58.14623, 7.99517);
     static readonly JsonSerializerOptions CatalogSnapshotJson = new()

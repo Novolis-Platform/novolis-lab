@@ -1,0 +1,9 @@
+<Project>
+  <!-- File-based map tools pin #:package versions; strip lab SourceLink Version-less ref. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Remove="Microsoft.SourceLink.GitHub" />
+  </ItemGroup>
+</Project>

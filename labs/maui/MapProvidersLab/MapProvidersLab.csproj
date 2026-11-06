@@ -19,6 +19,7 @@
     <WindowsPackageType>None</WindowsPackageType>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <PublishReadyToRun>false</PublishReadyToRun>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" />

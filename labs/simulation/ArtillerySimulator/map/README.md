@@ -12,14 +12,15 @@ Authoritative inputs are **two** Kartverket exports for the **same map window** 
 **Canonical paths** live in `kristiansand-norgeskart-source-pdfs.json` (`reliefPdf`, `roadsPdf`, optional `dpi`). Edit that file to point at your source-of-truth PDFs, then:
 
 ```powershell
-dotnet run --file d:\novolis\novolis-governance\scripts\sync-artillery-map-stack.cs
-dotnet run --file d:\novolis\novolis-governance\scripts\extract-artillery-map.cs -- --scenario kristiansand
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\sync-artillery-map-stack.cs
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\extract-artillery-map.cs -- --scenario kristiansand
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\compose-artillery-map-stack-preview.cs
 ```
 
 CLI still overrides the config:
 
 ```powershell
-dotnet run --file d:\novolis\novolis-governance\scripts\sync-artillery-map-stack.cs -- --heightmap-pdf "D:\path\to\relief.pdf" --roads-pdf "D:\path\to\roads.pdf"
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\tools\sync-artillery-map-stack.cs -- --heightmap-pdf "D:\path\to\relief.pdf" --roads-pdf "D:\path\to\roads.pdf"
 ```
 
 `kristiansand-map-stack.json` records `sourcePdf` (file name) and pixel sizes per layer.
@@ -30,8 +31,8 @@ Layers are stack-aligned when both exports share the **same** Norgeskart map fra
 
 ## Derived files
 
-- `kristiansand-land-sea-mask.bin` / `.png` — water mask from relief pixels (`#5182FF` and related sea tones in `extract-artillery-map.cs`).
-- `kristiansand-relief-roads-composite.png` — QA single sheet (relief + semi-transparent roads), from `compose-artillery-map-stack-preview.cs`.
+- `kristiansand-land-sea-mask.bin` / `.png` — water mask from relief pixels (`#5182FF` and related sea tones in `../tools/extract-artillery-map.cs`).
+- `kristiansand-relief-roads-composite.png` — QA single sheet (relief + semi-transparent roads), from `../tools/compose-artillery-map-stack-preview.cs`.
 - `kristiansand-map-stack-preview.png` — multi-panel QA (not a replacement for the chart PDFs).
 
 North is up; pixel origin is north-west (`topLeftNorthWest` in the stack).
