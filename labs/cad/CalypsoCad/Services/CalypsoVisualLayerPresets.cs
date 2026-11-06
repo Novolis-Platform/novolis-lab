@@ -5,6 +5,8 @@ internal static class CalypsoVisualLayerPresets
     private static readonly (CalypsoVisualLayers Layers, string Label)[] OrbitCycle =
     [
         (CalypsoVisualLayers.DefaultOrbit, "all"),
+        (CalypsoVisualLayers.Dk001Plan, "DK-001 plan"),
+        (CalypsoVisualLayers.InteriorStructureNoHull, "interiors no OML"),
         (CalypsoVisualLayers.StructureOnlyCutaway, "structure+cutouts"),
         (CalypsoVisualLayers.FitoutCutaway, "fitout+cutouts"),
         (CalypsoVisualLayers.HullShell | CalypsoVisualLayers.Structure, "shell+frames"),

@@ -2,7 +2,6 @@ using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Novolis.Physics.Ballistics;
-using Novolis.Raylib.Game;
 
 namespace ArtillerySimulator.Game;
 
@@ -48,25 +47,22 @@ internal sealed class KristiansandDefenseMission
         _terrain = terrain;
         var east = KristiansandHeightSampler.EastMeters;
         var north = KristiansandHeightSampler.NorthMeters;
+        // OSM polylines were baked for a wider WGS84 box — do not use them for objective/georef.
+        _road = null;
+        _crossingArc = 0f;
         var downtown = KristiansandHeightSampler.ToWorldMeters(58.1464, 7.9956);
-        _road = KristiansandMapFeatures.Longest("E18", "road")
-            ?? KristiansandMapFeatures.Longest("Setesdal", "road");
-        if (_road is not null)
-        {
-            _crossingArc = _road.NearestArc(downtown);
-            var at = _road.At(_crossingArc);
-            Objective = new Vector3(at.X, terrain.Field.SampleHeight(at.X, at.Y), at.Y);
-        }
-        else
-        {
-            _crossingArc = 0f;
-            Objective = new Vector3(
-                downtown.X,
-                terrain.Field.SampleHeight(downtown.X, downtown.Y),
-                downtown.Y);
-        }
+        Objective = new Vector3(
+            downtown.X,
+            terrain.Field.SampleHeight(downtown.X, downtown.Y),
+            downtown.Y);
 
-        var site = FindGun(terrain, east, north, Objective);
+        // Fixed battery: Odderøya old fort (Odderøyveien 23), snapped onto the fort hill.
+        var fort = KristiansandFort.ToWorldMeters();
+        var fortY = terrain.Field.SampleHeight(fort.X, fort.Y);
+        var site = new GunSite(
+            new Vector3(fort.X, fortY, fort.Y),
+            openingElevationDegrees: 22f,
+            columnLeadMeters: Math.Clamp(Horizontal(new Vector3(fort.X, fortY, fort.Y), Objective) * 0.55f, 1_800f, 5_500f));
         GunX = site.Position.X;
         GunZ = site.Position.Z;
         _columnLead = site.ColumnLeadMeters;
@@ -311,13 +307,13 @@ internal sealed class KristiansandDefenseMission
             $"The burst put {LastBracket} out of action and pinned {LastPinned}. {Remaining} still moving, nearest {NearestMeters / 1000f:F2} km.");
     }
 
-    public void Draw(RayGameContext ctx)
+    public void Draw(SilkWireBatch wires)
     {
         var ground = ObjectiveHeight(Objective.X, Objective.Z);
         var mark = new Vector3(Objective.X, ground, Objective.Z);
         var copper = Color.FromArgb(255, 232, 196, 120);
-        ctx.DrawBolt(mark, mark + Vector3.UnitY * 120f, copper);
-        DrawRing(ctx, mark + Vector3.UnitY * 2f, ObjectiveRadiusMeters, copper);
+        wires.Line(mark, mark + Vector3.UnitY * 120f, copper);
+        DrawRing(wires, mark + Vector3.UnitY * 2f, ObjectiveRadiusMeters, copper);
 
         var route = Color.FromArgb(170, 196, 140, 84);
         var hostile = Color.FromArgb(255, 196, 72, 52);
@@ -330,13 +326,13 @@ internal sealed class KristiansandDefenseMission
             var y = ObjectiveHeight(unit.X, unit.Z);
             var at = new Vector3(unit.X, y + 2f, unit.Z);
             if (previous is { } from && previousLane == unit.Lane)
-                ctx.DrawBolt(from + Vector3.UnitY * 3f, at + Vector3.UnitY * 3f, route);
+                wires.Line(from + Vector3.UnitY * 3f, at + Vector3.UnitY * 3f, route);
 
             previousLane = unit.Lane;
             var lane = _lanes[unit.Lane];
             var yaw = LaneYaw(lane, unit.Arc);
             var color = unit.Alive ? hostile : wreck;
-            NatoSymbolDraw.HostileMechanized(ctx, at, yaw, 14f, color, wreck: !unit.Alive);
+            NatoSymbolDraw.HostileMechanized(wires, at, yaw, 14f, color, wreck: !unit.Alive);
             previous = at;
         }
 
@@ -346,7 +342,7 @@ internal sealed class KristiansandDefenseMission
                 continue;
 
             var at = new Vector3(defender.X, ObjectiveHeight(defender.X, defender.Z) + 2f, defender.Z);
-            NatoSymbolDraw.FriendlyInfantry(ctx, at, defender.YawDegrees, 12f, friendly);
+            NatoSymbolDraw.FriendlyInfantry(wires, at, defender.YawDegrees, 12f, friendly);
         }
     }
 
@@ -552,37 +548,27 @@ internal sealed class KristiansandDefenseMission
 
     private void SpawnWave(string roadToken)
     {
-        var gun = new Vector2(GunX, GunZ);
-        var crossing = new Vector2(Objective.X, Objective.Z);
-        foreach (var line in KristiansandMapFeatures.Visible)
+        // Synthetic avenues toward Kvadraturen (OSM roads are wrong georef).
+        var east = KristiansandHeightSampler.EastMeters;
+        var north = KristiansandHeightSampler.NorthMeters;
+        var bearing = roadToken switch
         {
-            if (!string.Equals(line.Kind, "road", StringComparison.Ordinal))
-                continue;
-            if (!line.Name.Contains(roadToken, StringComparison.OrdinalIgnoreCase))
-                continue;
-            if (BesideTheGun(line, gun))
-                continue;
-
-            var arc = line.NearestArc(crossing);
-            if (Vector2.Distance(line.At(arc), crossing) > 12_000f)
-                continue;
-
-            var gunArc = line.NearestArc(gun);
-            var away = gunArc < arc ? 1 : -1;
-            var room = away > 0 ? line.Length - arc : arc;
-            var lead = Math.Clamp(room * 0.45f, 900f, 1_600f);
-            AddColumn(line, arc, away, 4, lead);
-            return;
-        }
+            "Strai" => 200f,
+            "Hellemyr" => 240f,
+            "Søm" => 110f,
+            "Vågsbygd" or "Vagsbygd" => 260f,
+            _ => 180f + (_approaches.Count * 37f) % 160f,
+        };
+        SpawnBearingColumn(east, north, bearing, roadToken);
     }
 
     private void PlaceDefenders()
     {
         var center = new Vector2(Objective.X, Objective.Z);
-        AddDefender("D1", SnapRoadPoint(center, "E18", 220f, 0f, -1f));
-        AddDefender("D2", SnapRoadPoint(center, "E39", 200f, -1f, 0f));
-        AddDefender("D3", SnapRoadPoint(center, "Otra", 180f, 1f, 0f));
-        AddDefender("D4", SnapRoadPoint(center, "Odderøya", 160f, 0f, 1f));
+        AddDefender("D1", center + new Vector2(0f, -220f));
+        AddDefender("D2", center + new Vector2(-200f, 0f));
+        AddDefender("D3", center + new Vector2(180f, 0f));
+        AddDefender("D4", center + new Vector2(0f, 160f));
     }
 
     private void AddDefender(string label, Vector2 at)
@@ -629,7 +615,7 @@ internal sealed class KristiansandDefenseMission
 
     private static void AddOdderoyaSpots(float east, float north, List<SiteSpot> spots)
     {
-        var island = KristiansandHeightSampler.ToWorldMeters(58.086, 7.995);
+        var island = KristiansandFort.ToWorldMeters();
         const int spokes = 12;
         const int rings = 5;
         for (var ring = 1; ring <= rings; ring++)
@@ -650,45 +636,32 @@ internal sealed class KristiansandDefenseMission
 
     private void SpawnOtherRoads()
     {
-        var gun = new Vector2(GunX, GunZ);
-        var crossing = new Vector2(Objective.X, Objective.Z);
-        var choices = new List<(GroundPolyline Line, float Arc, int Away, float Lead, float Separation)>();
-        foreach (var line in KristiansandMapFeatures.Visible)
-        {
-            if (!string.Equals(line.Kind, "road", StringComparison.Ordinal))
-                continue;
-            if (BesideTheGun(line, gun))
-                continue;
+        var east = KristiansandHeightSampler.EastMeters;
+        var north = KristiansandHeightSampler.NorthMeters;
+        SpawnBearingColumn(east, north, 215f, "Strai");
+        SpawnBearingColumn(east, north, 255f, "Vågsbygd");
+        SpawnBearingColumn(east, north, 125f, "Søm");
+    }
 
-            var arc = line.NearestArc(crossing);
-            if (Vector2.Distance(line.At(arc), crossing) > 900f)
-                continue;
+    private void SpawnBearingColumn(float east, float north, float approachBearingDegrees, string name)
+    {
+        var rad = approachBearingDegrees * (MathF.PI / 180f);
+        // Bearing 0 = east (+X), 90 = north (+Z). Approach FROM that direction toward objective.
+        var fromX = MathF.Cos(rad);
+        var fromZ = MathF.Sin(rad);
+        var far = _spawnLead + ColumnCount * SpacingMeters + 600f;
+        var start = new Vector2(
+            Math.Clamp(Objective.X + fromX * far, 40f, east - 40f),
+            Math.Clamp(Objective.Z + fromZ * far, 40f, north - 40f));
+        var end = new Vector2(
+            Math.Clamp(Objective.X - fromX * 120f, 40f, east - 40f),
+            Math.Clamp(Objective.Z - fromZ * 120f, 40f, north - 40f));
+        var line = new GroundPolyline(name, "road", [start, end]);
+        var length = Vector2.Distance(start, end);
+        if (length < 400f)
+            return;
 
-            var gunArc = line.NearestArc(gun);
-            var away = MathF.Abs(gunArc - arc) < 400f
-                ? (line.Length - arc >= arc ? 1 : -1)
-                : (gunArc < arc ? 1 : -1);
-            var room = away > 0 ? line.Length - arc : arc;
-            if (room < 1_000f)
-                away = -away;
-
-            var lead = Math.Clamp(room * 0.45f, 900f, 1_600f);
-            var spawn = line.At(Math.Clamp(arc + away * lead, 0f, line.Length));
-            var separation = Vector2.Distance(spawn, gun);
-            if (separation < 800f)
-                continue;
-
-            choices.Add((line, arc, away, lead, separation));
-        }
-
-        choices.Sort((a, b) => b.Separation.CompareTo(a.Separation));
-        var taken = 0;
-        foreach (var choice in choices)
-        {
-            AddColumn(choice.Line, choice.Arc, choice.Away, 4, choice.Lead);
-            if (++taken == 3)
-                break;
-        }
+        AddColumn(line, length - 120f, -1, ColumnCount, Math.Clamp(length * 0.35f, 900f, 1_800f));
     }
 
     private static bool BesideTheGun(GroundPolyline line, Vector2 gun)
@@ -1230,7 +1203,7 @@ internal sealed class KristiansandDefenseMission
         return MathF.Atan2(dz, dx) * (180f / MathF.PI);
     }
 
-    private static void DrawRing(RayGameContext ctx, Vector3 center, float radius, Color color)
+    private static void DrawRing(SilkWireBatch wires, Vector3 center, float radius, Color color)
     {
         const int segments = 24;
         var previous = center + new Vector3(radius, 0f, 0f);
@@ -1238,7 +1211,7 @@ internal sealed class KristiansandDefenseMission
         {
             var angle = i / (float)segments * MathF.Tau;
             var next = center + new Vector3(MathF.Cos(angle) * radius, 0f, MathF.Sin(angle) * radius);
-            ctx.DrawBolt(previous, next, color);
+            wires.Line(previous, next, color);
             previous = next;
         }
     }

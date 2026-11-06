@@ -1,12 +1,21 @@
+using Novolis.Math.Geometry;
+
 namespace CalypsoCad.Generation;
 
 /// <summary>Midpoints, axis alignment, and uniform frame schedules for ship CAD.</summary>
 internal static class CalypsoDrafting
 {
-    public static float Midpoint(float a, float b) => (a + b) * 0.5f;
+    /// <summary>Default transverse frame pitch when lock omits <c>frames.bayM</c> (primary web-frame bay).</summary>
+    public const float DefaultFrameBayM = 4f;
+
+    public static float Midpoint(float a, float b) => (a, b).GetCenter();
 
     public static (float X, float Y) Midpoint2D(float x0, float y0, float x1, float y1) =>
-        ((x0 + x1) * 0.5f, (y0 + y1) * 0.5f);
+        ((x0, x1).GetCenter(), (y0, y1).GetCenter());
+
+    /// <summary>Re-home an athwart [y0,y1] span onto the ship spine (y=0).</summary>
+    public static (float Y0, float Y1) CenterAthwartOnSpine(float y0, float y1) =>
+        (y0, y1).CenterAligned();
 
     public static float SnapToGrid(float value, float anchor, float step)
     {
@@ -36,70 +45,57 @@ internal static class CalypsoDrafting
         return merged;
     }
 
-    /// <summary>Bow compartment spine midpoints + loft fore + uniform grid + loft aft.</summary>
+    /// <summary>
+    /// Sole frame schedule: constant <paramref name="frameBay"/> from the stem to near the stern.
+    /// Hull loft ST*/MB*/AFT stations define mold shape only — they are never mixed into this list.
+    /// </summary>
+    public static List<(string Id, float ZStem)> BuildUniformFrameSchedule(
+        float loa,
+        float frameBay = DefaultFrameBayM,
+        float zStart = 0f,
+        float sternClear = 0.05f)
+    {
+        if (frameBay < 0.5f)
+            frameBay = DefaultFrameBayM;
+        var zEnd = MathF.Max(zStart + frameBay, loa - sternClear);
+        var list = new List<(string Id, float ZStem)>();
+        for (var z = zStart; z <= zEnd + 1e-3f; z += frameBay)
+        {
+            var zClamped = MathF.Min(z, loa - sternClear);
+            list.Add(($"F{zClamped:0}", zClamped));
+            if (zClamped >= loa - sternClear - 1e-3f)
+                break;
+        }
+
+        // Guarantee a stern frame if the last bay left a gap larger than half pitch.
+        if (list.Count == 0 || loa - sternClear - list[^1].ZStem > frameBay * 0.55f)
+            list.Add(($"F{loa - sternClear:0}", loa - sternClear));
+
+        return DeduplicateStations(list, minSep: frameBay * 0.45f);
+    }
+
+    /// <summary>Obsolete mixed schedule — redirects to uniform bay (loft/compartment midpoints ignored).</summary>
     public static List<(string Id, float ZStem)> BuildBowFrameSchedule(
         IEnumerable<(string Id, float Z0, float Z1)> bowCompartments,
         IEnumerable<(string Id, float ZStem)> loftStations,
         float loa,
-        float frameBay = 4f)
+        float frameBay = DefaultFrameBayM)
     {
-        var list = new List<(string Id, float ZStem)>();
-        foreach (var (id, z0, z1) in bowCompartments)
-        {
-            if (string.IsNullOrEmpty(id))
-                continue;
-            if (z1 > 18.5f)
-                continue;
-            var zMid = (z0 + z1) * 0.5f;
-            list.Add(($"frame-{id}", zMid));
-        }
-
-        foreach (var (id, z) in loftStations.OrderBy(s => s.ZStem))
-        {
-            if (z <= 17.5f)
-                list.Add((id, z));
-        }
-
-        const float gridAnchor = 17f;
-        for (var z = gridAnchor; z <= loa - frameBay * 0.5f - 0.2f; z += frameBay)
-            list.Add(($"F{z:0}", z));
-
-        foreach (var (id, z) in loftStations.OrderBy(s => s.ZStem))
-        {
-            if (z > 17.5f)
-                list.Add((id, z));
-        }
-
-        return DeduplicateStations(list);
+        _ = bowCompartments;
+        _ = loftStations;
+        return BuildUniformFrameSchedule(loa, frameBay);
     }
 
-    /// <summary>Loft bow stations + uniform 4 m grid (anchor 17 m) + loft aft — no double bays.</summary>
+    /// <summary>Obsolete mixed schedule — redirects to uniform bay.</summary>
     public static List<(string Id, float ZStem)> BuildFrameSchedule(
         IEnumerable<(string Id, float ZStem)> loftStations,
         float loa,
-        float frameBay = 4f)
+        float frameBay = DefaultFrameBayM)
     {
-        var list = new List<(string Id, float ZStem)>();
-        foreach (var (id, z) in loftStations.OrderBy(s => s.ZStem))
-        {
-            if (z <= 17.5f)
-                list.Add((id, z));
-        }
-
-        const float gridAnchor = 17f;
-        for (var z = gridAnchor; z <= loa - frameBay * 0.5f - 0.2f; z += frameBay)
-            list.Add(($"F{z:0}", z));
-
-        foreach (var (id, z) in loftStations.OrderBy(s => s.ZStem))
-        {
-            if (z > 17.5f)
-                list.Add((id, z));
-        }
-
-        return DeduplicateStations(list);
+        _ = loftStations;
+        return BuildUniformFrameSchedule(loa, frameBay);
     }
 
-    /// <summary>When two stations share the same stem z, keep the 4 m grid id (F17, F21, …) for acceptance and naming.</summary>
     private static (string Id, float ZStem) PreferStationId(
         (string Id, float ZStem) a,
         (string Id, float ZStem) b)
@@ -125,10 +121,10 @@ internal static class CalypsoDrafting
     {
         if (MathF.Max(z0, z1) > zStemMax)
             return (y0, y1, z0, z1);
-        var hy = (y1 - y0) * 0.5f;
+        var (cy0, cy1) = CenterAthwartOnSpine(y0, y1);
         var zA = MathF.Min(z0, z1);
         var zB = MathF.Max(z0, z1);
-        return (-hy, hy, zA, zB);
+        return (cy0, cy1, zA, zB);
     }
 
     /// <summary>Stem z of the shared athwart axis for a set of bow objects (median of centers).</summary>

@@ -1,10 +1,7 @@
 using System.Numerics;
 using Novolis.Physics.Ballistics;
-using Novolis.Raylib.Game;
-using Novolis.Raylib.Interact;
+using Novolis.Silk;
 using Novolis.Simulation.View;
-using Input = Novolis.Raylib.Interact.Input;
-using RayCamera = Novolis.Raylib.Rendering.Camera;
 
 namespace ArtillerySimulator.Game;
 
@@ -12,12 +9,14 @@ internal sealed class ArtilleryCameras
 {
     private const float MouseSensitivity = 0.0022f;
     private const float FreeMoveSpeed = 1800f;
+    private const float OrbitPanPixelsToMeters = 1.15f;
 
     private readonly FreeLookCameraRig _free = new();
     private readonly OrbitCameraRig _orbit = new();
     private Vector3 _battleFocus;
     private bool _trackBattle;
     private bool _lockMapOverview;
+    private bool _userOrbitHold;
 
     public CameraMode Mode { get; private set; } = CameraMode.Orbit;
 
@@ -36,6 +35,7 @@ internal sealed class ArtilleryCameras
     {
         _trackBattle = false;
         _lockMapOverview = true;
+        _userOrbitHold = false;
         Mode = CameraMode.Orbit;
         var cx = eastMeters * 0.5f;
         var cz = northMeters * 0.5f;
@@ -51,10 +51,10 @@ internal sealed class ArtilleryCameras
         _orbit.Yaw = NorthFacingYaw;
     }
 
-    /// <summary>Orbit south of the look target, facing north (Kommunekart-style harbor altitude).</summary>
     public void ShowKommunekartView(TerrainWorld terrain, Kommunekart3DView.KommunekartViewState view)
     {
         _trackBattle = false;
+        _userOrbitHold = false;
         Mode = CameraMode.Orbit;
         _orbit.MinDistance = 80f;
         _orbit.MaxDistance = 42_000f;
@@ -74,30 +74,33 @@ internal sealed class ArtilleryCameras
         _orbit.Yaw = NorthFacingYaw;
     }
 
-    /// <summary>Eye south of target; view toward +Z (north).</summary>
     private const float NorthFacingYaw = MathF.PI;
 
     public void SnapToGun(Vector3 gunPivot, Vector3 barrelDir)
     {
         _lockMapOverview = false;
+        _userOrbitHold = false;
         var orbitTarget = gunPivot + new Vector3(0f, 2.2f, 0f);
         _orbit.MinDistance = 8f;
         _orbit.MaxDistance = 16_000f;
-        _orbit.FieldOfViewDegrees = 36f;
+        _orbit.FieldOfViewDegrees = 42f;
         _orbit.SmoothRate = 6f;
         _orbit.SnapTarget(orbitTarget);
-        _orbit.Yaw = MathF.Atan2(-barrelDir.X, -barrelDir.Z) + 0.7f;
-        _orbit.Pitch = 0.52f;
-        _orbit.Distance = 150f;
+        // From Odderøya south tip: look north toward Kvadraturen (harbor).
+        _orbit.Yaw = NorthFacingYaw;
+        _orbit.Pitch = 0.55f;
+        _orbit.Distance = 420f;
+        _ = barrelDir;
 
         _free.Position = gunPivot + SimulationUnits.FixedCamEyeOffset;
-        _free.Yaw = _orbit.Yaw + MathF.PI * 0.15f;
+        _free.Yaw = NorthFacingYaw + 0.1f;
         _free.Pitch = -0.12f;
     }
 
     public void LookAtBattle(Vector3 gunPivot, Vector3 downrange)
     {
         _lockMapOverview = false;
+        _userOrbitHold = false;
         var mid = (gunPivot + downrange) * 0.5f;
         _battleFocus = new Vector3(mid.X, MathF.Max(gunPivot.Y, downrange.Y) + 60f, mid.Z);
         _trackBattle = true;
@@ -111,86 +114,113 @@ internal sealed class ArtilleryCameras
 
     public void SetBattleFocus(Vector3 focus) => _battleFocus = focus;
 
-    public void Update(RayGameContext ctx, Vector3 gunPivot, BallisticTrajectoryRunner shot)
+    public void Update(SilkFrame frame, Vector3 gunPivot, BallisticTrajectoryRunner shot)
     {
         if (Mode == CameraMode.Freecam)
-            UpdateFreecam(ctx);
+            UpdateFreecam(frame);
         else
-            UpdateOrbit(ctx, gunPivot, shot);
+            UpdateOrbit(frame, gunPivot, shot);
     }
 
-    public RayCamera Build(float deltaSeconds)
+    public CameraPose Build(float deltaSeconds)
     {
         if (Mode == CameraMode.Orbit)
         {
             var pose = _orbit.BuildViewPose(deltaSeconds);
-            return RayCamera.Perspective(pose.Position, pose.Target, pose.Up, pose.FieldOfViewDegrees);
+            return new CameraPose(pose.Position, pose.Target, pose.Up, pose.FieldOfViewDegrees);
         }
 
         var freePose = _free.BuildViewPose(SimulationUnits.FixedCamLookAhead);
-        return RayCamera.Perspective(freePose.Position, freePose.Target, freePose.Up, freePose.FieldOfViewDegrees);
+        return new CameraPose(freePose.Position, freePose.Target, freePose.Up, freePose.FieldOfViewDegrees);
     }
 
-    private void UpdateFreecam(RayGameContext ctx)
+    private void UpdateFreecam(SilkFrame frame)
     {
-        if (ctx.IsMouseDown(MouseButton.Right))
+        // +mouseX: CreateMapView mirrors screen X; keep drag-right = look/pan right.
+        if (frame.IsMouseButtonDown(MouseButton.Right))
+            _free.AddLookDelta(frame.MouseDeltaX * MouseSensitivity, -frame.MouseDeltaY * MouseSensitivity);
+
+        if (frame.IsMouseButtonDown(MouseButton.Middle)
+            || (frame.IsMouseButtonDown(MouseButton.Left) && (frame.IsKeyDown(Key.ShiftLeft) || frame.IsKeyDown(Key.ShiftRight))))
         {
-            var delta = ctx.MouseDelta;
-            _free.AddLookDelta(-delta.X * MouseSensitivity, -delta.Y * MouseSensitivity);
+            var forward = _free.GetLookDirection();
+            var right = Vector3.Normalize(Vector3.Cross(forward, Vector3.UnitY));
+            var up = Vector3.UnitY;
+            var scale = FreeMoveSpeed * 0.0025f;
+            _free.MoveAlongLook((right * frame.MouseDeltaX + up * frame.MouseDeltaY) * scale);
         }
 
-        var wheel = Input.GetMouseWheelMove();
-        if (MathF.Abs(wheel) > 0.001f)
-            _free.MoveAlongLook(_free.GetLookDirection() * (wheel * 160f));
+        if (MathF.Abs(frame.ScrollDelta) > 0.001f)
+            _free.MoveAlongLook(_free.GetLookDirection() * (frame.ScrollDelta * 160f));
 
         var move = Vector3.Zero;
-        var forward = _free.GetLookDirection();
-        var right = Vector3.Normalize(Vector3.Cross(forward, Vector3.UnitY));
+        var look = _free.GetLookDirection();
+        var strafe = Vector3.Normalize(Vector3.Cross(look, Vector3.UnitY));
 
-        if (ctx.IsKeyDown(KeyboardKey.W))
-            move += forward;
-        if (ctx.IsKeyDown(KeyboardKey.S))
-            move -= forward;
-        if (ctx.IsKeyDown(KeyboardKey.A))
-            move -= right;
-        if (ctx.IsKeyDown(KeyboardKey.D))
-            move += right;
+        if (frame.IsKeyDown(Key.W))
+            move += look;
+        if (frame.IsKeyDown(Key.S))
+            move -= look;
+        if (frame.IsKeyDown(Key.A))
+            move -= strafe;
+        if (frame.IsKeyDown(Key.D))
+            move += strafe;
 
         if (move.LengthSquared() > 1e-8f)
         {
-            move = Vector3.Normalize(move) * (FreeMoveSpeed * ctx.DeltaSeconds);
+            move = Vector3.Normalize(move) * (FreeMoveSpeed * frame.DeltaSeconds);
             _free.MoveAlongLook(move);
         }
     }
 
-    private void UpdateOrbit(RayGameContext ctx, Vector3 gunPivot, BallisticTrajectoryRunner shot)
+    private void UpdateOrbit(SilkFrame frame, Vector3 gunPivot, BallisticTrajectoryRunner shot)
     {
-        ApplyOrbitZoom(ctx);
+        ApplyOrbitZoom(frame);
+        ApplyOrbitPan(frame);
         Frame(gunPivot, shot);
 
-        if (!ctx.IsMouseDown(MouseButton.Right))
+        if (!frame.IsMouseButtonDown(MouseButton.Right))
             return;
 
-        var delta = ctx.MouseDelta;
-        _orbit.AddLookDelta(-delta.X * MouseSensitivity, -delta.Y * MouseSensitivity);
+        _orbit.AddLookDelta(frame.MouseDeltaX * MouseSensitivity, -frame.MouseDeltaY * MouseSensitivity);
     }
 
-    private void ApplyOrbitZoom(RayGameContext ctx)
+    private void ApplyOrbitPan(SilkFrame frame)
     {
-        var wheel = Input.GetMouseWheelMove();
-        if (ctx.IsKeyDown(KeyboardKey.H))
-            _orbit.Distance *= MathF.Exp(-1.8f * ctx.DeltaSeconds);
-        if (ctx.IsKeyDown(KeyboardKey.M))
-            _orbit.Distance *= MathF.Exp(1.8f * ctx.DeltaSeconds);
-        if (MathF.Abs(wheel) > 0.001f)
-            _orbit.Distance *= MathF.Pow(0.82f, wheel);
+        var pan = frame.IsMouseButtonDown(MouseButton.Middle)
+            || (frame.IsMouseButtonDown(MouseButton.Left)
+                && (frame.IsKeyDown(Key.ShiftLeft) || frame.IsKeyDown(Key.ShiftRight)));
+        if (!pan)
+            return;
+
+        // Ground-plane pan relative to current orbit view (screen-right / screen-up).
+        var yaw = _orbit.Yaw;
+        var right = new Vector3(MathF.Cos(yaw), 0f, -MathF.Sin(yaw));
+        var forward = new Vector3(MathF.Sin(yaw), 0f, MathF.Cos(yaw));
+        var scale = MathF.Max(40f, _orbit.Distance) * 0.0011f * OrbitPanPixelsToMeters;
+        var delta = (right * frame.MouseDeltaX + forward * frame.MouseDeltaY) * scale;
+        _orbit.Target += delta;
+        _orbit.SnapTarget(_orbit.Target);
+        _lockMapOverview = false;
+        _trackBattle = false;
+        _userOrbitHold = true;
+    }
+
+    private void ApplyOrbitZoom(SilkFrame frame)
+    {
+        if (frame.IsKeyDown(Key.H))
+            _orbit.Distance *= MathF.Exp(-1.8f * frame.DeltaSeconds);
+        if (frame.IsKeyDown(Key.N))
+            _orbit.Distance *= MathF.Exp(1.8f * frame.DeltaSeconds);
+        if (MathF.Abs(frame.ScrollDelta) > 0.001f)
+            _orbit.Distance *= MathF.Pow(0.82f, frame.ScrollDelta);
 
         _orbit.Distance = Math.Clamp(_orbit.Distance, _orbit.MinDistance, _orbit.MaxDistance);
     }
 
     private void Frame(Vector3 gunPivot, BallisticTrajectoryRunner shot)
     {
-        if (_lockMapOverview)
+        if (_lockMapOverview || _userOrbitHold)
             return;
 
         if (shot.Phase == BallisticTrajectoryPhase.Ready)
@@ -205,4 +235,6 @@ internal sealed class ArtilleryCameras
             : shot.CurrentPosition;
         _orbit.SnapTarget(onShell);
     }
+
+    internal readonly record struct CameraPose(Vector3 Position, Vector3 Target, Vector3 Up, float FieldOfViewDegrees);
 }

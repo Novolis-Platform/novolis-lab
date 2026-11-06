@@ -9,9 +9,13 @@
     <None Include="..\ArtillerySimulator\map\layers\heightfield-1025.bin" Link="map\layers\heightfield-1025.bin" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ArtillerySimulator\Game\KristiansandGeoref.cs" Link="Map\KristiansandGeoref.cs" />
     <Compile Include="..\ArtillerySimulator\Game\KristiansandElevation.cs" Link="Map\KristiansandElevation.cs" />
     <Compile Include="..\ArtillerySimulator\Game\KristiansandHeightSampler.cs" Link="Map\KristiansandHeightSampler.cs" />
     <Compile Include="..\ArtillerySimulator\Game\KristiansandLandSeaMask.cs" Link="Map\KristiansandLandSeaMask.cs" />
+    <Compile Include="..\ArtillerySimulator\Game\KristiansandSurfaceKind.cs" Link="Map\KristiansandSurfaceKind.cs" />
+    <Compile Include="..\ArtillerySimulator\Game\KristiansandSurface.cs" Link="Map\KristiansandSurface.cs" />
+    <Compile Include="..\ArtillerySimulator\Game\KristiansandFort.cs" Link="Map\KristiansandFort.cs" />
   </ItemGroup>
   <ItemGroup>
     <LibraryReference Include="Novolis.Silk" />

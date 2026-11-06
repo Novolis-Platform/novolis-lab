@@ -77,13 +77,26 @@ Writes `%LocalAppData%\Novolis\CalypsoCad\generated\CAL-DNV-REVIEW-001.html`, `c
 
 ## Headless tour
 
-Exports land in `generated/exports/` as `{kind}.png`.
+PNG renders are **source-controlled** under `docs/renders/` (not LocalAppData):
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --headless
+```
 
 - `plan-deck-m1.png` / `plan-deck-0.png` / `plan-deck-p1.png`
 - `orbit-bow-quarter.png`, `orbit-broadside.png`, `orbit-stern-quarter.png`, `orbit-stern-on.png`, `orbit-ramp-close.png`
-- `orbit-cutaway-long.png` / `orbit-cutaway-beam.png`
+- `orbit-cutaway-long.png` / `orbit-cutaway-beam.png` / `layer-structure-wire.png`
 - Interior: `interior-solid-bridge`, `interior-solid-cabin1` (`CREW_1`), `interior-solid-galley`, `interior-solid-engineering` (`ENG`), `interior-solid-cargoVoid` (`HOLD`)
-- Walkthrough keyframe `walkthrough-ramp.png`
+
+### Structure build-step slide deck
+
+Same camera as `layer-structure-wire` — hull, then each frame station, longitudinals, then each hatch (TodoList canvas):
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --build-steps --emit-build-steps-canvas
+```
+
+Writes `docs/renders/build-steps/*.png` + `calypso-structure-build-deck.canvas.tsx`.
 
 ## Explore
 

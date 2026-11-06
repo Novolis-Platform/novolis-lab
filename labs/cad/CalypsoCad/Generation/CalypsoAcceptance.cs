@@ -237,6 +237,11 @@ internal static class CalypsoAcceptance
             e.Name?.StartsWith("outfit-BRIDGE-seat-", StringComparison.OrdinalIgnoreCase) == true);
         Add("bridge watch seats (8)", bridgeSeats >= 8, $"seats={bridgeSeats}");
         Add("bridge pilot forward of captain", CalypsoBridgeChecks.PilotsForwardOfCaptain(doc, loa));
+        var bay = CalypsoDrafting.DefaultFrameBayM;
+        if (doc.Properties is not null
+            && doc.Properties.TryGetValue("frameBayM", out var bayEl)
+            && bayEl.ValueKind == System.Text.Json.JsonValueKind.Number)
+            bay = bayEl.GetSingle();
         var frameZs = doc.Entities
             .Where(e => e.Name?.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase) == true)
             .Select(e =>
@@ -247,18 +252,26 @@ internal static class CalypsoAcceptance
                     ? z
                     : (float?)null;
             })
-            .Where(z => z is >= 17f and <= 65f)
+            .Where(z => z is >= 0f)
+            .Select(z => z!.Value)
             .Distinct()
             .OrderBy(z => z)
             .ToList();
-        var uniform = true;
+        var uniform = frameZs.Count >= 3;
         for (var i = 1; i < frameZs.Count; i++)
         {
-            if (MathF.Abs(frameZs[i]!.Value - frameZs[i - 1]!.Value - 4f) > 0.25f)
+            var dz = frameZs[i] - frameZs[i - 1];
+            // Last bay to stern may be a short remnant; all others must match lock bayM.
+            if (i == frameZs.Count - 1 && dz < bay * 0.55f)
+                continue;
+            if (MathF.Abs(dz - bay) > 0.2f)
                 uniform = false;
         }
 
-        Add("uniform frame bay 4 m (midbody)", frameZs.Count < 2 || uniform, $"frames={frameZs.Count}");
+        Add(
+            $"uniform frame bay {bay:0.#} m (full LOA)",
+            uniform,
+            $"frames={frameZs.Count} bay={bay:0.#}");
         Add(
             "outfit LOUNGE-bar",
             doc.Entities.Any(e => string.Equals(e.Name, "outfit-LOUNGE-bar", StringComparison.OrdinalIgnoreCase)));
@@ -270,9 +283,14 @@ internal static class CalypsoAcceptance
             doc.Entities.Any(e => string.Equals(e.Name, "outfit-AIRLOCK_A_port-leaf", StringComparison.OrdinalIgnoreCase))
             && doc.Entities.Any(e => string.Equals(e.Name, "outfit-AIRLOCK_A_stbd-leaf", StringComparison.OrdinalIgnoreCase)));
 
+        var bulkheads = doc.Entities.Count(e =>
+            e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true);
         var webSolids = doc.Entities.Count(e =>
             e.Name?.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase) == true);
         var webProfiles = FrameWebPlateRegistry.All.Count;
+        // Limited full-depth BH (ENG/airlock/bow/stern) — not a bulkhead every bay.
+        Add("compartment bulkheads (limited structural BH)", bulkheads >= 40 && bulkheads <= 8000,
+            $"bhSolids={bulkheads}");
         Add("transverse frame web plates", webSolids >= 40 && webProfiles >= 10,
             $"solids={webSolids} profiles={webProfiles}");
         Add("structure/outfit inside IML", CalypsoImfSolidChecks.CountViolations(doc, loa) == 0,

@@ -1,7 +1,6 @@
 using System.Drawing;
 using System.Numerics;
 using Novolis.Physics.Ballistics;
-using Novolis.Raylib.Game;
 
 namespace ArtillerySimulator.Game;
 
@@ -90,7 +89,7 @@ internal sealed class GunModel
     return new ProjectileState(gunPivot + direction * BarrelLength, direction * muzzleSpeedMps, Educational155Profile.MassKg, timeSeconds: 0);
   }
 
-  public void Draw(RayGameContext ctx, Vector3 gunPivot, bool showPivotGlow, bool loading)
+  public void Draw(SilkWireBatch wires, Vector3 gunPivot, bool showPivotGlow, bool loading)
   {
     var dir = BarrelDirection();
     var muzzle = MuzzlePosition(gunPivot);
@@ -102,26 +101,29 @@ internal sealed class GunModel
     var trunnion = gunPivot + new Vector3(0f, 0.95f, 0f);
     var axle = gunPivot - new Vector3(0f, 0.85f, 0f);
 
-    DrawBundle(ctx, trunnion, muzzle, dir, 0.09f, tube);
-    DrawRing(ctx, muzzle, dir, 0.16f, copper);
-    DrawRing(ctx, trunnion, dir, 0.12f, carriage);
+    DrawBundle(wires, trunnion, muzzle, dir, 0.09f, tube);
+    wires.AxisRing(muzzle, dir, 0.16f, copper);
+    wires.AxisRing(trunnion, dir, 0.12f, carriage);
 
     var trailEnd = gunPivot - horizontal * 3.6f - new Vector3(0f, 0.55f, 0f);
-    DrawBundle(ctx, axle + right * 0.35f, trailEnd + right * 0.7f, horizontal, 0.05f, carriage);
-    DrawBundle(ctx, axle - right * 0.35f, trailEnd - right * 0.7f, horizontal, 0.05f, carriage);
-    DrawRing(ctx, axle + right * 1.15f, right, 0.72f, carriage);
-    DrawRing(ctx, axle - right * 1.15f, right, 0.72f, carriage);
+    DrawBundle(wires, axle + right * 0.35f, trailEnd + right * 0.7f, horizontal, 0.05f, carriage);
+    DrawBundle(wires, axle - right * 0.35f, trailEnd - right * 0.7f, horizontal, 0.05f, carriage);
+    wires.AxisRing(axle + right * 1.15f, right, 0.72f, carriage);
+    wires.AxisRing(axle - right * 1.15f, right, 0.72f, carriage);
 
     var shield = trunnion + horizontal * 0.45f;
-    ctx.DrawBolt(shield + right * 0.85f + Vector3.UnitY * 0.55f, shield - right * 0.85f + Vector3.UnitY * 0.55f, copper);
-    ctx.DrawBolt(shield + right * 0.85f - Vector3.UnitY * 0.15f, shield - right * 0.85f - Vector3.UnitY * 0.15f, carriage);
-    ctx.DrawBolt(shield + right * 0.85f + Vector3.UnitY * 0.55f, shield + right * 0.85f - Vector3.UnitY * 0.15f, carriage);
-    ctx.DrawBolt(shield - right * 0.85f + Vector3.UnitY * 0.55f, shield - right * 0.85f - Vector3.UnitY * 0.15f, carriage);
+    wires.Line(shield + right * 0.85f + Vector3.UnitY * 0.55f, shield - right * 0.85f + Vector3.UnitY * 0.55f, copper);
+    wires.Line(shield + right * 0.85f - Vector3.UnitY * 0.15f, shield - right * 0.85f - Vector3.UnitY * 0.15f, carriage);
+    wires.Line(shield + right * 0.85f + Vector3.UnitY * 0.55f, shield + right * 0.85f - Vector3.UnitY * 0.15f, carriage);
+    wires.Line(shield - right * 0.85f + Vector3.UnitY * 0.55f, shield - right * 0.85f - Vector3.UnitY * 0.15f, carriage);
+
+    // Vertical fort marker so the piece is visible from altitude.
+    wires.Line(gunPivot, gunPivot + Vector3.UnitY * 18f, copper);
 
     if (loading)
-      ctx.DrawGlowSphere(trunnion, 3.2f, copper);
+      wires.WireSphere(trunnion, 3.2f, copper);
     else if (showPivotGlow)
-      ctx.DrawGlowSphere(muzzle, 2.4f, copper);
+      wires.WireSphere(muzzle, 2.4f, copper);
   }
 
   private static Vector3 Lateral(Vector3 dir)
@@ -130,28 +132,13 @@ internal sealed class GunModel
     return right.LengthSquared() < 1e-6f ? Vector3.UnitZ : Vector3.Normalize(right);
   }
 
-  private static void DrawBundle(RayGameContext ctx, Vector3 from, Vector3 to, Vector3 axis, float radius, Color color)
+  private static void DrawBundle(SilkWireBatch wires, Vector3 from, Vector3 to, Vector3 axis, float radius, Color color)
   {
     var side = Lateral(axis);
     var up = Vector3.Normalize(Vector3.Cross(axis, side));
-    ctx.DrawBolt(from, to, color);
-    ctx.DrawBolt(from + side * radius, to + side * radius, color);
-    ctx.DrawBolt(from - side * radius, to - side * radius, color);
-    ctx.DrawBolt(from + up * radius, to + up * radius, color);
-  }
-
-  private static void DrawRing(RayGameContext ctx, Vector3 center, Vector3 axis, float radius, Color color)
-  {
-    var side = Lateral(axis);
-    var up = Vector3.Normalize(Vector3.Cross(axis, side));
-    const int segments = 12;
-    var previous = center + side * radius;
-    for (var i = 1; i <= segments; i++)
-    {
-      var angle = i / (float)segments * MathF.Tau;
-      var next = center + side * (MathF.Cos(angle) * radius) + up * (MathF.Sin(angle) * radius);
-      ctx.DrawBolt(previous, next, color);
-      previous = next;
-    }
+    wires.Line(from, to, color);
+    wires.Line(from + side * radius, to + side * radius, color);
+    wires.Line(from - side * radius, to - side * radius, color);
+    wires.Line(from + up * radius, to + up * radius, color);
   }
 }

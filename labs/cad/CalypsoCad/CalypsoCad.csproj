@@ -19,6 +19,8 @@
     <LibraryReference Include="Novolis.Avalonia.Raylib" />
     <LibraryReference Include="Novolis.Avalonia.Studio" />
     <LibraryReference Include="Novolis.Cad.Primitives" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
+    <LibraryReference Include="Novolis.Math.Topology" />
     <LibraryReference Include="Novolis.Ship.Primitives" />
     <LibraryReference Include="Novolis.Ship.Topology" />
     <LibraryReference Include="Novolis.Ship.Validation" />

@@ -1,0 +1,248 @@
+{
+  "packageId": "CAL-MFG-002",
+  "camera": "orbit three-quarter-high \u00D71.5 zoom; structure-wire then fitout\u002Bcutouts",
+  "generatedUtc": "2026-11-06T23:21:37.4398440Z",
+  "stepCount": 40,
+  "steps": [
+    {
+      "Id": "hull",
+      "Title": "OML / exterior shell",
+      "FileName": "00-hull.png",
+      "EntityCount": 1
+    },
+    {
+      "Id": "bh-BOW-COLLISION",
+      "Title": "Bulkhead BOW-COLLISION (\u002B1274)",
+      "FileName": "01-bh-BOW-COLLISION.png",
+      "EntityCount": 1275
+    },
+    {
+      "Id": "bh-AIRLOCK-CROSS",
+      "Title": "Bulkhead AIRLOCK-CROSS (\u002B18)",
+      "FileName": "02-bh-AIRLOCK-CROSS.png",
+      "EntityCount": 1293
+    },
+    {
+      "Id": "bh-ENG-FORE",
+      "Title": "Bulkhead ENG-FORE (\u002B387)",
+      "FileName": "03-bh-ENG-FORE.png",
+      "EntityCount": 1680
+    },
+    {
+      "Id": "bh-ENG-AFT",
+      "Title": "Bulkhead ENG-AFT (\u002B274)",
+      "FileName": "04-bh-ENG-AFT.png",
+      "EntityCount": 1954
+    },
+    {
+      "Id": "bh-STERN-THRUST",
+      "Title": "Bulkhead STERN-THRUST (\u002B326)",
+      "FileName": "05-bh-STERN-THRUST.png",
+      "EntityCount": 2280
+    },
+    {
+      "Id": "frame-F0",
+      "Title": "Web frame F0 (\u002B58)",
+      "FileName": "06-frame-F0.png",
+      "EntityCount": 2338
+    },
+    {
+      "Id": "frame-F4",
+      "Title": "Web frame F4 (\u002B536)",
+      "FileName": "07-frame-F4.png",
+      "EntityCount": 2874
+    },
+    {
+      "Id": "frame-F8",
+      "Title": "Web frame F8 (\u002B1030)",
+      "FileName": "08-frame-F8.png",
+      "EntityCount": 3904
+    },
+    {
+      "Id": "frame-F12",
+      "Title": "Web frame F12 (\u002B1427)",
+      "FileName": "09-frame-F12.png",
+      "EntityCount": 5331
+    },
+    {
+      "Id": "frame-F16",
+      "Title": "Web frame F16 (\u002B1488)",
+      "FileName": "10-frame-F16.png",
+      "EntityCount": 6819
+    },
+    {
+      "Id": "frame-F20",
+      "Title": "Web frame F20 (\u002B74)",
+      "FileName": "11-frame-F20.png",
+      "EntityCount": 6893
+    },
+    {
+      "Id": "frame-F24",
+      "Title": "Web frame F24 (\u002B380)",
+      "FileName": "12-frame-F24.png",
+      "EntityCount": 7273
+    },
+    {
+      "Id": "frame-F28",
+      "Title": "Web frame F28 (\u002B398)",
+      "FileName": "13-frame-F28.png",
+      "EntityCount": 7671
+    },
+    {
+      "Id": "frame-F32",
+      "Title": "Web frame F32 (\u002B398)",
+      "FileName": "14-frame-F32.png",
+      "EntityCount": 8069
+    },
+    {
+      "Id": "frame-F36",
+      "Title": "Web frame F36 (\u002B343)",
+      "FileName": "15-frame-F36.png",
+      "EntityCount": 8412
+    },
+    {
+      "Id": "frame-F40",
+      "Title": "Web frame F40 (\u002B398)",
+      "FileName": "16-frame-F40.png",
+      "EntityCount": 8810
+    },
+    {
+      "Id": "frame-F44",
+      "Title": "Web frame F44 (\u002B398)",
+      "FileName": "17-frame-F44.png",
+      "EntityCount": 9208
+    },
+    {
+      "Id": "frame-F48",
+      "Title": "Web frame F48 (\u002B398)",
+      "FileName": "18-frame-F48.png",
+      "EntityCount": 9606
+    },
+    {
+      "Id": "frame-F52",
+      "Title": "Web frame F52 (\u002B336)",
+      "FileName": "19-frame-F52.png",
+      "EntityCount": 9942
+    },
+    {
+      "Id": "frame-F56",
+      "Title": "Web frame F56 (\u002B336)",
+      "FileName": "20-frame-F56.png",
+      "EntityCount": 10278
+    },
+    {
+      "Id": "frame-F60",
+      "Title": "Web frame F60 (\u002B336)",
+      "FileName": "21-frame-F60.png",
+      "EntityCount": 10614
+    },
+    {
+      "Id": "frame-F64",
+      "Title": "Web frame F64 (\u002B336)",
+      "FileName": "22-frame-F64.png",
+      "EntityCount": 10950
+    },
+    {
+      "Id": "frame-F68",
+      "Title": "Web frame F68 (\u002B160)",
+      "FileName": "23-frame-F68.png",
+      "EntityCount": 11110
+    },
+    {
+      "Id": "longitudinals",
+      "Title": "Girders / coaming / ramp (\u002B113)",
+      "FileName": "24-longitudinals.png",
+      "EntityCount": 11223
+    },
+    {
+      "Id": "passage-ACCESS",
+      "Title": "Passageway ACCESS (airtight tube, \u002B101)",
+      "FileName": "25-passage-ACCESS.png",
+      "EntityCount": 11324
+    },
+    {
+      "Id": "passage-CROSSING",
+      "Title": "Passageway CROSSING (airtight tube, \u002B105)",
+      "FileName": "26-passage-CROSSING.png",
+      "EntityCount": 11429
+    },
+    {
+      "Id": "passage-CORR_P",
+      "Title": "Passageway CORR_P (airtight tube, \u002B109)",
+      "FileName": "27-passage-CORR_P.png",
+      "EntityCount": 11538
+    },
+    {
+      "Id": "passage-CORR_S",
+      "Title": "Passageway CORR_S (airtight tube, \u002B109)",
+      "FileName": "28-passage-CORR_S.png",
+      "EntityCount": 11647
+    },
+    {
+      "Id": "passage-STAIRS_P",
+      "Title": "Passageway STAIRS_P (airtight tube, \u002B101)",
+      "FileName": "29-passage-STAIRS_P.png",
+      "EntityCount": 11748
+    },
+    {
+      "Id": "passage-ELEV_S",
+      "Title": "Passageway ELEV_S (airtight tube, \u002B101)",
+      "FileName": "30-passage-ELEV_S.png",
+      "EntityCount": 11849
+    },
+    {
+      "Id": "hold-bay",
+      "Title": "HOLD open cargo bay (\u002B41)",
+      "FileName": "31-hold-bay.png",
+      "EntityCount": 11890
+    },
+    {
+      "Id": "airlock-port",
+      "Title": "Airlock port (vestibule \u002B D1/D2/D3, \u002B74)",
+      "FileName": "32-airlock-port.png",
+      "EntityCount": 11964
+    },
+    {
+      "Id": "airlock-stbd",
+      "Title": "Airlock stbd (vestibule \u002B D1/D2/D3, \u002B74)",
+      "FileName": "33-airlock-stbd.png",
+      "EntityCount": 12038
+    },
+    {
+      "Id": "hatches-crew",
+      "Title": "Crew cabin hatches (\u002B5)",
+      "FileName": "34-hatches-crew.png",
+      "EntityCount": 12058
+    },
+    {
+      "Id": "hatches-pax",
+      "Title": "Passenger cabin hatches (\u002B5)",
+      "FileName": "35-hatches-pax.png",
+      "EntityCount": 12078
+    },
+    {
+      "Id": "hatches-service",
+      "Title": "Galley / infirmary / ENG / HOLD hatches (\u002B12)",
+      "FileName": "36-hatches-service.png",
+      "EntityCount": 12084
+    },
+    {
+      "Id": "hatches-vacuum",
+      "Title": "Vacuum / shell hatches D1\u2013D3 (\u002B6)",
+      "FileName": "37-hatches-vacuum.png",
+      "EntityCount": 12094
+    },
+    {
+      "Id": "dk001-plan",
+      "Title": "DK-001 plan \u2014 blue passageway \u002B red BH cutouts \u002B HOLD bay",
+      "FileName": "38-dk001-plan.png",
+      "EntityCount": 12687
+    },
+    {
+      "Id": "complete",
+      "Title": "Complete \u2014 blue shirt-sleeves \u002B red bulkheads (no OML)",
+      "FileName": "39-complete.png",
+      "EntityCount": 12687
+    }
+  ]
+}

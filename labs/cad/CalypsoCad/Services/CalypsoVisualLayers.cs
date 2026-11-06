@@ -18,5 +18,9 @@ internal enum CalypsoVisualLayers
     CorridorStructure = DefaultInterior | Structure | PassagewayCutouts,
     StructureOnlyCutaway = HullShell | Structure | PassagewayCutouts,
     FitoutCutaway = HullShell | Partitions | Outfit | SpaceFinish | Openings | PassagewayCutouts,
+    /// <summary>Structure + airtight interiors without OML — passage tubes and HOLD bay read.</summary>
+    InteriorStructureNoHull = Structure | Partitions | Outfit | SpaceFinish | Openings | PassagewayCutouts,
+    /// <summary>DK-001 deck plan read: sealed CORR/CROSS/ACCESS + rooms + HOLD bay, no OML/frames.</summary>
+    Dk001Plan = Partitions | Outfit | SpaceFinish | Openings | PassagewayCutouts,
     All = DefaultOrbit,
 }

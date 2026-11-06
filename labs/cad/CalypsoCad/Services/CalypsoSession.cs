@@ -23,6 +23,12 @@ internal sealed class CalypsoSession
     public CalypsoVisualLayers VisualLayers { get; set; } = CalypsoVisualLayers.DefaultOrbit;
     public string StatusText { get; set; } = "";
 
+    /// <summary>
+    /// When set, only these entity ids draw (progressive build-step slides).
+    /// Null means show the full document.
+    /// </summary>
+    public HashSet<Guid>? RevealEntityIds { get; set; }
+
     /// <summary>World cutaway plane origin (used when <see cref="WireMeshMode"/> is CutawayPartial).</summary>
     public Vector3 CutPlaneOrigin { get; set; } = new(0f, 4f, 0f);
 

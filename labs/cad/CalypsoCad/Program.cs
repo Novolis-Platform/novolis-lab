@@ -102,6 +102,22 @@ internal static class Program
                 CalypsoRenderCanvasEmitter.EmitMfg002FullRenders))
             return;
 
+        var buildSteps = args.Any(a => string.Equals(a, "--build-steps", StringComparison.OrdinalIgnoreCase));
+        var emitBuildDeckIdx = Array.FindIndex(args, a =>
+            string.Equals(a, "--emit-build-steps-canvas", StringComparison.OrdinalIgnoreCase));
+        if (buildSteps || emitBuildDeckIdx >= 0)
+        {
+            Environment.ExitCode = RunBuildSteps(
+                exportPng: buildSteps || withHeadlessCanvas,
+                emitCanvas: emitBuildDeckIdx >= 0,
+                canvasPath: emitBuildDeckIdx >= 0 && emitBuildDeckIdx + 1 < args.Length && !args[emitBuildDeckIdx + 1].StartsWith('-')
+                    ? args[emitBuildDeckIdx + 1]
+                    : Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                        ".cursor", "projects", "d-novolis", "canvases", "calypso-structure-build-deck.canvas.tsx"));
+            return;
+        }
+
         if (generateOnly || headless || walkthrough)
         {
             // --generate-only: companions only (PNG skipped unless also --headless)
@@ -255,6 +271,39 @@ internal static class Program
             Console.Error.WriteLine(ex);
             Environment.ExitCode = 1;
             return true;
+        }
+    }
+
+    private static int RunBuildSteps(bool exportPng, bool emitCanvas, string canvasPath)
+    {
+        try
+        {
+            if (exportPng)
+            {
+                var session = new CalypsoSession();
+                session.RegenerateAndLoad();
+                var renderer = new CalypsoRenderer(session);
+                renderer.Fit();
+                var stills = HeadlessBuildStepExporter.Export(session, renderer);
+                Console.WriteLine($"Build-step PNGs ({stills.Count}) → {CalypsoProjectPaths.BuildStepsDirectory}");
+                foreach (var path in stills)
+                    Console.WriteLine($"  {path}");
+                if (stills.Count == 0)
+                    return 2;
+            }
+
+            if (emitCanvas)
+            {
+                var written = CalypsoBuildStepCanvasEmitter.Emit(canvasPath, runExport: false);
+                Console.WriteLine($"Wrote build-step slide deck:{Environment.NewLine}{written}");
+            }
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            return 1;
         }
     }
 

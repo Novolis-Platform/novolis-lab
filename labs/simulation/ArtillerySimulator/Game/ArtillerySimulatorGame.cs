@@ -1,38 +1,27 @@
 using System.Drawing;
 using System.Numerics;
 using Novolis.Agent.Surface;
+using Novolis.Math.Geometry;
 using Novolis.Physics.Ballistics;
-using Novolis.Raylib.Game;
-using Novolis.Raylib.Interact;
+using Novolis.Silk;
 
 namespace ArtillerySimulator.Game;
 
 internal sealed class ArtillerySimulatorGame
 {
-    private const int CamToggleKey = 67;
-    private const int PaceSlowerKey = 44;
-    private const int PaceFasterKey = 46;
     private static readonly int[] PaceSteps = [2, 6, 16, 48];
-    private const int KeyQ = 81;
-    private const int KeyE = 69;
-    private const int KeyW = 87;
-    private const int KeyS = 83;
-    private const int KeyV = 86;
     private const float MilsPerDegree = 6400f / 360f;
     private const float FineMilsPerSecond = 20f;
     private const float CoarseMilsPerPixel = 0.35f;
     private const float FineMilsPerPixel = 0.07f;
 
-    private static readonly Color Background = Color.FromArgb(255, 0, 0, 0);
-    private static readonly Color SunColor = Color.FromArgb(120, 255, 186, 110);
-    private static readonly Color SunHalo = Color.FromArgb(40, 255, 170, 90);
     private static readonly Color TrailHot = Color.FromArgb(255, 255, 176, 86);
     private static readonly Color TrailCool = Color.FromArgb(90, 180, 140, 70);
     private static readonly Color PreviewColor = Color.FromArgb(210, 255, 186, 92);
     private static readonly Color ImpactColor = Color.FromArgb(255, 255, 120, 72);
     private static readonly Color FlashColor = Color.FromArgb(255, 255, 214, 150);
+    private static readonly Color SunColor = Color.FromArgb(120, 255, 186, 110);
 
-    private readonly DiagnosticsOverlay _diagnostics = new();
     private readonly TerrainWorld _terrain = new();
     private readonly GunModel _gun = new();
     private readonly BallisticTrajectoryRunner _shot = new(new BallisticTrajectoryRunnerOptions
@@ -47,6 +36,7 @@ internal sealed class ArtillerySimulatorGame
     private readonly ProjectileBallisticSimulation _drag = new(GunModel.Educational155Profile, DragCoefficientLaw.BoatTail);
     private readonly ArtilleryCameras _camera = new();
     private readonly AtmosphereModel _atmosphere = AtmosphereModel.CreateRegionalDefault();
+    private readonly SilkWireBatch _wires = new();
 
     private readonly SmoothedFps _fps = new();
     private readonly CrewDrill _crew = new();
@@ -72,7 +62,6 @@ internal sealed class ArtillerySimulatorGame
     internal string PaceText => PaceLabel();
     internal KristiansandDefenseMission? Mission => _mission;
     internal float PredictedRangeMeters => HorizontalRange(_terrain.GunBaseline, PredictedImpact());
-
     internal CrewDrill Crew => _crew;
 
     internal void OrderAim(float elevation, float azimuth)
@@ -122,13 +111,8 @@ internal sealed class ArtillerySimulatorGame
         return true;
     }
 
-    public void Initialize(RayGameContext ctx)
+    public void Initialize(SilkFrame frame)
     {
-        // Raylib default font is ASCII-ish; keep F3 diagnostics off so it doesn't sit on the title.
-        if (_diagnostics.Visible)
-            _diagnostics.Toggle();
-
-        ctx.EnableCursor();
         _terrain.Rebuild(42, flat: false, TerrainStyle.Rugged);
         _mission = new KristiansandDefenseMission(_terrain);
         _terrain.PlaceGun(_mission.GunX, _mission.GunZ);
@@ -138,25 +122,26 @@ internal sealed class ArtillerySimulatorGame
         _gun.NudgeAzimuth(_mission.OpeningAzimuthDegrees - _mission.TrailBearingDegrees);
         _crew.SeatOpening(_gun);
         _shot.Reset();
-        _camera.ShowMapOverview(_terrain.EastMeters, _terrain.NorthMeters);
+        _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         RebuildAimPreview();
         _surface = AgentSurface.AttachAll(
             _agent,
             AgentSurfaceDefinition.From<IArtillerySurface>(),
             new AgentAttachOptions { EnableStdio = false, EnableMcpStdio = false });
         _ = _surface;
+        _ = frame;
     }
 
-    public void Update(RayGameContext ctx)
+    public void Update(SilkFrame frame)
     {
-        _agent.RunFrame(() => Simulate(ctx));
-        Render(ctx);
+        _agent.RunFrame(() => Simulate(frame));
+        Render(frame);
     }
 
-    private void Simulate(RayGameContext ctx)
+    private void Simulate(SilkFrame frame)
     {
         var battleSeconds = PaceSteps[_paceIndex] * (1f / 120f);
-        HandleInput(ctx, battleSeconds);
+        HandleInput(frame, battleSeconds);
         _crew.Advance(_gun, battleSeconds);
         if (_shot.Phase == BallisticTrajectoryPhase.InFlight)
         {
@@ -183,47 +168,57 @@ internal sealed class ArtillerySimulatorGame
         }
 
         if (_burstAge >= 0f)
-            _burstAge += ctx.DeltaSeconds;
+            _burstAge += frame.DeltaSeconds;
         if (_muzzleFlash > 0f)
-            _muzzleFlash = MathF.Max(0f, _muzzleFlash - ctx.DeltaSeconds);
+            _muzzleFlash = MathF.Max(0f, _muzzleFlash - frame.DeltaSeconds);
 
         if (_shot.Phase != BallisticTrajectoryPhase.InFlight)
             RebuildAimPreview();
 
         if (_mission is { } mission)
             _camera.SetBattleFocus(mission.BattleFocus(_terrain.GunBaseline));
-        _camera.Update(ctx, _terrain.GunBaseline, _shot);
+        _camera.Update(frame, _terrain.GunBaseline, _shot);
     }
 
-    private void Render(RayGameContext ctx)
+    private void Render(SilkFrame frame)
     {
-        ctx.Clear(Background);
-        var cam = _camera.Build(ctx.DeltaSeconds);
-        RaylibClipPlanes.ApplyForExtent(cam.Position, _terrain.EastMeters, _terrain.NorthMeters);
-        ctx.BeginWorld(cam);
-        DrawSky(ctx);
-        _terrain.Draw(ctx, cam);
+        frame.Clear(Rgba32.Black);
+        var cam = _camera.Build(frame.DeltaSeconds);
+        var aspect = frame.Width / (float)Math.Max(1, frame.Height);
+        // RH look-at + Y-up Z-north would put east on screen-left; CreateMapView compensates.
+        var view = KristiansandGeoref.CreateMapView(cam.Position, cam.Target, cam.Up);
+        var near = 2f;
+        var far = MathF.Max(40_000f, Vector3.Distance(cam.Position, cam.Target) * 8f);
+        var proj = Matrix4x4.CreatePerspectiveFieldOfView(
+            cam.FieldOfViewDegrees * (MathF.PI / 180f),
+            aspect,
+            near,
+            far);
+        var mvp = view * proj;
+
+        // Cached terrain wires (built once). Dynamic overlay rebuilt each frame.
+        frame.DrawWorldLines(_terrain.CachedWires, mvp);
+
+        _wires.Clear();
+        DrawSky(_wires);
+        _terrain.DrawDynamic(_wires);
         if (!_flatTerrain)
-        {
-            KristiansandMapFeatures.DrawWater(ctx, _terrain);
-            KristiansandMapFeatures.DrawLinework(ctx, _terrain);
-        }
-        _mission?.Draw(ctx);
-        var predicted = PredictedImpact();
-        DrawAimPreview(ctx);
+            KristiansandMapFeatures.DrawLinework(_wires, _terrain);
+        _mission?.Draw(_wires);
+        DrawAimPreview(_wires);
         _gun.Draw(
-            ctx,
+            _wires,
             _terrain.GunBaseline,
             showPivotGlow: _shot.Phase != BallisticTrajectoryPhase.InFlight && _crew.Ready(_gun),
             loading: _crew.Loading);
-        DrawMuzzleFlash(ctx);
-        DrawShot(ctx);
-        ctx.EndWorld();
+        DrawMuzzleFlash(_wires);
+        DrawShot(_wires);
+        frame.DrawWorldLines(_wires.AsSpan(), mvp);
 
-        _fps.Update(ctx.DeltaSeconds);
+        _fps.Update(frame.DeltaSeconds);
+        var predicted = PredictedImpact();
         var predictedRange = HorizontalRange(_terrain.GunBaseline, predicted);
-        SimulationHud.Draw(
-            ctx,
+        frame.SetTitle(SimulationHud.TitleLine(
             _gun,
             _crew.OrderedElevation,
             _crew.OrderedAzimuth,
@@ -235,9 +230,7 @@ internal sealed class ArtillerySimulatorGame
             predictedRange,
             PaceLabel(),
             _mission?.HudLine(_flatTerrain),
-            _crew.Ready(_gun) ? null : _crew.Phrase(_gun));
-        _diagnostics.ToggleIfKeyPressed(ctx);
-        _diagnostics.Draw(ctx);
+            _crew.Ready(_gun) ? null : _crew.Phrase(_gun)));
     }
 
     private void RebuildAimPreview()
@@ -258,68 +251,76 @@ internal sealed class ArtillerySimulatorGame
             maxPoints: 6_000);
     }
 
-    private void HandleInput(RayGameContext ctx, float battleSeconds)
+    private void HandleInput(SilkFrame frame, float battleSeconds)
     {
-        var fine = ctx.IsKeyDown(KeyboardKey.LeftShift);
+        var fine = frame.IsKeyDown(Key.ShiftLeft) || frame.IsKeyDown(Key.ShiftRight);
         var elevate = (fine ? FineMilsPerSecond : CrewDrill.ElevateMilsPerSecond) / MilsPerDegree * battleSeconds;
         var traverse = (fine ? FineMilsPerSecond : CrewDrill.TraverseMilsPerSecond) / MilsPerDegree * battleSeconds;
 
         if (_camera.Mode != CameraMode.Freecam)
         {
-            if (ctx.IsKeyDown((KeyboardKey)KeyW))
+            if (frame.IsKeyDown(Key.W))
                 _crew.NudgeOrder(_gun, elevate, 0f);
-            if (ctx.IsKeyDown((KeyboardKey)KeyS))
+            if (frame.IsKeyDown(Key.S))
                 _crew.NudgeOrder(_gun, -elevate, 0f);
         }
 
-        if (ctx.IsKeyDown((KeyboardKey)KeyQ))
+        if (frame.IsKeyDown(Key.Q))
             _crew.NudgeOrder(_gun, 0f, -traverse);
-        if (ctx.IsKeyDown((KeyboardKey)KeyE))
+        if (frame.IsKeyDown(Key.E))
             _crew.NudgeOrder(_gun, 0f, traverse);
 
-        if (ctx.IsMouseDown(MouseButton.Left))
+        // Left-drag lays the piece; Shift+Left is orbit pan (see ArtilleryCameras).
+        if (frame.IsMouseButtonDown(MouseButton.Left)
+            && !frame.IsKeyDown(Key.ShiftLeft)
+            && !frame.IsKeyDown(Key.ShiftRight))
         {
             var milsPerPixel = fine ? FineMilsPerPixel : CoarseMilsPerPixel;
             var degreesPerPixel = milsPerPixel / MilsPerDegree;
-            var delta = ctx.MouseDelta;
-            var azimuth = Math.Clamp(delta.X * degreesPerPixel, -traverse, traverse);
-            var elevation = Math.Clamp(-delta.Y * degreesPerPixel, -elevate, elevate);
+            var azimuth = Math.Clamp(frame.MouseDeltaX * degreesPerPixel, -traverse, traverse);
+            var elevation = Math.Clamp(-frame.MouseDeltaY * degreesPerPixel, -elevate, elevate);
             _crew.NudgeOrder(_gun, elevation, azimuth);
         }
 
-        if (ctx.IsKeyPressed(KeyboardKey.One))
+        if (frame.IsKeyPressed(Key.Number1))
             _crew.OrderCharge(_gun, 0);
-        if (ctx.IsKeyPressed(KeyboardKey.Two))
+        if (frame.IsKeyPressed(Key.Number2))
             _crew.OrderCharge(_gun, 1);
-        if (ctx.IsKeyPressed(KeyboardKey.Three))
+        if (frame.IsKeyPressed(Key.Number3))
             _crew.OrderCharge(_gun, 2);
-        if (ctx.IsKeyPressed(KeyboardKey.Four))
+        if (frame.IsKeyPressed(Key.Number4))
             _crew.OrderCharge(_gun, 3);
 
-        if (ctx.IsKeyPressed(KeyboardKey.D))
+        if (frame.IsKeyPressed(Key.D) && _camera.Mode != CameraMode.Freecam)
             _gun.ToggleDrag();
 
-        if (ctx.IsKeyPressed((KeyboardKey)PaceSlowerKey))
+        if (frame.IsKeyPressed(Key.Comma) || frame.IsKeyPressed(Key.KeypadSubtract))
             _paceIndex = Math.Max(0, _paceIndex - 1);
-        if (ctx.IsKeyPressed((KeyboardKey)PaceFasterKey))
+        if (frame.IsKeyPressed(Key.Period) || frame.IsKeyPressed(Key.KeypadAdd))
             _paceIndex = Math.Min(PaceSteps.Length - 1, _paceIndex + 1);
 
-        if (ctx.IsKeyPressed((KeyboardKey)CamToggleKey))
+        if (frame.IsKeyPressed(Key.C))
             _camera.ToggleMode();
 
-        if (ctx.IsKeyPressed((KeyboardKey)KeyV))
+        if (frame.IsKeyPressed(Key.V) || frame.IsKeyPressed(Key.O))
             _camera.ShowMapOverview(_terrain.EastMeters, _terrain.NorthMeters);
 
-        if (ctx.IsKeyPressed(KeyboardKey.M))
+        if (frame.IsKeyPressed(Key.M))
             Kommunekart3DView.ApplyStartupCamera(_camera, _terrain);
 
-        if (ctx.IsKeyPressed(KeyboardKey.G) && _mission is { } mapGun)
+        if (frame.IsKeyPressed(Key.G) && _mission is { } mapGun)
         {
             _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
             _camera.LookAtBattle(_terrain.GunBaseline, mapGun.NearestAlive(_terrain.GunBaseline));
         }
 
-        if (ctx.IsKeyPressed(KeyboardKey.F))
+        if (frame.IsKeyPressed(Key.R) && _mission is { } fort)
+        {
+            _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+            _ = fort;
+        }
+
+        if (frame.IsKeyPressed(Key.F))
         {
             _flatTerrain = !_flatTerrain;
             _terrain.Rebuild(42, _flatTerrain, TerrainStyle.Rugged);
@@ -330,7 +331,7 @@ internal sealed class ArtillerySimulatorGame
             _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         }
 
-        if (ctx.IsKeyPressed(KeyboardKey.Space) && TryFire() && _flatTerrain && !_gun.DragEnabled)
+        if (frame.IsKeyPressed(Key.Space) && TryFire() && _flatTerrain && !_gun.DragEnabled)
             LogVacuumFlatSanity(_gun.CreateProjectileState(_gun.MuzzlePosition(_terrain.GunBaseline), _gun.BarrelDirection()).Velocity);
     }
 
@@ -361,39 +362,38 @@ internal sealed class ArtillerySimulatorGame
         return MathF.Sqrt(dx * dx + dz * dz);
     }
 
-    private void DrawSky(RayGameContext ctx)
+    private void DrawSky(SilkWireBatch wires)
     {
         var sun = new Vector3(_terrain.ExtentMeters * 0.55f, 6800f, _terrain.GunBaseline.Z - 4000f);
-        ctx.DrawGlowSphere(sun, 900f, SunColor);
-        ctx.DrawGlowSphereWires(sun, 1400f, SunHalo);
+        wires.WireSphere(sun, 900f, SunColor, segments: 12);
     }
 
-    private void DrawMuzzleFlash(RayGameContext ctx)
+    private void DrawMuzzleFlash(SilkWireBatch wires)
     {
         if (_muzzleFlash <= 0f)
             return;
 
         var muzzle = _gun.MuzzlePosition(_terrain.GunBaseline);
         var radius = 1.4f + (0.22f - _muzzleFlash) * 18f;
-        ctx.DrawGlowSphere(muzzle, radius, FlashColor);
+        wires.WireSphere(muzzle, radius, FlashColor, segments: 10);
     }
 
-    private void DrawAimPreview(RayGameContext ctx)
+    private void DrawAimPreview(SilkWireBatch wires)
     {
         if (_shot.Phase == BallisticTrajectoryPhase.InFlight || _aimPreview.Count < 2)
             return;
 
         var stride = Math.Max(1, _aimPreview.Count / 160);
         for (var i = stride; i < _aimPreview.Count; i += stride)
-            ctx.DrawBolt(_aimPreview[i - stride], _aimPreview[i], PreviewColor);
+            wires.Line(_aimPreview[i - stride], _aimPreview[i], PreviewColor);
 
         var last = _aimPreview.Count - 1;
         var drawn = last - (last % stride);
         if (drawn != last && drawn >= 0)
-            ctx.DrawBolt(_aimPreview[drawn], _aimPreview[last], PreviewColor);
+            wires.Line(_aimPreview[drawn], _aimPreview[last], PreviewColor);
     }
 
-    private void DrawShot(RayGameContext ctx)
+    private void DrawShot(SilkWireBatch wires)
     {
         var trail = _shot.Trail;
         var spanNow = HorizontalRange(_terrain.GunBaseline, _shot.CurrentPosition);
@@ -407,26 +407,26 @@ internal sealed class ArtillerySimulatorGame
                 (int)(TrailCool.G + (TrailHot.G - TrailCool.G) * heat),
                 (int)(TrailCool.B + (TrailHot.B - TrailCool.B) * heat));
             var lift = Vector3.UnitY * (ribbon * heat);
-            ctx.DrawBolt(trail[i - 1], trail[i], color);
-            ctx.DrawBolt(trail[i - 1] + lift, trail[i] + lift, color);
+            wires.Line(trail[i - 1], trail[i], color);
+            wires.Line(trail[i - 1] + lift, trail[i] + lift, color);
         }
 
         if (_shot.Phase == BallisticTrajectoryPhase.InFlight)
         {
             var span = HorizontalRange(_terrain.GunBaseline, _shot.CurrentPosition);
             var radius = Math.Clamp(span * 0.012f, 14f, 70f);
-            ctx.DrawGlowSphere(_shot.CurrentPosition, radius * 0.45f, TrailHot);
-            ctx.DrawGlowSphereWires(_shot.CurrentPosition, radius, FlashColor);
+            wires.WireSphere(_shot.CurrentPosition, radius * 0.45f, TrailHot, segments: 10);
+            wires.WireSphere(_shot.CurrentPosition, radius, FlashColor, segments: 10);
             var ground = _terrain.Field.SampleHeight(_shot.CurrentPosition.X, _shot.CurrentPosition.Z);
             var drop = new Vector3(_shot.CurrentPosition.X, ground + 2f, _shot.CurrentPosition.Z);
-            ctx.DrawBolt(_shot.CurrentPosition, drop, Color.FromArgb(160, TrailHot.R, TrailHot.G, TrailHot.B));
+            wires.Line(_shot.CurrentPosition, drop, Color.FromArgb(160, TrailHot.R, TrailHot.G, TrailHot.B));
         }
 
         if (_burstAge >= 0f)
-            DrawBurst(ctx);
+            DrawBurst(wires);
     }
 
-    private void DrawBurst(RayGameContext ctx)
+    private void DrawBurst(SilkWireBatch wires)
     {
         var age = MathF.Min(_burstAge, 8f);
         var fade = 1f - age / 8f;
@@ -434,22 +434,9 @@ internal sealed class ArtillerySimulatorGame
         var color = Color.FromArgb(alpha, ImpactColor.R, ImpactColor.G, ImpactColor.B);
         var pale = Color.FromArgb(alpha / 2, ImpactColor.R, ImpactColor.G, ImpactColor.B);
         var column = 40f + age * 30f;
-        ctx.DrawBolt(_burstAt, _burstAt + Vector3.UnitY * column, color);
-        ctx.DrawGlowSphere(_burstAt + Vector3.UnitY * (10f + age * 4f), 18f + age * 6f, color);
-        DrawGroundRing(ctx, _burstAt, KristiansandDefenseMission.CaughtMeters, color);
-        DrawGroundRing(ctx, _burstAt, KristiansandDefenseMission.PinnedMeters, pale);
-    }
-
-    private static void DrawGroundRing(RayGameContext ctx, Vector3 center, float radius, Color color)
-    {
-        var previous = center + new Vector3(radius, 3f, 0f);
-        const int segments = 28;
-        for (var i = 1; i <= segments; i++)
-        {
-            var angle = i / (float)segments * MathF.Tau;
-            var next = center + new Vector3(MathF.Cos(angle) * radius, 3f, MathF.Sin(angle) * radius);
-            ctx.DrawBolt(previous, next, color);
-            previous = next;
-        }
+        wires.Line(_burstAt, _burstAt + Vector3.UnitY * column, color);
+        wires.WireSphere(_burstAt + Vector3.UnitY * (10f + age * 4f), 18f + age * 6f, color, segments: 12);
+        wires.Ring(_burstAt, KristiansandDefenseMission.CaughtMeters, color);
+        wires.Ring(_burstAt, KristiansandDefenseMission.PinnedMeters, pale);
     }
 }

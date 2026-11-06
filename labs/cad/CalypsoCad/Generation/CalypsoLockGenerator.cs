@@ -139,7 +139,10 @@ internal static class CalypsoLockGenerator
         var lockDoc = LoadLock();
         var corrW = lockDoc.Circulation?.CorrW is > 0 ? (float)lockDoc.Circulation.CorrW : 3f;
         var minClear = corrW - 0.12f;
-        for (var z = 17f; z <= loa - 4f; z += 4f)
+        // Sample the CORR spine only (DK-001) — ACCESS is ACCESS_W≈2 m, CROSS is full beam.
+        const float corrZ0 = 23f;
+        var corrZ1 = MathF.Min(49.25f, loa - 4f);
+        for (var z = corrZ0; z <= corrZ1 + 1e-3f; z += 4f)
         {
             var gaps = CollectAthwartPassageGaps(lockDoc, z, 0.28f);
             var widest = gaps.Count == 0 ? 0f : gaps.Max(g => g.Y1 - g.Y0);
@@ -472,6 +475,10 @@ internal static class CalypsoLockGenerator
         cad.Properties["units"] = JsonSerializer.SerializeToElement("m");
         cad.Properties["maturity"] = JsonSerializer.SerializeToElement("fab-002");
         cad.Properties["fabReleaseTarget"] = JsonSerializer.SerializeToElement("CAL-MFG-002");
+        var bayM = lockDoc.Frames?.BayM is > 0.5
+            ? (float)lockDoc.Frames.BayM
+            : CalypsoDrafting.DefaultFrameBayM;
+        cad.Properties["frameBayM"] = JsonSerializer.SerializeToElement(bayM);
         cad.Properties["reviewDrawingPackage"] = JsonSerializer.SerializeToElement("CAL-DNV-REVIEW-001");
         cad.Properties["classificationIntent"] = JsonSerializer.SerializeToElement(
             "Concept design package for third-party review — not DNV plan approval or rule calculation.");
@@ -1790,14 +1797,23 @@ internal static class CalypsoLockGenerator
         _ = oah;
         var web = lockDoc.Frames?.WebM is > 0 ? (float)lockDoc.Frames.WebM : 0.15f;
         var depth = lockDoc.Frames?.DepthM is > 0 ? (float)lockDoc.Frames.DepthM : 0.25f;
-        var wanted = lockDoc.Frames?.StationIds;
-        var stations = lockDoc.HullLoft?.Stations ?? [];
-        const float frameBay = 4f;
+        var tBh = lockDoc.Structure?.TBh is > 0.05 ? (float)lockDoc.Structure.TBh : 0.15f;
+        var frameBay = lockDoc.Frames?.BayM is > 0.5
+            ? (float)lockDoc.Frames.BayM
+            : CalypsoDrafting.DefaultFrameBayM;
         var halfDepthZ = web * 0.5f;
         var deckUps = DeckStructureElevations(lockDoc);
 
         var zMax = ActiveStations[^1].Z;
         var skin = TShell + 0.05f;
+
+        // 1) Bulkheads first — massive plates at DK-001 BH lines, then boolean passageway.
+        CalypsoBulkheads.AddAll(
+            entities,
+            loa,
+            tBh,
+            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
+            deckUps);
 
         void PlaceFrame(string id, float zStem, bool bowAligned = false)
         {
@@ -1807,25 +1823,21 @@ internal static class CalypsoLockGenerator
                 return;
             var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
             var gaps = CollectAthwartPassageGaps(lockDoc, z, margin: 0.28f);
+            // Bay web frames = CNC plate-webs (primary skeleton). Few bh-* elsewhere.
             CalypsoShipbuildingFrames.AddTransverseFrameWeb(
-                entities, loa, frameName, z, web, halfDepthZ, gaps, bowAligned);
-            CalypsoShipbuildingFrames.AddTransverseDeckBeams(
-                entities, loa, z, frameName, web, halfDepthZ, deckUps, gaps);
+                entities, loa, frameName, z, web, halfDepthZ, gaps, bowAligned, deckUps);
+            if (!bowAligned)
+            {
+                CalypsoShipbuildingFrames.AddTransverseDeckBeams(
+                    entities, loa, z, frameName, web, halfDepthZ, deckUps, gaps);
+            }
         }
 
-        var loftZs = stations
-            .Where(s => wanted is null or { Count: 0 } || wanted.Contains(s.Id ?? "", StringComparer.OrdinalIgnoreCase))
-            .Select(s => (s.Id ?? "st", (float)s.ZFromStem));
-        var bowComps = (lockDoc.Compartments ?? [])
-            .Where(c => c.Id is not null)
-            .Select(c => (c.Id!, (float)c.Z0, (float)c.Z1));
-        foreach (var (id, zStem) in CalypsoDrafting.BuildBowFrameSchedule(bowComps, loftZs, loa, frameBay))
-        {
-            var bow = zStem < 18f;
-            PlaceFrame(id, zStem, bow);
-        }
+        // 2) Constant bay frames (mold ST* are shape samples, not frames).
+        foreach (var (id, zStem) in CalypsoDrafting.BuildUniformFrameSchedule(loa, frameBay))
+            PlaceFrame(id, zStem, bowAligned: zStem < 18f);
 
-        var zStart = 17.4f;
+        var zStart = frameBay;
         var zEnd = loa - TShell - 0.2f;
         CalypsoShipbuildingFrames.AddDeckLongitudinalGirders(
             entities, loa, zStart, zEnd, web, frameBay, deckUps);
@@ -1853,20 +1865,52 @@ internal static class CalypsoLockGenerator
         return [m1, d0, d1];
     }
 
+    /// <summary>
+    /// Athwart voids cut through frame webs. Authority: CAL-INT-DK-001 — ACCESS + CROSS + CORR
+    /// are <b>one passageway</b> (continuous clear). Do not cut ENG/HOLD room boxes as voids;
+    /// only the passageway track, hold catwalk/door, and hatch clearW.
+    /// </summary>
     private static List<(float Y0, float Y1)> CollectAthwartPassageGaps(CalypsoLockDocument lockDoc, float zStem, float margin)
     {
         var gaps = new List<(float Y0, float Y1)>();
-        foreach (var comp in lockDoc.Compartments ?? [])
+        var circ = lockDoc.Circulation;
+        // DK-001 note 4: spine corridors 3 m clear — stack ±5 → ±8.
+        var corrInner = circ?.CorrInner is > 0 ? (float)circ.CorrInner : 5f;
+        var corrOuter = circ?.CorrOuter is > 0 ? (float)circ.CorrOuter : 8f;
+        var accessHalf = circ?.AccessW is > 0 ? (float)circ.AccessW * 0.5f : 1f;
+
+        // One passageway (DK-001): ACCESS (fore CL) → CROSS (athwart) → CORR_P/S (spine).
+        // Sample the union of those clears at this frame station — not ENG/cabins.
+        const float PassageZ0 = 13f;
+        const float CrossZ0 = 19f;
+        const float CorrZ0 = 23f;
+        const float CorrZ1 = 49.25f;
+
+        if (zStem >= PassageZ0 - margin && zStem <= CorrZ1 + margin)
         {
-            if (comp.Id is null)
-                continue;
-            if (comp.Id is not ("CORR_P" or "CORR_S" or "CROSSING" or "STAIRS_P" or "ACCESS" or "ELEV_S"))
-                continue;
-            var z0 = (float)comp.Z0;
-            var z1 = (float)comp.Z1;
-            if (zStem < z0 - margin || zStem > z1 + margin)
-                continue;
-            gaps.Add(((float)comp.Y0 - margin, (float)comp.Y1 + margin));
+            if (zStem < CrossZ0)
+            {
+                // ACCESS is the fore passageway on CL — keep the web cut spine-symmetric
+                // (STAIRS/ELEV sit beside it on the plan; do not skew the bow plate).
+                gaps.Add((-accessHalf - margin, accessHalf + margin));
+            }
+            else if (zStem < CorrZ0)
+            {
+                // CROSS — full athwart link between port/stbd corridors (DK-001 "CROSS").
+                var cross = lockDoc.Compartments?.FirstOrDefault(x =>
+                    string.Equals(x.Id, "CROSSING", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(x.Id, "CROSS", StringComparison.OrdinalIgnoreCase));
+                if (cross is not null)
+                    gaps.Add(((float)cross.Y0 - margin, (float)cross.Y1 + margin));
+                else
+                    gaps.Add((-corrOuter - margin, corrOuter + margin));
+            }
+            else
+            {
+                // CORR_P + CORR_S tracks — same passageway, outboard of ENG/cabins.
+                gaps.Add((-corrOuter - margin, -corrInner + margin));
+                gaps.Add((corrInner - margin, corrOuter + margin));
+            }
         }
 
         var hold = lockDoc.Hold;
@@ -1886,15 +1930,7 @@ internal static class CalypsoLockGenerator
             }
         }
 
-        var eng = lockDoc.Compartments?.FirstOrDefault(c =>
-            string.Equals(c.Id, "ENG", StringComparison.OrdinalIgnoreCase));
-        if (eng is not null && zStem >= (float)eng.Z0 - margin && zStem <= (float)eng.Z1 + margin)
-        {
-            gaps.Add(((float)eng.Y0 - margin, (float)eng.Y1 + margin));
-            var corrHalf = lockDoc.Circulation?.CorrW is > 0 ? (float)lockDoc.Circulation.CorrW * 0.5f : 1.5f;
-            gaps.Add((-corrHalf - margin, corrHalf + margin));
-        }
-
+        // Hatch schedule (CAL-INT-SCH-001): clearW athwart cut at the hatch face.
         foreach (var hatch in lockDoc.Hatches ?? [])
         {
             var hz = (float)hatch.Z;
@@ -2052,8 +2088,8 @@ internal static class CalypsoLockGenerator
         var captainZ = minStem + spanZ * 0.68f;
         var seatRowA = minStem + spanZ * 0.48f;
         var seatRowB = minStem + spanZ * 0.82f;
-        float[] console = [0.38f, 0.42f, 0.48f];
-        float[] seat = [0.32f, 0.36f, 0.42f];
+        float[] console = [0.42f, 0.46f, 0.52f];
+        float[] seat = [0.55f, 0.38f, 0.28f]; // warm taupe — readable against gray bulkheads
         float[] glow = [0.45f, 0.72f, 0.82f];
 
         PlaceInSpace(entities, loa, space, "outfit-BRIDGE-captain-chair", midY, floor + 0.48f, captainZ, 0.34f, 0.42f, 0.34f, seat, "outfit");
@@ -2290,16 +2326,28 @@ internal static class CalypsoLockGenerator
             var hy = MathF.Abs(h[0]);
             var hu = MathF.Abs(h[1]);
             var hz = MathF.Abs(h[2]);
+            var name = box.Name ?? "";
+            // Steel structure must keep its station/alignment — never warp toward centerline.
+            // Shrink in place; drop the bar if it still pokes the IML.
+            var isStructure = name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+                              || name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+                              || name.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
+                              || name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
+                              || name.StartsWith("ramp-", StringComparison.OrdinalIgnoreCase);
             var ok = BoxFits(y, up, zStem, hy, hu, hz);
             for (var n = 0; n < 12 && !ok; n++)
             {
                 hy *= 0.82f;
                 hu *= 0.82f;
-                hz *= 0.82f;
-                var mid = HullHeightAt(zStem) * 0.5f;
-                y *= 0.8f;
-                up = mid + (up - mid) * 0.8f;
-                zStem = Math.Clamp(zStem, 0.25f, loa - 0.25f);
+                if (!isStructure)
+                {
+                    hz *= 0.82f;
+                    var mid = HullHeightAt(zStem) * 0.5f;
+                    y *= 0.8f;
+                    up = mid + (up - mid) * 0.8f;
+                    zStem = Math.Clamp(zStem, 0.25f, loa - 0.25f);
+                }
+
                 ok = hy >= 0.03f && hu >= 0.03f && hz >= 0.03f && BoxFits(y, up, zStem, hy, hu, hz);
             }
 
@@ -2431,21 +2479,43 @@ internal static class CalypsoLockGenerator
         public LockHullLoft? HullLoft { get; set; }
         public LockExterior? Exterior { get; set; }
         public LockFrames? Frames { get; set; }
+        public LockStructureScantlings? Structure { get; set; }
         public List<LockOutfitItem>? Outfit { get; set; }
         public LockCirculation? Circulation { get; set; }
+    }
+
+    private sealed class LockStructureScantlings
+    {
+        [JsonPropertyName("T_BH")]
+        public double TBh { get; set; }
+
+        [JsonPropertyName("T_SHELL")]
+        public double TShell { get; set; }
     }
 
     private sealed class LockCirculation
     {
         [JsonPropertyName("CORR_W")]
         public double CorrW { get; set; }
+
+        [JsonPropertyName("CORR_INNER")]
+        public double CorrInner { get; set; }
+
+        [JsonPropertyName("CORR_OUTER")]
+        public double CorrOuter { get; set; }
+
+        [JsonPropertyName("ACCESS_W")]
+        public double AccessW { get; set; }
     }
 
     private sealed class LockFrames
     {
         public double WebM { get; set; }
         public double DepthM { get; set; }
+        /// <summary>Constant transverse frame pitch (m). Authority for structure schedule.</summary>
+        public double BayM { get; set; }
         public int StringerCount { get; set; }
+        /// <summary>Hull loft mold station ids — not frame positions.</summary>
         public List<string>? StationIds { get; set; }
     }
 

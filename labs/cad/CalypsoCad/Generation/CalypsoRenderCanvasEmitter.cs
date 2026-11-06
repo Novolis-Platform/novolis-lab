@@ -92,12 +92,12 @@ internal static class CalypsoRenderCanvasEmitter
             var stills = HeadlessPngExporter.ExportViews(session, renderer, session.GeneratedDirectory);
             if (stills.Count == 0)
                 throw new InvalidOperationException("Headless PNG export produced no frames.");
-            exportsDirectory = Path.Combine(session.GeneratedDirectory, "exports");
+            exportsDirectory = CalypsoProjectPaths.RendersExportsDirectory;
         }
         else
         {
-            var gen = CalypsoLockGenerator.Generate();
-            exportsDirectory ??= Path.Combine(gen, "exports");
+            _ = CalypsoLockGenerator.Generate();
+            exportsDirectory ??= CalypsoProjectPaths.RendersExportsDirectory;
         }
 
         return (exportsDirectory, DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " UTC");

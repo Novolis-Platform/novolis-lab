@@ -6,7 +6,7 @@ namespace ArtillerySimulator.Game;
 
 /// <summary>
 /// Meter-aligned topographic raster (same rules as extract-artillery-map preview PNG).
-/// Shared by Raylib terrain mesh and the Silk map lab blit path.
+/// Shared by the Silk artillery host blit / tint helpers.
 /// </summary>
 internal static class KristiansandMapRaster
 {

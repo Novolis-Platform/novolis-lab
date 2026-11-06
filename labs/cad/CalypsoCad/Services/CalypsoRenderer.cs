@@ -124,6 +124,14 @@ internal sealed class CalypsoRenderer
         _orbit.Pitch = Math.Clamp(pitch, -0.1f, MathF.PI * 0.49f);
     }
 
+    /// <summary>Optical zoom: 1.5 = 150% (pulls the orbit camera closer by that factor).</summary>
+    public void ZoomOrbit(float magnification)
+    {
+        if (magnification < 0.15f)
+            return;
+        _orbit.Distance = Math.Clamp(_orbit.Distance / magnification, _orbit.MinDistance, _orbit.MaxDistance);
+    }
+
     public void SetInteriorPose(Vector3 eye, Vector3 target)
     {
         _interiorEye = eye;
@@ -268,7 +276,7 @@ internal sealed class CalypsoRenderer
         if (IsCargoVoidHollow(space))
             return 46f;
         if (string.Equals(space.Name, "BRIDGE", StringComparison.OrdinalIgnoreCase))
-            return 68f; // beam-wide watch seats sit near the flanks
+            return 74f; // beam-wide watch seats sit near the flanks
         if (shortSide < 2.5f)
             return 42f;
         if (shortSide < 4f)
@@ -393,6 +401,30 @@ internal sealed class CalypsoRenderer
         space is not null
         && string.Equals(space.Name, "HOLD", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>DK-001 airtight passageway track (not sealed by OML).</summary>
+    private static bool IsAirtightPassage(CadEntity? space)
+    {
+        var n = space?.Name ?? "";
+        return n is "CORR_P" or "CORR_S" or "CROSSING" or "ACCESS" or "STAIRS_P" or "ELEV_S"
+               || n.StartsWith("AIRLOCK", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// DK-001 plan legend: <b>blue</b> = shirt-sleeves passageway (CORR/CROSS/ACCESS);
+    /// rooms muted; HOLD open bay (not a cube).
+    /// </summary>
+    private static Color PlanSpaceFill(CadEntity space)
+    {
+        if (IsAirtightPassage(space))
+            return Color.FromArgb(240, 70, 140, 210); // blue shirt-sleeves tube
+        if (IsCargoVoidHollow(space))
+            return Color.FromArgb(200, 78, 82, 88); // open cargo bay deck
+        return Color.FromArgb(210, 232, 228, 218); // compartment field
+    }
+
+    private static readonly Color PlanPassageBlue = Color.FromArgb(255, 40, 120, 200);
+    private static readonly Color PlanBulkheadRed = Color.FromArgb(255, 200, 40, 40);
+
     /// <summary>High port-fore corner looking aft down the side aisle (look ray stays in-aisle, not into the pack).</summary>
     private static void PlaceCargoHoldCamera(
         Vector3 min, Vector3 max, Vector3 center, Vector3 size, out Vector3 eye, out Vector3 look)
@@ -403,15 +435,16 @@ internal sealed class CalypsoRenderer
         look = new Vector3(aisleX, min.Y + 1.4f, min.Z + 1.8f);
     }
 
-    /// <summary>Aft of captain, looking bow-ward so pilots, console, and watch seats fill the frame.</summary>
+    /// <summary>Aft-port corner looking bow-stbd so captains, pilots, console, and watch seats all read.</summary>
     private static void PlaceBridgeCamera(
         Vector3 min, Vector3 max, Vector3 center, out Vector3 eye, out Vector3 look)
     {
         var sizeZ = max.Z - min.Z;
-        var eyeY = min.Y + 1.58f;
-        // Captain sits ~68% aft of the stem span; stand just behind that band on centerline.
-        eye = new Vector3(center.X, eyeY, min.Z + sizeZ * 0.22f);
-        look = new Vector3(center.X, min.Y + 1.05f, max.Z - sizeZ * 0.08f);
+        var sizeX = max.X - min.X;
+        // Stand near the aft bulkhead, offset port, above seat height.
+        eye = new Vector3(min.X + Math.Min(1.35f, sizeX * 0.22f), min.Y + 1.72f, min.Z + sizeZ * 0.10f);
+        // Aim through captain band toward the pilot consoles (not the forward bulkhead).
+        look = new Vector3(center.X + sizeX * 0.08f, min.Y + 1.12f, min.Z + sizeZ * 0.72f);
     }
 
     /// <summary>Keep the eye outside walls, deck, ceiling, and solid C40 boxes.</summary>
@@ -558,23 +591,21 @@ internal sealed class CalypsoRenderer
         if (solidOrbit)
         {
             if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
-                CadShipExterior.Draw(_session.Document);
+                DrawExteriorShell(cutaway: false, frameCutPt, frameCutN);
         }
         else
         {
             if (cutaway || _session.ViewMode == CalypsoViewMode.Orbit)
             {
                 if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
-                {
-                    if (cutaway)
-                        CadShipExterior.Draw(_session.Document, frameCutPt, frameCutN);
-                    else
-                        CadShipExterior.Draw(_session.Document);
-                }
+                    DrawExteriorShell(cutaway, frameCutPt, frameCutN);
             }
 
             foreach (var entity in _session.Document.Entities)
             {
+                if (_session.RevealEntityIds is { } reveal && !reveal.Contains(entity.Id))
+                    continue;
+
                 if (!IsEntityVisibleForLayers(entity))
                     continue;
 
@@ -623,9 +654,8 @@ internal sealed class CalypsoRenderer
                             DrawOpeningFrame(entity);
                         break;
                     case "box":
-                        // C40 stack is hold cargo — fine in interior; in orbit cutaway it reads as one giant orange slab.
-                        if (cutaway
-                            && _session.ViewMode == CalypsoViewMode.Orbit
+                        // C40 is hold cargo only — never in orbit (reads as one giant orange cube).
+                        if (_session.ViewMode == CalypsoViewMode.Orbit
                             && (entity.Name?.StartsWith("C40", StringComparison.OrdinalIgnoreCase) ?? false))
                             break;
                         if (cutaway
@@ -637,6 +667,11 @@ internal sealed class CalypsoRenderer
                         if (_session.ViewMode == CalypsoViewMode.Interior
                             && IsStructureBox(entity)
                             && !StructureTouchesSelectedInterior(entity))
+                            break;
+                        // Narrow halls: full web plates read as floating pillars in the walk path.
+                        if (_session.ViewMode == CalypsoViewMode.Interior
+                            && IsNarrowInteriorSpace()
+                            && IsStructureWebPlate(entity))
                             break;
                         DrawSolidBox(entity);
                         break;
@@ -690,6 +725,30 @@ internal sealed class CalypsoRenderer
             var c = major ? GridMajor : GridMinor;
             World.DrawLine(new Vector3(-extent, 0.01f, o), new Vector3(extent, 0.01f, o), c);
             World.DrawLine(new Vector3(o, 0.01f, -extent), new Vector3(o, 0.01f, extent), c);
+        }
+    }
+
+    private void DrawExteriorShell(bool cutaway, Vector3 frameCutPt, Vector3 frameCutN)
+    {
+        if (_session.RevealEntityIds is null)
+        {
+            if (cutaway)
+                CadShipExterior.Draw(_session.Document, frameCutPt, frameCutN);
+            else
+                CadShipExterior.Draw(_session.Document);
+            return;
+        }
+
+        foreach (var entity in _session.Document.Entities)
+        {
+            if (!_session.RevealEntityIds.Contains(entity.Id))
+                continue;
+            if (!CadShipExterior.IsExteriorDrawable(entity))
+                continue;
+            if (cutaway)
+                CadShipExterior.DrawOne(entity, frameCutPt, frameCutN);
+            else
+                CadShipExterior.DrawOne(entity);
         }
     }
 
@@ -755,6 +814,23 @@ internal sealed class CalypsoRenderer
             }
         }
 
+        // HOLD: open cargo bay (walls + deck + gantry) — never a solid cube, never empty “hole”.
+        if (IsCargoVoidHollow(space) && showFinish
+            && (interior || cutaway || wire || _session.ViewMode == CalypsoViewMode.Plan))
+        {
+            if (interior && !InteriorSpaceVisible(space, selected))
+                return;
+            if (_session.ViewMode == CalypsoViewMode.Plan)
+            {
+                DrawPolygonFloor(ring, min, max, min.Y + 0.03f, PlanSpaceFill(space), tile: 1.2f);
+                // Plan outline only — bay is open (no filled volume).
+                return;
+            }
+
+            DrawHollowShaft(ring, min, max, center, size, h, cutaway, cutPt, cutN);
+            return;
+        }
+
         if (wire)
             return;
 
@@ -764,22 +840,18 @@ internal sealed class CalypsoRenderer
         if (interior && !InteriorSpaceVisible(space, selected))
             return;
 
-        if (interior && IsCargoVoidHollow(space))
-        {
-            DrawHollowShaft(ring, min, max, center, size, h, cutaway, cutPt, cutN);
-            return;
-        }
-
-        if (!cutaway || !CulledByCutPlane(center, cutPt, cutN))
+        if (!cutaway || !CulledByCutPlane(center, cutPt, cutN) || IsAirtightPassage(space))
         {
             if (_session.ViewMode == CalypsoViewMode.Plan)
             {
-                DrawPolygonFloor(ring, min, max, min.Y + 0.03f, floorColor, tile: 0.85f);
+                DrawPolygonFloor(ring, min, max, min.Y + 0.03f, PlanSpaceFill(space), tile: 0.85f);
             }
             else if (cutaway && !interior)
             {
                 // Cutaway orbit: footprint polygon only — AABB slabs poke through bow chamfer.
-                var muted = Color.FromArgb(88, DeckPlate.R, DeckPlate.G, DeckPlate.B);
+                var muted = IsAirtightPassage(space)
+                    ? Color.FromArgb(140, 160, 185, 205)
+                    : Color.FromArgb(88, DeckPlate.R, DeckPlate.G, DeckPlate.B);
                 DrawPolygonFloor(ring, min, max, min.Y + 0.03f, muted, tile: 1.1f);
             }
             else if (interior)
@@ -791,6 +863,16 @@ internal sealed class CalypsoRenderer
         }
 
         skipFinish:
+        // Orbit cutaway: sealed passageway tubes from space rings (DK-001 CORR/CROSS/ACCESS) —
+        // shirt-sleeves path is partition walls, not OML; do not cull tube walls by the cut plane.
+        if (!interior && cutaway && showSpacePartitions && IsAirtightPassage(space))
+        {
+            var tubeH = Math.Min(h, 3.2f);
+            DrawPerimeterBulkheads(ring, tubeH, openings, cutaway: false, default, default);
+            if (showFinish)
+                DrawCeilingAndLightStrip(center, size, tubeH, cutaway: false, default, default);
+        }
+
         if (interior && showSpacePartitions)
         {
             if (showFinish)
@@ -1153,6 +1235,15 @@ internal sealed class CalypsoRenderer
         // Points[0]=center, Points[1]=halfExtents (or Thickness/Height fallback).
         if (box.Points is not { Count: >= 2 })
             return;
+
+        // DK-001 plan: red = bulkheads (shirt-sleeves passage cut out of the plate).
+        if (_session.ViewMode == CalypsoViewMode.Plan
+            && box.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            DrawPlanBulkheadBox(box);
+            return;
+        }
+
         if (IsStructureBox(box) && !_session.VisualLayers.HasFlag(CalypsoVisualLayers.Structure))
             return;
         if (box.Name?.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase) == true
@@ -1162,12 +1253,12 @@ internal sealed class CalypsoRenderer
         var he = SvgCoords.FromArray(box.Points[1]);
         var isC40 = box.Name?.StartsWith("C40", StringComparison.OrdinalIgnoreCase) == true;
         var isNacelle = box.Name?.Contains("nacelle", StringComparison.OrdinalIgnoreCase) == true;
-        // Nacelles: exterior-only. C40 stow: visible in orbit + cargo interior (+ cutaway).
+        // Nacelles: exterior-only. C40: HOLD interior only — never orbit (mega-cube / “box area”).
         if (isNacelle && _session.ViewMode == CalypsoViewMode.Interior)
             return;
-        if (isC40 && _session.ViewMode == CalypsoViewMode.Plan)
-            return; // keep plan readable; containers show in orbit/interior
-        if (isC40 && _session.ViewMode == CalypsoViewMode.Interior && !ShowC40InInterior())
+        if (isC40 && _session.ViewMode != CalypsoViewMode.Interior)
+            return;
+        if (isC40 && !ShowC40InInterior())
             return;
         // Near containers fill the FOV and read as "camera inside a wall" — keep a standoff.
         if (isC40 && _session.ViewMode == CalypsoViewMode.Interior)
@@ -1299,19 +1390,18 @@ internal sealed class CalypsoRenderer
         Vector3[] ring, Vector3 min, Vector3 max, Vector3 center, Vector3 size, float h,
         bool cutaway, Vector3 cutPt, Vector3 cutN)
     {
-        // Hold walls: flush panels only (ribs read as floating pillars beside C40).
+        _ = cutPt;
+        _ = cutN;
+        // Hold walls: always all four faces (open bay). Cut-plane cull made the stern read as a solid cube/slab.
         var wallH = Math.Min(h, 9f);
         for (var i = 0; i < ring.Length; i++)
         {
             var a = ring[i];
             var b = ring[(i + 1) % ring.Length];
-            var mid = (a + b) * 0.5f;
-            if (cutaway && CulledByCutPlane(mid, cutPt, cutN))
-                continue;
             DrawInteriorWallPanel(a, b, wallH, ribs: false);
         }
 
-        // Hold deck plate
+        // Hold deck plate only — never fill the volume (cargo bay is a hole with walls, not a cube).
         var holdDeck = ShadeColor(Color.FromArgb(255, 52, 56, 62), 0.65f, 0.2f, Vector3.UnitY, LightDir);
         World.DrawCube(new Vector3(center.X, min.Y + 0.04f, center.Z), Math.Max(1f, size.X * 0.98f), 0.1f, Math.Max(1f, size.Z * 0.98f), holdDeck);
 
@@ -1367,10 +1457,20 @@ internal sealed class CalypsoRenderer
 
         var alongZ = size.Z >= size.X;
         var cove = ShadeColor(AccentCyan, 0.45f, 0.3f, -Vector3.UnitY, LightDir);
-        if (alongZ)
-            World.DrawCube(ceilingCenter + new Vector3(0, -0.14f, 0), Math.Min(0.28f, size.X * 0.18f), 0.05f, size.Z * 0.75f, cove);
+        var coveY = ceilingCenter.Y - 0.14f;
+        // Long fore-aft bars read as a hanging cyan pillar when the camera looks +Z (bridge).
+        if (alongZ && size.Z > 6f)
+        {
+            for (var t = 0.22f; t <= 0.78f; t += 0.28f)
+            {
+                var z = center.Z - size.Z * 0.5f + size.Z * t;
+                World.DrawCube(new Vector3(center.X, coveY, z), size.X * 0.52f, 0.05f, 0.2f, cove);
+            }
+        }
+        else if (alongZ)
+            World.DrawCube(new Vector3(center.X, coveY, center.Z), Math.Min(0.28f, size.X * 0.18f), 0.05f, size.Z * 0.75f, cove);
         else
-            World.DrawCube(ceilingCenter + new Vector3(0, -0.14f, 0), size.X * 0.75f, 0.05f, Math.Min(0.28f, size.Z * 0.18f), cove);
+            World.DrawCube(new Vector3(center.X, coveY, center.Z), size.X * 0.75f, 0.05f, Math.Min(0.28f, size.Z * 0.18f), cove);
     }
 
     private void DrawDeckPanelGrid(Vector3 min, Vector3 max, float h)
@@ -1642,6 +1742,13 @@ internal sealed class CalypsoRenderer
         if (segments.Count == 0)
             return;
 
+        // DK-001 plan: blue = shirt-sleeves passageway walls; red = transverse bulkheads/partitions.
+        if (_session.ViewMode == CalypsoViewMode.Plan)
+        {
+            DrawPlanWallSegments(wall, segments);
+            return;
+        }
+
         var wire = _session.WireMeshMode == CalypsoWireMeshMode.Wire;
         var cutaway = _session.WireMeshMode == CalypsoWireMeshMode.CutawayPartial;
         GetCutPlane(cutaway, out var cutPt, out var cutN);
@@ -1670,7 +1777,23 @@ internal sealed class CalypsoRenderer
             if (cutaway && CulledByCutPlane(center, cutPt, cutN))
                 continue;
 
-            if (wire)
+            if (wall.Name?.StartsWith("hull", StringComparison.OrdinalIgnoreCase) == true
+                && (interior || cutaway || wire))
+                continue;
+
+            // Airtight passageway / compartment walls — solid panels in wire+cutaway orbit
+            // (not OML-dependent; corridor tubes must read as sealed volumes).
+            var airtightPartition = wall.Name is { } an
+                && (an.StartsWith("w-CORR", StringComparison.OrdinalIgnoreCase)
+                    || an.StartsWith("w-CROSS", StringComparison.OrdinalIgnoreCase)
+                    || an.StartsWith("w-ACCESS", StringComparison.OrdinalIgnoreCase)
+                    || an.StartsWith("w-STAIRS", StringComparison.OrdinalIgnoreCase)
+                    || an.StartsWith("w-ELEV", StringComparison.OrdinalIgnoreCase)
+                    || an.StartsWith("w-AIRLOCK", StringComparison.OrdinalIgnoreCase)
+                    || an.StartsWith("w-HOLD", StringComparison.OrdinalIgnoreCase)
+                    || an.StartsWith("w-ENG", StringComparison.OrdinalIgnoreCase));
+
+            if (wire && !airtightPartition)
             {
                 World.DrawLine(a + new Vector3(0, 0.04f, 0), b + new Vector3(0, 0.04f, 0), Bulkhead);
                 World.DrawLine(a + new Vector3(0, h, 0), b + new Vector3(0, h, 0), Bulkhead);
@@ -1678,20 +1801,17 @@ internal sealed class CalypsoRenderer
                 continue;
             }
 
-            // Interior / cutaway orbit: skip exterior hull skins (rim shell carries silhouette).
-            if (interior || cutaway)
-            {
-                if (wall.Name?.StartsWith("hull", StringComparison.OrdinalIgnoreCase) == true)
-                    continue;
-                if (interior)
-                    continue;
-            }
+            // Interior: partitions are drawn via space perimeter (avoid double walls).
+            if (interior)
+                continue;
 
-            if (cutaway && !interior)
+            if (cutaway || wire || airtightPartition)
             {
-                var panelH = wall.Name is { } wn
-                             && (wn.StartsWith("w-HOLD", StringComparison.OrdinalIgnoreCase)
-                                 || wn.StartsWith("w-ENG", StringComparison.OrdinalIgnoreCase))
+                var nm = wall.Name ?? "";
+                var panelH = airtightPartition
+                             && (nm.StartsWith("w-HOLD", StringComparison.OrdinalIgnoreCase)
+                                 || nm.StartsWith("w-ENG", StringComparison.OrdinalIgnoreCase)
+                                 || nm.StartsWith("w-AIRLOCK", StringComparison.OrdinalIgnoreCase))
                     ? h
                     : Math.Min(h, 3.5f);
                 DrawInteriorWallPanel(a, b, panelH, ribs: false);
@@ -1955,9 +2075,80 @@ internal sealed class CalypsoRenderer
             return true;
         var n = box.Name ?? "";
         return n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Plan: red transverse bar for a structural bulkhead (passage already cut out of the plate).</summary>
+    private static void DrawPlanBulkheadBox(CadEntity box)
+    {
+        var c = SvgCoords.FromArray(box.Points![0]);
+        var he = SvgCoords.FromArray(box.Points[1]);
+        var sx = Math.Max(0.15f, Math.Abs(he.X) * 2f);
+        var sz = Math.Max(0.12f, Math.Abs(he.Z) * 2f);
+        // Prefer a thin athwart strip so the BH reads as the user's red lines.
+        if (sx >= sz * 1.5f)
+            World.DrawCube(new Vector3(c.X, 0.12f, c.Z), sx, 0.2f, Math.Max(0.18f, sz), PlanBulkheadRed);
+        else
+            World.DrawCube(new Vector3(c.X, 0.12f, c.Z), Math.Max(0.18f, sx), 0.2f, sz, PlanBulkheadRed);
+    }
+
+    /// <summary>
+    /// Plan wall legend: blue = shirt-sleeves passageway; red = transverse bulkhead/partition
+    /// (passage cut through); gray = longitudinal room lining.
+    /// </summary>
+    private static void DrawPlanWallSegments(CadEntity wall, List<(Vector3 A, Vector3 B)> segments)
+    {
+        var nm = wall.Name ?? "";
+        var passage = nm.StartsWith("w-CORR", StringComparison.OrdinalIgnoreCase)
+                      || nm.StartsWith("w-CROSS", StringComparison.OrdinalIgnoreCase)
+                      || nm.StartsWith("w-ACCESS", StringComparison.OrdinalIgnoreCase)
+                      || nm.StartsWith("w-STAIRS", StringComparison.OrdinalIgnoreCase)
+                      || nm.StartsWith("w-ELEV", StringComparison.OrdinalIgnoreCase)
+                      || nm.StartsWith("w-AIRLOCK", StringComparison.OrdinalIgnoreCase);
+
+        foreach (var (a, b) in segments)
+        {
+            var dx = MathF.Abs(b.X - a.X);
+            var dz = MathF.Abs(b.Z - a.Z);
+            var len = MathF.Sqrt(dx * dx + dz * dz);
+            if (len < 0.05f)
+                continue;
+            var mid = (a + b) * 0.5f;
+            mid.Y = 0.14f;
+            var transverse = dz < dx * 0.4f; // mostly athwart → bulkhead face
+            Color color;
+            float thick;
+            if (passage)
+            {
+                color = PlanPassageBlue;
+                thick = 0.22f;
+            }
+            else if (transverse)
+            {
+                color = PlanBulkheadRed;
+                thick = 0.2f;
+            }
+            else
+            {
+                color = Color.FromArgb(220, 90, 94, 100);
+                thick = 0.1f;
+            }
+
+            var sx = dx >= dz ? len : thick;
+            var sz = dz > dx ? len : thick;
+            World.DrawCube(mid, sx, 0.18f, sz, color);
+        }
+    }
+
+    private static bool IsStructureWebPlate(CadEntity box)
+    {
+        var n = box.Name ?? "";
+        return n.Contains("-web-", StringComparison.OrdinalIgnoreCase)
+               || n.Contains("webplate", StringComparison.OrdinalIgnoreCase)
+               || n.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>True when a structure box overlaps the selected interior space (or catwalk ensemble).</summary>
@@ -2009,6 +2200,12 @@ internal sealed class CalypsoRenderer
     private bool IsEntityVisibleForLayers(CadEntity entity)
     {
         var layers = _session.VisualLayers;
+        // Plan legend: bh-* bulkheads always visible (red) even on Dk001Plan without Structure.
+        if (_session.ViewMode == CalypsoViewMode.Plan
+            && entity.Kind == "box"
+            && entity.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
         return entity.Kind switch
         {
             "wall" => layers.HasFlag(CalypsoVisualLayers.Partitions),

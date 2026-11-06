@@ -21,9 +21,11 @@ internal static class HeadlessPngExporter
         int width = 2560,
         int height = 1440)
     {
-        var exportsDir = ViewportPngExporter.ExportsDirectory(generatedRoot);
+        // PNGs live in-repo under docs/renders (source control), not LocalAppData.
+        _ = generatedRoot;
+        var exportsDir = CalypsoProjectPaths.RendersExportsDirectory;
         Directory.CreateDirectory(exportsDir);
-        ViewportPngExporter.PurgeLegacyHeadlessExports(generatedRoot);
+        PurgeLegacyNamed(exportsDir);
 
         RaylibDebug.Start();
         Logger.SetTraceLogLevel(TraceLogLevel.Warning);
@@ -46,7 +48,9 @@ internal static class HeadlessPngExporter
                 var previousWire = session.WireMeshMode;
                 var previousDeck = session.DeckFilter;
 
-                // Plan per deck.
+                // Plan per deck — DK-001 compartment read (no OML; CORR tinted airtight tubes).
+                var previousPlanLayers = session.VisualLayers;
+                session.VisualLayers = CalypsoVisualLayers.Dk001Plan;
                 foreach (var (deck, kind) in new (int?, string)[] { (-1, "plan-deck-m1"), (0, "plan-deck-0"), (1, "plan-deck-p1") })
                 {
                     session.ViewMode = CalypsoViewMode.Plan;
@@ -55,6 +59,7 @@ internal static class HeadlessPngExporter
                     session.StatusText = $"headless:{kind}";
                     CaptureSave(renderer, exportsDir, kind, saved);
                 }
+                session.VisualLayers = previousPlanLayers;
 
                 session.DeckFilter = null;
 
@@ -91,6 +96,7 @@ internal static class HeadlessPngExporter
 
                 session.WireMeshMode = CalypsoWireMeshMode.Wire;
                 renderer.ApplyOrbitPreset("three-quarter-high");
+                renderer.ZoomOrbit(1.5f);
                 session.StatusText = "headless:layer-structure-wire";
                 CaptureSave(renderer, exportsDir, "layer-structure-wire", saved);
                 session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
@@ -98,6 +104,13 @@ internal static class HeadlessPngExporter
                 session.VisualLayers = CalypsoVisualLayers.FitoutCutaway;
                 session.StatusText = "headless:layer-cutaway-fitout";
                 CaptureSave(renderer, exportsDir, "layer-cutaway-fitout", saved);
+
+                // No OML: airtight passage tubes + open HOLD bay (not C40 cube).
+                session.VisualLayers = CalypsoVisualLayers.InteriorStructureNoHull;
+                renderer.ApplyOrbitPreset("three-quarter-high");
+                renderer.ZoomOrbit(1.5f);
+                session.StatusText = "headless:layer-interior-structure";
+                CaptureSave(renderer, exportsDir, "layer-interior-structure", saved);
                 session.VisualLayers = previousLayers;
 
                 // Interior tour spaces (solid; bridge + cargo also cutaway section).
@@ -161,9 +174,8 @@ internal static class HeadlessPngExporter
                     foreach (var (wireMode, variantKind) in variants)
                     {
                         session.WireMeshMode = wireMode;
-                        session.VisualLayers = label is "portCorridor" && variantKind == "cutaway"
-                            ? CalypsoVisualLayers.CorridorStructure
-                            : CalypsoVisualLayers.DefaultInterior;
+                        // Corridor cutaway: partitions + openings only — full web plates read as floating pillars.
+                        session.VisualLayers = CalypsoVisualLayers.DefaultInterior;
                         session.StatusText = $"headless:interior:{label}:{variantKind}";
                         renderer.SyncInteriorFromSelection();
                         CaptureSave(renderer, exportsDir, $"interior-{variantKind}-{label}", saved);
@@ -217,7 +229,8 @@ internal static class HeadlessPngExporter
         int width = 1280,
         int height = 720)
     {
-        var exportsDir = ViewportPngExporter.ExportsDirectory(generatedRoot);
+        _ = generatedRoot;
+        var exportsDir = CalypsoProjectPaths.RendersExportsDirectory;
         Directory.CreateDirectory(exportsDir);
         RaylibDebug.Start();
         Logger.SetTraceLogLevel(TraceLogLevel.Warning);
@@ -291,6 +304,17 @@ internal static class HeadlessPngExporter
                     : CalypsoWireMeshMode.None;
                 renderer.ApplyOrbitPreset(string.IsNullOrWhiteSpace(preset) ? "broadside" : preset);
                 return "orbit-" + (string.IsNullOrWhiteSpace(preset) ? "broadside" : preset);
+        }
+    }
+
+    private static void PurgeLegacyNamed(string exportsDir)
+    {
+        if (!Directory.Exists(exportsDir))
+            return;
+        foreach (var file in Directory.EnumerateFiles(exportsDir, "*-headless-*.png"))
+        {
+            try { File.Delete(file); }
+            catch { /* best-effort */ }
         }
     }
 

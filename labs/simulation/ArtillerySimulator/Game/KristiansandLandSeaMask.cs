@@ -31,7 +31,7 @@ internal static class KristiansandLandSeaMask
         // Mask bytes and georef come from extract-artillery-map (same letterboxing as kristiansand-reference.png).
         // Do not use ArtilleryMapStackGeoref.TryWorldToReliefPixel here: stack JSON pixel sizes can differ from
         // the exported PNG, and full-bleed u/v mapping ignores offsetPx — both yield wrong rows (visible seam).
-        var px = xMeters * _pixelsPerMeter + _offsetPxX;
+        var px = KristiansandGeoref.WorldToDataX(xMeters, KristiansandHeightSampler.EastMeters) * _pixelsPerMeter + _offsetPxX;
         var py = _offsetPxY + (_scenarioNorthMeters - zMeters) * _pixelsPerMeter;
         var ix = (int)MathF.Round(px);
         var iy = (int)MathF.Round(py);

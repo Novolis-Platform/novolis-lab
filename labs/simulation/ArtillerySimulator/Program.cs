@@ -1,9 +1,6 @@
 using ArtillerySimulator.Game;
-using Novolis.Raylib.Game;
+using Novolis.Silk;
 
-if (args.Contains("--agent"))
-    return ArtilleryAgentSession.Run();
-
+// Kristiansand artillery — Silk host only (no Raylib).
 var game = new ArtillerySimulatorGame();
-RayGame.Run("Artillery Simulator", 1920, 1080, game.Initialize, game.Update);
-return 0;
+SilkGame.Run("Artillery Simulator — Kristiansand", 1920, 1080, game.Initialize, game.Update);

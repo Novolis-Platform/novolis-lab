@@ -53,8 +53,9 @@ internal static class ArtilleryMapStackGeoref
             return false;
         }
 
-        xMeters = (float)((longitudeDegrees - _westLon) / lonSpan * _eastMeters);
-        zMeters = (float)((latitudeDegrees - _southLat) / latSpan * _northMeters);
+        // Lon→world never flips; raster mirror lives only in KristiansandGeoref.WorldToDataU.
+        xMeters = KristiansandGeoref.LonToWorldX(longitudeDegrees, _westLon, _eastLon, _eastMeters);
+        zMeters = KristiansandGeoref.LatToWorldZ(latitudeDegrees, _southLat, _northLat, _northMeters);
         return true;
     }
 
@@ -68,7 +69,7 @@ internal static class ArtilleryMapStackGeoref
         if (xMeters < 0f || zMeters < 0f || xMeters > _eastMeters || zMeters > _northMeters)
             return false;
 
-        var u = xMeters / _eastMeters;
+        var u = KristiansandGeoref.WorldToDataU(xMeters, _eastMeters);
         var v = zMeters / _northMeters;
         ix = (int)MathF.Round(u * (_reliefWidth - 1));
         iy = (int)MathF.Round((1f - v) * (_reliefHeight - 1));

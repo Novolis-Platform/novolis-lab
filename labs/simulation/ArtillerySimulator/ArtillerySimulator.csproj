@@ -11,7 +11,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp" />
-    <PackageReference Include="Novolis.Raylib" />
+    <LibraryReference Include="Novolis.Silk" />
+    <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.Physics.Ballistics" />
     <LibraryReference Include="Novolis.Physics.Collision.Simple" />
     <LibraryReference Include="Novolis.Simulation.World" />

@@ -4306,7 +4306,9 @@
   "frames": {
     "webM": 0.15,
     "depthM": 0.25,
+    "bayM": 4,
     "stringerCount": 4,
+    "note": "bayM is the sole transverse frame pitch (stem→stern). hullLoft.stations are mold stations only — not frame positions. 4 m matches primary web-frame spacing for this tramp; ordinary-frame 0.6–0.8 m densification is out of scope.",
     "stationIds": [
       "ST0",
       "ST1",

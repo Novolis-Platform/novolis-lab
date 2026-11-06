@@ -1,5 +1,4 @@
 using Novolis.Agent.Core;
-using Novolis.Raylib.Game;
 
 namespace ArtillerySimulator.Game;
 
@@ -17,9 +16,9 @@ internal static partial class KristiansandMapFeatures
     public static GroundPolyline? Longest(string name, string kind) =>
         MapFeaturesCatalog.Longest(Visible, name, kind);
 
-    public static void DrawWater(RayGameContext ctx, TerrainWorld terrain)
+    public static void DrawWater(SilkWireBatch wires, TerrainWorld terrain)
     {
-        // Open water and lakes come from Norgeskart #5182FF land/sea mask, not OSM voxels.
+        // Open water and lakes come from Norgeskart land/sea mask wires, not OSM voxels.
     }
 
     public static void ResetClipCache()
@@ -29,24 +28,15 @@ internal static partial class KristiansandMapFeatures
         _waterForFill = null;
     }
 
-    public static void DrawTableLinework(RayGameContext ctx) =>
+    public static void DrawTableLinework(SilkWireBatch wires) =>
         MapFeaturesCatalog.DrawLinesOnTable(
-            ctx,
+            wires,
             Visible,
             KristiansandReferenceMap.TableYMeters + 0.45f,
             skipCoastline: true);
 
-    public static void DrawLinework(RayGameContext ctx, TerrainWorld terrain)
-    {
-        var maskOwnsWater = KristiansandLandSeaMask.IsAvailable;
-        MapFeaturesCatalog.DrawLines(ctx, terrain, Visible, skipCoastline: maskOwnsWater);
-        if (!maskOwnsWater)
-        {
-            var east = KristiansandHeightSampler.EastMeters;
-            var north = KristiansandHeightSampler.NorthMeters;
-            MapFeaturesCatalog.DrawWaterOutlines(ctx, terrain, WaterVisible, east, north);
-        }
-    }
+    public static void DrawLinework(SilkWireBatch wires, TerrainWorld terrain) =>
+        KristiansandPdfRoads.Draw(wires, terrain);
 
     private static GroundPolygon[]? _waterForFill;
 
