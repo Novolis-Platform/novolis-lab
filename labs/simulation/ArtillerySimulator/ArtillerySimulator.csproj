@@ -4,6 +4,10 @@
     <RootNamespace>ArtillerySimulator</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="map\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="map" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
     <PackageReference Include="Novolis.Raylib" />
     <LibraryReference Include="Novolis.Physics.Ballistics" />
     <LibraryReference Include="Novolis.Physics.Collision.Simple" />

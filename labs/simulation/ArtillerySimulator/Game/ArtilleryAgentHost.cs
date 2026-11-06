@@ -22,7 +22,7 @@ internal sealed class ArtilleryAgentHost : IAgentHost
         },
     });
     private readonly ProjectileBallisticSimulation _vacuum = new();
-    private readonly ProjectileBallisticSimulation _drag = new(GunModel.Educational155Profile);
+    private readonly ProjectileBallisticSimulation _drag = new(GunModel.Educational155Profile, DragCoefficientLaw.BoatTail);
     private readonly AtmosphereModel _atmosphere = AtmosphereModel.CreateRegionalDefault();
     private long _revision = 1;
     private long _sequence;

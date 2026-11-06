@@ -9,13 +9,17 @@ internal static class SimulationHud
     public static void Draw(
         RayGameContext ctx,
         GunModel gun,
+        float orderedElevation,
+        float orderedAzimuth,
         TerrainWorld terrain,
         AtmosphereModel atmosphere,
         BallisticTrajectoryRunner shot,
         ArtilleryCameras camera,
         float fps,
         float predictedRangeMeters,
-        string paceLabel)
+        string paceLabel,
+        string? defenseLine = null,
+        string? reloadLine = null)
     {
         var scale = Math.Clamp(Math.Min(ctx.Width / 1920f, ctx.Height / 1080f), 0.55f, 1.15f);
         var pad = Math.Max(10, (int)(14 * scale));
@@ -36,12 +40,9 @@ internal static class SimulationHud
         };
         var terrainLabel = terrain.IsFlat
             ? "flat range"
-            : terrain.Style switch
-            {
-                TerrainStyle.AfghanHighland => "highlands",
-                TerrainStyle.NordicRidges => "ridges",
-                _ => "broken ground",
-            };
+            : terrain.RealGround
+                ? "Kristiansand"
+                : "broken ground";
         var downrange = Horizontal(terrain.GunBaseline, shot.CurrentPosition);
         var heroMeters = shot.Phase switch
         {
@@ -53,18 +54,26 @@ internal static class SimulationHud
         {
             BallisticTrajectoryPhase.InFlight => "downrange",
             BallisticTrajectoryPhase.Impacted => "impact",
-            _ => "predicted",
+            _ => "this lay",
         };
-        var mils = gun.ElevationDegrees * 6400f / 360f;
+        var stop = gun.AtTraverseStop ? "    traverse stop" : "";
+        var orderedElev = orderedElevation * 6400f / 360f;
+        var orderedDefl = (orderedAzimuth - gun.CenterAzimuthDegrees) * 6400f / 360f;
+        var gap = MathF.Max(MathF.Abs(orderedElev - gun.ElevationMils), MathF.Abs(orderedDefl - gun.DeflectionMils));
+        var lay = gap < 2f
+            ? $"QE {gun.ElevationMils:F0} mil ({gun.ElevationDegrees:F0}°)    Defl {gun.DeflectionMils:F0} mil{stop}"
+            : $"QE {gun.ElevationMils:F0} → {orderedElev:F0} mil    Defl {gun.DeflectionMils:F0} → {orderedDefl:F0} mil{stop}";
         var sampleAlt = shot.Phase == BallisticTrajectoryPhase.InFlight ? shot.CurrentPosition.Y : terrain.GunBaseline.Y;
 
         var rows = new List<(string Text, Color Color)>
         {
-            ($"Elev {gun.ElevationDegrees:F0}°    {mils:F0} mil    Az {gun.AzimuthDegrees:F0}°", paper),
-            ($"{gun.ChargeLabel}    {gun.MuzzleSpeedMps:F0} m/s    {(gun.DragEnabled ? "drag" : "vacuum")}", paper),
+            (lay, paper),
+            ($"{gun.ChargeLabel}    {gun.MuzzleSpeedMps:F0} m/s    {(gun.DragEnabled ? "drag" : "vacuum")}    {(reloadLine ?? "ready")}", paper),
             ($"{terrainLabel}    {paceLabel}    {fps:F0} fps    {(camera.Mode == CameraMode.Freecam ? "free" : "follow")}", dim),
             (atmosphere.SummaryLine(sampleAlt), dim),
         };
+        if (!string.IsNullOrEmpty(defenseLine))
+            rows.Insert(0, (defenseLine, accent));
         if (shot.Phase == BallisticTrajectoryPhase.InFlight)
         {
             rows.Insert(2, ($"Alt {shot.CurrentPosition.Y:F0} m    {shot.CurrentVelocity.Length():F0} m/s    {shot.TimeSeconds:F1} s", paper));
@@ -76,7 +85,7 @@ internal static class SimulationHud
         }
         else
         {
-            rows.Insert(2, ("Space to fire", accent));
+            rows.Insert(2, (reloadLine ?? "Upper register. The crew lays on the handwheels. Space fires when the breech is closed", accent));
         }
 
         var cardW = Math.Clamp((int)(ctx.Width * 0.32f), 320, 480);
@@ -84,7 +93,7 @@ internal static class SimulationHud
         var cardH = rowStart + rows.Count * line + 8 - pad;
         ctx.HudRect(pad, pad, cardW, cardH, Color.FromArgb(168, 10, 14, 16));
         ctx.HudRect(pad, pad, 4, cardH, accent);
-        ctx.HudText("ARTILLERY RANGE", pad + 16, pad + 8, titleSize, dim);
+        ctx.HudText("DEFEND KVADRATUR", pad + 16, pad + 8, titleSize, dim);
         ctx.HudText(phase, pad + 16, pad + 8 + titleSize, titleSize, accent);
         ctx.HudText(SimulationUnits.FormatRange(heroMeters), pad + 16, pad + 12 + titleSize * 2, hero, paper);
         ctx.HudText(heroCaption, pad + 16, pad + 12 + titleSize * 2 + hero, dimSize, dim);
@@ -100,7 +109,7 @@ internal static class SimulationHud
         var barY = ctx.Height - bar - 18;
         ctx.HudRect(0, barY, ctx.Width, bar + 18, Color.FromArgb(150, 8, 10, 12));
         ctx.HudText(
-            "Space fire     RMB look     Shift/Ctrl elev     Q/E traverse     1 2 3 charge     H/M zoom     , . pace     C camera     T ground",
+            "Drag lay     Shift fine     Q/E traverse     W/S elevate     Wheel zoom     Space when the crew is ready     1-4 charge",
             16,
             barY + 8,
             bar,

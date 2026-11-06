@@ -1,0 +1,15 @@
+{
+  "citation": "Heuristic edge match: reference PNG \u2192 generated preview. Not a survey-grade georeference.",
+  "referenceFile": "kristiansand-reference.png",
+  "previewFile": "kristiansand-map-preview.png",
+  "edgeCorrelation": 0.12597887,
+  "scale": 1.3499997,
+  "offsetX": 0.099999994,
+  "offsetY": 0.14999999,
+  "scenarioWgs84": {
+    "South": 58.05,
+    "North": 58.22,
+    "West": 7.82,
+    "East": 8.24
+  }
+}

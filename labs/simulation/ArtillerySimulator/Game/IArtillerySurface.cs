@@ -10,11 +10,11 @@ namespace ArtillerySimulator.Game;
     TcpPort = 18771,
     EnableEnv = "NOVOLIS_ARTILLERY",
     MarkerPrefix = "novolis-artillery",
-    Description = "Educational 155 mm range. Snapshot the gun, then aim and fire.")]
-[AgentAction("artillery.aim", Summary = "Set barrel elevation and azimuth in degrees.", Params = "elevation; azimuth", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Moves the barrel. The next shot uses this aim.")]
-[AgentAction("artillery.charge", Summary = "Select reduced, standard, or max charge (0, 1, or 2).", Params = "index", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Changes muzzle velocity for the next shot.")]
+    Description = "The Defense of Kristiansand. Green defenders hold downtown chokepoints. Staggered columns on the inbound roads. The crew lays the howitzer on the handwheels and rams during the flight.")]
+[AgentAction("artillery.aim", Summary = "Order elevation and world azimuth in degrees. The crew lays the tube on the handwheels. Trails clamp azimuth to ±22.5° around the laid center.", Params = "elevation; azimuth", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Orders a lay. The tube slews, and the next shot uses it when the crew is on it.")]
+[AgentAction("artillery.charge", Summary = "Order reduced, standard, max, or low charge (0, 1, 2, or 3). A different zone is reseated before the next shot. Low charge keeps a steep shell shorter.", Params = "index", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Orders a charge zone. A change keeps the breech busy until the new zone is seated.")]
 [AgentAction("artillery.drag", Summary = "Turn aerodynamic drag on or off.", Params = "enabled", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "The next shot uses drag or vacuum.")]
-[AgentAction("artillery.fire", Summary = "Shoot and wait until the round lands.", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Integrates the shot against the range until it lands.")]
-[AgentAction("artillery.pace", Summary = "Set flight pace 0..3 (about 1x, 3x, 8x, 24x).", Params = "index", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Changes how fast the visible flight advances.")]
+[AgentAction("artillery.fire", Summary = "Shoot when the breech is closed and the tube is on the order. The crew rams the next round during the flight. The burst puts vehicles near the impact out of action and pins the next ones.", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Integrates the shot. Vehicles near the impact are out of action. The crew reloads on the same clock.")]
+[AgentAction("artillery.pace", Summary = "Set pace 0..3 (about 1x, 3x, 8x, 24x). The shell, the column, and the crew share this clock.", Params = "index", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Changes how fast the shell, the column, and the crew advance.")]
 [AgentAction("artillery.camera", Summary = "Choose follow or free camera.", Params = "mode", Capability = "artillery.play", SafetyClass = "mutate", EffectPreview = "Follow rides the arc. Free lets the player fly.")]
 internal interface IArtillerySurface : IAgentHost;

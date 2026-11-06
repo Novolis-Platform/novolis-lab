@@ -9,6 +9,12 @@
   <!-- Lock → CAD SoT lives in CalypsoCad; this app owns CAD + 3D export / view for the internals pack. -->
   <ItemGroup>
     <Compile Include="..\CalypsoCad\Generation\CalypsoLockGenerator.cs" Link="Generation\CalypsoLockGenerator.cs" />
+    <Compile Include="..\CalypsoCad\Generation\CalypsoDrafting.cs" Link="Generation\CalypsoDrafting.cs" />
+    <Compile Include="..\CalypsoCad\Generation\CalypsoHullNest.cs" Link="Generation\CalypsoHullNest.cs" />
+    <Compile Include="..\CalypsoCad\Generation\CalypsoShipbuildingFrames.cs" Link="Generation\CalypsoShipbuildingFrames.cs" />
+    <Compile Include="..\CalypsoCad\Generation\FrameWebPlateBuilder.cs" Link="Generation\FrameWebPlateBuilder.cs" />
+    <Compile Include="..\CalypsoCad\Generation\FrameWebPlateRegistry.cs" Link="Generation\FrameWebPlateRegistry.cs" />
+    <Compile Include="..\CalypsoCad\Generation\Fabrication\HullFaceUnfolder.cs" Link="Generation\Fabrication\HullFaceUnfolder.cs" />
     <Compile Include="..\CalypsoCad\Models\CadAppearanceExtension.cs">
       <Link>Models\CadAppearanceExtension.cs</Link>
     </Compile>

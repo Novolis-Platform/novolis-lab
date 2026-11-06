@@ -3,33 +3,39 @@ using Novolis.Physics.Ballistics;
 
 namespace ArtillerySimulator.Game;
 
-/// <summary>High-plateau training atmosphere: altitude-dependent ρ, humidity, and wind shear.</summary>
+/// <summary>
+/// Sea-level ISA reduced to the projectile's absolute altitude, plus a scenario wind.
+/// The wind is 4 m/s from the west (+X). It is not a sounding.
+/// </summary>
 internal sealed class AtmosphereModel
 {
-    /// <summary>Reference pressure at gun elevation (Pa) — ~2.1 km plateau.</summary>
-    public double ReferencePressurePa { get; set; } = 78_800.0;
+    /// <summary>Sea-level reference pressure (Pa). Altitude passed in is meters above this level.</summary>
+    public double ReferencePressurePa { get; set; } = 101_325.0;
 
-    public double ReferenceTemperatureKelvin { get; set; } = 291.15;
+    public double ReferenceTemperatureKelvin { get; set; } = 288.15;
 
-    /// <summary>0…1 relative humidity.</summary>
-    public double RelativeHumidity { get; set; } = 0.28;
+    /// <summary>0…1 relative humidity. Scenario value for the valley, not a measured sounding.</summary>
+    public double RelativeHumidity { get; set; } = 0.55;
 
-    public Vector3 SurfaceWindMetersPerSecond { get; set; } = new(14f, 0f, 6f);
+    public Vector3 SurfaceWindMetersPerSecond { get; set; } = new(4f, 0f, 1f);
 
     public static AtmosphereModel CreateRegionalDefault() => new();
 
     public double DensityKgPerM3At(float altitudeMeters)
     {
-        var t = ReferenceTemperatureKelvin - 0.0065 * altitudeMeters;
-        if (t < 240.0)
-            t = 240.0;
-
+        var t = TemperatureAt(altitudeMeters);
         var p = StandardAtmosphere.PressureAtAltitude(
             ReferencePressurePa,
-            altitudeMeters,
+            Math.Max(0.0, altitudeMeters),
             ReferenceTemperatureKelvin);
 
         return StandardAtmosphere.DensityKgPerM3(p, t, RelativeHumidity);
+    }
+
+    public double TemperatureAt(float altitudeMeters)
+    {
+        var t = ReferenceTemperatureKelvin - 0.0065 * Math.Max(0.0, altitudeMeters);
+        return Math.Max(t, 216.65);
     }
 
     public Vector3 WindAt(float altitudeMeters)
@@ -41,7 +47,12 @@ internal sealed class AtmosphereModel
     public ProjectileBallisticEnvironment BallisticEnvironment(bool dragEnabled, float altitudeMeters)
     {
         var rho = dragEnabled ? DensityKgPerM3At(altitudeMeters) : 0.0;
-        return new ProjectileBallisticEnvironment(9.80665, rho, WindAt(altitudeMeters));
+        return new ProjectileBallisticEnvironment(
+            9.80665,
+            rho,
+            WindAt(altitudeMeters),
+            TemperatureAt(altitudeMeters),
+            KristiansandHeightSampler.MeanLatitudeDegrees);
     }
 
     public string SummaryLine(float sampleAltitudeMeters)
@@ -49,6 +60,6 @@ internal sealed class AtmosphereModel
         var rho = DensityKgPerM3At(sampleAltitudeMeters);
         var wind = SurfaceWindMetersPerSecond;
         var speed = wind.Length();
-        return $"rho {rho:F3} kg/m3  RH {RelativeHumidity * 100:F0}%  wind {speed:F0} m/s ({wind.X:F0}, {wind.Z:F0})";
+        return $"ISA {rho:F3} kg/m3  {TemperatureAt(sampleAltitudeMeters):F0} K  wind {speed:F0} m/s  {KristiansandHeightSampler.MeanLatitudeDegrees:F1} N";
     }
 }

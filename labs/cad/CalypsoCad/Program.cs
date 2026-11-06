@@ -94,6 +94,14 @@ internal static class Program
             return;
         }
 
+        var withHeadlessCanvas = args.Any(a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase));
+        if (TryEmitRenderCanvas(args, "--emit-mfg-angles-canvas", "calypso-mfg-angles.canvas.tsx", withHeadlessCanvas,
+                CalypsoRenderCanvasEmitter.EmitMfgAngles))
+            return;
+        if (TryEmitRenderCanvas(args, "--emit-mfg-002-renders-canvas", "calypso-mfg-002-renders.canvas.tsx", withHeadlessCanvas,
+                CalypsoRenderCanvasEmitter.EmitMfg002FullRenders))
+            return;
+
         if (generateOnly || headless || walkthrough)
         {
             // --generate-only: companions only (PNG skipped unless also --headless)
@@ -215,6 +223,35 @@ internal static class Program
 
         Console.WriteLine(failures == 0 ? "CalypsoCad acceptance OK" : $"CalypsoCad acceptance FAILED ({failures})");
         return failures == 0 ? 0 : 1;
+    }
+
+    private static bool TryEmitRenderCanvas(
+        string[] args,
+        string flag,
+        string defaultFileName,
+        bool runHeadless,
+        Func<string, string?, bool, string> emit)
+    {
+        var idx = Array.FindIndex(args, a => string.Equals(a, flag, StringComparison.OrdinalIgnoreCase));
+        if (idx < 0)
+            return false;
+        var path = idx + 1 < args.Length && !args[idx + 1].StartsWith('-')
+            ? args[idx + 1]
+            : Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".cursor", "projects", "d-novolis", "canvases", defaultFileName);
+        try
+        {
+            var written = emit(path, null, runHeadless);
+            Console.WriteLine($"Wrote render canvas:{Environment.NewLine}{written}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            Environment.ExitCode = 1;
+            return true;
+        }
     }
 
     /// <summary>Generate CAD companions and optionally export plan/orbit/interior PNGs or a walkthrough via hidden Raylib.</summary>

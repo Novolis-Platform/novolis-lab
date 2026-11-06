@@ -1,0 +1,17 @@
+{
+  "citation": "Norgeskart reference image \u2192 scenario meters. Uniform pixels/meter; letterbox preserves image aspect.",
+  "waterColorHex": "5182FF",
+  "imageFile": "kristiansand-reference.png",
+  "maskBinary": "kristiansand-land-sea-mask.bin",
+  "imageWidth": 3470,
+  "imageHeight": 2353,
+  "pixelsPerMeter": 0.14054455,
+  "offsetPxX": 0,
+  "offsetPxY": 0,
+  "scenarioEastMeters": 24682.566,
+  "scenarioNorthMeters": 16737.197,
+  "worldToImage": {
+    "px": "xMeters * pixelsPerMeter \u002B offsetPxX",
+    "py": "offsetPxY \u002B (scenarioNorthMeters - zMeters) * pixelsPerMeter"
+  }
+}

@@ -67,7 +67,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 AppTitle = "Artillery Simulator",
                 ProcessId = Environment.ProcessId,
                 SurfaceId = "artillery",
-                Description = "Live 155 mm range. Read the snapshot, then aim and fire.",
+                Description = "The Defense of Kristiansand. Protect downtown defenders from staggered columns. Order the lay and fire when the crew has the breech closed.",
                 HttpPort = 18770,
                 TcpPort = 18771,
                 Capabilities =
@@ -185,17 +185,26 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             case "artillery.aim":
                 if (!TryNumber(command, "elevation", out var elevation) || !TryNumber(command, "azimuth", out var azimuth))
                     return Reject(command, "invalid-arguments", "Aim needs elevation and azimuth.");
-                _game.AimAt((float)elevation, (float)azimuth);
-                return Accept(command, string.Create(CultureInfo.InvariantCulture, $"Aimed at {_game.Gun.ElevationDegrees:F1}° elevation, {_game.Gun.AzimuthDegrees:F1}° azimuth."));
+                _game.OrderAim((float)elevation, (float)azimuth);
+                var gun = _game.Gun;
+                var crew = _game.Crew;
+                var message = crew.Ready(gun)
+                    ? string.Create(CultureInfo.InvariantCulture, $"On lay at {crew.OrderedElevation:F1}° elevation, {crew.OrderedAzimuth:F1}° azimuth.")
+                    : string.Create(CultureInfo.InvariantCulture, $"Laying to {crew.OrderedElevation:F1}° / {crew.OrderedAzimuth:F1}°. Tube at {gun.ElevationDegrees:F1}° / {gun.AzimuthDegrees:F1}°.");
+                return Accept(command, message);
             case "artillery.charge":
                 if (!TryNumber(command, "index", out var index))
                     return Reject(command, "invalid-arguments", "Charge needs an index.");
-                _game.Gun.SetCharge((int)index);
-                return Accept(command, string.Create(CultureInfo.InvariantCulture, $"Charge {_game.Gun.ChargeLabel} ({_game.Gun.MuzzleSpeedMps:F0} m/s)."));
+                _game.OrderCharge((int)index);
+                var seated = _game.Crew.Ready(_game.Gun)
+                    ? string.Create(CultureInfo.InvariantCulture, $"Charge {_game.Gun.ChargeLabel} ({_game.Gun.MuzzleSpeedMps:F0} m/s).")
+                    : string.Create(CultureInfo.InvariantCulture, $"Charge {_game.Gun.ChargeLabel} ({_game.Gun.MuzzleSpeedMps:F0} m/s). {_game.Crew.Phrase(_game.Gun)}");
+                return Accept(command, seated);
             case "artillery.drag":
                 if (!TryBool(command, "enabled", out var drag))
                     return Reject(command, "invalid-arguments", "Drag needs enabled true or false.");
                 _game.SetDrag(drag);
+                _game.RefreshPrediction();
                 return Accept(command, _game.Gun.DragEnabled ? "Drag on." : "Vacuum.");
             case "artillery.pace":
                 if (!TryNumber(command, "index", out var pace))
@@ -209,8 +218,9 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 _game.SetFollowCamera(follow);
                 return Accept(command, follow ? "Camera follows the arc." : "Camera is free.");
             case "artillery.fire":
-                if (!_game.TryFire())
-                    return Reject(command, "unavailable", "A shot is already in flight.");
+                if (_game.FireBlockReason() is { } blocked)
+                    return Reject(command, "unavailable", blocked);
+                _game.TryFire();
                 return null;
             default:
                 return Reject(command, "unavailable", "Unknown action.");
@@ -223,7 +233,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
         var message = impact is { } hit
             ? string.Create(
                 CultureInfo.InvariantCulture,
-                $"Impact {hit.HorizontalRangeMeters / 1000f:F2} km after {hit.TimeSeconds:F1} s ({hit.Reason}), {hit.ImpactSpeedMps:F0} m/s.")
+                $"Impact {hit.HorizontalRangeMeters / 1000f:F2} km after {hit.TimeSeconds:F1} s ({hit.Reason}), {hit.ImpactSpeedMps:F0} m/s. {_game.Mission?.ResultPhrase()}")
             : "The shot did not impact.";
         return Accept(command, message);
     }
@@ -264,9 +274,16 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
     {
         var gun = _game.Gun;
         var shot = _game.Shot;
+        var mission = _game.Mission;
+        var crew = _game.Crew;
+        var defense = mission is null
+            ? ""
+            : string.Create(
+                CultureInfo.InvariantCulture,
+                $"|{mission.Remaining}|{(int)(mission.NearestMeters / 25f)}|{mission.ObjectiveLost}|{mission.Held}|{mission.PostureToken()}|{crew.Token(gun)}|{(int)MathF.Ceiling(crew.BusySeconds(gun))}");
         var key = string.Create(
             CultureInfo.InvariantCulture,
-            $"{shot.Phase}|{gun.ElevationDegrees:F0}|{gun.AzimuthDegrees:F0}|{gun.ChargeIndex}|{gun.DragEnabled}|{_game.CameraMode}|{_game.PaceText}|{shot.Impact?.HorizontalRangeMeters:F0}");
+            $"{shot.Phase}|{gun.ElevationDegrees:F0}|{gun.AzimuthDegrees:F0}|{crew.OrderedElevation:F0}|{crew.OrderedAzimuth:F0}|{crew.OrderedCharge}|{gun.DragEnabled}|{_game.CameraMode}|{_game.PaceText}|{shot.Impact?.HorizontalRangeMeters:F0}{defense}");
         if (key == _seen)
             return null;
 
@@ -319,9 +336,26 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             ["phase"] = shot.Phase.ToString(),
             ["camera"] = _game.CameraMode.ToString(),
             ["pace"] = _game.PaceText,
+            ["orderedElevation"] = _game.Crew.OrderedElevation.ToString("F1", CultureInfo.InvariantCulture),
+            ["orderedAzimuth"] = _game.Crew.OrderedAzimuth.ToString("F1", CultureInfo.InvariantCulture),
+            ["crew"] = _game.Crew.Token(gun),
+            ["reload"] = _game.Crew.Ready(gun) ? "ready" : MathF.Ceiling(_game.Crew.BusySeconds(gun)).ToString("F0", CultureInfo.InvariantCulture),
             ["predictedMeters"] = _game.PredictedRangeMeters.ToString("F0", CultureInfo.InvariantCulture),
-            ["terrain"] = terrain.IsFlat ? "flat" : terrain.Style.ToString(),
+            ["terrain"] = terrain.RealGround ? "Kristiansand" : "flat",
+            ["latitude"] = KristiansandHeightSampler.MeanLatitudeDegrees.ToString("F2", CultureInfo.InvariantCulture),
         };
+        if (_game.Mission is { } mission)
+        {
+            lines["deflection"] = gun.DeflectionDegrees.ToString("F1", CultureInfo.InvariantCulture);
+            lines["trail"] = gun.CenterAzimuthDegrees.ToString("F1", CultureInfo.InvariantCulture);
+            lines["objectiveX"] = mission.Objective.X.ToString("F0", CultureInfo.InvariantCulture);
+            lines["objectiveZ"] = mission.Objective.Z.ToString("F0", CultureInfo.InvariantCulture);
+            lines["enemies"] = mission.Remaining.ToString(CultureInfo.InvariantCulture);
+            lines["nearestMeters"] = mission.NearestMeters.ToString("F0", CultureInfo.InvariantCulture);
+            lines["defenders"] = mission.DefendersAlive.ToString(CultureInfo.InvariantCulture);
+            lines["fratricide"] = mission.FratricideLoss ? "yes" : "no";
+            lines["defense"] = mission.FratricideLoss || mission.ObjectiveLost ? "lost" : mission.Held ? "held" : "open";
+        }
         if (impact is { } hit)
         {
             lines["rangeMeters"] = hit.HorizontalRangeMeters.ToString("F0", CultureInfo.InvariantCulture);
@@ -329,16 +363,18 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             lines["impact"] = hit.Reason.ToString();
         }
 
+        var defense = _game.Mission?.Observation(terrain.IsFlat);
+        var crewNote = _game.Crew.Ready(gun) ? "" : " " + _game.Crew.Phrase(gun);
         var summary = impact is { } recorded
-            ? string.Create(CultureInfo.InvariantCulture, $"{shot.Phase}: aim {gun.ElevationDegrees:F0}° {gun.ChargeLabel}, impact {recorded.HorizontalRangeMeters / 1000f:F2} km ({recorded.Reason}). Camera {_game.CameraMode}.")
-            : string.Create(CultureInfo.InvariantCulture, $"{shot.Phase}: aim {gun.ElevationDegrees:F0}° / {gun.AzimuthDegrees:F0}°, {gun.ChargeLabel}, predicted {_game.PredictedRangeMeters / 1000f:F2} km. Camera {_game.CameraMode}.");
+            ? string.Create(CultureInfo.InvariantCulture, $"{shot.Phase}: aim {gun.ElevationDegrees:F0}° {gun.ChargeLabel}, impact {recorded.HorizontalRangeMeters / 1000f:F2} km ({recorded.Reason}). {defense}{crewNote}")
+            : string.Create(CultureInfo.InvariantCulture, $"{shot.Phase}: aim {_game.Crew.OrderedElevation:F0}° / {_game.Crew.OrderedAzimuth:F0}°, {gun.ChargeLabel}, predicted {_game.PredictedRangeMeters / 1000f:F2} km. {defense}{crewNote}");
 
         return new AgentSnapshot
         {
             Sequence = ++_sequence,
             HubId = GunResource,
             HubName = "155 mm gun",
-            DocumentName = "Artillery range",
+            DocumentName = "The Defense of Kristiansand",
             SeedHash = "42",
             PauseReason = shot.Phase.ToString(),
             StateRevision = _revision,
@@ -360,19 +396,78 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                     AvailableActionIds = Catalog().Where(action => action.Enabled).Select(action => action.Id).ToArray(),
                 },
             ],
+            Entities = BuildEntities(),
         };
+    }
+
+    private AgentEntity[] BuildEntities()
+    {
+        if (_game.Mission is not { } mission)
+            return [];
+
+        var gun = _game.Terrain.GunBaseline;
+        var reports = mission.Reports(gun);
+        var entities = new List<AgentEntity>(reports.Length + 12);
+        foreach (var threat in reports)
+        {
+            var where = threat.InArc ? "in the trails" : "outside the trails";
+            entities.Add(new AgentEntity
+            {
+                Id = string.Create(CultureInfo.InvariantCulture, $"threat-{threat.Id}"),
+                Kind = AgentEntity.Threat,
+                Name = threat.Road,
+                State = threat.Alive ? threat.Posture : "stopped",
+                X = threat.X,
+                Z = threat.Z,
+                Summary = string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{threat.Posture}, {where} on {threat.Road}, {threat.MetersFromGun / 1000f:F2} km from the gun at {threat.BearingDegrees:F0}°, {threat.MetersToCrossing / 1000f:F2} km from the crossing"),
+            });
+        }
+
+        entities.Add(new AgentEntity
+        {
+            Id = "objective",
+            Kind = AgentEntity.Objective,
+            Name = "Kvadraturen",
+            State = mission.ObjectiveLost ? "lost" : mission.Held ? "held" : "open",
+            X = mission.Objective.X,
+            Z = mission.Objective.Z,
+            Summary = mission.Observation(_game.Terrain.IsFlat),
+        });
+
+        foreach (var defender in mission.DefenderReports())
+        {
+            entities.Add(new AgentEntity
+            {
+                Id = string.Create(CultureInfo.InvariantCulture, $"defender-{defender.Label}"),
+                Kind = "defender",
+                Name = defender.Label,
+                State = defender.Alive ? "holding" : "casualty",
+                X = defender.X,
+                Z = defender.Z,
+                Summary = defender.Alive
+                    ? "Friendly defender on a downtown chokepoint."
+                    : "Defender out of action.",
+            });
+        }
+
+        if (_game.Terrain.RealGround)
+            entities.AddRange(KristiansandMapFeatures.MapEntities());
+
+        return entities.ToArray();
     }
 
     private AgentAction[] Catalog()
     {
-        var flying = _game.Shot.Phase == BallisticTrajectoryPhase.InFlight;
+        var blocked = _game.FireBlockReason();
         return
         [
-            Action("artillery.aim", "Aim", "Set barrel elevation and azimuth in degrees.", AgentActionSchema.Object(["elevation", "azimuth"], ("elevation", "number"), ("azimuth", "number")), true, null),
-            Action("artillery.charge", "Charge", "Select reduced, standard, or max charge.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
+            Action("artillery.aim", "Aim", "Order elevation and world azimuth. The crew lays the tube on the handwheels. Trails clamp the azimuth.", AgentActionSchema.Object(["elevation", "azimuth"], ("elevation", "number"), ("azimuth", "number")), true, null),
+            Action("artillery.charge", "Charge", "Order reduced, standard, max, or low (0, 1, 2, or 3). A new zone is reseated before the next shot.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
             Action("artillery.drag", "Drag", "Turn aerodynamic drag on or off.", AgentActionSchema.Object(["enabled"], ("enabled", "boolean")), true, null),
-            Action("artillery.fire", "Fire", "Shoot and wait until the round lands.", null, !flying, flying ? "A shot is already in flight." : null),
-            Action("artillery.pace", "Pace", "Set flight pace 0..3.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
+            Action("artillery.fire", "Fire", "Shoot when the breech is closed and the tube is on the order. The burst puts nearby vehicles out of action and pins the next ones.", null, blocked is null, blocked),
+            Action("artillery.pace", "Pace", "Set pace 0..3. The shell, the column, and the crew share this clock.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
             Action("artillery.camera", "Camera", "Choose follow or free.", AgentActionSchema.Object(["mode"], ("mode", "string")), true, null),
         ];
     }

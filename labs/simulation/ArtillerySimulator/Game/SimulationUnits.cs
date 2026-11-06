@@ -17,9 +17,9 @@ internal static class SimulationUnits
   public const float GunHeightOffset = 1.6f;
 
   /// <summary>Educational MACS-style low / mid / high muzzle velocity (m/s).</summary>
-  public static readonly float[] ChargeSpeedsMps = [427f, 594f, 780f];
+  public static readonly float[] ChargeSpeedsMps = [427f, 594f, 780f, 255f];
 
-  public static readonly string[] ChargeLabels = ["reduced", "standard", "max"];
+  public static readonly string[] ChargeLabels = ["reduced", "standard", "max", "low"];
 
   /// <summary>Typical catalog max range for same charge tier (km, open-source HE).</summary>
   public static readonly float[] ReferenceMaxRangeKm = [21f, 23.5f, 30f];

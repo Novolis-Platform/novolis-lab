@@ -1,0 +1,90 @@
+{
+  "schema": "novolis.artillery.map-stack/1",
+  "citation": "",
+  "world": {
+    "northUp": true,
+    "origin": "southwest_corner_meters",
+    "wgs84": {
+      "south": 57.99259942363112,
+      "north": 58.277400576368876,
+      "west": 7.82,
+      "east": 8.24
+    },
+    "eastMeters": 24682.56549591608,
+    "northMeters": 16737.197870861823,
+    "extentSource": "relief-crop-aspect-matched-east"
+  },
+  "markers": [],
+  "layers": [
+    {
+      "id": "relief",
+      "role": "land_sea_mask",
+      "imageFile": "kristiansand-reference.png",
+      "sourcePdf": "63271497-8460-4ad9-9552-201b4e5ce72e.pdf",
+      "dpi": 220,
+      "pixelWidth": 3470,
+      "pixelHeight": 2353,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "pdfMapFrame": {
+        "left": 28.319999995468798,
+        "bottom": 44.6080799928626,
+        "right": 1163.99999981376,
+        "top": 814.5280798696754
+      },
+      "markerPixels": {
+        "nw": {
+          "x": 0,
+          "y": 0
+        },
+        "ne": {
+          "x": 3469,
+          "y": 0
+        },
+        "sw": {
+          "x": 0,
+          "y": 2352
+        },
+        "se": {
+          "x": 3469,
+          "y": 2352
+        }
+      }
+    },
+    {
+      "id": "roads",
+      "role": "roads_overlay",
+      "imageFile": "kristiansand-roads-reference.png",
+      "sourcePdf": "5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
+      "dpi": 220,
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "pdfMapFrame": {
+        "left": 29.279999995315197,
+        "bottom": 45.08807999278579,
+        "right": 1163.5199998138366,
+        "top": 813.5680798698289
+      },
+      "markerPixels": {
+        "nw": {
+          "x": 0,
+          "y": 0
+        },
+        "ne": {
+          "x": 3465,
+          "y": 0
+        },
+        "sw": {
+          "x": 0,
+          "y": 2347
+        },
+        "se": {
+          "x": 3465,
+          "y": 2347
+        }
+      }
+    }
+  ]
+}
