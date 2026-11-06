@@ -8,10 +8,11 @@ namespace ArtillerySimulator.Game;
 /// </summary>
 internal sealed class KristiansandHeightSampler : IHeightSampler
 {
-    public const double SouthLatitude = 57.99259942363112;
-    public const double NorthLatitude = 58.277400576368876;
-    public const double WestLongitude = 7.819999999999998;
-    public const double EastLongitude = 8.240000000000004;
+    // Aligned to relief PDF map frame @ 1:60 000 (ETRS89/UTM 33N footer), Kristiansand-centered.
+    public const double SouthLatitude = 58.06166;
+    public const double NorthLatitude = 58.20834;
+    public const double WestLongitude = 7.8254;
+    public const double EastLongitude = 8.2346;
     public const double MeanLatitudeDegrees = (SouthLatitude + NorthLatitude) / 2.0;
     public const double MetersPerDegreeLatitude = 111_132.0;
     public const double MetersPerDegreeLongitudeAtEquator = 111_320.0;

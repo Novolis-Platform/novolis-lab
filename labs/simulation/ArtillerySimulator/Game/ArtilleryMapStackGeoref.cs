@@ -104,7 +104,10 @@ internal static class ArtilleryMapStackGeoref
                 _hasWgs84 = wgs.East > wgs.West && wgs.North > wgs.South;
             }
 
-            var relief = doc.Layers?.FirstOrDefault(l => string.Equals(l.Id, "relief", StringComparison.OrdinalIgnoreCase));
+            var relief = doc.Layers?.FirstOrDefault(l =>
+                string.Equals(l.Id, "relief-source", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(l.Id, "elevation", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(l.Id, "relief", StringComparison.OrdinalIgnoreCase));
             if (relief is null)
                 return;
 

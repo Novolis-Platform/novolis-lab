@@ -17,7 +17,6 @@ using Novolis.Pdf.Core;
 using Novolis.Pdf.Parsing;
 using Novolis.Pdf.Rendering;
 using Novolis.Pdf.Rendering.Skia;
-using Novolis.Pdf.Text;
 using Novolis.WorkflowEngine.Pipeline;
 using SkiaSharp;
 using PipelineFactory = Novolis.WorkflowEngine.Pipeline.Pipeline;
@@ -68,17 +67,26 @@ static MapBuildState LoadConfig(MapBuildInput input)
         throw new FileNotFoundException("Roads PDF not found.", roads);
 
     var dpi = cfg.Dpi is > 0 ? cfg.Dpi.Value : 220;
+    var scaleDenominator = cfg.ScaleDenominator is > 0 ? cfg.ScaleDenominator.Value : 60_000;
+    var scaleBarMeters = cfg.ScaleBarMeters is > 0 ? cfg.ScaleBarMeters.Value : 3_700;
+    var crs = string.IsNullOrWhiteSpace(cfg.Crs) ? "EPSG:25833" : cfg.Crs.Trim();
+    var crsName = string.IsNullOrWhiteSpace(cfg.CrsName) ? "ETRS89 / UTM zone 33N" : cfg.CrsName.Trim();
+
     var cutout = File.Exists(input.CutoutPath)
         ? JsonSerializer.Deserialize<CutoutDoc>(File.ReadAllText(input.CutoutPath), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
         : null;
+    // Prefer inline WGS84 from source-pdfs.json when present.
+    if (cfg.Wgs84 is { } inlineBox)
+        cutout = new CutoutDoc { Wgs84 = inlineBox };
 
     Console.WriteLine($"Relief PDF: {relief}");
     Console.WriteLine($"  SHA256: {Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(relief)))}");
     Console.WriteLine($"Roads PDF:  {roads}");
     Console.WriteLine($"  SHA256: {Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(roads)))}");
     Console.WriteLine($"DPI: {dpi}");
+    Console.WriteLine($"CRS: {crs} ({crsName}); printed scale 1:{scaleDenominator}; scale bar {scaleBarMeters} m");
     Console.WriteLine("Source: these two PDF files only (no DEM/OSM/NDH in this pipeline).");
-    return new MapBuildState(input, relief, roads, dpi, cutout);
+    return new MapBuildState(input, relief, roads, dpi, cutout, scaleDenominator, scaleBarMeters, crs, crsName);
 }
 
 static async Task<MapBuildState> ExtractPdfImagesAsync(MapBuildState state)
@@ -157,8 +165,8 @@ static MapDataBundle BuildLayerData(MapLayerBundle layers)
 {
     using var elevation = SKBitmap.Decode(layers.ElevationPath)
         ?? throw new InvalidDataException(layers.ElevationPath);
-    using var shoreline = SKBitmap.Decode(layers.ShorelinePath)
-        ?? throw new InvalidDataException(layers.ShorelinePath);
+    using var waterMask = SKBitmap.Decode(layers.WaterMaskPath)
+        ?? throw new InvalidDataException(layers.WaterMaskPath);
 
     var w = layers.Width;
     var h = layers.Height;
@@ -172,53 +180,52 @@ static MapDataBundle BuildLayerData(MapLayerBundle layers)
         {
             var i = y * w + x;
             var c = elevation.GetPixel(x, y);
-            // North-up image: row 0 = north. Luminance → relative elevation (hillshade proxy).
-            var lum = (short)((c.Red * 30 + c.Green * 59 + c.Blue * 11) / 100);
+            var isWater = waterMask.GetPixel(x, y).Alpha > 0;
+            water[i] = isWater ? (byte)1 : (byte)0;
+            // Transparent water → height 0; land uses hillshade luminance as relative elevation.
+            var lum = c.Alpha == 0
+                ? (short)0
+                : (short)((c.Red * 30 + c.Green * 59 + c.Blue * 11) / 100);
             heights[i] = lum;
             if (lum < minH) minH = lum;
             if (lum > maxH) maxH = lum;
-            water[i] = shoreline.GetPixel(x, y).Alpha > 0 ? (byte)1 : (byte)0;
         }
     }
 
     var heightsPath = Path.Combine(layers.State.Input.LayersDir, "elevation.bin");
-    var waterPath = Path.Combine(layers.State.Input.LayersDir, "shoreline.bin");
+    var waterPath = Path.Combine(layers.State.Input.LayersDir, "water-mask.bin");
     WriteInt16Grid(heightsPath, w, h, heights);
     File.WriteAllBytes(waterPath, water);
-    Console.WriteLine($"data: elevation.bin + shoreline.bin ({w}×{h}, height {minH}–{maxH})");
+    Console.WriteLine($"data: elevation.bin + water-mask.bin ({w}×{h}, height {minH}–{maxH})");
     return new MapDataBundle(layers, heightsPath, waterPath, heights, water, minH, maxH);
 }
 
 static MapDataBundle CompositeLayers(MapDataBundle data)
 {
     var layers = data.Layers;
+    using var relief = SKBitmap.Decode(layers.ReliefSourcePath)!;
     using var elevation = SKBitmap.Decode(layers.ElevationPath)!;
-    using var shoreline = SKBitmap.Decode(layers.ShorelinePath)!;
+    using var water = SKBitmap.Decode(layers.WaterMaskPath)!;
     using var roads = SKBitmap.Decode(layers.RoadsPath)!;
-    using var placenames = SKBitmap.Decode(layers.PlacenamesPath)!;
 
     using var composite = new SKBitmap(layers.Width, layers.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
     using (var canvas = new SKCanvas(composite))
     {
-        canvas.Clear(SKColors.White);
+        canvas.Clear(SKColors.Transparent);
         var sample = new SKSamplingOptions(SKFilterMode.Linear);
-        // Bottom → top: elevation, shoreline tint, roads, placenames.
-        canvas.DrawBitmap(elevation, 0, 0, sample);
-        using (var paint = new SKPaint { Color = new SKColor(81, 130, 255, 160), BlendMode = SKBlendMode.SrcOver })
-            canvas.DrawBitmap(shoreline, 0, 0, sample, paint);
-        using (var paint = new SKPaint { ColorFilter = SKColorFilter.CreateBlendMode(new SKColor(255, 40, 40, 180), SKBlendMode.SrcIn) })
-            canvas.DrawBitmap(roads, 0, 0, sample, paint);
-        canvas.DrawBitmap(placenames, 0, 0, sample);
+        canvas.DrawBitmap(relief, 0, 0, sample);
+        canvas.DrawBitmap(roads, 0, 0, sample);
     }
 
     var outPath = Path.Combine(layers.State.Input.MapDir, "kristiansand-layered-composite.png");
     using var encoded = SKImage.FromBitmap(composite).Encode(SKEncodedImageFormat.Png, 92);
     File.WriteAllBytes(outPath, encoded.ToArray());
 
-    // Also publish primary game-facing reference as elevation (PDF-exclusive images-only).
-    File.Copy(layers.ElevationPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-reference.png"), overwrite: true);
+    File.Copy(layers.ReliefSourcePath, Path.Combine(layers.State.Input.MapDir, "kristiansand-reference.png"), overwrite: true);
     File.Copy(layers.RoadsPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-roads-reference.png"), overwrite: true);
-    File.Copy(layers.ShorelinePath, Path.Combine(layers.State.Input.MapDir, "kristiansand-land-sea-mask.png"), overwrite: true);
+    File.Copy(layers.LandMaskPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-land-sea-mask.png"), overwrite: true);
+    File.Copy(layers.WaterMaskPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-water-mask.png"), overwrite: true);
+    File.Copy(layers.ElevationPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-elevation.png"), overwrite: true);
     Console.WriteLine($"composite: {outPath}");
     return data;
 }
@@ -252,33 +259,42 @@ static string WriteMeshAndGameOutputs(MapDataBundle data)
 
 static LayerGeoref BuildGeoref(MapBuildState state, PdfMapRasterResult elevation)
 {
-    var aspect = elevation.PixelWidth / (double)elevation.PixelHeight;
-    double east;
-    double north;
+    // PDF footer: A3 landscape, Koordinatsystem ETRS89/UTM sone 33N, scale bar 0…3700 m, 1:60 000.
+    // Ground meters = map-frame size in PDF points × (0.0254 m/inch / 72) × scaleDenominator.
+    var metersPerPdfPoint = (0.0254 / 72.0) * state.ScaleDenominator;
+    var east = elevation.FramePdf.Width * metersPerPdfPoint;
+    var north = elevation.FramePdf.Height * metersPerPdfPoint;
+    var scaleBarPdfPoints = state.ScaleBarMeters / metersPerPdfPoint;
+    var metersPerPixel = east / Math.Max(1, elevation.PixelWidth - 1);
+
     double south;
     double northLat;
     double west;
     double eastLon;
-    if (state.Cutout?.Wgs84 is { } box)
+    if (state.Cutout?.Wgs84 is { } box
+        && box.North > box.South
+        && box.East > box.West)
     {
-        south = box.South;
-        northLat = box.North;
-        west = box.West;
-        eastLon = box.East;
-        // Match relief aspect to meters: keep east from cutout, derive north.
-        east = (eastLon - west) * 111_320.0 * Math.Cos((south + northLat) / 2.0 * Math.PI / 180.0);
-        north = east / aspect;
-        var latSpan = north / 111_132.0;
-        var center = (south + northLat) / 2.0;
-        south = center - latSpan / 2.0;
-        northLat = center + latSpan / 2.0;
+        // Keep the configured center; force lat/lon spans to the PDF-derived meter extent.
+        var centerLat = (box.South + box.North) / 2.0;
+        var centerLon = (box.West + box.East) / 2.0;
+        var halfLat = (north / 2.0) / 111_132.0;
+        var metersPerDegLon = 111_320.0 * Math.Cos(centerLat * Math.PI / 180.0);
+        var halfLon = (east / 2.0) / metersPerDegLon;
+        south = centerLat - halfLat;
+        northLat = centerLat + halfLat;
+        west = centerLon - halfLon;
+        eastLon = centerLon + halfLon;
     }
     else
     {
-        east = elevation.PixelWidth;
-        north = elevation.PixelHeight;
         south = northLat = west = eastLon = 0;
     }
+
+    Console.WriteLine(
+        $"georef: {east:F1} m E × {north:F1} m N @ 1:{state.ScaleDenominator} " +
+        $"(scale bar {state.ScaleBarMeters:F0} m ≈ {scaleBarPdfPoints:F1} pt); " +
+        $"{metersPerPixel:F3} m/px; {state.Crs}");
 
     return new LayerGeoref(
         elevation.PixelWidth,
@@ -297,116 +313,91 @@ static LayerGeoref BuildGeoref(MapBuildState state, PdfMapRasterResult elevation
         elevation.FramePdf.Right,
         elevation.FramePdf.Top,
         state.ReliefPdf,
-        state.RoadsPdf);
+        state.RoadsPdf,
+        state.Crs,
+        state.CrsName,
+        state.ScaleDenominator,
+        state.ScaleBarMeters,
+        metersPerPdfPoint,
+        metersPerPixel);
 }
 
-static void WriteShorelineMask(byte[] elevationPng, string outPath)
+/// <summary>
+/// Splits the hoydedata relief paint into transparent layers:
+/// water = pale cyan, land mask = opaque white on land, elevation = hillshade on land only.
+/// </summary>
+static void SplitReliefMasks(byte[] reliefPng, string waterPath, string landPath, string elevationPath)
 {
-    using var src = SKBitmap.Decode(elevationPng) ?? throw new InvalidDataException("elevation png");
-    using var mask = new SKBitmap(src.Width, src.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
+    using var src = SKBitmap.Decode(reliefPng) ?? throw new InvalidDataException("relief png");
+    using var water = new SKBitmap(src.Width, src.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    using var land = new SKBitmap(src.Width, src.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    using var elev = new SKBitmap(src.Width, src.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    water.Erase(SKColors.Transparent);
+    land.Erase(SKColors.Transparent);
+    elev.Erase(SKColors.Transparent);
+
     for (var y = 0; y < src.Height; y++)
     {
         for (var x = 0; x < src.Width; x++)
         {
             var c = src.GetPixel(x, y);
-            var water = IsWater(c.Red, c.Green, c.Blue);
-            mask.SetPixel(x, y, water ? new SKColor(81, 130, 255, 255) : new SKColor(0, 0, 0, 0));
+            if (c.Alpha < 8)
+                continue;
+
+            if (IsHoydedataWater(c.Red, c.Green, c.Blue))
+            {
+                water.SetPixel(x, y, new SKColor(c.Red, c.Green, c.Blue, 255));
+                continue;
+            }
+
+            land.SetPixel(x, y, new SKColor(255, 255, 255, 255));
+            var lum = (byte)((c.Red * 30 + c.Green * 59 + c.Blue * 11) / 100);
+            elev.SetPixel(x, y, new SKColor(lum, lum, lum, 255));
         }
     }
 
-    using var encoded = SKImage.FromBitmap(mask).Encode(SKEncodedImageFormat.Png, 92);
-    File.WriteAllBytes(outPath, encoded.ToArray());
+    WritePng(water, waterPath);
+    WritePng(land, landPath);
+    WritePng(elev, elevationPath);
 }
 
-static bool IsWater(byte r, byte g, byte b)
+/// <summary>Keeps red road ink; everything else becomes transparent.</summary>
+static void WriteRoadsTransparent(byte[] roadsPng, string outPath)
 {
-    if (r + g + b < 36)
-        return true;
-    if (b >= 155 && b > r + 18 && b > g + 4 && g >= 120)
-        return true;
-    if (b >= 248 && r <= 95 && g is >= 110 and <= 155)
-        return true;
-    var dr = r - 0x51;
-    var dg = g - 0x82;
-    var db = b - 0xFF;
-    if (dr * dr + dg * dg + db * db <= 40 * 40)
-        return true;
-    var spread = Math.Max(r, Math.Max(g, b)) - Math.Min(r, Math.Min(g, b));
-    if (spread < 5)
+    using var src = SKBitmap.Decode(roadsPng) ?? throw new InvalidDataException("roads png");
+    using var dest = new SKBitmap(src.Width, src.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    dest.Erase(SKColors.Transparent);
+    for (var y = 0; y < src.Height; y++)
     {
-        var avg = (r + g + b) / 3;
-        if (avg is >= 148 and <= 200)
-            return true;
-    }
-
-    return false;
-}
-
-static void WritePlacenamesLayer(
-    PdfParsedDocument document,
-    PdfResolvedPage page,
-    int width,
-    int height,
-    PdfMapContentFrame frame,
-    string pngPath,
-    string jsonPath)
-{
-    var spans = new PdfTextExtractor().ExtractPage(document, page.Info.Index);
-    var labels = new List<object>();
-    using var bitmap = new SKBitmap(width, height, SKColorType.Rgba8888, SKAlphaType.Premul);
-    using (var canvas = new SKCanvas(bitmap))
-    {
-        canvas.Clear(SKColors.Transparent);
-        using var paint = new SKPaint { Color = new SKColor(20, 20, 20, 220), IsAntialias = true };
-        using var font = new SKFont { Size = 14 };
-        foreach (var span in spans)
+        for (var x = 0; x < src.Width; x++)
         {
-            var text = span.Text?.Trim();
-            if (string.IsNullOrWhiteSpace(text) || text.Length < 2)
+            var c = src.GetPixel(x, y);
+            if (c.Alpha < 8)
                 continue;
-            // Map PDF y-up bounds into cropped north-up pixels.
-            var u = (span.Bounds.Left - frame.Left) / frame.Width;
-            var vFromBottom = (span.Bounds.Bottom - frame.Bottom) / frame.Height;
-            var px = (float)(u * (width - 1));
-            var py = (float)((1.0 - vFromBottom) * (height - 1));
-            if (px < 0 || py < 0 || px >= width || py >= height)
-                continue;
-            canvas.DrawText(text, px, py, SKTextAlign.Left, font, paint);
-            labels.Add(new { text, x = px, y = py, pdf = new { span.Bounds.Left, span.Bounds.Bottom, span.Bounds.Right, span.Bounds.Top } });
+            // Norgeskart roads: red channel dominates (solid + dashed).
+            if (c.Red >= 140 && c.Red > c.Green + 25 && c.Red > c.Blue + 25)
+                dest.SetPixel(x, y, new SKColor(c.Red, c.Green, c.Blue, 255));
         }
     }
 
-    using var encoded = SKImage.FromBitmap(bitmap).Encode(SKEncodedImageFormat.Png, 92);
-    File.WriteAllBytes(pngPath, encoded.ToArray());
-    File.WriteAllText(jsonPath, JsonSerializer.Serialize(labels, new JsonSerializerOptions { WriteIndented = true }));
+    WritePng(dest, outPath);
 }
 
-static async Task<int> ExportSharedImagesAsync(
-    PdfParsedDocument document,
-    PdfResolvedPage page,
-    PdfPageRenderPlan plan,
-    IReadOnlySet<string> sharedKeys,
-    string outputDirectory)
+static void WritePng(SKBitmap bitmap, string path)
 {
-    Directory.CreateDirectory(outputDirectory);
-    var index = 0;
-    foreach (var command in plan.Commands)
-    {
-        if (command is not PdfImageCommand image || image.IsImageMask)
-            continue;
-        if (!sharedKeys.Contains(PdfSharedImageFrame.PlacementKey(image)))
-            continue;
+    using var encoded = SKImage.FromBitmap(bitmap).Encode(SKEncodedImageFormat.Png, 100);
+    File.WriteAllBytes(path, encoded.ToArray());
+}
 
-        using var bitmap = PdfSkiaImageDecoder.Decode(image);
-        using var encoded = bitmap.Encode(SKEncodedImageFormat.Png, 100);
-        var path = Path.Combine(
-            outputDirectory,
-            $"p{page.Info.Index:D2}-img{index:D2}-{image.Width}x{image.Height}.png");
-        await File.WriteAllBytesAsync(path, encoded.ToArray()).ConfigureAwait(false);
-        index++;
-    }
-
-    return index;
+/// <summary>Pale cyan/turquoise flat water fill from hoydedata.no relief prints (~#E0F7FA).</summary>
+static bool IsHoydedataWater(byte r, byte g, byte b)
+{
+    // Flat cyan: G and B high, R lower, low saturation variance between G/B.
+    if (b >= 200 && g >= 190 && r <= g - 8 && r <= b - 12 && Math.Abs(g - b) <= 40)
+        return true;
+    if (b >= 170 && g >= 160 && b > r + 25 && g > r + 15 && Math.Abs(g - b) <= 35)
+        return true;
+    return false;
 }
 
 static void WriteInt16Grid(string path, int w, int h, short[] values)
@@ -508,17 +499,24 @@ static void WriteStackJson(string mapDir, MapDataBundle data)
         {
             northUp = true,
             origin = "southwest_corner_meters",
+            crs = g.Crs,
+            crsName = g.CrsName,
+            scaleDenominator = g.ScaleDenominator,
+            scaleBarMeters = g.ScaleBarMeters,
+            metersPerPdfPoint = g.MetersPerPdfPoint,
+            metersPerPixel = g.MetersPerPixel,
             eastMeters = g.EastMeters,
             northMeters = g.NorthMeters,
             wgs84 = new { south = g.SouthLat, north = g.NorthLat, west = g.WestLon, east = g.EastLon },
-            extentSource = "relief-images-only-aspect",
+            extentSource = "pdf-footer-scale-x-map-frame",
         },
         layers = new object[]
         {
+            new { id = "relief-source", imageFile = "layers/relief-source.png", role = "relief_source", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
+            new { id = "water-mask", imageFile = "layers/water-mask.png", role = "water", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
+            new { id = "land-mask", imageFile = "layers/land-mask.png", role = "land", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
             new { id = "elevation", imageFile = "layers/elevation.png", role = "elevation", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
-            new { id = "shoreline", imageFile = "layers/shoreline.png", role = "shoreline", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
             new { id = "roads", imageFile = "layers/roads.png", role = "roads", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.RoadsPdf },
-            new { id = "placenames", imageFile = "layers/placenames.png", role = "placenames", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.RoadsPdf },
         },
     };
     File.WriteAllText(
@@ -535,15 +533,24 @@ static string ResolveAppDir()
 
 sealed record MapBuildInput(string AppDir, string MapDir, string LayersDir, string ConfigPath, string CutoutPath);
 
-sealed record MapBuildState(MapBuildInput Input, string ReliefPdf, string RoadsPdf, int Dpi, CutoutDoc? Cutout);
+sealed record MapBuildState(
+    MapBuildInput Input,
+    string ReliefPdf,
+    string RoadsPdf,
+    int Dpi,
+    CutoutDoc? Cutout,
+    double ScaleDenominator,
+    double ScaleBarMeters,
+    string Crs,
+    string CrsName);
 
 sealed record MapLayerBundle(
     MapBuildState State,
+    string ReliefSourcePath,
     string ElevationPath,
-    string ShorelinePath,
+    string WaterMaskPath,
+    string LandMaskPath,
     string RoadsPath,
-    string PlacenamesPath,
-    string PlacenamesJsonPath,
     string GeorefPath,
     int Width,
     int Height,
@@ -575,13 +582,24 @@ sealed record LayerGeoref(
     double PdfRight,
     double PdfTop,
     string ReliefPdf,
-    string RoadsPdf);
+    string RoadsPdf,
+    string Crs,
+    string CrsName,
+    double ScaleDenominator,
+    double ScaleBarMeters,
+    double MetersPerPdfPoint,
+    double MetersPerPixel);
 
 sealed class SourcePdfConfig
 {
     public string? ReliefPdf { get; set; }
     public string? RoadsPdf { get; set; }
     public int? Dpi { get; set; }
+    public string? Crs { get; set; }
+    public string? CrsName { get; set; }
+    public double? ScaleDenominator { get; set; }
+    public double? ScaleBarMeters { get; set; }
+    public Wgs84Box? Wgs84 { get; set; }
 }
 
 sealed class CutoutDoc

@@ -4,17 +4,53 @@
   "world": {
     "northUp": true,
     "origin": "southwest_corner_meters",
-    "eastMeters": 3466,
-    "northMeters": 2348,
+    "crs": "EPSG:25833",
+    "crsName": "ETRS89 / UTM zone 33N",
+    "scaleDenominator": 60000,
+    "scaleBarMeters": 3700,
+    "metersPerPdfPoint": 21.166666666666664,
+    "metersPerPixel": 6.928738815630218,
+    "eastMeters": 24008.079996158704,
+    "northMeters": 16266.159997397412,
     "wgs84": {
-      "south": 0,
-      "north": 0,
-      "west": 0,
-      "east": 0
+      "south": 58.06181603859646,
+      "north": 58.20818396140355,
+      "west": 7.825738542655645,
+      "east": 8.234261457344356
     },
-    "extentSource": "relief-images-only-aspect"
+    "extentSource": "pdf-footer-scale-x-map-frame"
   },
   "layers": [
+    {
+      "id": "relief-source",
+      "imageFile": "layers/relief-source.png",
+      "role": "relief_source",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+    },
+    {
+      "id": "water-mask",
+      "imageFile": "layers/water-mask.png",
+      "role": "water",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+    },
+    {
+      "id": "land-mask",
+      "imageFile": "layers/land-mask.png",
+      "role": "land",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+    },
     {
       "id": "elevation",
       "imageFile": "layers/elevation.png",
@@ -26,29 +62,9 @@
       "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
     },
     {
-      "id": "shoreline",
-      "imageFile": "layers/shoreline.png",
-      "role": "shoreline",
-      "pixelWidth": 3466,
-      "pixelHeight": 2348,
-      "northUp": true,
-      "pixelOrigin": "topLeftNorthWest",
-      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
-    },
-    {
       "id": "roads",
       "imageFile": "layers/roads.png",
       "role": "roads",
-      "pixelWidth": 3466,
-      "pixelHeight": 2348,
-      "northUp": true,
-      "pixelOrigin": "topLeftNorthWest",
-      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf"
-    },
-    {
-      "id": "placenames",
-      "imageFile": "layers/placenames.png",
-      "role": "placenames",
       "pixelWidth": 3466,
       "pixelHeight": 2348,
       "northUp": true,

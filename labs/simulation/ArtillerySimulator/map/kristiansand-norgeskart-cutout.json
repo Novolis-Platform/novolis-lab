@@ -1,0 +1,11 @@
+{
+  "wgs84": {
+    "south": 58.06166,
+    "north": 58.20834,
+    "west": 7.8254,
+    "east": 8.2346
+  },
+  "crs": "EPSG:25833",
+  "scaleDenominator": 60000,
+  "scaleBarMeters": 3700
+}

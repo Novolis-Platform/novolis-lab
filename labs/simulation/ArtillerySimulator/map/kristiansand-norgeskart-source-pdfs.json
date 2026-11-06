@@ -2,9 +2,20 @@
   "reliefPdf": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf",
   "roadsPdf": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
   "dpi": 220,
-  "citation": "Source-of-truth Norgeskart prints only. Edit paths here, then: dotnet run --file .../ArtillerySimulator/scripts/build-kristiansand-map.cs -p:NovolisUseProjectReferences=true",
-  "Size": {
-    "Paper": "A3",
-    "Orientation": "Landscape"
+  "citation": "Source-of-truth Norgeskart / hoydedata.no prints. Georef from PDF footer (ETRS89/UTM 33N, A3 landscape, printed scale).",
+  "crs": "EPSG:25833",
+  "crsName": "ETRS89 / UTM zone 33N",
+  "scaleDenominator": 60000,
+  "scaleBarMeters": 3700,
+  "size": {
+    "paper": "A3",
+    "orientation": "landscape"
+  },
+  "wgs84": {
+    "south": 58.06166,
+    "north": 58.20834,
+    "west": 7.8254,
+    "east": 8.2346,
+    "note": "Centered on Kristiansand; extent from map-frame paper size × scaleDenominator (matches PDF aspect)."
   }
 }
