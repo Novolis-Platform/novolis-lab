@@ -27,9 +27,9 @@ internal sealed class KristiansandHeightSampler : IHeightSampler
     public static float MapExtentMeters { get; } = MathF.Max(EastMeters, NorthMeters);
 
     /// <summary>
-    /// Wireframe / gameplay Y scale. Raw DEM peaks ~180 m over ~24 km; without this the mesh reads as a flat plate.
+    /// Mild Y boost so ~180 m DEM relief reads over ~24 km without turning hillshade noise into vertical hair.
     /// </summary>
-    public const float VisualReliefScale = 12f;
+    public const float VisualReliefScale = 3f;
 
     public float SampleHeight(float x, float z)
     {
@@ -45,16 +45,34 @@ internal sealed class KristiansandHeightSampler : IHeightSampler
         var j1 = Math.Min(j0 + 1, cells);
         var tx = u - i0;
         var tz = v - j0;
-        var h00 = At(i0, j0);
-        var h10 = At(i1, j0);
-        var h01 = At(i0, j1);
-        var h11 = At(i1, j1);
+        // 2×2 smooth of the hillshade DEM kills single-cell spikes that ×scale turns into grass.
+        var h00 = SmoothAt(i0, j0);
+        var h10 = SmoothAt(i1, j0);
+        var h01 = SmoothAt(i0, j1);
+        var h11 = SmoothAt(i1, j1);
         var south = h00 + (h10 - h00) * tx;
         var north = h01 + (h11 - h01) * tx;
         return (south + (north - south) * tz) * VisualReliefScale;
     }
 
-    private static float At(int i, int j) => KristiansandElevation.Meters[j * KristiansandElevation.Count + i];
+    private static float SmoothAt(int i, int j)
+    {
+        var n = KristiansandElevation.Count;
+        float sum = 0f;
+        var count = 0;
+        for (var dj = -1; dj <= 1; dj++)
+        {
+            for (var di = -1; di <= 1; di++)
+            {
+                var x = Math.Clamp(i + di, 0, n - 1);
+                var y = Math.Clamp(j + dj, 0, n - 1);
+                sum += KristiansandElevation.Meters[y * n + x];
+                count++;
+            }
+        }
+
+        return sum / count;
+    }
 
     public static Vector2 ToWorldMeters(double latitudeDegrees, double longitudeDegrees)
     {

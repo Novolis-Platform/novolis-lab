@@ -5,16 +5,12 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\ArtillerySimulator\map\kristiansand-land-sea-mask.bin" Link="map\kristiansand-land-sea-mask.bin" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\ArtillerySimulator\map\kristiansand-map-stack.json" Link="map\kristiansand-map-stack.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\ArtillerySimulator\Game\GroundPolyline.cs" Link="Map\GroundPolyline.cs" />
-    <Compile Include="..\ArtillerySimulator\Game\GroundPolygon.cs" Link="Map\GroundPolygon.cs" />
     <Compile Include="..\ArtillerySimulator\Game\KristiansandElevation.cs" Link="Map\KristiansandElevation.cs" />
     <Compile Include="..\ArtillerySimulator\Game\KristiansandHeightSampler.cs" Link="Map\KristiansandHeightSampler.cs" />
-    <Compile Include="..\ArtillerySimulator\Game\KristiansandMapFeatures.cs" Link="Map\KristiansandMapFeatures.cs" />
     <Compile Include="..\ArtillerySimulator\Game\KristiansandLandSeaMask.cs" Link="Map\KristiansandLandSeaMask.cs" />
-    <Compile Include="..\ArtillerySimulator\Game\KristiansandMapRaster.cs" Link="Map\KristiansandMapRaster.cs" />
-    <Compile Include="..\ArtillerySimulator\Game\MapFeaturesClip.cs" Link="Map\MapFeaturesClip.cs" />
   </ItemGroup>
   <ItemGroup>
     <LibraryReference Include="Novolis.Silk" />
