@@ -83,27 +83,7 @@ static MapBuildState LoadConfig(MapBuildInput input)
 
 static async Task<MapBuildState> ExtractPdfImagesAsync(MapBuildState state)
 {
-    var reliefTiles = Path.Combine(state.Input.LayersDir, "raw-relief");
-    var roadsTiles = Path.Combine(state.Input.LayersDir, "raw-roads");
-    Directory.CreateDirectory(reliefTiles);
-    Directory.CreateDirectory(roadsTiles);
-
-    await using (var src = PdfSources.OpenFile(state.ReliefPdf))
-    {
-        var doc = await PdfParser.ParseAsync(src);
-        var page = PdfPageTree.Resolve(doc)[0];
-        var exported = await PdfEmbeddedImageExporter.ExportPageAsync(doc, page, reliefTiles);
-        Console.WriteLine($"Relief embedded images: {exported.Count} → {reliefTiles}");
-    }
-
-    await using (var src = PdfSources.OpenFile(state.RoadsPdf))
-    {
-        var doc = await PdfParser.ParseAsync(src);
-        var page = PdfPageTree.Resolve(doc)[0];
-        var exported = await PdfEmbeddedImageExporter.ExportPageAsync(doc, page, roadsTiles);
-        Console.WriteLine($"Roads embedded images: {exported.Count} → {roadsTiles}");
-    }
-
+    // Raw dumps happen after shared-key selection inside RasterFourLayersAsync.
     return state;
 }
 
@@ -121,17 +101,28 @@ static async Task<MapLayerBundle> RasterFourLayersAsync(MapBuildState state)
     var roadsPage = PdfPageTree.Resolve(roadsDoc)[0];
     var roadsPlan = PdfContentStreamInterpreter.BuildPlan(roadsDoc, roadsPage);
 
-    // Same embedded image bytes in both PDFs → one shared crop frame → identical pixel grid (no resample).
+    // Only tiles whose CTM placement exists in BOTH PDFs (shared Norgeskart strip layout).
+    // Relief-only portrait XObjects (e.g. 1183×1604) are not shared and must not wipe the map.
+    var sharedKeys = PdfSharedImageFrame.MatchingPlacementKeys(reliefPlan, roadsPlan);
     var sharedFrame = PdfSharedImageFrame.FromMatchingImages(reliefPlan, roadsPlan);
     Console.WriteLine(
-        $"Shared PDF image frame: {sharedFrame.Width:F2}×{sharedFrame.Height:F2} pt " +
+        $"Shared PDF placements: {sharedKeys.Count}; frame {sharedFrame.Width:F2}×{sharedFrame.Height:F2} pt " +
         $"({sharedFrame.Left:F2},{sharedFrame.Bottom:F2})–({sharedFrame.Right:F2},{sharedFrame.Top:F2})");
 
-    // Full page paint from each PDF (images+paths+text as present), cropped to the shared frame only.
+    var reliefTiles = Path.Combine(state.Input.LayersDir, "raw-relief");
+    var roadsTiles = Path.Combine(state.Input.LayersDir, "raw-roads");
+    Directory.CreateDirectory(reliefTiles);
+    Directory.CreateDirectory(roadsTiles);
+    var reliefExported = await ExportSharedImagesAsync(reliefDoc, reliefPage, reliefPlan, sharedKeys, reliefTiles);
+    var roadsExported = await ExportSharedImagesAsync(roadsDoc, roadsPage, roadsPlan, sharedKeys, roadsTiles);
+    Console.WriteLine($"Relief shared images: {reliefExported} → {reliefTiles}");
+    Console.WriteLine($"Roads shared images: {roadsExported} → {roadsTiles}");
+
+    // Paint only shared tiles (+ clips/paths/text), soft masks applied, cropped to shared frame.
     var elevation = PdfMapPageRasterizer.RasterCropped(
-        reliefDoc, reliefPage, state.Dpi, sharedFrame, PdfPaintFlags.All);
+        reliefDoc, reliefPage, state.Dpi, sharedFrame, PdfPaintFlags.All, sharedKeys);
     var roadsRaster = PdfMapPageRasterizer.RasterCropped(
-        roadsDoc, roadsPage, state.Dpi, sharedFrame, PdfPaintFlags.All);
+        roadsDoc, roadsPage, state.Dpi, sharedFrame, PdfPaintFlags.All, sharedKeys);
 
     if (elevation.PixelWidth != roadsRaster.PixelWidth || elevation.PixelHeight != roadsRaster.PixelHeight)
         throw new InvalidDataException(
@@ -391,15 +382,32 @@ static void WritePlacenamesLayer(
     File.WriteAllText(jsonPath, JsonSerializer.Serialize(labels, new JsonSerializerOptions { WriteIndented = true }));
 }
 
-static byte[] ResamplePng(byte[] png, int width, int height)
+static async Task<int> ExportSharedImagesAsync(
+    PdfParsedDocument document,
+    PdfResolvedPage page,
+    PdfPageRenderPlan plan,
+    IReadOnlySet<string> sharedKeys,
+    string outputDirectory)
 {
-    using var src = SKBitmap.Decode(png) ?? throw new InvalidDataException("png");
-    using var dest = new SKBitmap(width, height, SKColorType.Rgba8888, SKAlphaType.Premul);
-    using var canvas = new SKCanvas(dest);
-    canvas.Clear(SKColors.White);
-    canvas.DrawBitmap(src, new SKRect(0, 0, width, height), new SKSamplingOptions(SKFilterMode.Linear));
-    using var encoded = SKImage.FromBitmap(dest).Encode(SKEncodedImageFormat.Png, 92);
-    return encoded.ToArray();
+    Directory.CreateDirectory(outputDirectory);
+    var index = 0;
+    foreach (var command in plan.Commands)
+    {
+        if (command is not PdfImageCommand image || image.IsImageMask)
+            continue;
+        if (!sharedKeys.Contains(PdfSharedImageFrame.PlacementKey(image)))
+            continue;
+
+        using var bitmap = PdfSkiaImageDecoder.Decode(image);
+        using var encoded = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+        var path = Path.Combine(
+            outputDirectory,
+            $"p{page.Info.Index:D2}-img{index:D2}-{image.Width}x{image.Height}.png");
+        await File.WriteAllBytesAsync(path, encoded.ToArray()).ConfigureAwait(false);
+        index++;
+    }
+
+    return index;
 }
 
 static void WriteInt16Grid(string path, int w, int h, short[] values)

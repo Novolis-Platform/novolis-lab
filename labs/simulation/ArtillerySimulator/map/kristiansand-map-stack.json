@@ -1,0 +1,59 @@
+{
+  "schema": "novolis.artillery.map-stack/2",
+  "citation": "Built only from relief\u002Broads Norgeskart PDFs via scripts/build-kristiansand-map.cs",
+  "world": {
+    "northUp": true,
+    "origin": "southwest_corner_meters",
+    "eastMeters": 3466,
+    "northMeters": 2348,
+    "wgs84": {
+      "south": 0,
+      "north": 0,
+      "west": 0,
+      "east": 0
+    },
+    "extentSource": "relief-images-only-aspect"
+  },
+  "layers": [
+    {
+      "id": "elevation",
+      "imageFile": "layers/elevation.png",
+      "role": "elevation",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+    },
+    {
+      "id": "shoreline",
+      "imageFile": "layers/shoreline.png",
+      "role": "shoreline",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+    },
+    {
+      "id": "roads",
+      "imageFile": "layers/roads.png",
+      "role": "roads",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf"
+    },
+    {
+      "id": "placenames",
+      "imageFile": "layers/placenames.png",
+      "role": "placenames",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf"
+    }
+  ]
+}
