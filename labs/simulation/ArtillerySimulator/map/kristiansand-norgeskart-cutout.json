@@ -1,9 +1,0 @@
-{
-  "citation": "Defense of Kristiansand scenario window · 58.05–58.22°N, 7.82–8.24°E (plan + canvas). Re-export Norgeskart reference prints to this WGS84 box.",
-  "wgs84": {
-    "south": 58.05,
-    "north": 58.22,
-    "west": 7.82,
-    "east": 8.24
-  }
-}
