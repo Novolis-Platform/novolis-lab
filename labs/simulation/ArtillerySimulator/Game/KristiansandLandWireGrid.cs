@@ -4,26 +4,23 @@ using Novolis.Raylib.Game;
 
 namespace ArtillerySimulator.Game;
 
-/// <summary>Heightfield wires on land only; open water has no wire grid.</summary>
+/// <summary>Classic heightfield wires: green land, blue water, no filled surface.</summary>
 internal static class KristiansandLandWireGrid
 {
-    private static readonly Color WireLow = Color.FromArgb(255, 58, 88, 52);
-    private static readonly Color WireHigh = Color.FromArgb(255, 88, 132, 68);
+    private static readonly Color LandLow = Color.FromArgb(255, 58, 88, 52);
+    private static readonly Color LandHigh = Color.FromArgb(255, 88, 132, 68);
+    private static readonly Color WaterLow = Color.FromArgb(255, 48, 110, 210);
+    private static readonly Color WaterHigh = Color.FromArgb(255, 81, 130, 255);
 
     public static void Draw(RayGameContext ctx, ReadOnlySpan<Vector3> vertices, int cellsX, int cellsZ)
     {
         var stride = cellsX + 1;
-        for (var z = 0; z < cellsZ; z++)
+        for (var z = 0; z <= cellsZ; z++)
         {
             for (var x = 0; x < cellsX; x++)
             {
-                var i00 = z * stride + x;
-                var i10 = i00 + 1;
-                var i01 = i00 + stride;
-                if (SegmentOnLand(vertices[i00], vertices[i10]))
-                    ctx.DrawBolt(vertices[i00], vertices[i10], WireLow);
-                if (SegmentOnLand(vertices[i00], vertices[i01]))
-                    ctx.DrawBolt(vertices[i00], vertices[i01], WireLow);
+                var i0 = z * stride + x;
+                DrawSegment(ctx, vertices[i0], vertices[i0 + 1], eastWest: true);
             }
         }
 
@@ -31,20 +28,30 @@ internal static class KristiansandLandWireGrid
         {
             for (var z = 0; z < cellsZ; z++)
             {
-                var a = vertices[z * stride + x];
-                var b = vertices[(z + 1) * stride + x];
-                if (SegmentOnLand(a, b))
-                    ctx.DrawBolt(a, b, WireHigh);
+                var i0 = z * stride + x;
+                DrawSegment(ctx, vertices[i0], vertices[i0 + stride], eastWest: false);
             }
         }
     }
 
-    private static bool SegmentOnLand(Vector3 a, Vector3 b)
+    private static void DrawSegment(RayGameContext ctx, Vector3 a, Vector3 b, bool eastWest)
     {
-        if (KristiansandLandSeaMask.IsWater(a.X, a.Z) || KristiansandLandSeaMask.IsWater(b.X, b.Z))
-            return false;
+        var water = SegmentOnWater(a, b);
+        var color = water
+            ? (eastWest ? WaterLow : WaterHigh)
+            : (eastWest ? LandLow : LandHigh);
+        ctx.DrawBolt(a, b, color);
+    }
 
+    private static bool SegmentOnWater(Vector3 a, Vector3 b)
+    {
         var mid = (a + b) * 0.5f;
-        return !KristiansandLandSeaMask.IsWater(mid.X, mid.Z);
+        var aWater = KristiansandLandSeaMask.IsWater(a.X, a.Z);
+        var bWater = KristiansandLandSeaMask.IsWater(b.X, b.Z);
+        var midWater = KristiansandLandSeaMask.IsWater(mid.X, mid.Z);
+        // Coast edges count as land so the shoreline reads green.
+        if (aWater != bWater)
+            return false;
+        return aWater && midWater;
     }
 }

@@ -5,14 +5,16 @@ using Novolis.Raylib.Game;
 
 namespace ArtillerySimulator.Game;
 
-/// <summary>Draped shaded terrain mesh (preview colors, bilinear DEM). Replaces coarse marine cubes.</summary>
+/// <summary>Draped shaded terrain mesh (Norgeskart relief tint + bilinear DEM). Replaces the flat voxel table.</summary>
 internal static class KristiansandTerrainSurface
 {
-    private const int CellsX = 384;
+    private const int CellsX = 448;
 
     private static TerrainTriangle[]? _triangles;
     private static float _cachedEast;
     private static float _cachedNorth;
+
+    public static void Invalidate() => _triangles = null;
 
     public static void Draw(RayGameContext ctx, IHeightSampler field)
     {
@@ -80,13 +82,35 @@ internal static class KristiansandTerrainSurface
         var h10 = field.SampleHeight(x1End, z0);
         var h01 = field.SampleHeight(x0, z1End);
         var h11 = field.SampleHeight(x1End, z1End);
-        var c00 = KristiansandMapRaster.TerrainColorAt(x0, z0);
+        var c00 = LandColorAt(x0, z0);
         var v00l = new Vector3(x0, h00 + 0.35f, z0);
         var v10l = new Vector3(x1End, h10 + 0.35f, z0);
         var v01l = new Vector3(x0, h01 + 0.35f, z1End);
         var v11l = new Vector3(x1End, h11 + 0.35f, z1End);
         list.Add(new TerrainTriangle(v00l, v10l, v01l, c00));
-        list.Add(new TerrainTriangle(v10l, v11l, v01l, KristiansandMapRaster.TerrainColorAt(x1End, z1End)));
+        list.Add(new TerrainTriangle(v10l, v11l, v01l, LandColorAt(x1End, z1End)));
+    }
+
+    private static Color LandColorAt(float x, float z)
+    {
+        if (KristiansandReferenceColors.TrySample(x, z, out var relief) && !IsNorgeskartWater(relief))
+            return relief;
+
+        return KristiansandMapRaster.TerrainColorAt(x, z);
+    }
+
+    private static bool IsNorgeskartWater(Color c)
+    {
+        if (c.R + c.G + c.B < 36)
+            return true;
+
+        const int tr = 0x51;
+        const int tg = 0x82;
+        const int tb = 0xFF;
+        var dr = c.R - tr;
+        var dg = c.G - tg;
+        var db = c.B - tb;
+        return dr * dr + dg * dg + db * db <= 40 * 40;
     }
 
     private readonly record struct TerrainTriangle(Vector3 A, Vector3 B, Vector3 C, Color Color);

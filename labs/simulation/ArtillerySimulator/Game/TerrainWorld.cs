@@ -9,7 +9,7 @@ using Novolis.Simulation.World.Builders;
 
 namespace ArtillerySimulator.Game;
 
-/// <summary>Heightfield range. Wires stay the original mesh. Heights are the Kristiansand grid unless the range is flat.</summary>
+/// <summary>Heightfield range. Real ground is wire-only Kristiansand DEM; flat range keeps procedural wires.</summary>
 internal sealed class TerrainWorld
 {
     private static readonly Color BoundaryColor = Color.FromArgb(255, 200, 180, 90);
@@ -22,10 +22,11 @@ internal sealed class TerrainWorld
         ExtentMeters = KristiansandHeightSampler.EastMeters,
         ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
         CollisionCells = 512,
-        DrawCells = 512,
+        DrawCells = 256,
     };
 
     private BoundedHeightfield _field = null!;
+    private IHeightSampler _sampler = null!;
     private BvhStaticWorld _collision = null!;
     private Vector3[] _drawVertices = [];
     private int _drawCells;
@@ -55,15 +56,15 @@ internal sealed class TerrainWorld
             ExtentMeters = KristiansandHeightSampler.EastMeters,
             ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
             CollisionCells = 512,
-            DrawCells = 512,
+            DrawCells = 256,
         };
 
-        IHeightSampler sampler = flat
+        _sampler = flat
             ? new AppHeightSampler(seed, true, style)
             : new KristiansandHeightSampler();
-        _field = new BoundedHeightfield(sampler, new AxisAlignedRangeBox(EastMeters, NorthMeters));
+        _field = new BoundedHeightfield(_sampler, new AxisAlignedRangeBox(EastMeters, NorthMeters));
 
-        var mesh = HeightfieldMeshBuilder.Build(sampler, _extentOptions);
+        var mesh = HeightfieldMeshBuilder.Build(_sampler, _extentOptions);
         _collision = mesh.Collision;
         _drawVertices = mesh.DrawVertices;
         _drawCells = mesh.DrawCells;
@@ -87,9 +88,8 @@ internal sealed class TerrainWorld
     {
         if (RealGround)
         {
-            KristiansandReferenceMap.TryDraw(ctx);
-            // Ultra-high-fidelity wire overlay on the draped DEM (512×512).
-            ctx.DrawHeightfieldWires(_drawVertices, _drawCells, _drawCells, WireLow, WireHigh);
+            // Black-universe wire mesh: green land, blue water — no filled table/surface.
+            KristiansandLandWireGrid.Draw(ctx, _drawVertices, _drawCells, _drawCells);
         }
         else
         {
@@ -106,7 +106,7 @@ internal sealed class TerrainWorld
     {
         var east = EastMeters;
         var north = NorthMeters;
-        var y = KristiansandReferenceMap.IsActive ? 12f : MathF.Max(520f, ExtentMeters * 0.03f);
+        var y = MathF.Max(520f, ExtentMeters * 0.03f);
         var a = new Vector3(0f, y, 0f);
         var b = new Vector3(east, y, 0f);
         var c = new Vector3(east, y, north);

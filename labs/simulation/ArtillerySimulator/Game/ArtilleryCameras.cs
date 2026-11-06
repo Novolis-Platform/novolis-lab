@@ -43,7 +43,8 @@ internal sealed class ArtilleryCameras
         _orbit.MaxDistance = 40_000f;
         _orbit.FieldOfViewDegrees = 42f;
         _orbit.SmoothRate = 8f;
-        _orbit.SnapTarget(new Vector3(cx, KristiansandReferenceMap.TableYMeters, cz));
+        var ground = MathF.Max(8f, KristiansandMapRaster.MaxElevationMeters * 0.35f);
+        _orbit.SnapTarget(new Vector3(cx, ground, cz));
         _orbit.Distance = MathF.Max(eastMeters, northMeters) * 1.08f;
         _orbit.Pitch = 1.28f;
         _orbit.MinPitch = -0.12f;

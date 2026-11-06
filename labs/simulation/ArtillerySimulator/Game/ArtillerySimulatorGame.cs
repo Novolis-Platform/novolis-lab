@@ -23,9 +23,9 @@ internal sealed class ArtillerySimulatorGame
     private const float CoarseMilsPerPixel = 0.35f;
     private const float FineMilsPerPixel = 0.07f;
 
-    private static readonly Color Background = Color.FromArgb(255, 17, 22, 34);
-    private static readonly Color SunColor = Color.FromArgb(255, 255, 186, 110);
-    private static readonly Color SunHalo = Color.FromArgb(70, 255, 170, 90);
+    private static readonly Color Background = Color.FromArgb(255, 0, 0, 0);
+    private static readonly Color SunColor = Color.FromArgb(120, 255, 186, 110);
+    private static readonly Color SunHalo = Color.FromArgb(40, 255, 170, 90);
     private static readonly Color TrailHot = Color.FromArgb(255, 255, 176, 86);
     private static readonly Color TrailCool = Color.FromArgb(90, 180, 140, 70);
     private static readonly Color PreviewColor = Color.FromArgb(210, 255, 186, 92);
@@ -205,13 +205,8 @@ internal sealed class ArtillerySimulatorGame
         _terrain.Draw(ctx, cam);
         if (!_flatTerrain)
         {
-            if (KristiansandReferenceMap.IsActive)
-                KristiansandMapFeatures.DrawTableLinework(ctx);
-            else
-            {
-                KristiansandMapFeatures.DrawWater(ctx, _terrain);
-                KristiansandMapFeatures.DrawLinework(ctx, _terrain);
-            }
+            KristiansandMapFeatures.DrawWater(ctx, _terrain);
+            KristiansandMapFeatures.DrawLinework(ctx, _terrain);
         }
         _mission?.Draw(ctx);
         var predicted = PredictedImpact();
