@@ -8,7 +8,7 @@ namespace ArtillerySimulator.Game;
 /// <summary>Draped shaded terrain mesh (preview colors, bilinear DEM). Replaces coarse marine cubes.</summary>
 internal static class KristiansandTerrainSurface
 {
-    private const int CellsX = 112;
+    private const int CellsX = 384;
 
     private static TerrainTriangle[]? _triangles;
     private static float _cachedEast;

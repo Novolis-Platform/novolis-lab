@@ -1,5 +1,5 @@
 {
-  "schema": "novolis.artillery.map-stack/2",
+  "schema": "novolis.artillery.map-stack/3",
   "citation": "Built only from relief\u002Broads Norgeskart PDFs via scripts/build-kristiansand-map.cs",
   "world": {
     "northUp": true,
@@ -12,6 +12,8 @@
     "metersPerPixel": 6.928738815630218,
     "eastMeters": 24008.079996158704,
     "northMeters": 16266.159997397412,
+    "meshGrid": 513,
+    "meshCellMeters": 46.89078124249747,
     "wgs84": {
       "south": 58.06181603859646,
       "north": 58.20818396140355,
@@ -70,6 +72,14 @@
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
       "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf"
+    },
+    {
+      "id": "heightfield",
+      "imageFile": "layers/heightfield-513.bin",
+      "role": "heightfield",
+      "grid": 513,
+      "northUp": true,
+      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
     }
   ]
 }

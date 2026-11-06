@@ -21,8 +21,8 @@ internal sealed class TerrainWorld
     {
         ExtentMeters = KristiansandHeightSampler.EastMeters,
         ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
-        CollisionCells = 256,
-            DrawCells = 128,
+        CollisionCells = 512,
+        DrawCells = 512,
     };
 
     private BoundedHeightfield _field = null!;
@@ -54,9 +54,9 @@ internal sealed class TerrainWorld
         {
             ExtentMeters = KristiansandHeightSampler.EastMeters,
             ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
-            CollisionCells = 256,
-            DrawCells = 128,
-    };
+            CollisionCells = 512,
+            DrawCells = 512,
+        };
 
         IHeightSampler sampler = flat
             ? new AppHeightSampler(seed, true, style)
@@ -88,6 +88,8 @@ internal sealed class TerrainWorld
         if (RealGround)
         {
             KristiansandReferenceMap.TryDraw(ctx);
+            // Ultra-high-fidelity wire overlay on the draped DEM (512×512).
+            ctx.DrawHeightfieldWires(_drawVertices, _drawCells, _drawCells, WireLow, WireHigh);
         }
         else
         {
