@@ -83,12 +83,15 @@ static MapBuildState LoadConfig(MapBuildInput input)
 
 static async Task<MapBuildState> ExtractPdfImagesAsync(MapBuildState state)
 {
-    // Raw dumps happen after shared-key selection inside RasterFourLayersAsync.
+    // No raw tile dumps — only derived transparent masks/layers are written under layers/.
     return state;
 }
 
 static async Task<MapLayerBundle> RasterFourLayersAsync(MapBuildState state)
 {
+    // Wipe previous layer outputs so leftover wrong raw-* / placenames junk cannot linger.
+    if (Directory.Exists(state.Input.LayersDir))
+        Directory.Delete(state.Input.LayersDir, recursive: true);
     Directory.CreateDirectory(state.Input.LayersDir);
 
     await using var reliefSrc = PdfSources.OpenFile(state.ReliefPdf);
@@ -101,57 +104,53 @@ static async Task<MapLayerBundle> RasterFourLayersAsync(MapBuildState state)
     var roadsPage = PdfPageTree.Resolve(roadsDoc)[0];
     var roadsPlan = PdfContentStreamInterpreter.BuildPlan(roadsDoc, roadsPage);
 
-    // Only tiles whose CTM placement exists in BOTH PDFs (shared Norgeskart strip layout).
-    // Relief-only portrait XObjects (e.g. 1183×1604) are not shared and must not wipe the map.
-    var sharedKeys = PdfSharedImageFrame.MatchingPlacementKeys(reliefPlan, roadsPlan);
+    // Crop both PDFs to the same map rectangle (shared strip placements).
     var sharedFrame = PdfSharedImageFrame.FromMatchingImages(reliefPlan, roadsPlan);
     Console.WriteLine(
-        $"Shared PDF placements: {sharedKeys.Count}; frame {sharedFrame.Width:F2}×{sharedFrame.Height:F2} pt " +
+        $"Map frame: {sharedFrame.Width:F2}×{sharedFrame.Height:F2} pt " +
         $"({sharedFrame.Left:F2},{sharedFrame.Bottom:F2})–({sharedFrame.Right:F2},{sharedFrame.Top:F2})");
 
-    var reliefTiles = Path.Combine(state.Input.LayersDir, "raw-relief");
-    var roadsTiles = Path.Combine(state.Input.LayersDir, "raw-roads");
-    Directory.CreateDirectory(reliefTiles);
-    Directory.CreateDirectory(roadsTiles);
-    var reliefExported = await ExportSharedImagesAsync(reliefDoc, reliefPage, reliefPlan, sharedKeys, reliefTiles);
-    var roadsExported = await ExportSharedImagesAsync(roadsDoc, roadsPage, roadsPlan, sharedKeys, roadsTiles);
-    Console.WriteLine($"Relief shared images: {reliefExported} → {reliefTiles}");
-    Console.WriteLine($"Roads shared images: {roadsExported} → {roadsTiles}");
+    // Relief PDF: paint EVERY image (hoydedata hillshade + cyan water), not only shared topo strips.
+    var reliefRaster = PdfMapPageRasterizer.RasterCropped(
+        reliefDoc, reliefPage, state.Dpi, sharedFrame, PdfPaintFlags.ImagesOnly, imageContentKeys: null);
+    var reliefSourcePath = Path.Combine(state.Input.LayersDir, "relief-source.png");
+    await File.WriteAllBytesAsync(reliefSourcePath, reliefRaster.PngBytes);
+    Console.WriteLine($"relief-source: {reliefRaster.PixelWidth}×{reliefRaster.PixelHeight} from relief PDF (all images)");
 
-    // Paint only shared tiles (+ clips/paths/text), soft masks applied, cropped to shared frame.
-    var elevation = PdfMapPageRasterizer.RasterCropped(
-        reliefDoc, reliefPage, state.Dpi, sharedFrame, PdfPaintFlags.All, sharedKeys);
-    var roadsRaster = PdfMapPageRasterizer.RasterCropped(
-        roadsDoc, roadsPage, state.Dpi, sharedFrame, PdfPaintFlags.All, sharedKeys);
-
-    if (elevation.PixelWidth != roadsRaster.PixelWidth || elevation.PixelHeight != roadsRaster.PixelHeight)
-        throw new InvalidDataException(
-            $"Shared-frame raster size mismatch: elevation {elevation.PixelWidth}×{elevation.PixelHeight} vs roads {roadsRaster.PixelWidth}×{roadsRaster.PixelHeight}. Refusing to resample.");
-
+    var waterPath = Path.Combine(state.Input.LayersDir, "water-mask.png");
+    var landPath = Path.Combine(state.Input.LayersDir, "land-mask.png");
     var elevationPath = Path.Combine(state.Input.LayersDir, "elevation.png");
-    await File.WriteAllBytesAsync(elevationPath, elevation.PngBytes);
-    Console.WriteLine($"elevation: {elevation.PixelWidth}×{elevation.PixelHeight} from relief PDF (shared frame, north-up)");
+    SplitReliefMasks(reliefRaster.PngBytes, waterPath, landPath, elevationPath);
+    Console.WriteLine($"water-mask / land-mask / elevation (transparent where N/A) → {state.Input.LayersDir}");
 
-    var shorelinePath = Path.Combine(state.Input.LayersDir, "shoreline.png");
-    WriteShorelineMask(elevation.PngBytes, shorelinePath);
-    Console.WriteLine($"shoreline: from elevation PDF pixels → {shorelinePath}");
+    // Roads PDF on the same pixel grid (shared frame). Keep red roads; transparent elsewhere.
+    var roadsRaster = PdfMapPageRasterizer.RasterCropped(
+        roadsDoc, roadsPage, state.Dpi, sharedFrame, PdfPaintFlags.ImagesOnly, imageContentKeys: null);
+    if (reliefRaster.PixelWidth != roadsRaster.PixelWidth || reliefRaster.PixelHeight != roadsRaster.PixelHeight)
+        throw new InvalidDataException(
+            $"Frame raster size mismatch: relief {reliefRaster.PixelWidth}×{reliefRaster.PixelHeight} vs roads {roadsRaster.PixelWidth}×{roadsRaster.PixelHeight}.");
 
     var roadsPath = Path.Combine(state.Input.LayersDir, "roads.png");
-    await File.WriteAllBytesAsync(roadsPath, roadsRaster.PngBytes);
-    Console.WriteLine($"roads: {roadsRaster.PixelWidth}×{roadsRaster.PixelHeight} from roads PDF (same grid)");
+    WriteRoadsTransparent(roadsRaster.PngBytes, roadsPath);
+    Console.WriteLine($"roads: red ink on transparent → {roadsPath}");
 
-    var placenamesPath = Path.Combine(state.Input.LayersDir, "placenames.png");
-    var placenamesJson = Path.Combine(state.Input.LayersDir, "placenames.json");
-    WritePlacenamesLayer(roadsDoc, roadsPage, elevation.PixelWidth, elevation.PixelHeight, sharedFrame, placenamesPath, placenamesJson);
-    Console.WriteLine($"placenames: text spans from roads PDF → {placenamesJson}");
-
-    var georef = BuildGeoref(state, elevation);
+    var georef = BuildGeoref(state, reliefRaster);
     var georefPath = Path.Combine(state.Input.LayersDir, "georef.json");
     await File.WriteAllTextAsync(
         georefPath,
         JsonSerializer.Serialize(georef, new JsonSerializerOptions { WriteIndented = true }));
 
-    return new MapLayerBundle(state, elevationPath, shorelinePath, roadsPath, placenamesPath, placenamesJson, georefPath, elevation.PixelWidth, elevation.PixelHeight, georef);
+    return new MapLayerBundle(
+        state,
+        reliefSourcePath,
+        elevationPath,
+        waterPath,
+        landPath,
+        roadsPath,
+        georefPath,
+        reliefRaster.PixelWidth,
+        reliefRaster.PixelHeight,
+        georef);
 }
 
 static MapDataBundle BuildLayerData(MapLayerBundle layers)
