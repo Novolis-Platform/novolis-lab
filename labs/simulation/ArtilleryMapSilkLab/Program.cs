@@ -11,7 +11,7 @@ namespace ArtilleryMapSilkLab;
 /// </summary>
 internal static class Program
 {
-    private const int DrawCells = 384;
+    private const int DrawCells = 768;
 
     private static readonly Rgba32 LandEast = new(58, 88, 52);
     private static readonly Rgba32 LandNorth = new(88, 132, 68);

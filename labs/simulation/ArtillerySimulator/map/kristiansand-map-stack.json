@@ -1,6 +1,6 @@
 {
   "schema": "novolis.artillery.map-stack/3",
-  "citation": "Built only from relief\u002Broads Norgeskart PDFs via scripts/build-kristiansand-map.cs",
+  "citation": "Land/sea/roads from Norgeskart PDFs; meters from Kartverket NHM_DTM_25833 (NDH).",
   "world": {
     "northUp": true,
     "origin": "southwest_corner_meters",
@@ -12,8 +12,9 @@
     "metersPerPixel": 6.928738815630218,
     "eastMeters": 24008.079996158704,
     "northMeters": 16266.159997397412,
-    "meshGrid": 513,
-    "meshCellMeters": 46.89078124249747,
+    "meshGrid": 1025,
+    "meshCellMeters": 23.445390621248734,
+    "elevationSource": "NHM_DTM_25833",
     "wgs84": {
       "south": 58.06181603859646,
       "north": 58.20818396140355,
@@ -56,12 +57,18 @@
     {
       "id": "elevation",
       "imageFile": "layers/elevation.png",
-      "role": "elevation",
+      "role": "elevation_preview",
       "pixelWidth": 3466,
       "pixelHeight": 2348,
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
-      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+      "source": "NHM_DTM_25833"
+    },
+    {
+      "id": "ndh-dtm",
+      "imageFile": "layers/ndh-dtm.tif",
+      "role": "dtm",
+      "source": "https://hoydedata.no/arcgis/rest/services/NHM_DTM_25833/ImageServer"
     },
     {
       "id": "roads",
@@ -75,11 +82,11 @@
     },
     {
       "id": "heightfield",
-      "imageFile": "layers/heightfield-513.bin",
+      "imageFile": "layers/heightfield-1025.bin",
       "role": "heightfield",
-      "grid": 513,
+      "grid": 1025,
       "northUp": true,
-      "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+      "source": "NHM_DTM_25833"
     }
   ]
 }

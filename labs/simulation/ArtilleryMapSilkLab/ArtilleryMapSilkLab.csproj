@@ -6,6 +6,7 @@
   <ItemGroup>
     <None Include="..\ArtillerySimulator\map\kristiansand-land-sea-mask.bin" Link="map\kristiansand-land-sea-mask.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\ArtillerySimulator\map\kristiansand-map-stack.json" Link="map\kristiansand-map-stack.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\ArtillerySimulator\map\layers\heightfield-1025.bin" Link="map\layers\heightfield-1025.bin" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ArtillerySimulator\Game\KristiansandElevation.cs" Link="Map\KristiansandElevation.cs" />

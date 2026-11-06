@@ -32,7 +32,7 @@ var pipeline = PipelineFactory
     .Then(LoadConfig)
     .Then(state => new ValueTask<MapBuildState>(ExtractPdfImagesAsync(state)))
     .Then(state => new ValueTask<MapLayerBundle>(RasterFourLayersAsync(state)))
-    .Then(BuildLayerData)
+    .Then(state => new ValueTask<MapDataBundle>(BuildLayerDataAsync(state)))
     .Then(CompositeLayers)
     .Then(WriteMeshAndGameOutputs);
 
@@ -85,7 +85,7 @@ static MapBuildState LoadConfig(MapBuildInput input)
     Console.WriteLine($"  SHA256: {Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(roads)))}");
     Console.WriteLine($"DPI: {dpi}");
     Console.WriteLine($"CRS: {crs} ({crsName}); printed scale 1:{scaleDenominator}; scale bar {scaleBarMeters} m");
-    Console.WriteLine("Source: these two PDF files only (no DEM/OSM/NDH in this pipeline).");
+    Console.WriteLine("Source: relief+roads PDFs for land/sea/roads; Kartverket NHM_DTM_25833 for real meters.");
     return new MapBuildState(input, relief, roads, dpi, cutout, scaleDenominator, scaleBarMeters, crs, crsName);
 }
 
@@ -161,43 +161,40 @@ static async Task<MapLayerBundle> RasterFourLayersAsync(MapBuildState state)
         georef);
 }
 
-static MapDataBundle BuildLayerData(MapLayerBundle layers)
+static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
 {
-    using var elevation = SKBitmap.Decode(layers.ElevationPath)
-        ?? throw new InvalidDataException(layers.ElevationPath);
     using var waterMask = SKBitmap.Decode(layers.WaterMaskPath)
         ?? throw new InvalidDataException(layers.WaterMaskPath);
 
     var w = layers.Width;
     var h = layers.Height;
-    var heights = new short[w * h];
     var water = new byte[w * h];
-    // First pass: land luminance stats (ignore water / transparent).
-    var landLums = new List<byte>(w * h / 2);
     for (var y = 0; y < h; y++)
     {
         for (var x = 0; x < w; x++)
-        {
-            var c = elevation.GetPixel(x, y);
-            var isWater = waterMask.GetPixel(x, y).Alpha > 0 || c.Alpha < 8;
-            water[y * w + x] = isWater ? (byte)1 : (byte)0;
-            if (isWater)
-                continue;
-            landLums.Add((byte)((c.Red * 30 + c.Green * 59 + c.Blue * 11) / 100));
-        }
+            water[y * w + x] = waterMask.GetPixel(x, y).Alpha > 0 ? (byte)1 : (byte)0;
     }
 
-    landLums.Sort();
-    var p5 = landLums.Count == 0 ? (byte)0 : landLums[(int)(landLums.Count * 0.05)];
-    var p95 = landLums.Count == 0 ? (byte)255 : landLums[(int)(landLums.Count * 0.95)];
-    var span = Math.Max(1, p95 - p5);
-    // Kristiansand / Agder coastal hills: keep relief readable in the artillery range (~0–180 m).
-    const short maxReliefMeters = 180;
+    var g = layers.Georef;
+    var dtmWidth = Math.Min(w, 4096);
+    var dtmHeight = Math.Min(h, 4096);
+    Console.WriteLine($"NDH DTM: fetching NHM_DTM_25833 @ {dtmWidth}×{dtmHeight} for WGS84 bbox…");
+    var dtm = await FetchNdhDtmAsync(g.WestLon, g.SouthLat, g.EastLon, g.NorthLat, dtmWidth, dtmHeight);
+    var dtmPath = Path.Combine(layers.State.Input.LayersDir, "ndh-dtm.tif");
+    await File.WriteAllBytesAsync(dtmPath, dtm.TiffBytes);
+    var dtmGrid = DecodeTiledFloatTiff(dtm.TiffBytes, out var dw, out var dh);
+    if (dw != dtmWidth || dh != dtmHeight)
+        Console.WriteLine($"NDH DTM: server returned {dw}×{dh} (requested {dtmWidth}×{dtmHeight})");
 
+    var heights = new short[w * h];
     short minH = short.MaxValue;
     short maxH = short.MinValue;
+    var landSamples = 0;
     for (var y = 0; y < h; y++)
     {
+        // PDF / mask row 0 = north; DTM export row 0 = north.
+        var v = h <= 1 ? 0.0 : y / (double)(h - 1);
+        var dy = v * (dh - 1);
         for (var x = 0; x < w; x++)
         {
             var i = y * w + x;
@@ -207,26 +204,172 @@ static MapDataBundle BuildLayerData(MapLayerBundle layers)
                 continue;
             }
 
-            var c = elevation.GetPixel(x, y);
-            var lum = (c.Red * 30 + c.Green * 59 + c.Blue * 11) / 100;
-            var t = Math.Clamp((lum - p5) / (double)span, 0, 1);
-            // Brighter hillshade → higher relative relief (stylized DEM from hoydedata shade).
-            var meters = (short)Math.Round(t * maxReliefMeters);
+            var u = w <= 1 ? 0.0 : x / (double)(w - 1);
+            var dx = u * (dw - 1);
+            var metersF = SampleFloatBilinear(dtmGrid, dw, dh, dx, dy);
+            if (float.IsNaN(metersF) || metersF < -50f || metersF > 2500f)
+                metersF = 0f;
+            // Sea / foreshore often slightly negative in DTM — clamp land display to ≥0.
+            var meters = (short)Math.Clamp(Math.Round(metersF), 0, 32000);
             heights[i] = meters;
+            landSamples++;
             if (meters < minH) minH = meters;
             if (meters > maxH) maxH = meters;
         }
     }
 
-    if (minH == short.MaxValue)
+    if (landSamples == 0 || minH == short.MaxValue)
         minH = maxH = 0;
+
+    WriteElevationPreviewPng(layers.ElevationPath, heights, water, w, h, minH, maxH);
 
     var heightsPath = Path.Combine(layers.State.Input.LayersDir, "elevation.bin");
     var waterPath = Path.Combine(layers.State.Input.LayersDir, "water-mask.bin");
     WriteInt16Grid(heightsPath, w, h, heights);
     File.WriteAllBytes(waterPath, water);
-    Console.WriteLine($"data: elevation.bin + water-mask.bin ({w}×{h}, height {minH}–{maxH} m, land p5–p95 lum {p5}–{p95})");
+    Console.WriteLine(
+        $"data: elevation.bin + water-mask.bin ({w}×{h}, NDH meters {minH}–{maxH}, land cells {landSamples}); tiff → {dtmPath}");
     return new MapDataBundle(layers, heightsPath, waterPath, heights, water, minH, maxH);
+}
+
+static async Task<(byte[] TiffBytes, int Width, int Height)> FetchNdhDtmAsync(
+    double westLon,
+    double southLat,
+    double eastLon,
+    double northLat,
+    int width,
+    int height)
+{
+    var bbox = string.Create(
+        System.Globalization.CultureInfo.InvariantCulture,
+        $"{westLon},{southLat},{eastLon},{northLat}");
+    var url =
+        "https://hoydedata.no/arcgis/rest/services/NHM_DTM_25833/ImageServer/exportImage" +
+        $"?bbox={bbox}&bboxSR=4326&imageSR=25833&size={width},{height}" +
+        "&format=tiff&pixelType=F32&noDataInterpretation=esriNoDataMatchAny" +
+        "&interpolation=RSP_BilinearInterpolation&f=image";
+    using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+    var bytes = await http.GetByteArrayAsync(url);
+    if (bytes.Length < 8 || bytes[0] != (byte)'I' || bytes[1] != (byte)'I')
+        throw new InvalidDataException($"NDH export was not a little-endian TIFF ({bytes.Length} bytes).");
+    return (bytes, width, height);
+}
+
+static float[] DecodeTiledFloatTiff(byte[] bytes, out int width, out int height)
+{
+    static uint U32(byte[] b, int o) => System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(b.AsSpan(o));
+    static ushort U16(byte[] b, int o) => System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(b.AsSpan(o));
+
+    var ifd = (int)U32(bytes, 4);
+    var n = U16(bytes, ifd);
+    uint w = 0, h = 0, bps = 0, comp = 0, sf = 0, tileW = 0, tileH = 0;
+    var tileOffPtr = 0;
+    var tileBytePtr = 0;
+    var tileCount = 0;
+    for (var i = 0; i < n; i++)
+    {
+        var o = ifd + 2 + i * 12;
+        var tag = U16(bytes, o);
+        var type = U16(bytes, o + 2);
+        var count = U32(bytes, o + 4);
+        var val = U32(bytes, o + 8);
+        var s = (ushort)(val & 0xFFFF);
+        switch (tag)
+        {
+            case 256: w = type == 3 ? s : val; break;
+            case 257: h = type == 3 ? s : val; break;
+            case 258: bps = type == 3 ? s : val; break;
+            case 259: comp = type == 3 ? s : val; break;
+            case 322: tileW = type == 3 ? s : val; break;
+            case 323: tileH = type == 3 ? s : val; break;
+            case 324: tileOffPtr = (int)val; tileCount = (int)count; break;
+            case 325: tileBytePtr = (int)val; break;
+            case 339: sf = type == 3 ? s : val; break;
+        }
+    }
+
+    if (comp != 1 || bps != 32 || sf != 3 || tileW == 0 || tileH == 0 || tileCount == 0)
+        throw new InvalidDataException($"Unsupported NDH TIFF (comp={comp} bps={bps} sf={sf} tile={tileW}x{tileH}).");
+
+    width = (int)w;
+    height = (int)h;
+    var tilesX = (int)((w + tileW - 1) / tileW);
+    var tilesY = (int)((h + tileH - 1) / tileH);
+    var grid = new float[width * height];
+    Array.Fill(grid, float.NaN);
+    for (var ty = 0; ty < tilesY; ty++)
+    {
+        for (var tx = 0; tx < tilesX; tx++)
+        {
+            var ti = ty * tilesX + tx;
+            if (ti >= tileCount)
+                continue;
+            var off = (int)U32(bytes, tileOffPtr + ti * 4);
+            var len = (int)U32(bytes, tileBytePtr + ti * 4);
+            if (off == 0 || len == 0)
+                continue;
+            for (var row = 0; row < tileH; row++)
+            {
+                var gy = ty * (int)tileH + row;
+                if (gy >= height)
+                    break;
+                for (var col = 0; col < tileW; col++)
+                {
+                    var gx = tx * (int)tileW + col;
+                    if (gx >= width)
+                        break;
+                    grid[gy * width + gx] = BitConverter.ToSingle(bytes, off + (row * (int)tileW + col) * 4);
+                }
+            }
+        }
+    }
+
+    return grid;
+}
+
+static float SampleFloatBilinear(float[] src, int w, int h, double x, double y)
+{
+    var x0 = (int)Math.Floor(x);
+    var y0 = (int)Math.Floor(y);
+    var x1 = Math.Min(x0 + 1, w - 1);
+    var y1 = Math.Min(y0 + 1, h - 1);
+    x0 = Math.Clamp(x0, 0, w - 1);
+    y0 = Math.Clamp(y0, 0, h - 1);
+    var tx = x - x0;
+    var ty = y - y0;
+    var a = src[y0 * w + x0];
+    var b = src[y0 * w + x1];
+    var c = src[y1 * w + x0];
+    var d = src[y1 * w + x1];
+    static float OrZero(float v) => float.IsNaN(v) ? 0f : v;
+    var top = OrZero(a) + (OrZero(b) - OrZero(a)) * (float)tx;
+    var bot = OrZero(c) + (OrZero(d) - OrZero(c)) * (float)tx;
+    return top + (bot - top) * (float)ty;
+}
+
+static void WriteElevationPreviewPng(string path, short[] heights, byte[] water, int w, int h, short minH, short maxH)
+{
+    using var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Premul);
+    var span = Math.Max(1, maxH - minH);
+    for (var y = 0; y < h; y++)
+    {
+        for (var x = 0; x < w; x++)
+        {
+            var i = y * w + x;
+            if (water[i] != 0)
+            {
+                bmp.SetPixel(x, y, new SKColor(81, 130, 255, 255));
+                continue;
+            }
+
+            var t = (heights[i] - minH) / (float)span;
+            var g = (byte)Math.Clamp(40 + t * 200, 0, 255);
+            bmp.SetPixel(x, y, new SKColor(g, (byte)Math.Clamp(g + 20, 0, 255), (byte)Math.Clamp(g - 10, 0, 255), 255));
+        }
+    }
+
+    using var encoded = SKImage.FromBitmap(bmp).Encode(SKEncodedImageFormat.Png, 92);
+    File.WriteAllBytes(path, encoded.ToArray());
 }
 
 static MapDataBundle CompositeLayers(MapDataBundle data)
@@ -268,8 +411,8 @@ static string WriteMeshAndGameOutputs(MapDataBundle data)
     var g = data.Layers.Georef;
     var east = g.EastMeters;
     var north = g.NorthMeters;
-    // Ultra-high fidelity: 513×513 (~47 m cells over ~24 km) from the 3466×2348 source.
-    const int grid = 513;
+    // NDH meters on ~7 m PDF grid, resampled to 1025 (~23 m/cell) for the game mesh.
+    const int grid = 1025;
     var meters = ResampleHeights(data.Heights, data.Layers.Width, data.Layers.Height, grid);
 
     // Land/sea mask binary for the game (KLSM) — full source resolution.
@@ -281,12 +424,13 @@ static string WriteMeshAndGameOutputs(MapDataBundle data)
         (float)east,
         (float)north);
 
-    WriteElevationCs(gameDir, meters, grid);
+    var heightfieldRel = "layers/heightfield-1025.bin";
+    WriteHeightGridBin(Path.Combine(mapDir, heightfieldRel), grid, meters);
+    WriteElevationLoaderCs(gameDir, heightfieldRel, grid);
     WriteWireframePreview(mapDir, meters, grid, east, north, data.MinHeight, data.MaxHeight);
-    WriteHeightGridBin(Path.Combine(mapDir, "layers", "heightfield-513.bin"), grid, meters);
-    WriteStackJson(mapDir, data, grid);
+    WriteStackJson(mapDir, data, grid, heightfieldRel);
 
-    return $"OK — layers in {data.Layers.State.Input.LayersDir}; wire mesh grid {grid}×{grid} (~{east / (grid - 1):F0} m/cell); game sources updated under {gameDir}";
+    return $"OK — NDH meters {data.MinHeight}–{data.MaxHeight}; mesh {grid}×{grid} (~{east / (grid - 1):F0} m/cell); layers {data.Layers.State.Input.LayersDir}";
 }
 
 static LayerGeoref BuildGeoref(MapBuildState state, PdfMapRasterResult elevation)
@@ -494,31 +638,41 @@ static short SampleBilinear(short[] src, int w, int h, double x, double y)
     return (short)Math.Round(top + (bot - top) * ty);
 }
 
-static void WriteElevationCs(string gameDir, short[] meters, int grid)
+static void WriteElevationLoaderCs(string gameDir, string heightfieldRel, int grid)
 {
     var path = Path.Combine(gameDir, "KristiansandElevation.cs");
-    using var writer = new StreamWriter(path);
-    writer.WriteLine("// <auto-generated />");
-    writer.WriteLine("// Ultra-high-fidelity heightfield (meters) resampled from hoydedata relief + water mask.");
-    writer.WriteLine("namespace ArtillerySimulator.Game;");
-    writer.WriteLine();
-    writer.WriteLine("internal static class KristiansandElevation");
-    writer.WriteLine("{");
-    writer.WriteLine($"    public const int Count = {grid};");
-    writer.WriteLine("    public static readonly short[] Meters =");
-    writer.WriteLine("    [");
-    for (var i = 0; i < meters.Length; i++)
-    {
-        if (i % 16 == 0)
-            writer.Write("        ");
-        writer.Write(meters[i]);
-        writer.Write(i + 1 == meters.Length ? "\n" : ", ");
-        if (i % 16 == 15)
-            writer.WriteLine();
-    }
+    var relLiteral = heightfieldRel.Replace("\\", "/", StringComparison.Ordinal);
+    File.WriteAllText(path, $$"""
+        // <auto-generated />
+        // Kartverket NHM_DTM_25833 meters (water forced 0 from PDF land/sea mask).
+        namespace ArtillerySimulator.Game;
 
-    writer.WriteLine("    ];");
-    writer.WriteLine("}");
+        internal static class KristiansandElevation
+        {
+            public const int Count = {{grid}};
+            public static readonly short[] Meters = Load();
+
+            private static short[] Load()
+            {
+                var path = Path.Combine(AppContext.BaseDirectory, "map", "{{relLiteral}}");
+                if (!File.Exists(path))
+                    throw new FileNotFoundException("Missing NDH heightfield bin.", path);
+
+                var bytes = File.ReadAllBytes(path);
+                if (bytes.Length < 8)
+                    throw new InvalidDataException(path);
+
+                var w = BitConverter.ToInt32(bytes, 0);
+                var h = BitConverter.ToInt32(bytes, 4);
+                if (w != Count || h != Count)
+                    throw new InvalidDataException($"Heightfield {w}×{h}, expected {Count}×{Count}.");
+
+                var meters = new short[Count * Count];
+                Buffer.BlockCopy(bytes, 8, meters, 0, meters.Length * sizeof(short));
+                return meters;
+            }
+        }
+        """);
 }
 
 static void WriteHeightGridBin(string path, int grid, short[] meters)
@@ -602,13 +756,13 @@ static void WriteWireframePreview(
     Console.WriteLine($"wireframe preview: {path} ({grid}×{grid})");
 }
 
-static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid)
+static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid, string heightfieldRel)
 {
     var g = data.Layers.Georef;
     var doc = new
     {
         schema = "novolis.artillery.map-stack/3",
-        citation = "Built only from relief+roads Norgeskart PDFs via scripts/build-kristiansand-map.cs",
+        citation = "Land/sea/roads from Norgeskart PDFs; meters from Kartverket NHM_DTM_25833 (NDH).",
         world = new
         {
             northUp = true,
@@ -623,6 +777,7 @@ static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid)
             northMeters = g.NorthMeters,
             meshGrid,
             meshCellMeters = g.EastMeters / Math.Max(1, meshGrid - 1),
+            elevationSource = "NHM_DTM_25833",
             wgs84 = new { south = g.SouthLat, north = g.NorthLat, west = g.WestLon, east = g.EastLon },
             extentSource = "pdf-footer-scale-x-map-frame",
         },
@@ -631,9 +786,10 @@ static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid)
             new { id = "relief-source", imageFile = "layers/relief-source.png", role = "relief_source", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
             new { id = "water-mask", imageFile = "layers/water-mask.png", role = "water", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
             new { id = "land-mask", imageFile = "layers/land-mask.png", role = "land", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
-            new { id = "elevation", imageFile = "layers/elevation.png", role = "elevation", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
+            new { id = "elevation", imageFile = "layers/elevation.png", role = "elevation_preview", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", source = "NHM_DTM_25833" },
+            new { id = "ndh-dtm", imageFile = "layers/ndh-dtm.tif", role = "dtm", source = "https://hoydedata.no/arcgis/rest/services/NHM_DTM_25833/ImageServer" },
             new { id = "roads", imageFile = "layers/roads.png", role = "roads", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.RoadsPdf },
-            new { id = "heightfield", imageFile = "layers/heightfield-513.bin", role = "heightfield", grid = meshGrid, northUp = true, sourcePdfPath = g.ReliefPdf },
+            new { id = "heightfield", imageFile = heightfieldRel, role = "heightfield", grid = meshGrid, northUp = true, source = "NHM_DTM_25833" },
         },
     };
     File.WriteAllText(
