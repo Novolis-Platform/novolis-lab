@@ -49,7 +49,7 @@ internal static class Program
             try
             {
                 var html = CalypsoFabReleaseEmitter.Emit();
-                Console.WriteLine($"Wrote CAL-MFG-001 fabrication release:{Environment.NewLine}{html}");
+                Console.WriteLine($"Wrote CAL-MFG-002 fabrication release:{Environment.NewLine}{html}");
                 Environment.ExitCode = 0;
             }
             catch (Exception ex)
@@ -173,11 +173,15 @@ internal static class Program
         try
         {
             CalypsoFabReleaseEmitter.Emit(generatedCadDirectory: dir);
-            Check("emit CAL-MFG-001", Directory.Exists(Path.Combine(dir, "CAL-MFG-001")));
+            var fabRoot = Path.Combine(dir, CalypsoFabReleaseEmitter.PackageId);
+            Check(
+                "emit CAL-MFG-002",
+                Directory.Exists(fabRoot)
+                && File.Exists(Path.Combine(fabRoot, "calypso-fab-manifest.json")));
         }
         catch (Exception ex)
         {
-            Check("emit CAL-MFG-001", false, ex.Message);
+            Check("emit CAL-MFG-002", false, ex.Message);
         }
 
         var doc = System.Text.Json.JsonSerializer.Deserialize<Novolis.Cad.Primitives.CadDocument>(

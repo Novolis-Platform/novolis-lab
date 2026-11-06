@@ -267,6 +267,8 @@ internal sealed class CalypsoRenderer
         var shortSide = Math.Min(max.X - min.X, max.Z - min.Z);
         if (IsCargoVoidHollow(space))
             return 46f;
+        if (string.Equals(space.Name, "BRIDGE", StringComparison.OrdinalIgnoreCase))
+            return 68f; // beam-wide watch seats sit near the flanks
         if (shortSide < 2.5f)
             return 42f;
         if (shortSide < 4f)
@@ -379,6 +381,8 @@ internal sealed class CalypsoRenderer
         // Cargo hold only — Engineering is also Flags.Hollow but is a room, not a C40 shaft.
         if (IsCargoVoidHollow(space))
             PlaceCargoHoldCamera(min, max, center, size, out eye, out look);
+        else if (string.Equals(name, "BRIDGE", StringComparison.OrdinalIgnoreCase))
+            PlaceBridgeCamera(min, max, center, out eye, out look);
 
         _interiorEye = eye;
         _interiorTarget = look;
@@ -397,6 +401,17 @@ internal sealed class CalypsoRenderer
         eye = new Vector3(aisleX, min.Y + 8.25f, max.Z - 0.7f);
         // Keep look.X == eye.X so the ray runs parallel to the container flank.
         look = new Vector3(aisleX, min.Y + 1.4f, min.Z + 1.8f);
+    }
+
+    /// <summary>Aft of captain, looking bow-ward so pilots, console, and watch seats fill the frame.</summary>
+    private static void PlaceBridgeCamera(
+        Vector3 min, Vector3 max, Vector3 center, out Vector3 eye, out Vector3 look)
+    {
+        var sizeZ = max.Z - min.Z;
+        var eyeY = min.Y + 1.58f;
+        // Captain sits ~68% aft of the stem span; stand just behind that band on centerline.
+        eye = new Vector3(center.X, eyeY, min.Z + sizeZ * 0.22f);
+        look = new Vector3(center.X, min.Y + 1.05f, max.Z - sizeZ * 0.08f);
     }
 
     /// <summary>Keep the eye outside walls, deck, ceiling, and solid C40 boxes.</summary>
@@ -617,6 +632,11 @@ internal sealed class CalypsoRenderer
                             && _session.ViewMode == CalypsoViewMode.Orbit
                             && entity.Name is { } hatchBox
                             && hatchBox.StartsWith("outfit-hatch-", StringComparison.OrdinalIgnoreCase))
+                            break;
+                        // Interior corridors: distant frame webs read as floating orange bars — keep local structure only.
+                        if (_session.ViewMode == CalypsoViewMode.Interior
+                            && IsStructureBox(entity)
+                            && !StructureTouchesSelectedInterior(entity))
                             break;
                         DrawSolidBox(entity);
                         break;
@@ -1191,7 +1211,15 @@ internal sealed class CalypsoRenderer
             return;
         }
 
-        // End-cap disks + panel seams (nacelles / exterior boxes).
+        // Outfit / furniture / structure webs: solid cube only (no nacelle end-caps).
+        if (!isNacelle
+            && (box.Name?.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase) == true
+                || IsStructureBox(box)
+                || box.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) == true
+                || box.Name?.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase) == true))
+            return;
+
+        // End-cap disks + panel seams (nacelles / exterior propulsor boxes).
         var cap = ShadeColor(Steel, 0.4f, 0.55f, Vector3.UnitZ, LightDir);
         var r = Math.Min(sx, sy) * 0.42f;
         World.DrawCylinder(c + new Vector3(0, 0, sz * 0.52f), r, r * 0.85f, 0.22f, 12, cap);
@@ -1932,6 +1960,52 @@ internal sealed class CalypsoRenderer
                || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>True when a structure box overlaps the selected interior space (or catwalk ensemble).</summary>
+    private bool StructureTouchesSelectedInterior(CadEntity box)
+    {
+        if (box.Points is not { Count: >= 2 })
+            return false;
+        var c = SvgCoords.FromArray(box.Points[0]);
+        var he = SvgCoords.FromArray(box.Points[1]);
+        var bmin = c - new Vector3(Math.Abs(he.X), Math.Abs(he.Y), Math.Abs(he.Z));
+        var bmax = c + new Vector3(Math.Abs(he.X), Math.Abs(he.Y), Math.Abs(he.Z));
+
+        foreach (var space in InteriorSpacesForStructureFilter())
+        {
+            if (space.Points is not { Count: >= 3 } pts)
+                continue;
+            BoundsOf(pts.Select(SvgCoords.FromArray).ToArray(), out var smin, out var smax);
+            // Pad so frames that form the space boundary still count.
+            const float pad = 0.85f;
+            smin -= new Vector3(pad, 0.4f, pad);
+            smax += new Vector3(pad, 0.4f, pad);
+            if (bmax.X >= smin.X && bmin.X <= smax.X
+                && bmax.Y >= smin.Y && bmin.Y <= smax.Y
+                && bmax.Z >= smin.Z && bmin.Z <= smax.Z)
+                return true;
+        }
+
+        return false;
+    }
+
+    private IEnumerable<CadEntity> InteriorSpacesForStructureFilter()
+    {
+        if (_interiorEnsemble == "catwalk-dk0")
+        {
+            foreach (var s in _session.Spaces)
+            {
+                var nm = s.Name ?? "";
+                if (nm is "HOLD" or "CORR_P" or "CORR_S" or "CROSSING" or "ENG")
+                    yield return s;
+            }
+
+            yield break;
+        }
+
+        if (_session.SelectedSpace is { } sel)
+            yield return sel;
+    }
+
     private bool IsEntityVisibleForLayers(CadEntity entity)
     {
         var layers = _session.VisualLayers;
@@ -1944,8 +2018,10 @@ internal sealed class CalypsoRenderer
             "box" => IsStructureBox(entity)
                 ? layers.HasFlag(CalypsoVisualLayers.Structure)
                 : entity.Name?.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase) == true
+                    || entity.Name?.StartsWith("C40", StringComparison.OrdinalIgnoreCase) == true
                     ? layers.HasFlag(CalypsoVisualLayers.Outfit)
-                    : true,
+                    : layers.HasFlag(CalypsoVisualLayers.HullShell)
+                      || layers.HasFlag(CalypsoVisualLayers.Outfit),
             _ => true,
         };
     }

@@ -63,6 +63,9 @@ internal static class CadFabPartCollector
 
         foreach (var e in doc.Entities.Where(e => string.Equals(e.Kind, "wall", StringComparison.OrdinalIgnoreCase)))
         {
+            // Temporary vacuum-hatch hosts are CAD scaffolding, not cut plates.
+            if (e.Name?.StartsWith("hatch-host-", StringComparison.OrdinalIgnoreCase) == true)
+                continue;
             var fabId = GetFabPartId(e) ?? $"P-WALL-{Sanitize(e.Name ?? "wall")}";
             if (!seenParts.Add(fabId))
                 continue;

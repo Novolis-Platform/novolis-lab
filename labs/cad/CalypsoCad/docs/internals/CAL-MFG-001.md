@@ -27,7 +27,7 @@ Verify:
 dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-fab-release.cs
 ```
 
-Acceptance (`--acceptance`) includes `fab release: …` gates after emitting CAL-MFG-001.
+Acceptance (`--acceptance`) gates on **CAL-MFG-002** after `--fab-release` (this package id is historical only).
 
 ## Authority
 

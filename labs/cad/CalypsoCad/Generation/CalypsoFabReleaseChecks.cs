@@ -37,6 +37,11 @@ internal static class CalypsoFabReleaseChecks
             "outfit install parts",
             manifest.Parts.Count(p => p.PartId.StartsWith("P-OUTFIT-", StringComparison.Ordinal)) >= 12,
             $"outfit={manifest.Parts.Count(p => p.PartId.StartsWith("P-OUTFIT-", StringComparison.Ordinal))}");
+        var hatchHostParts = manifest.Parts.Count(p =>
+            (p.CadEntityName?.StartsWith("hatch-host-", StringComparison.OrdinalIgnoreCase) ?? false)
+            || (p.LockRef?.StartsWith("hatch-host-", StringComparison.OrdinalIgnoreCase) ?? false)
+            || p.PartId.Contains("hatch-host", StringComparison.OrdinalIgnoreCase));
+        Add("no hatch-host fab parts", hatchHostParts == 0, $"hatchHost={hatchHostParts}");
         Add(
             "assembly sequence",
             manifest.Sequence.Count >= manifest.Parts.Count / 2,
