@@ -2229,6 +2229,10 @@ internal static class CalypsoLockGenerator
         CalypsoShipbuildingFrames.AddDeckLongitudinalGirders(
             entities, loa, topo.ZStart, topo.ZEnd, web, topo.FrameBay, deckUps, tPlate, openAtriums);
 
+        // 3a) Outer hull skin stringers (IML cage — HOLD-noshell language, full LOA).
+        CalypsoShipbuildingFrames.AddOuterHullStringers(
+            entities, loa, topo.ZStart, topo.ZEnd, web, topo.FrameBay);
+
         // 3b) Explicit frame ↔ girder weld stubs at crossings.
         CalypsoShipbuildingFrames.AddFrameGirderJoinStubs(
             entities, loa, topo.FrameStations, web, halfDepthZ, deckUps, tPlate,

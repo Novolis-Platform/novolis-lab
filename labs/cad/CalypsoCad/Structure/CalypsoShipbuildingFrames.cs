@@ -109,9 +109,13 @@ internal static class CalypsoShipbuildingFrames
         string namePrefix)
     {
         // Polygonal ring: one oriented member per IML octagon edge (not AABB axis approximations).
-        var ring = InnerOctagonRing(zStem, inset + web * 0.6f);
+        // Extra skin inset so side/bilge edges survive BoxFits at midbody (was dropping 6/8 bars).
+        var ring = InnerOctagonRing(zStem, inset + web * 0.85f + 0.12f);
         var (cy0, cu0) = ring.GetSectionCenter();
-        var flangeHalf = MathF.Max(0.06f, web * 0.4f);
+        var flangeHalf = MathF.Max(0.05f, web * 0.32f);
+        var asm = frameId.Contains('-')
+            ? string.Join('-', frameId.Split('-').Take(2))
+            : frameId;
         for (var i = 0; i < ring.Length; i++)
         {
             var a = ring[i];
@@ -123,34 +127,58 @@ internal static class CalypsoShipbuildingFrames
                 continue;
             var edgeY = (a.Y + b.Y) * 0.5f;
             var edgeU = (a.Up + b.Up) * 0.5f;
-            // Slight inward offset so flange stays inside IML without shortening the edge.
+            // Pull inboard until the flange AABB nests (midbody side edges used to vanish).
             var inwardY = cy0 - edgeY;
             var inwardU = cu0 - edgeU;
             var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
-            if (inwardLen > 1e-4f)
+            var ny = inwardLen > 1e-4f ? inwardY / inwardLen : 0f;
+            var nu = inwardLen > 1e-4f ? inwardU / inwardLen : 0f;
+            var halfLen = len * 0.5f;
+            var angle = MathF.Atan2(du, dy);
+            var hf = flangeHalf;
+            var placed = false;
+            for (var attempt = 0; attempt < 8 && !placed; attempt++)
             {
-                var pull = MathF.Min(flangeHalf * 0.85f, inwardLen * 0.35f);
-                edgeY += inwardY / inwardLen * pull;
-                edgeU += inwardU / inwardLen * pull;
+                var pull = MathF.Min(hf * (1.1f + attempt * 0.35f), inwardLen * 0.85f);
+                var y = edgeY + ny * pull;
+                var u = edgeU + nu * pull;
+                var ha = halfLen * (attempt < 3 ? 1f : MathF.Max(0.55f, 1f - attempt * 0.08f));
+                placed = CalypsoLockGenerator.TryAddOrientedStructureBar(
+                    entities, loa, $"{frameId}-{namePrefix}-{i}",
+                    y, u, zStem,
+                    halfAlongEdge: ha,
+                    halfFlange: hf,
+                    halfDepthZ: halfDepthZ,
+                    orientZ: angle,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.TransverseFrame, asm,
+                        StationZ: zStem, DeckUp: u,
+                        Joins: [$"{frameId}-{namePrefix}-{(i + ring.Length - 1) % ring.Length}",
+                                $"{frameId}-{namePrefix}-{(i + 1) % ring.Length}"]));
+                if (!placed)
+                    hf = MathF.Max(0.035f, hf * 0.82f);
             }
 
-            // Full edge length (half-extent = len/2); endpoints meet neighbors at vertices.
-            var halfLen = len * 0.5f;
-            var angle = MathF.Atan2(du, dy); // world +Z rotation: local +X along edge
-            CalypsoLockGenerator.TryAddOrientedStructureBar(
-                entities, loa, $"{frameId}-{namePrefix}-{i}",
-                edgeY, edgeU, zStem,
-                halfAlongEdge: halfLen,
-                halfFlange: flangeHalf,
-                halfDepthZ: halfDepthZ,
-                orientZ: angle,
-                meta: new StructuralSolidMeta(
-                    StructuralRoles.TransverseFrame, frameId.Contains('-')
-                        ? string.Join('-', frameId.Split('-').Take(2))
-                        : frameId,
-                    StationZ: zStem, DeckUp: edgeU,
-                    Joins: [$"{frameId}-{namePrefix}-{(i + ring.Length - 1) % ring.Length}",
-                            $"{frameId}-{namePrefix}-{(i + 1) % ring.Length}"]));
+            // Last resort: axis-aligned stub so the cage never loses a corner (OuterSkeleton completeness).
+            if (!placed)
+            {
+                var pull = MathF.Min(0.35f, inwardLen * 0.5f);
+                var y = edgeY + ny * pull;
+                var u = edgeU + nu * pull;
+                var hy = MathF.Max(0.06f, MathF.Abs(dy) * 0.45f);
+                var hu = MathF.Max(0.06f, MathF.Abs(du) * 0.45f);
+                if (hy < 0.08f && hu < 0.08f)
+                {
+                    hy = flangeHalf;
+                    hu = flangeHalf;
+                }
+
+                CalypsoLockGenerator.TryAddStructureBar(
+                    entities, loa, $"{frameId}-{namePrefix}-{i}",
+                    y, u, zStem, hy, hu, halfDepthZ,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.TransverseFrame, asm, StationZ: zStem, DeckUp: u));
+            }
         }
     }
 
@@ -173,6 +201,107 @@ internal static class CalypsoShipbuildingFrames
             (-halfB, mid - halfH + cy),
             (-halfB, mid + halfH - cy),
         ];
+    }
+
+    /// <summary>
+    /// Skin stringers along the IML octagon — longitudinals at ring vertices + three-tier
+    /// port/stbd side runs (HOLD bay-noshell outer cage). Bay segments meet at stations.
+    /// </summary>
+    public static void AddOuterHullStringers(
+        List<CadEntity> entities,
+        float loa,
+        float zStart,
+        float zEnd,
+        float web,
+        float frameBay)
+    {
+        if (zEnd <= zStart + 1f)
+            return;
+
+        // Deep inset so bow taper + midbody sides both nest (was skipping stem bays entirely).
+        var inset = DefaultSkinInset + web * 0.9f + 0.15f;
+        var stiffHy = MathF.Max(0.045f, web * 0.24f);
+        var stiffHu = MathF.Max(0.05f, web * 0.28f);
+        var bayIndex = 0;
+        for (var z = zStart; z < zEnd - 0.35f; z += frameBay)
+        {
+            var z0 = z;
+            var z1 = MathF.Min(z + frameBay, zEnd);
+            var zc = (z0 + z1) * 0.5f;
+            var halfLenZ = (z1 - z0) * 0.5f;
+            if (halfLenZ < 0.2f)
+                break;
+
+            CalypsoLockGenerator.SectionAtPublic(zc, out var halfB, out var halfH, out var mid, out _, out _);
+            if (halfB < 0.35f || halfH < 0.35f)
+            {
+                bayIndex++;
+                continue;
+            }
+
+            // Narrowest section along the bay so ends never poke past taper.
+            CalypsoLockGenerator.SectionAtPublic(z0 + 0.05f, out var halfB0, out var halfH0, out _, out _, out _);
+            CalypsoLockGenerator.SectionAtPublic(z1 - 0.05f, out var halfB1, out var halfH1, out _, out _, out _);
+            var useHalfB = MathF.Min(halfB, MathF.Min(halfB0, halfB1));
+            var useHalfH = MathF.Min(halfH, MathF.Min(halfH0, halfH1));
+            _ = useHalfH;
+
+            // 1) Vertex stringers — one longitudinal at each IML octagon corner.
+            var ring = InnerOctagonRing(zc, inset);
+            // Scale ring into the narrowest bay half-beam so stem segments still connect.
+            CalypsoLockGenerator.SectionAtPublic(zc, out var refB, out _, out _, out _, out _);
+            var scale = refB > 0.2f ? MathF.Min(1f, (useHalfB - inset) / MathF.Max(0.2f, refB - inset)) : 1f;
+            scale = Math.Clamp(scale, 0.55f, 1f);
+            var (cy, cu) = ring.GetSectionCenter();
+            for (var i = 0; i < ring.Length; i++)
+            {
+                var y = cy + (ring[i].Y - cy) * scale;
+                var up = cu + (ring[i].Up - cu) * scale;
+                var inwardY = cy - y;
+                var inwardU = cu - up;
+                var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
+                if (inwardLen > 1e-4f)
+                {
+                    var pull = MathF.Min(stiffHy * 1.6f, inwardLen * 0.4f);
+                    y += inwardY / inwardLen * pull;
+                    up += inwardU / inwardLen * pull;
+                }
+
+                CalypsoLockGenerator.TryAddStructureBar(
+                    entities, loa, $"stringer-v{i}-d{bayIndex}",
+                    y, up, zc, stiffHy, stiffHu, halfLenZ,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.ShellStiffener, "stringer-skin",
+                        StationZ: zc, DeckUp: up));
+            }
+
+            // 2) Mid-side tiers (port/stbd) — same three-band read as bay shell stiffeners.
+            var yFace = useHalfB - inset - stiffHy;
+            var uBot = mid - halfH + inset + stiffHu;
+            var uTop = mid + halfH - inset - stiffHu;
+            var huSide = (uTop - uBot) * 0.48f;
+            if (yFace >= 0.25f && huSide >= 0.3f)
+            {
+                for (var i = -1; i <= 1; i++)
+                {
+                    var up = mid + i * (huSide * 0.55f);
+                    CalypsoLockGenerator.TryAddStructureBar(
+                        entities, loa, $"stringer-port-{i}-d{bayIndex}",
+                        -yFace, up, zc, stiffHy, stiffHu, halfLenZ * 0.98f,
+                        meta: new StructuralSolidMeta(
+                            StructuralRoles.ShellStiffener, "stringer-skin",
+                            StationZ: zc, DeckUp: up));
+                    CalypsoLockGenerator.TryAddStructureBar(
+                        entities, loa, $"stringer-stbd-{i}-d{bayIndex}",
+                        yFace, up, zc, stiffHy, stiffHu, halfLenZ * 0.98f,
+                        meta: new StructuralSolidMeta(
+                            StructuralRoles.ShellStiffener, "stringer-skin",
+                            StationZ: zc, DeckUp: up));
+                }
+            }
+
+            bayIndex++;
+        }
     }
 
     public static void AddDeckLongitudinalGirders(

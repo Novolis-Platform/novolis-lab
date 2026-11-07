@@ -2167,6 +2167,9 @@ internal sealed class CalypsoRenderer
 
     private static CalypsoVisualLayers StructureFlagForBox(CadEntity box)
     {
+        var n = box.Name ?? "";
+        var outer = IsOuterHullMember(n) ? CalypsoVisualLayers.OuterHull : CalypsoVisualLayers.None;
+
         // Metadata-first; name-prefix fallback for legacy solids.
         if (box.Properties is not null
             && box.Properties.TryGetValue("structuralRole", out var roleEl)
@@ -2174,42 +2177,64 @@ internal sealed class CalypsoRenderer
         {
             var role = roleEl.GetString() ?? "";
             if (string.Equals(role, "TransverseFrame", StringComparison.OrdinalIgnoreCase))
-                return CalypsoVisualLayers.Frames;
+                return CalypsoVisualLayers.Frames | outer;
             if (string.Equals(role, "StructuralBracket", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Joinery;
             if (string.Equals(role, "PressureBulkhead", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Bulkheads;
             if (string.Equals(role, "StructuralDeck", StringComparison.OrdinalIgnoreCase))
-                return CalypsoVisualLayers.DeckPlates;
+                return CalypsoVisualLayers.DeckPlates | outer;
             if (string.Equals(role, "LongitudinalGirder", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(role, "ShellStiffener", StringComparison.OrdinalIgnoreCase))
-                return CalypsoVisualLayers.Longitudinals;
+                return CalypsoVisualLayers.Longitudinals | outer;
             if (string.Equals(role, "ShellPanel", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.HullShell;
         }
 
-        var n = box.Name ?? "";
         if (n.StartsWith("shell-panel-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.HullShell;
-        if (n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.Longitudinals;
+        if (n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.OuterHull;
         if (n.Contains("-join-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Joinery;
         if (n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.Frames;
+            return CalypsoVisualLayers.Frames | outer;
         if (n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Bulkheads;
         if (n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.DeckPlates;
+            return CalypsoVisualLayers.DeckPlates | outer;
         if (n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
             || n.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)
-            || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.Longitudinals;
+            return CalypsoVisualLayers.Longitudinals | outer;
         return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Bulkheads
                | CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.DeckPlates;
+    }
+
+    /// <summary>
+    /// Members of the outer IML cage (HOLD-noshell language): rings, skin stringers/girders,
+    /// holdfloor chords, DK−1 sandwich only — not BH plates or internal frame chords.
+    /// </summary>
+    private static bool IsOuterHullMember(string n)
+    {
+        if (n.Contains("-ring-", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (n.Contains("-holdfloor", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
+            return true;
+        // Bottom sole faces/perimeter only (not sandwich ribs — those clutter the cage read).
+        if (n.StartsWith("deck-sandwich-dkm1-", StringComparison.OrdinalIgnoreCase)
+            && (n.Contains("-face-", StringComparison.OrdinalIgnoreCase)
+                || n.Contains("-peri-", StringComparison.OrdinalIgnoreCase)))
+            return true;
+        return false;
     }
 
     private bool IsBoxLayerVisible(CadEntity box)
@@ -2228,7 +2253,15 @@ internal sealed class CalypsoRenderer
         if (n.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase))
             return layers.HasFlag(CalypsoVisualLayers.Outfit);
         if (IsStructureBox(box))
-            return layers.HasFlag(StructureFlagForBox(box));
+        {
+            // OuterSkeleton: exclusive cage — rings/stringers/girders/floor, no BH / internal chords.
+            if (layers == CalypsoVisualLayers.OuterSkeleton
+                || layers == CalypsoVisualLayers.OuterHull)
+                return IsOuterHullMember(n);
+            // Multi-bit box flags (Frames|OuterHull): any intersecting bit is enough.
+            return (StructureFlagForBox(box) & layers) != 0;
+        }
+
         return layers.HasFlag(CalypsoVisualLayers.HullShell)
                || layers.HasFlag(CalypsoVisualLayers.Outfit);
     }

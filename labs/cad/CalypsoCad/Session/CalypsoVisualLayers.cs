@@ -48,6 +48,12 @@ internal enum CalypsoVisualLayers
     Joinery = 1 << 12,
 
     /// <summary>
+    /// Outer hull cage only: perimeter frame rings, skin stringers/girders, bottom floor strip.
+    /// Exclusive of BH plates, internal chords, outfit. See HOLD bay-test-noshell look.
+    /// </summary>
+    OuterHull = 1 << 13,
+
+    /// <summary>
     /// Full-height ship elements (keel→weather / LOA). Not deck-scoped — deck filter must not hide these.
     /// Hull + transverse webs + pressure BHs + longitudinals.
     /// </summary>
@@ -73,6 +79,10 @@ internal enum CalypsoVisualLayers
     StructureNoHull = Frames | Bulkheads | Longitudinals | DeckPlates | Openings,
     /// <summary>Hide-hull skeleton test: open webs + BH + girders (no decks / outfit).</summary>
     ShipSkeleton = Frames | Bulkheads | Longitudinals,
+    /// <summary>
+    /// Outer skeleton layer — IML cage like structural-bay HOLD-noshell (rings + skin longs + floor).
+    /// </summary>
+    OuterSkeleton = OuterHull,
     /// <summary>Stage 1 — primary steel skeleton (alias of <see cref="ShipSkeleton"/>).</summary>
     PrimaryStructure = ShipSkeleton,
     /// <summary>Stage 2 — primary + cellular sandwich decks.</summary>

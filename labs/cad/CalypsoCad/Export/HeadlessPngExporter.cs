@@ -85,6 +85,16 @@ internal static class HeadlessPngExporter
             session.StatusText = "headless:orbit-cutaway-long";
         });
 
+        Add("layer-outer-skeleton", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.OuterSkeleton;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            // Full-LOA IML cage — same language as bay-test-HOLD-noshell, whole ship.
+            renderer.SetOrbitPose(new System.Numerics.Vector3(0f, 5.5f, 0f), 52f, 0.95f, 0.38f);
+            session.StatusText = "headless:layer-outer-skeleton";
+        });
+
         Add("layer-primary-steel", () =>
         {
             session.VisualLayers = CalypsoVisualLayers.PrimaryStructure;

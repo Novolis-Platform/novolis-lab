@@ -16,11 +16,12 @@ internal sealed class KristiansandDefenseMission
     public const float PinnedMeters = 340f;
     public const float ObjectiveRadiusMeters = 180f;
     /// <summary>
-    /// Road-column close rate on the realtime clock (~40 km/h). Formerly 3.2 m/s under a 3× pace
-    /// multiplier — with pace removed that crawl looked almost stationary.
+    /// Wheeled column on primary roads (~45 km/h). Soft margin keeps spawn/place inside the cutout.
     /// </summary>
-    public const float BaseColumnSpeedMetersPerSecond = 11f;
-    public const float SpacingMeters = 160f;
+    public const float BaseColumnSpeedMetersPerSecond = 12.5f;
+    /// <summary>Tactical convoy gap (nose-to-nose along the road centerline).</summary>
+    public const float SpacingMeters = 110f;
+    private const float MapMarginMeters = 120f;
 
     private readonly TerrainWorld _terrain;
     private readonly List<string> _approaches = [];
@@ -140,7 +141,9 @@ internal sealed class KristiansandDefenseMission
                 unit.Scare = MathF.Max(0f, unit.Scare - simSeconds);
 
             var suppressed = unit.Scare > 0f;
-            var speed = suppressed ? _columnSpeed * 0.25f : _columnSpeed;
+            // Per-vehicle speed jitter (~±8%) so the column does not slide as a rigid block.
+            var jitter = 0.92f + (unit.Id % 7) * 0.025f;
+            var speed = (suppressed ? _columnSpeed * 0.35f : _columnSpeed) * jitter;
             var posture = suppressed ? "pinned" : "advancing";
 
             if (unit.Passing && gap > 160f)
@@ -165,6 +168,15 @@ internal sealed class KristiansandDefenseMission
                 ObjectiveLost = true;
                 RefreshNearest();
                 return;
+            }
+
+            // Do not march vehicles off the heightfield cutout.
+            var probe = lane.Line.At(next);
+            if (!InPlayableMap(probe.X, probe.Y))
+            {
+                unit.Posture = "advancing";
+                _units[i] = unit;
+                continue;
             }
 
             unit.Arc = next;
@@ -220,9 +232,9 @@ internal sealed class KristiansandDefenseMission
                 continue;
             }
 
-            // Near-miss: suppress to 0.25× speed — never freeze the column.
+            // Near-miss: suppress to ~⅓ speed — never freeze the column.
             unit.Hold = 0f;
-            unit.Scare = MathF.Max(unit.Scare, 6f);
+            unit.Scare = MathF.Max(unit.Scare, 5f);
             unit.Posture = "pinned";
             _units[i] = unit;
             LastPinned++;
@@ -369,13 +381,22 @@ internal sealed class KristiansandDefenseMission
     {
         var goal = new Vector2(Objective.X, Objective.Z);
         var gun = new Vector2(GunX, GunZ);
+        var ring = SimulationUnits.MinOpeningEngagementMeters;
         var routes = PrimaryRoadNetwork.BuildApproachSpawns(
             goal,
             gun,
-            SimulationUnits.MinOpeningEngagementMeters,
-            SimulationUnits.ApproachSpawnCount);
+            ring,
+            SimulationUnits.ApproachSpawnCount,
+            mapEastMeters: _terrain.EastMeters,
+            mapNorthMeters: _terrain.NorthMeters,
+            mapMarginMeters: MapMarginMeters);
 
-        _spawnRoutes.AddRange(routes);
+        foreach (var route in routes)
+        {
+            if (IsUsableApproach(route))
+                _spawnRoutes.Add(route);
+        }
+
         if (_spawnRoutes.Count == 0)
         {
             // Absolute last resort: named geographic seeds still on the primary graph.
@@ -383,14 +404,34 @@ internal sealed class KristiansandDefenseMission
             {
                 var line = PrimaryRoadNetwork.RouteFromSeed(goal, ApproachSeed(name), name)
                     ?? PrimaryRoadNetwork.RouteToward(goal, ApproachBearing(name), name);
-                if (line is not null)
+                if (line is not null && IsUsableApproach(line))
                     _spawnRoutes.Add(line);
             }
         }
 
-        Console.WriteLine($"OPFOR spawn catalog: {_spawnRoutes.Count} primary-road approaches at ~{SimulationUnits.MinOpeningEngagementMeters / 1000f:F2} km");
+        Console.WriteLine(
+            $"OPFOR spawn catalog: {_spawnRoutes.Count} on-map primary approaches at ~{ring / 1000f:F2} km");
         ReshuffleSpawnDeck();
     }
+
+    private bool IsUsableApproach(GroundPolyline line)
+    {
+        if (line.Points.Length < 2 || line.Length < 1_000f)
+            return false;
+        // Outer tip is the spawn mouth.
+        if (!InPlayableMap(line.Points[0].X, line.Points[0].Y))
+            return false;
+        // Prefer land mouths — skip open-water NVDB artifacts.
+        if (KristiansandSurface.KindAt(line.Points[0].X, line.Points[0].Y) == KristiansandSurfaceKind.Water)
+            return false;
+        return true;
+    }
+
+    private bool InPlayableMap(float x, float z) =>
+        x >= MapMarginMeters
+        && z >= MapMarginMeters
+        && x <= _terrain.EastMeters - MapMarginMeters
+        && z <= _terrain.NorthMeters - MapMarginMeters;
 
     private void ReshuffleSpawnDeck()
     {
@@ -544,7 +585,7 @@ internal sealed class KristiansandDefenseMission
         return shell.Y - Height(unit.X, unit.Z) < 160f;
     }
 
-    private static void Place(RouteLane lane, ref ColumnUnit unit)
+    private void Place(RouteLane lane, ref ColumnUnit unit)
     {
         var point = lane.Line.At(unit.Arc);
         var probe = lane.Line.At(unit.Arc - lane.Away * 16f);
@@ -555,8 +596,8 @@ internal sealed class KristiansandDefenseMission
         forward = Vector2.Normalize(forward);
         var side = new Vector2(-forward.Y, forward.X);
         var placed = point + side * unit.Offset;
-        unit.X = placed.X;
-        unit.Z = placed.Y;
+        unit.X = Math.Clamp(placed.X, MapMarginMeters, _terrain.EastMeters - MapMarginMeters);
+        unit.Z = Math.Clamp(placed.Y, MapMarginMeters, _terrain.NorthMeters - MapMarginMeters);
     }
 
     /// <summary>
@@ -578,6 +619,10 @@ internal sealed class KristiansandDefenseMission
         for (var arc = 40f; arc <= line.Length - 40f; arc += 30f)
         {
             var p = line.At(arc);
+            if (!InPlayableMap(p.X, p.Y))
+                continue;
+            if (KristiansandSurface.KindAt(p.X, p.Y) == KristiansandSurfaceKind.Water)
+                continue;
             var gd = Vector2.Distance(p, gun);
             if (gd < minOpen || gd > maxOpen)
                 continue;
@@ -636,19 +681,23 @@ internal sealed class KristiansandDefenseMission
                 continue;
 
             var point = line.At(arc);
+            if (!InPlayableMap(point.X, point.Y))
+                continue;
+            if (KristiansandSurface.KindAt(point.X, point.Y) == KristiansandSurfaceKind.Water)
+                continue;
             if (Vector2.Distance(point, gun) < minOpen * 0.75f)
                 continue;
 
-            _units.Add(new ColumnUnit
+            var unit = new ColumnUnit
             {
                 Id = _units.Count + 1,
                 Lane = lane,
                 Arc = arc,
-                X = point.X,
-                Z = point.Y,
                 Alive = true,
                 Posture = "advancing",
-            });
+            };
+            Place(_lanes[lane], ref unit);
+            _units.Add(unit);
         }
 
         return _units.Count > before;

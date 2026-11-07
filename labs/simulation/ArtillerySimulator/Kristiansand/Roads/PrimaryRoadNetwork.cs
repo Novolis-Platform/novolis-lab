@@ -144,7 +144,10 @@ internal static class PrimaryRoadNetwork
         Vector2 gun,
         float ringMeters,
         int count,
-        float minLengthMeters = 1_200f)
+        float minLengthMeters = 1_200f,
+        float mapEastMeters = float.PositiveInfinity,
+        float mapNorthMeters = float.PositiveInfinity,
+        float mapMarginMeters = 120f)
     {
         EnsureBuilt();
         if (_nodes.Length == 0 || count <= 0)
@@ -159,12 +162,21 @@ internal static class PrimaryRoadNetwork
         var bandOuter = ringMeters * 1.4f;
         var candidates = new List<(int Node, float Angle, float GunDist)>(512);
 
+        bool InMap(Vector2 p) =>
+            p.X >= mapMarginMeters
+            && p.Y >= mapMarginMeters
+            && p.X <= mapEastMeters - mapMarginMeters
+            && p.Y <= mapNorthMeters - mapMarginMeters;
+
         for (var i = 0; i < _nodes.Length; i++)
         {
             if (!_inMain[i] || float.IsPositiveInfinity(distFromGoal[i]))
                 continue;
 
             var p = _nodes[i].Pos;
+            if (!InMap(p))
+                continue;
+
             var gd = Vector2.Distance(p, gun);
             if (gd < bandInner || gd > bandOuter)
                 continue;
@@ -229,14 +241,60 @@ internal static class PrimaryRoadNetwork
             if (Vector2.Distance(points[0], goal) < Vector2.Distance(points[^1], goal))
                 Array.Reverse(points);
 
+            // Drop any vertex that left the playable cutout (NVDB can overhang the heightfield).
+            points = ClipToMap(points, InMap);
+            if (points.Length < 2)
+                continue;
+
             var line = new GroundPolyline($"Approach {i + 1}", "primary", points);
             if (line.Length < minLengthMeters)
+                continue;
+            // Outer tip (spawn mouth) must stay on-map.
+            if (!InMap(line.Points[0]))
                 continue;
 
             routes.Add(line);
         }
 
         return routes;
+    }
+
+    private static Vector2[] ClipToMap(Vector2[] points, Func<Vector2, bool> inMap)
+    {
+        if (points.Length == 0)
+            return points;
+
+        // Longest contiguous on-map run — keeps one coherent road approach.
+        var bestStart = -1;
+        var bestLen = 0;
+        var runStart = -1;
+        var runLen = 0;
+        for (var i = 0; i < points.Length; i++)
+        {
+            if (inMap(points[i]))
+            {
+                if (runStart < 0)
+                    runStart = i;
+                runLen++;
+                if (runLen > bestLen)
+                {
+                    bestLen = runLen;
+                    bestStart = runStart;
+                }
+            }
+            else
+            {
+                runStart = -1;
+                runLen = 0;
+            }
+        }
+
+        if (bestStart < 0 || bestLen < 2)
+            return [];
+
+        var clipped = new Vector2[bestLen];
+        Array.Copy(points, bestStart, clipped, 0, bestLen);
+        return clipped;
     }
 
     private static float AngularDistance(float a, float b)

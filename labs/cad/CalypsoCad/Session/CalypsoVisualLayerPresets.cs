@@ -4,6 +4,7 @@ internal static class CalypsoVisualLayerPresets
 {
     private static readonly (CalypsoVisualLayers Layers, string Label)[] OrbitCycle =
     [
+        (CalypsoVisualLayers.OuterSkeleton, "0 outer skeleton (rings+skin longs)"),
         (CalypsoVisualLayers.PrimaryStructure, "1 primary steel (frames+BH+girders)"),
         (CalypsoVisualLayers.PrimaryPlusDecks, "2 + sandwich decks"),
         (CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.Joinery, "3 + joinery stubs"),
