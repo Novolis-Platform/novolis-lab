@@ -29,7 +29,7 @@ internal static class OpeningFirePlan
                 continue;
 
             var bearing = MathF.Atan2(unit.Z - gun.Z, unit.X - gun.X) * (180f / MathF.PI);
-            if (MathF.Abs(DeltaDegrees(bearing, trailBearingDegrees)) > GunModel.MaxTraverseDegrees)
+            if (MathF.Abs(DeltaDegrees(bearing, trailBearingDegrees)) > ArtilleryPieceCatalog.Default.MaxTraverseDegrees)
                 continue;
 
             var toCrossing = Horizontal(objective, new Vector3(unit.X, objective.Y, unit.Z));
@@ -51,7 +51,8 @@ internal static class OpeningFirePlan
             SimulationUnits.MaxCityApproachMeters);
 
         var atmosphere = AtmosphereModel.CreateRegionalDefault();
-        var simulation = new ProjectileBallisticSimulation(GunModel.Educational155Profile, DragCoefficientLaw.BoatTail);
+        var piece = ArtilleryPieceCatalog.Default;
+        var simulation = new ProjectileBallisticSimulation(piece.Projectile, DragCoefficientLaw.BoatTail);
         var bestElev = fallbackElevation;
         var bestCharge = 3;
         var bestScore = float.NegativeInfinity;
@@ -64,8 +65,8 @@ internal static class OpeningFirePlan
         ReadOnlySpan<int> chargeOrder = [3, 0, 1, 2];
         foreach (var charge in chargeOrder)
         {
-            var speed = SimulationUnits.ChargeSpeedsMps[charge];
-            for (var elev = GunModel.MaxElevationDegrees; elev >= 12f; elev -= 2f)
+            var speed = piece.ChargeAt(charge).MuzzleSpeedMps;
+            for (var elev = piece.MaxElevationDegrees; elev >= 12f; elev -= 2f)
             {
                 var reach = ReachMeters(terrain, atmosphere, simulation, gun, aimBearing, elev, speed);
                 if (reach < SimulationUnits.MinEffectiveRangeMeters - 50f)
@@ -127,9 +128,10 @@ internal static class OpeningFirePlan
         var cosE = MathF.Cos(elev);
         var direction = Vector3.Normalize(new Vector3(cosE * MathF.Cos(az), MathF.Sin(elev), cosE * MathF.Sin(az)));
         var pivot = gun + new Vector3(0f, SimulationUnits.GunHeightOffset, 0f);
-        var muzzle = pivot + direction * GunModel.BarrelLength;
-        var speed = muzzleSpeedMps > 1f ? muzzleSpeedMps : SimulationUnits.ChargeSpeedsMps[1];
-        var state = new ProjectileState(muzzle, direction * speed, GunModel.Educational155Profile.MassKg, timeSeconds: 0);
+        var piece = ArtilleryPieceCatalog.Default;
+        var muzzle = pivot + direction * piece.BarrelLengthMeters;
+        var speed = muzzleSpeedMps > 1f ? muzzleSpeedMps : piece.ChargeAt(1).MuzzleSpeedMps;
+        var state = new ProjectileState(muzzle, direction * speed, piece.Projectile.MassKg, timeSeconds: 0);
         var environment = atmosphere.BallisticEnvironment(muzzle.Y);
         var preview = BallisticTrajectoryRunner.BuildPreview(
             simulation,

@@ -229,16 +229,50 @@ internal static class FrameWebPlateBuilder
                 var cy = (ya, yb).GetCenter();
                 if (bowAligned && cy < -0.02f)
                     continue;
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities, loa, $"{frameId}-chord-{deckUp:0.#}-{cellIndex++}",
-                    cy, deckUp, zStem, width * 0.5f, chordHalf, halfDepthZ);
+                // Exact chord span — reposition inboard if needed; never shrink length.
+                var chordName = $"{frameId}-chord-{deckUp:0.#}-{cellIndex++}";
+                var hy = width * 0.5f;
+                var asm = frameId.Contains('-')
+                    ? string.Join('-', frameId.Split('-').Take(2))
+                    : frameId;
+                PlaceChordExact(entities, loa, chordName, cy, deckUp, zStem, hy, chordHalf, halfDepthZ, asm, frameId);
+
                 if (bowAligned && cy > 0.02f)
                 {
-                    CalypsoLockGenerator.TryAddStructureBar(
-                        entities, loa, $"{frameId}-chord-{deckUp:0.#}-{cellIndex++}",
-                        -cy, deckUp, zStem, width * 0.5f, chordHalf, halfDepthZ);
+                    var mirror = $"{frameId}-chord-{deckUp:0.#}-{cellIndex++}";
+                    PlaceChordExact(entities, loa, mirror, -cy, deckUp, zStem, hy, chordHalf, halfDepthZ, asm, frameId);
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Place a deck chord at requested half-span. Pull the center inboard if BoxFits fails —
+    /// never shorten <paramref name="hy"/> (Shipbuilding 102 / structural review).
+    /// </summary>
+    private static void PlaceChordExact(
+        List<CadEntity> entities,
+        float loa,
+        string chordName,
+        float cy,
+        float deckUp,
+        float zStem,
+        float hy,
+        float chordHalf,
+        float halfDepthZ,
+        string assembly,
+        string frameId)
+    {
+        for (var pull = 0f; pull <= 1.2f; pull += 0.1f)
+        {
+            var scale = 1f - pull * 0.08f;
+            var y = cy * scale;
+            if (CalypsoLockGenerator.TryAddStructureBar(
+                    entities, loa, chordName, y, deckUp, zStem, hy, chordHalf, halfDepthZ,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.TransverseFrame, assembly,
+                        StationZ: zStem, DeckUp: deckUp, Joins: [frameId])))
+                return;
         }
     }
 

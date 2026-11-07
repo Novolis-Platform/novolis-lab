@@ -12,16 +12,17 @@ namespace ArtillerySimulator;
 /// </summary>
 internal sealed class KristiansandDefenseMission
 {
-    public const float CaughtMeters = 200f;
-    public const float PinnedMeters = 340f;
+    public static float CaughtMeters => ArtilleryPieceCatalog.Default.Warhead.CaughtMeters;
+    public static float PinnedMeters => ArtilleryPieceCatalog.Default.Warhead.PinnedMeters;
     public const float ObjectiveRadiusMeters = 180f;
     /// <summary>
     /// Wheeled column on primary roads (~45 km/h). Soft margin keeps spawn/place inside the cutout.
     /// </summary>
     public const float BaseColumnSpeedMetersPerSecond = 12.5f;
-    /// <summary>Tactical convoy gap (nose-to-nose along the road centerline).</summary>
-    public const float SpacingMeters = 110f;
-    private const float MapMarginMeters = 120f;
+    /// <summary>Convoy gap along the road centerline (bumper-ish spacing).</summary>
+    public const float SpacingMeters = 55f;
+    /// <summary>Tiny inset so units/roads are not glued to the far clip edge.</summary>
+    private const float MapMarginMeters = 20f;
 
     private readonly TerrainWorld _terrain;
     private readonly List<string> _approaches = [];
@@ -170,18 +171,28 @@ internal sealed class KristiansandDefenseMission
                 return;
             }
 
-            // Do not march vehicles off the heightfield cutout.
+            // Off-map = gone. No freezing on the border.
             var probe = lane.Line.At(next);
             if (!InPlayableMap(probe.X, probe.Y))
             {
-                unit.Posture = "advancing";
+                unit.Alive = false;
+                unit.Posture = "stopped";
                 _units[i] = unit;
                 continue;
             }
 
             unit.Arc = next;
             Place(lane, ref unit);
-            unit.Posture = posture;
+            if (!InPlayableMap(unit.X, unit.Z))
+            {
+                unit.Alive = false;
+                unit.Posture = "stopped";
+            }
+            else
+            {
+                unit.Posture = posture;
+            }
+
             _units[i] = unit;
         }
 
@@ -366,7 +377,7 @@ internal sealed class KristiansandDefenseMission
                 X = unit.X,
                 Z = unit.Z,
                 Alive = unit.Alive,
-                InArc = MathF.Abs(OpeningFirePlan.DeltaDegrees(bearing, TrailBearingDegrees)) <= GunModel.MaxTraverseDegrees,
+                InArc = MathF.Abs(OpeningFirePlan.DeltaDegrees(bearing, TrailBearingDegrees)) <= ArtilleryPieceCatalog.Default.MaxTraverseDegrees,
                 Posture = unit.Alive ? unit.Posture : "stopped",
                 MetersFromGun = MathF.Sqrt(dx * dx + dz * dz),
                 BearingDegrees = bearing,
@@ -647,7 +658,7 @@ internal sealed class KristiansandDefenseMission
         var aMinus = Math.Clamp(leadArc - 80f, 40f, line.Length - 40f);
         var away = Vector2.Distance(line.At(aPlus), goal) >= Vector2.Distance(line.At(aMinus), goal) ? 1 : -1;
 
-        var spacing = MathF.Max(110f, SpacingMeters - (_round - 1) * 8f);
+        var spacing = MathF.Max(45f, SpacingMeters - (_round - 1) * 4f);
         var pack = (count - 1) * spacing;
         // If the tip has no room for the pack farther out, slide the lead toward the city.
         var tail = leadArc + away * pack;

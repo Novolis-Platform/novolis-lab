@@ -20,8 +20,14 @@ internal enum CalypsoVisualLayers
     /// <summary>Longitudinal girders + transverse deckbeams.</summary>
     Longitudinals = 1 << 3,
 
-    /// <summary>Cellular sandwich deck panels (<c>deck-sandwich-*</c>).</summary>
+    /// <summary>Cellular sandwich deck panels (<c>deck-sandwich-*</c>) — faces + cores.</summary>
     DeckPlates = 1 << 4,
+
+    /// <summary>Deck face sheets only (opaque floors) — hide for structure inspection.</summary>
+    DeckFaces = 1 << 14,
+
+    /// <summary>Cellular core webs / perimeter — inspection without opaque floors.</summary>
+    DeckCores = 1 << 15,
 
     /// <summary>Interior partition walls.</summary>
     Partitions = 1 << 5,
@@ -80,11 +86,19 @@ internal enum CalypsoVisualLayers
     /// <summary>Hide-hull skeleton test: open webs + BH + girders (no decks / outfit).</summary>
     ShipSkeleton = Frames | Bulkheads | Longitudinals,
     /// <summary>
-    /// Outer skeleton layer — IML cage like structural-bay HOLD-noshell (rings + skin longs + floor).
+    /// Outer skeleton layer — IML cage (rings + skin longs + floor), shell hidden.
     /// </summary>
     OuterSkeleton = OuterHull,
     /// <summary>Stage 1 — primary steel skeleton (alias of <see cref="ShipSkeleton"/>).</summary>
     PrimaryStructure = ShipSkeleton,
+    /// <summary>
+    /// Critical structures only: pressure BHs + open frames + sandwich deck plates (+ seats).
+    /// </summary>
+    CriticalStructure = Frames | Bulkheads | DeckPlates | Joinery,
+    /// <summary>
+    /// Structural inspection: frames + girders + deck cores + joinery — deck faces hidden.
+    /// </summary>
+    StructureInspect = Frames | Longitudinals | DeckCores | Joinery,
     /// <summary>Stage 2 — primary + cellular sandwich decks.</summary>
     PrimaryPlusDecks = PrimaryStructure | DeckPlates,
     /// <summary>Stage 3 — pressure boundary (shell + BH + openings).</summary>

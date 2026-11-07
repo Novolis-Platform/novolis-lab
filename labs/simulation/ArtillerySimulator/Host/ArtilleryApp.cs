@@ -12,17 +12,11 @@ namespace ArtillerySimulator;
 internal sealed class ArtilleryApp : IDisposable
 {
     private const float PhysicsHz = 120f;
-    private const float MilsPerDegree = 6400f / 360f;
     private const float FineMilsPerSecond = 12f;
     /// <summary>Wall-clock seconds of WASD hold to reach full lay rate (smooth take-up).</summary>
     private const float LayRampSeconds = 0.4f;
     private const float KillcamReturnSeconds = 3f;
     private const int MaxLiveRounds = 12;
-    /// <summary>Educational laying / MV / met uncertainty for the probability envelope (not a classified table).</summary>
-    private const float DispersionElevMils = 10f;
-    private const float DispersionDeflMils = 14f;
-    private const float DispersionMuzzleFrac = 0.018f;
-    private const float DispersionWindFrac = 0.35f;
 
     private static readonly Color TrailHot = BallisticArcColors.Flight;
     private static readonly Color TrailCool = Color.FromArgb(90, 180, 140, 70);
@@ -30,10 +24,11 @@ internal sealed class ArtilleryApp : IDisposable
     private static readonly Color SunColor = Color.FromArgb(120, 255, 186, 110);
 
     private readonly TerrainWorld _terrain = new();
-    private readonly GunModel _gun = new();
+    private readonly GunModel _gun;
+    private readonly DeliverySampler _delivery;
     private readonly List<BallisticTrajectoryRunner> _rounds = [];
     private BallisticTrajectoryRunner _shot;
-    private readonly ProjectileBallisticSimulation _ballistics = new(GunModel.Educational155Profile, DragCoefficientLaw.BoatTail);
+    private readonly ProjectileBallisticSimulation _ballistics;
     private readonly ArtilleryCameras _camera = new();
     private readonly AtmosphereModel _atmosphere = AtmosphereModel.CreateRegionalDefault();
     private readonly SilkWireBatch _wires = new();
@@ -63,20 +58,23 @@ internal sealed class ArtilleryApp : IDisposable
     private string _profileFlash = "";
     private float _profileFlashAge = -1f;
 
-    public ArtilleryApp()
+    public ArtilleryApp(IArtilleryPieceSpec? piece = null)
     {
+        _gun = new GunModel(piece);
+        _delivery = new DeliverySampler(_gun.Spec.Errors);
+        _ballistics = new ProjectileBallisticSimulation(_gun.Spec.Projectile, DragCoefficientLaw.BoatTail);
         _shot = CreateRound();
         _rounds.Add(_shot);
         _agent = new ArtilleryLiveHost(this);
     }
 
-    private static BallisticTrajectoryRunner CreateRound() =>
+    private BallisticTrajectoryRunner CreateRound() =>
         new(new BallisticTrajectoryRunnerOptions
         {
             Step = new ProjectileTerrainStepOptions
             {
                 DtSeconds = 1.0 / 120.0,
-                ProjectileRadius = GunModel.MuzzleRadius,
+                ProjectileRadius = _gun.Spec.MuzzleRadiusMeters,
             },
         });
 
@@ -90,8 +88,10 @@ internal sealed class ArtilleryApp : IDisposable
     public FrameProfiler? Profiler => _profiler;
 
     internal GunModel Gun => _gun;
+    internal DeliverySampler Delivery => _delivery;
     internal TerrainWorld Terrain => _terrain;
     internal BallisticTrajectoryRunner Shot => _shot;
+    internal AtmosphereModel Atmosphere => _atmosphere;
     internal CameraMode CameraMode => CameraMode.Orbit;
     internal string PaceText => "realtime";
     internal KristiansandDefenseMission? Mission => _mission;
@@ -145,8 +145,11 @@ internal sealed class ArtilleryApp : IDisposable
         // Fire the ordered lay the instant the breech is closed — do not wait out the slew.
         _crew.SnapTube(_gun);
         var muzzle = _gun.MuzzlePosition(_terrain.GunBaseline);
+        // PE residuals from the piece error budget; live met stays on AtmosphereModel.
+        var delivery = _delivery.SampleFire(_gun.ElevationDegrees, _gun.AzimuthDegrees, _gun.MuzzleSpeedMps);
+        var fireDir = GunModel.DirectionOf(delivery.ElevationDegrees, delivery.AzimuthDegrees);
         _shot = AcquireRound();
-        _shot.Begin(_gun.CreateProjectileState(muzzle, _gun.BarrelDirection()));
+        _shot.Begin(_gun.CreateProjectileState(muzzle, fireDir, delivery.MuzzleSpeedMps));
         _impactHandled.Remove(_shot);
         _muzzleFlash = 0.22f;
         _crew.BeginReload();
@@ -214,11 +217,15 @@ internal sealed class ArtilleryApp : IDisposable
         _layHoldSeconds = 0f;
         _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         RebuildAimPreview();
+        var def = AgentSurfaceDefinition.From<IArtillerySurface>();
         _surface = AgentSurface.AttachAll(
             _agent,
-            AgentSurfaceDefinition.From<IArtillerySurface>(),
+            def,
             new AgentAttachOptions { EnableStdio = false, EnableMcpStdio = false });
-        _ = _surface;
+        if (_surface?.Http is { } http)
+            Console.WriteLine($"Agent surface ready: {http.BaseUrl}  (MCP tools at /agent/mcp/tools)");
+        else
+            Console.WriteLine($"Agent surface attach incomplete — expected HTTP :{def.DefaultHttpPort}");
         _ = frame;
     }
 
@@ -334,9 +341,8 @@ internal sealed class ArtilleryApp : IDisposable
                 $"OPFOR  round {m.Round}  alive {m.Remaining}  stopped {m.Stopped}  nearest {m.NearestMeters / 1000f:F2} km  spawns {m.SpawnPointCount}");
         }
 
-        var wind = _atmosphere.SurfaceWindMetersPerSecond;
         sb.AppendLine(CultureInfo.InvariantCulture,
-            $"MET  wind {wind.Length():F1} m/s  rho {_atmosphere.DensityKgPerM3At(_terrain.GunBaseline.Y):F3}");
+            $"MET  {_atmosphere.WindSpeedMetersPerSecond:F1} m/s from {_atmosphere.WindFromDegrees:F0}°  ρ {_atmosphere.DensityKgPerM3At(_terrain.GunBaseline.Y):F3}  QNH {_atmosphere.ReferencePressurePa / 100.0:F0}");
         sb.AppendLine(p.ToReport().TrimEnd());
         sb.Append("F1 toggle   Ctrl+C copy dump");
         if (_profileFlashAge >= 0f && _profileFlashAge < 2.5f)
@@ -406,6 +412,10 @@ internal sealed class ArtilleryApp : IDisposable
     {
         // Realtime battle clock — aim/crew/shell stay correct even when FPS dips.
         var battleSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
+        // Coastal met feeds the same BallisticEnvironment used by previews and live rounds.
+        _atmosphere.Advance(battleSeconds);
+        if (_atmosphere.ConsumeAimInvalidation())
+            _aimDirty = true;
         // Advance the crew before fire input so Space/FIRE works on the same frame the breech closes.
         _crew.Advance(_gun, battleSeconds);
         HandleInput(frame, battleSeconds);
@@ -560,25 +570,15 @@ internal sealed class ArtilleryApp : IDisposable
             ? BuildPreview(_gun.ElevationDegrees, _gun.AzimuthDegrees, speed, windScale: 1f, coarse: false)
             : [];
 
-        // Physics probability envelope: lay mils, muzzle scatter, wind shear — translucent sibling arcs.
+        // Probability envelope from the piece PE budget (expandable via IArtilleryPieceSpec).
         _dispersionPreviews.Clear();
-        var dElev = DispersionElevMils / MilsPerDegree;
-        var dAz = DispersionDeflMils / MilsPerDegree;
-        // Four envelope samples keep the cone readable without 8× ballistic previews each aim change.
-        ReadOnlySpan<(float De, float Da, float Mv, float Wind)> samples =
-        [
-            (dElev, dAz * 0.35f, DispersionMuzzleFrac, DispersionWindFrac),
-            (-dElev, -dAz * 0.35f, -DispersionMuzzleFrac, -DispersionWindFrac),
-            (dElev * 0.4f, dAz, DispersionMuzzleFrac * 0.5f, -DispersionWindFrac),
-            (-dElev * 0.4f, -dAz, -DispersionMuzzleFrac * 0.5f, DispersionWindFrac),
-        ];
-        foreach (var s in samples)
+        foreach (var s in _delivery.EnvelopeCorners())
         {
             var arc = BuildPreview(
-                elev + s.De,
-                az + s.Da,
-                speed * (1f + s.Mv),
-                windScale: 1f + s.Wind,
+                elev + s.ElevationDegrees,
+                az + s.AzimuthDegrees,
+                speed * (1f + s.MuzzleFraction),
+                windScale: 1f + s.WindFraction,
                 coarse: true);
             if (arc.Count >= 2)
                 _dispersionPreviews.Add(arc);
@@ -595,24 +595,63 @@ internal sealed class ArtilleryApp : IDisposable
         bool coarse)
     {
         var start = _gun.PredictState(_terrain.GunBaseline, elevation, azimuth, speed);
-        var baseEnv = _atmosphere.BallisticEnvironment(start.Position.Y);
-        var env = windScale == 1f
-            ? baseEnv
-            : new ProjectileBallisticEnvironment(
-                baseEnv.GravityMetersPerSecondSquared,
-                baseEnv.AirDensityKgPerM3,
-                baseEnv.WindMetersPerSecond * windScale,
-                baseEnv.TemperatureKelvin,
-                baseEnv.LatitudeDegrees);
-        // Long 155 mm loft can exceed 60 s — do not clip the aim arc mid-air at apogee.
-        return BallisticTrajectoryRunner.BuildPreview(
-            _ballistics,
-            env,
-            _terrain.Field,
-            start,
-            dtSeconds: coarse ? 1.0 / 20.0 : 1.0 / 30.0,
-            maxTimeSeconds: 120.0,
-            maxPoints: coarse ? 1_200 : 2_400);
+        var dt = coarse ? 1.0 / 20.0 : 1.0 / 30.0;
+        var maxPoints = coarse ? 1_200 : 2_400;
+        const double maxTimeSeconds = 120.0;
+        // Same altitude-resampled met as live AdvanceOne — MPI is not a frozen surface snapshot.
+        var points = new List<Vector3>(Math.Min(Math.Max(64, maxPoints), 8_192)) { start.Position };
+        var state = start;
+        var finished = false;
+        var drawCap = Math.Max(8, maxPoints);
+        var hardSteps = Math.Max(drawCap * 4, (int)Math.Ceiling(maxTimeSeconds / dt) + 8);
+        var terrain = _terrain.Field;
+
+        for (var step = 0; step < hardSteps; step++)
+        {
+            var prev = state.Position;
+            var baseEnv = _atmosphere.BallisticEnvironment(state.Position.Y);
+            var env = windScale == 1f
+                ? baseEnv
+                : new ProjectileBallisticEnvironment(
+                    baseEnv.GravityMetersPerSecondSquared,
+                    baseEnv.AirDensityKgPerM3,
+                    baseEnv.WindMetersPerSecond * windScale,
+                    baseEnv.TemperatureKelvin,
+                    baseEnv.LatitudeDegrees);
+            state = _ballistics.Step(state, dt, env);
+            var p = state.Position;
+
+            if (terrain.TrySegmentLeavesRange(prev, p, out var boundaryHit, out _))
+            {
+                points.Add(terrain.ProjectOntoSurface(boundaryHit));
+                finished = true;
+                break;
+            }
+
+            if (!terrain.IsInside(p.X, p.Z))
+            {
+                points.Add(terrain.ProjectOntoSurface(p));
+                finished = true;
+                break;
+            }
+
+            if (terrain.TryHeightfieldContact(p, 0.08f))
+            {
+                points.Add(p);
+                finished = true;
+                break;
+            }
+
+            if (points.Count < drawCap)
+                points.Add(p);
+            else if (step % 3 == 0)
+                points[^1] = p;
+        }
+
+        if (!finished && points.Count >= 1)
+            points[^1] = terrain.ProjectOntoSurface(state.Position);
+
+        return points;
     }
 
     private void HandleInput(SilkFrame frame, float battleSeconds)
@@ -658,8 +697,8 @@ internal sealed class ArtilleryApp : IDisposable
 
         // Soft take-up on wall clock so taps stay small; full rate after LayRampSeconds.
         var ramp = Math.Clamp(_layHoldSeconds / LayRampSeconds, 0.2f, 1f);
-        var elevate = (fine ? FineMilsPerSecond : CrewDrill.ElevateMilsPerSecond) / MilsPerDegree * battleSeconds * ramp;
-        var traverse = (fine ? FineMilsPerSecond : CrewDrill.TraverseMilsPerSecond) / MilsPerDegree * battleSeconds * ramp;
+        var elevate = (fine ? FineMilsPerSecond : CrewDrill.ElevateMilsPerSecond) / NatoMils.MilsPerDegree * battleSeconds * ramp;
+        var traverse = (fine ? FineMilsPerSecond : CrewDrill.TraverseMilsPerSecond) / NatoMils.MilsPerDegree * battleSeconds * ramp;
 
         var dElev = 0f;
         var dTrav = 0f;

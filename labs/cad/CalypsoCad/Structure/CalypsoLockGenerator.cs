@@ -106,64 +106,6 @@ internal static class CalypsoLockGenerator
     }
 
     /// <summary>
-    /// Piece-by-piece midbody bay only (F24–F28, optional adjacent F28–F32). No rooms/outfit.
-    /// Writes <c>calypso-structural-bay.cadjson</c> under the generated directory.
-    /// </summary>
-    public static string GenerateStructuralBay(
-        bool includeAdjacentBay = false,
-        bool includeHoldBay = false,
-        string? outputDirectory = null)
-    {
-        var dir = outputDirectory ?? DefaultOutputDirectory;
-        Directory.CreateDirectory(dir);
-        var stamp = DateTime.UtcNow.ToString("o");
-        FrameWebPlateRegistry.Clear();
-        var lockDoc = LoadLock();
-        UseLoftStations(lockDoc);
-        var env = lockDoc.Envelope ?? throw new InvalidOperationException("Lock missing envelope");
-        var loa = (float)env.Loa;
-        var web = lockDoc.Frames?.WebM is > 0 ? (float)lockDoc.Frames.WebM : 0.15f;
-        var tPlate = lockDoc.Decks?.TPlate is > 0.02 ? (float)lockDoc.Decks.TPlate : 0.1f;
-        var deckUps = DeckStructureElevations(lockDoc);
-
-        var entities = new List<CadEntity>();
-        StructuralBayEmitter.Emit(
-            entities, loa, web, tPlate, deckUps,
-            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
-            includeAdjacentBay,
-            includeHoldBay,
-            (z, margin) => CollectHatchWebPortals(lockDoc, z, margin, deckUps));
-
-        var layers = BuildLayers(stamp);
-        var shapes = BuildShapes(stamp);
-        var cad = new CadDocument
-        {
-            Name = "Calypso — structural bay (piece-by-piece)",
-            Generator = new CadGenerator { Name = "CalypsoCad.StructuralBay", Version = "2026.1.0" },
-            CreatedAt = stamp,
-            ModifiedAt = stamp,
-            LayersDocument = "calypso.cadlayers.json",
-            ShapesDocument = "calypso.cadshapejson",
-            Layers =
-            [
-                new() { Id = LayerHull, Name = "S-HULL", Color = [0.42f, 0.48f, 0.55f] },
-                new() { Id = LayerStruct, Name = "S-STRUCT", Color = [0.55f, 0.58f, 0.62f] },
-            ],
-            Entities = entities,
-            Camera = new CadCamera
-            {
-                Distance = 22f,
-                Target = [0f, 5.5f, loa * 0.5f - 26f],
-                Yaw = 0.95f,
-                Pitch = 0.42f,
-            },
-        };
-        StructuralBayEmitter.TagDocument(cad, includeAdjacentBay, includeHoldBay);
-        CadDocumentBundle.Write(dir, layers, shapes, cad, "calypso-structural-bay");
-        return dir;
-    }
-
-    /// <summary>
     /// Keep only hand-authored exterior (e.g. acceptance / Draft Studio saves).
     /// Generator-owned manufacturer OML/IML must be rebuilt each regenerate — otherwise an old blob sticks.
     /// </summary>
@@ -362,7 +304,7 @@ internal static class CalypsoLockGenerator
             entities.Add(iml);
 
         // Topology-first: primary skeleton + structural decks before any rooms/partitions/cargo.
-        AddStructure(entities, lockDoc, loa, beam, oah);
+        var criticalJoints = AddStructure(entities, lockDoc, loa, beam, oah);
 
         var wallJobs = new List<(CadEntity Space, int Deck, float Up0, float Height)>();
         foreach (var comp in lockDoc.Compartments ?? [])
@@ -543,6 +485,7 @@ internal static class CalypsoLockGenerator
         var vacuumClosed = ShipCad.ApplyVacuumSeal(cad, cabinKPa: 101.3f, exteriorKPa: 0f);
         cad.Properties ??= new Dictionary<string, JsonElement>();
         cad.Properties["vacuumSealedHatches"] = JsonSerializer.SerializeToElement(vacuumClosed);
+        StructuralAssemblyGraph.WriteJointsToDocument(cad, criticalJoints);
 
         ShipDocumentMetrics.SetShipEnvelope(cad, loa, beam, oah, DeckSpacing);
         cad.Properties!["canon"] = JsonSerializer.SerializeToElement("CAL-INT-DK-001 Rev F deck plans");
@@ -2171,7 +2114,8 @@ internal static class CalypsoLockGenerator
         };
     }
 
-    private static void AddStructure(List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa, float beam, float oah)
+    private static List<StructuralJoint> AddStructure(
+        List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa, float beam, float oah)
     {
         _ = beam;
         _ = oah;
@@ -2181,6 +2125,7 @@ internal static class CalypsoLockGenerator
         var deckUps = topo.DeckUps;
         var tPlate = topo.TPlate;
         var openAtriums = topo.OpenAtriumSpans;
+        var bhSchedule = CalypsoBulkheads.BuildSchedule(loa);
 
         var zMax = ActiveStations[^1].Z;
         var skin = TShell + 0.05f;
@@ -2238,9 +2183,14 @@ internal static class CalypsoLockGenerator
             entities, loa, topo.FrameStations, web, halfDepthZ, deckUps, tPlate,
             topo.InOpenHoldCell, openAtriums);
 
-        // 4) Cellular sandwich decks (face + core + face).
+        // 4) Cellular sandwich decks — bay edges on frame stations, joins to frames/BHs.
+        var bhStations = bhSchedule.Select(b => (b.Id, b.ZStem)).ToList();
         CalypsoShipbuildingFrames.AddCellularSandwichDecks(
-            entities, loa, topo.ZStart, topo.ZEnd, topo.FrameBay, topo.SandwichDecks, tPlate, openAtriums);
+            entities, loa, topo.ZStart, topo.ZEnd, topo.FrameBay, topo.SandwichDecks, tPlate, openAtriums,
+            web, topo.FrameStations, bhStations);
+
+        // 4b) Critical structure seats: BH×deck + frame×deck + BH×nearest frame joints.
+        var joints = CriticalStructureConnectivity.Connect(entities, loa, topo, bhSchedule);
 
         // 5) Aft coaming / ramp (thrust / stern aperture).
         var doorW = lockDoc.Hold?.DoorW is > 0 ? (float)lockDoc.Hold.DoorW : 14f;
@@ -2258,6 +2208,7 @@ internal static class CalypsoLockGenerator
         var rampZ = stern - web - rampHalf;
         TryAddBar(entities, loa, "ramp-aft", 0f, sill + 0.06f, rampZ, halfW, 0.04f, rampHalf,
             meta: new StructuralSolidMeta(StructuralRoles.ThrustStructure, "ramp-aft", StationZ: rampZ));
+        return joints;
     }
 
     private static List<float> DeckStructureElevations(CalypsoLockDocument lockDoc)
@@ -2465,7 +2416,8 @@ internal static class CalypsoLockGenerator
         return spans;
     }
 
-    internal static void TryAddStructureBar(
+    /// <returns>True when the bar was placed at the requested extents (no silent shrink).</returns>
+    internal static bool TryAddStructureBar(
         List<CadEntity> entities,
         float loa,
         string name,
@@ -2504,13 +2456,9 @@ internal static class CalypsoLockGenerator
         if (ha < 0.05f || hf < 0.02f || hz < 0.02f)
             return false;
 
-        // Conservative AABB fit using flange radius (not full edge length).
+        // Fail closed — never silently shrink flange/edge to pass containment.
         if (!BoxFits(y, up, zFromStem, hf + 0.02f, hf + 0.02f, hz))
-        {
-            hf *= 0.75f;
-            if (hf < 0.03f || !BoxFits(y, up, zFromStem, hf + 0.02f, hf + 0.02f, hz))
-                return false;
-        }
+            return false;
 
         var center = LockToWorld(y, up, zFromStem, loa);
         var resolved = meta ?? InferStructuralMeta(name, zFromStem, up);
@@ -2526,7 +2474,7 @@ internal static class CalypsoLockGenerator
         return true;
     }
 
-    private static void TryAddBar(
+    private static bool TryAddBar(
         List<CadEntity> entities,
         float loa,
         string name,
@@ -2545,12 +2493,21 @@ internal static class CalypsoLockGenerator
         var hz = MathF.Abs(halfZ);
         var floor = MathF.Max(0.01f, minHalf);
         if (hy < floor || hu < floor || hz < floor)
-            return;
-        // Ship-height webs/BHs: never chew plate height to satisfy IML — shrink athwart only.
-        // Oriented ring edges and sandwich faces: do not silently chew primary length/thickness.
-        var keepHeight = name.Contains("web-solid", StringComparison.OrdinalIgnoreCase)
-                         || name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
-                         || name.Contains("-face-", StringComparison.OrdinalIgnoreCase)
+            return false;
+
+        // Shipbuilding 102: primary steel must not silently shrink until BoxFits — that breaks
+        // end-to-end continuity (girder gaps, free ring ends). Fail closed; caller repositions.
+        var primary = IsPrimaryStructureName(name);
+        if (primary)
+        {
+            if (!BoxFits(y, up, zFromStem, hy, hu, hz))
+                return false;
+            AddFrameBar(entities, loa, name, y, up, zFromStem, hy, hu, hz, fabPartId, meta);
+            return true;
+        }
+
+        // Outfit / non-primary: limited shrink is still allowed.
+        var keepHeight = name.Contains("-face-", StringComparison.OrdinalIgnoreCase)
                          || name.Contains("-rib-", StringComparison.OrdinalIgnoreCase)
                          || name.Contains("-peri-", StringComparison.OrdinalIgnoreCase);
         for (var n = 0; n < 10; n++)
@@ -2558,16 +2515,30 @@ internal static class CalypsoLockGenerator
             if (BoxFits(y, up, zFromStem, hy, hu, hz))
             {
                 AddFrameBar(entities, loa, name, y, up, zFromStem, hy, hu, hz, fabPartId, meta);
-                return;
+                return true;
             }
 
             hy *= 0.8f;
             if (!keepHeight)
                 hu *= 0.8f;
             if (hy < floor * 2f || hu < floor * 2f)
-                return;
+                return false;
         }
+
+        return false;
     }
+
+    private static bool IsPrimaryStructureName(string name) =>
+        name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("shell-", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("-join-", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("web-solid", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase);
 
     private static void AddFrameBar(
         List<CadEntity> entities,

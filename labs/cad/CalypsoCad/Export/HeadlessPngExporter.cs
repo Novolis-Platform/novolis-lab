@@ -95,6 +95,17 @@ internal static class HeadlessPngExporter
             session.StatusText = "headless:layer-outer-skeleton";
         });
 
+        Add("layer-critical-structure", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.CriticalStructure;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            // Full solid — no cutaway / longitudinal cut. Bow-quarter + 150% zoom.
+            renderer.ApplyOrbitPreset("bow-quarter");
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            renderer.ZoomOrbit(1.5f);
+            session.StatusText = "headless:layer-critical-structure";
+        });
+
         Add("layer-primary-steel", () =>
         {
             session.VisualLayers = CalypsoVisualLayers.PrimaryStructure;

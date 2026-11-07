@@ -6,6 +6,7 @@ namespace ArtillerySimulator;
 
 internal static class Program
 {
+    // Headless agent: --headless  (invisible window; HTTP agent on :18770)
     // Headless profile: --profile [frames=180] [--json path]
     // Placement dump: --dump-sites
     private static void Main(string[] args)
@@ -16,6 +17,8 @@ internal static class Program
             return;
         }
 
+        var headless = args.Any(a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(a, "--agent", StringComparison.OrdinalIgnoreCase));
         var profileFrames = ParseProfileFrames(args);
         var jsonPath = ParseJsonPath(args);
         using var game = new ArtilleryApp();
@@ -24,6 +27,23 @@ internal static class Program
             game.EnableProfile(frames, jsonPath);
             SilkGame.Run(
                 "ArtillerySimulator profile",
+                1280,
+                720,
+                game.Initialize,
+                game.Update,
+                renderOverlay: null,
+                captureSession: null,
+                visible: false);
+            return;
+        }
+
+        if (headless)
+        {
+            Console.WriteLine("ArtillerySimulator headless — agent HTTP http://127.0.0.1:18770/");
+            Console.WriteLine("  GET  /agent/hello  /agent/snapshot  /agent/actions  /agent/mcp/tools");
+            Console.WriteLine("  POST /agent/command");
+            SilkGame.Run(
+                "ArtillerySimulator headless",
                 1280,
                 720,
                 game.Initialize,

@@ -5,15 +5,16 @@ internal static class CalypsoVisualLayerPresets
     private static readonly (CalypsoVisualLayers Layers, string Label)[] OrbitCycle =
     [
         (CalypsoVisualLayers.OuterSkeleton, "0 outer skeleton (rings+skin longs)"),
-        (CalypsoVisualLayers.PrimaryStructure, "1 primary steel (frames+BH+girders)"),
-        (CalypsoVisualLayers.PrimaryPlusDecks, "2 + sandwich decks"),
-        (CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.Joinery, "3 + joinery stubs"),
-        (CalypsoVisualLayers.PressureStructure | CalypsoVisualLayers.Airlocks, "4 pressure + airlocks"),
+        (CalypsoVisualLayers.CriticalStructure, "1 critical (BH+frames+deckplates)"),
+        (CalypsoVisualLayers.PrimaryStructure, "2 primary steel (frames+BH+girders)"),
+        (CalypsoVisualLayers.PrimaryPlusDecks, "3 + sandwich decks"),
+        (CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.Joinery, "4 + joinery stubs"),
+        (CalypsoVisualLayers.PressureStructure | CalypsoVisualLayers.Airlocks, "5 pressure + airlocks"),
         (CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.SpaceFinish | CalypsoVisualLayers.PassagewayCutouts,
-            "5 passageway volumes"),
+            "6 passageway volumes"),
         (CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.Partitions | CalypsoVisualLayers.Openings
-         | CalypsoVisualLayers.Airlocks, "6 partitions + openings + airlocks"),
-        (CalypsoVisualLayers.CompleteArrangement, "7 complete arrangement"),
+         | CalypsoVisualLayers.Airlocks, "7 partitions + openings + airlocks"),
+        (CalypsoVisualLayers.CompleteArrangement, "8 complete arrangement"),
         (CalypsoVisualLayers.Dk001Plan, "DK-001 plan"),
         (CalypsoVisualLayers.StructureNoHull, "structure no OML"),
         (CalypsoVisualLayers.HoldCargo, "HOLD cargo"),

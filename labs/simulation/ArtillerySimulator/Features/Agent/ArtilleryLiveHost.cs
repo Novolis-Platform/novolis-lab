@@ -335,9 +335,29 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             ["crew"] = _game.Crew.Token(gun),
             ["reload"] = _game.Crew.Ready(gun) ? "ready" : MathF.Ceiling(_game.Crew.BusySeconds(gun)).ToString("F0", CultureInfo.InvariantCulture),
             ["predictedMeters"] = _game.PredictedRangeMeters.ToString("F0", CultureInfo.InvariantCulture),
+            ["gunX"] = terrain.GunBaseline.X.ToString("F0", CultureInfo.InvariantCulture),
+            ["gunZ"] = terrain.GunBaseline.Z.ToString("F0", CultureInfo.InvariantCulture),
             ["terrain"] = "Kristiansand",
             ["latitude"] = KristiansandHeightSampler.MeanLatitudeDegrees.ToString("F2", CultureInfo.InvariantCulture),
+            ["windMps"] = _game.Atmosphere.WindSpeedMetersPerSecond.ToString("F1", CultureInfo.InvariantCulture),
+            ["windFrom"] = _game.Atmosphere.WindFromDegrees.ToString("F0", CultureInfo.InvariantCulture),
+            ["windToward"] = _game.Atmosphere.WindTowardDegrees.ToString("F0", CultureInfo.InvariantCulture),
+            ["tempC"] = (_game.Atmosphere.ReferenceTemperatureKelvin - 273.15).ToString("F1", CultureInfo.InvariantCulture),
+            ["rh"] = (_game.Atmosphere.RelativeHumidity * 100.0).ToString("F0", CultureInfo.InvariantCulture),
+            ["qnh"] = (_game.Atmosphere.ReferencePressurePa / 100.0).ToString("F0", CultureInfo.InvariantCulture),
+            ["metAge"] = _game.Atmosphere.BattleAgeSeconds.ToString("F0", CultureInfo.InvariantCulture),
+            ["piece"] = gun.Spec.Id,
+            ["pieceName"] = gun.Spec.ShortName,
+            ["peElevMils"] = gun.Spec.Errors.ElevationPeMils.ToString("F2", CultureInfo.InvariantCulture),
+            ["peDeflMils"] = gun.Spec.Errors.DeflectionPeMils.ToString("F2", CultureInfo.InvariantCulture),
+            ["peMvFrac"] = gun.Spec.Errors.MuzzleVelocityPeFraction.ToString("F4", CultureInfo.InvariantCulture),
         };
+        if (_game.Delivery.LastFire is { } last)
+        {
+            lines["fireElevResMils"] = last.ElevationResidualMils.ToString("F2", CultureInfo.InvariantCulture);
+            lines["fireDeflResMils"] = last.DeflectionResidualMils.ToString("F2", CultureInfo.InvariantCulture);
+            lines["fireMvResFrac"] = last.MuzzleResidualFraction.ToString("F4", CultureInfo.InvariantCulture);
+        }
         if (_game.Mission is { } mission)
         {
             lines["deflection"] = gun.DeflectionDegrees.ToString("F1", CultureInfo.InvariantCulture);

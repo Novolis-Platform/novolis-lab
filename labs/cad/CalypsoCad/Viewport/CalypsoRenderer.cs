@@ -2183,28 +2183,32 @@ internal sealed class CalypsoRenderer
             if (string.Equals(role, "PressureBulkhead", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Bulkheads;
             if (string.Equals(role, "StructuralDeck", StringComparison.OrdinalIgnoreCase))
-                return CalypsoVisualLayers.DeckPlates | outer;
+                return DeckPlateFlags(box) | outer;
             if (string.Equals(role, "LongitudinalGirder", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(role, "ShellStiffener", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Longitudinals | outer;
+            // Stiffeners are welded to shell plating — hide with HullShell (Test D).
+            if (string.Equals(role, "ShellStiffener", StringComparison.OrdinalIgnoreCase))
+                return CalypsoVisualLayers.HullShell | CalypsoVisualLayers.OuterHull;
             if (string.Equals(role, "ShellPanel", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.HullShell;
         }
 
         if (n.StartsWith("shell-panel-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.HullShell;
-        if (n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase)
-            || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase))
+        if (n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.HullShell | CalypsoVisualLayers.OuterHull;
+        if (n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.OuterHull;
-        if (n.Contains("-join-", StringComparison.OrdinalIgnoreCase))
+        if (n.Contains("-join-", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Joinery;
         if (n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Frames | outer;
         if (n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Bulkheads;
         if (n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.DeckPlates | outer;
+            return DeckPlateFlags(box) | outer;
         if (n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
             || n.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
@@ -2212,6 +2216,24 @@ internal sealed class CalypsoRenderer
             return CalypsoVisualLayers.Longitudinals | outer;
         return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Bulkheads
                | CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.DeckPlates;
+    }
+
+    private static CalypsoVisualLayers DeckPlateFlags(CadEntity box)
+    {
+        var n = box.Name ?? "";
+        var surface = box.Properties is not null
+                      && box.Properties.TryGetValue("deckSurface", out var s)
+                      && s.ValueKind == System.Text.Json.JsonValueKind.String
+            ? s.GetString()
+            : null;
+        if (string.Equals(surface, "face", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-face-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.DeckFaces | CalypsoVisualLayers.DeckPlates;
+        if (string.Equals(surface, "core", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-rib-", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-peri-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.DeckCores | CalypsoVisualLayers.DeckPlates;
+        return CalypsoVisualLayers.DeckPlates | CalypsoVisualLayers.DeckFaces | CalypsoVisualLayers.DeckCores;
     }
 
     /// <summary>
@@ -2229,11 +2251,7 @@ internal sealed class CalypsoRenderer
         if (n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
             return true;
-        // Bottom sole faces/perimeter only (not sandwich ribs — those clutter the cage read).
-        if (n.StartsWith("deck-sandwich-dkm1-", StringComparison.OrdinalIgnoreCase)
-            && (n.Contains("-face-", StringComparison.OrdinalIgnoreCase)
-                || n.Contains("-peri-", StringComparison.OrdinalIgnoreCase)))
-            return true;
+        // HOLD floor chord only — full-LOA sandwich sole turns the cage into a slab (not HOLD-noshell).
         return false;
     }
 

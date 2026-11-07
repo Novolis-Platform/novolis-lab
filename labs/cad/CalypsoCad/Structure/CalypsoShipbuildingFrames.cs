@@ -108,11 +108,15 @@ internal static class CalypsoShipbuildingFrames
         float inset,
         string namePrefix)
     {
-        // Polygonal ring: one oriented member per IML octagon edge (not AABB axis approximations).
-        // Extra skin inset so side/bilge edges survive BoxFits at midbody (was dropping 6/8 bars).
-        var ring = InnerOctagonRing(zStem, inset + web * 0.85f + 0.12f);
+        // Oriented polygonal ring along IML (Shipbuilding 101) — not axis-aligned AABB stubs.
+        // Pull inboard until the flange nests; never shorten the edge (continuity).
+        CalypsoLockGenerator.SectionAtPublic(zStem, out var halfBCheck, out var halfHCheck, out _, out _, out _);
+        if (halfBCheck < 1.45f || halfHCheck < 1.45f)
+            return;
+
+        var ring = InnerOctagonRing(zStem, inset + web * 1.05f + 0.18f);
         var (cy0, cu0) = ring.GetSectionCenter();
-        var flangeHalf = MathF.Max(0.05f, web * 0.32f);
+        var flangeHalf = MathF.Max(0.05f, web * 0.34f);
         var asm = frameId.Contains('-')
             ? string.Join('-', frameId.Split('-').Take(2))
             : frameId;
@@ -125,9 +129,9 @@ internal static class CalypsoShipbuildingFrames
             var len = MathF.Sqrt(dy * dy + du * du);
             if (len < 0.12f)
                 continue;
+
             var edgeY = (a.Y + b.Y) * 0.5f;
             var edgeU = (a.Up + b.Up) * 0.5f;
-            // Pull inboard until the flange AABB nests (midbody side edges used to vanish).
             var inwardY = cy0 - edgeY;
             var inwardU = cu0 - edgeU;
             var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
@@ -135,50 +139,30 @@ internal static class CalypsoShipbuildingFrames
             var nu = inwardLen > 1e-4f ? inwardU / inwardLen : 0f;
             var halfLen = len * 0.5f;
             var angle = MathF.Atan2(du, dy);
-            var hf = flangeHalf;
             var placed = false;
-            for (var attempt = 0; attempt < 8 && !placed; attempt++)
+            for (var attempt = 0; attempt < 10 && !placed; attempt++)
             {
-                var pull = MathF.Min(hf * (1.1f + attempt * 0.35f), inwardLen * 0.85f);
+                var pull = MathF.Min(flangeHalf * (1.2f + attempt * 0.45f), inwardLen * 0.92f);
                 var y = edgeY + ny * pull;
                 var u = edgeU + nu * pull;
-                var ha = halfLen * (attempt < 3 ? 1f : MathF.Max(0.55f, 1f - attempt * 0.08f));
+                var hf = MathF.Max(0.035f, flangeHalf * MathF.Pow(0.9f, attempt));
                 placed = CalypsoLockGenerator.TryAddOrientedStructureBar(
                     entities, loa, $"{frameId}-{namePrefix}-{i}",
                     y, u, zStem,
-                    halfAlongEdge: ha,
+                    halfAlongEdge: halfLen,
                     halfFlange: hf,
                     halfDepthZ: halfDepthZ,
                     orientZ: angle,
                     meta: new StructuralSolidMeta(
                         StructuralRoles.TransverseFrame, asm,
                         StationZ: zStem, DeckUp: u,
-                        Joins: [$"{frameId}-{namePrefix}-{(i + ring.Length - 1) % ring.Length}",
-                                $"{frameId}-{namePrefix}-{(i + 1) % ring.Length}"]));
-                if (!placed)
-                    hf = MathF.Max(0.035f, hf * 0.82f);
+                        Joins:
+                        [
+                            $"{frameId}-{namePrefix}-{(i + ring.Length - 1) % ring.Length}",
+                            $"{frameId}-{namePrefix}-{(i + 1) % ring.Length}",
+                        ]));
             }
-
-            // Last resort: axis-aligned stub so the cage never loses a corner (OuterSkeleton completeness).
-            if (!placed)
-            {
-                var pull = MathF.Min(0.35f, inwardLen * 0.5f);
-                var y = edgeY + ny * pull;
-                var u = edgeU + nu * pull;
-                var hy = MathF.Max(0.06f, MathF.Abs(dy) * 0.45f);
-                var hu = MathF.Max(0.06f, MathF.Abs(du) * 0.45f);
-                if (hy < 0.08f && hu < 0.08f)
-                {
-                    hy = flangeHalf;
-                    hu = flangeHalf;
-                }
-
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities, loa, $"{frameId}-{namePrefix}-{i}",
-                    y, u, zStem, hy, hu, halfDepthZ,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.TransverseFrame, asm, StationZ: zStem, DeckUp: u));
-            }
+            // Fail closed — do not invent a disconnected AABB stub (Shipbuilding 102).
         }
     }
 
@@ -517,6 +501,7 @@ internal static class CalypsoShipbuildingFrames
     /// <summary>
     /// Cellular sandwich deck panels: top face + core + bottom face per bay.
     /// Names <c>deck-sandwich-dk{n}-*-face-top|core|face-bot</c>; plate top = lock elevation.
+    /// Bay edges land on frame stations (overlap into web) and join nearby BH assemblies.
     /// Upper decks do not cross ENG atrium / HOLD cargo (floor plate at <c>FloorTop</c> remains).
     /// </summary>
     public static void AddCellularSandwichDecks(
@@ -527,19 +512,35 @@ internal static class CalypsoShipbuildingFrames
         float frameBay,
         IReadOnlyList<(int DeckNum, float PlateTop)> decks,
         float tPlate,
-        IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null)
+        IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null,
+        float web = 0.15f,
+        IReadOnlyList<(string Id, float ZStem, bool BowAligned)>? frameStations = null,
+        IReadOnlyList<(string Id, float ZStem)>? bulkheadStations = null)
     {
         if (zEnd <= zStart + 0.5f || decks.Count == 0 || tPlate < 0.02f)
             return;
 
+        var stations = frameStations is { Count: >= 2 }
+            ? frameStations.Select(f => f.ZStem).OrderBy(z => z).ToList()
+            : BuildUniformBayEdges(zStart, zEnd, frameBay);
+
         var bayIndex = 0;
-        for (var z = zStart; z < zEnd - 0.25f; z += frameBay)
+        for (var i = 0; i < stations.Count - 1; i++)
         {
-            var zc = MathF.Min(z + frameBay * 0.5f, zEnd - 0.15f);
-            // Meet neighbors at bay planes (fabrication segments; assembled continuity).
-            var halfLenZ = MathF.Min(frameBay * 0.5f, zEnd - zc);
+            var z0 = stations[i];
+            var z1 = stations[i + 1];
+            if (z1 - z0 < 0.4f)
+                continue;
+
+            var zc = (z0 + z1) * 0.5f;
+            // Overlap into both frame webs so peri edges seat on chords (critical continuity).
+            var halfLenZ = (z1 - z0) * 0.5f + web * 0.45f;
             if (halfLenZ < 0.2f)
-                break;
+                continue;
+
+            var foreFrame = FrameAsmAt(frameStations, z0);
+            var aftFrame = FrameAsmAt(frameStations, z1);
+            var bhJoins = NearbyBulkheads(bulkheadStations, z0, z1);
 
             foreach (var (deckNum, plateTop) in decks)
             {
@@ -555,29 +556,88 @@ internal static class CalypsoShipbuildingFrames
                     continue;
 
                 var tag = deckNum < 0 ? "m1" : deckNum.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var deckAsm = $"deck-dk{tag}";
                 if (IsOpenAtriumDeck(zc, plateTop, openAtriumSpans))
                 {
                     // ENG atrium / HOLD cargo: keep shirt-sleeves CORR decks; void only the center cell.
                     if (IsHoldCargoStem(zc, openAtriumSpans))
                         continue; // HOLD = open bay, no upper plates at all
                     EmitCorridorDeckStrips(
-                        entities, loa, tag, bayIndex, plateTop, tPlate, zc, halfLenZ, halfY);
+                        entities, loa, tag, bayIndex, plateTop, tPlate, zc, halfLenZ, halfY,
+                        foreFrame, aftFrame, bhJoins);
                     continue;
                 }
 
                 EmitSandwichPanel(
-                    entities, loa, $"deck-sandwich-dk{tag}-b{bayIndex}",
-                    0f, plateTop, tPlate, zc, halfY * 0.98f, halfLenZ, $"deck-dk{tag}");
+                    entities, loa, $"deck-sandwich-dk{tag}-z{z0:0}-b{bayIndex}",
+                    0f, plateTop, tPlate, zc, halfY * 0.98f, halfLenZ, deckAsm,
+                    foreFrame, aftFrame, bhJoins);
             }
 
             bayIndex++;
         }
     }
 
+    private static List<float> BuildUniformBayEdges(float zStart, float zEnd, float frameBay)
+    {
+        var list = new List<float>();
+        for (var z = zStart; z <= zEnd + 0.01f; z += frameBay)
+            list.Add(MathF.Min(z, zEnd));
+        if (list.Count == 0 || list[^1] < zEnd - 0.05f)
+            list.Add(zEnd);
+        return list;
+    }
+
+    private static string? FrameAsmAt(
+        IReadOnlyList<(string Id, float ZStem, bool BowAligned)>? frames, float zStem)
+    {
+        if (frames is null || frames.Count == 0)
+            return null;
+        var best = frames
+            .Select(f => (f.Id, Dist: MathF.Abs(f.ZStem - zStem)))
+            .OrderBy(f => f.Dist)
+            .First();
+        if (best.Dist > 0.35f)
+            return null;
+        var id = best.Id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? best.Id : $"frame-{best.Id}";
+        var segs = id.Split('-');
+        return segs.Length >= 2 ? $"frame-{segs[1]}" : id;
+    }
+
+    private static IReadOnlyList<string> NearbyBulkheads(
+        IReadOnlyList<(string Id, float ZStem)>? bulkheads, float z0, float z1)
+    {
+        if (bulkheads is null || bulkheads.Count == 0)
+            return [];
+        return bulkheads
+            .Where(b => b.ZStem >= z0 - 0.05f && b.ZStem <= z1 + 0.05f)
+            .Select(b => $"bh-{b.Id}")
+            .ToList();
+    }
+
     /// <summary>
     /// Cellular sandwich: face-top + face-bot + internal orthogonal ribs + perimeter.
     /// Total stack thickness equals <paramref name="tPlate"/> (no overlapping solid "core" slab).
     /// </summary>
+    /// <summary>Public sandwich emit for the two-bay structural proof.</summary>
+    public static void EmitSandwichPanelPublic(
+        List<CadEntity> entities,
+        float loa,
+        string baseName,
+        float y,
+        float plateTop,
+        float tPlate,
+        float zc,
+        float halfY,
+        float halfLenZ,
+        string assembly,
+        string? foreFrameAsm = null,
+        string? aftFrameAsm = null,
+        IReadOnlyList<string>? bulkheadAsms = null) =>
+        EmitSandwichPanel(
+            entities, loa, baseName, y, plateTop, tPlate, zc, halfY, halfLenZ, assembly,
+            foreFrameAsm, aftFrameAsm, bulkheadAsms);
+
     private static void EmitSandwichPanel(
         List<CadEntity> entities,
         float loa,
@@ -588,7 +648,10 @@ internal static class CalypsoShipbuildingFrames
         float zc,
         float halfY,
         float halfLenZ,
-        string assembly)
+        string assembly,
+        string? foreFrameAsm = null,
+        string? aftFrameAsm = null,
+        IReadOnlyList<string>? bulkheadAsms = null)
     {
         // Faces thin; residual height = cellular cavity for ribs. faceHalf ≥ TryAdd minHalf (0.012).
         var faceT = Math.Clamp(tPlate * 0.24f, 0.026f, tPlate * 0.35f);
@@ -599,8 +662,14 @@ internal static class CalypsoShipbuildingFrames
         var ribUp = (topCenter - faceHalf + botCenter + faceHalf) * 0.5f;
         var ribHu = coreH * 0.48f;
 
+        var stationJoins = new List<string> { $"{baseName}-rib", $"{baseName}-face-bot" };
+        if (foreFrameAsm is not null) stationJoins.Add(foreFrameAsm);
+        if (aftFrameAsm is not null) stationJoins.Add(aftFrameAsm);
+        if (bulkheadAsms is not null) stationJoins.AddRange(bulkheadAsms);
+
         void Face(string suffix, float up, IReadOnlyList<string>? joins)
         {
+            var before = entities.Count;
             CalypsoLockGenerator.TryAddStructureBar(
                 entities, loa, $"{baseName}-{suffix}",
                 y, up, zc, halfY, faceHalf, halfLenZ,
@@ -608,10 +677,11 @@ internal static class CalypsoShipbuildingFrames
                     StructuralRoles.StructuralDeck, assembly,
                     StationZ: zc, DeckUp: plateTop, Joins: joins),
                 minHalf: 0.012f);
+            TagDeckSurface(entities, before, "face");
         }
 
-        Face("face-top", topCenter, [$"{baseName}-rib", $"{baseName}-face-bot"]);
-        Face("face-bot", botCenter, [$"{baseName}-rib", $"{baseName}-face-top"]);
+        Face("face-top", topCenter, stationJoins);
+        Face("face-bot", botCenter, [$"{baseName}-rib", $"{baseName}-face-top", ..stationJoins.Skip(2)]);
 
         // Orthogonal cellular webs inside the cavity (athwart + longitudinal).
         const float CellPitch = 1.15f;
@@ -621,10 +691,13 @@ internal static class CalypsoShipbuildingFrames
         var y1 = y + halfY * 0.92f;
         var z0 = zc - halfLenZ * 0.92f;
         var z1 = zc + halfLenZ * 0.92f;
-        var ribJoins = new[] { $"{baseName}-face-top", $"{baseName}-face-bot" };
+        var ribJoins = new List<string> { $"{baseName}-face-top", $"{baseName}-face-bot" };
+        if (foreFrameAsm is not null) ribJoins.Add(foreFrameAsm);
+        if (aftFrameAsm is not null) ribJoins.Add(aftFrameAsm);
 
         for (var yy = y0 + CellPitch * 0.5f; yy < y1 - 0.1f; yy += CellPitch)
         {
+            var before = entities.Count;
             // Longitudinal rib (runs fore–aft).
             CalypsoLockGenerator.TryAddStructureBar(
                 entities, loa, $"{baseName}-rib-long-y{yy:0.#}",
@@ -633,10 +706,12 @@ internal static class CalypsoShipbuildingFrames
                     StructuralRoles.StructuralDeck, assembly,
                     StationZ: zc, DeckUp: plateTop, Joins: ribJoins),
                 minHalf: 0.012f);
+            TagDeckSurface(entities, before, "core");
         }
 
         for (var zz = z0 + CellPitch * 0.5f; zz < z1 - 0.1f; zz += CellPitch)
         {
+            var before = entities.Count;
             // Athwart rib (runs port–stbd) at stem station zz.
             CalypsoLockGenerator.TryAddStructureBar(
                 entities, loa, $"{baseName}-rib-ath-z{zz:0.#}",
@@ -645,30 +720,46 @@ internal static class CalypsoShipbuildingFrames
                     StructuralRoles.StructuralDeck, assembly,
                     StationZ: zz, DeckUp: plateTop, Joins: ribJoins),
                 minHalf: 0.012f);
+            TagDeckSurface(entities, before, "core");
         }
 
-        // Perimeter closure (four edges of the panel).
+        // Perimeter closure — fore/aft edges join the bounding frames (critical continuity).
         var periT = MathF.Max(0.03f, ribT);
-        CalypsoLockGenerator.TryAddStructureBar(
-            entities, loa, $"{baseName}-peri-port",
-            y - halfY + periT * 0.5f, ribUp, zc, periT * 0.5f, ribHu, halfLenZ * 0.95f,
-            meta: new StructuralSolidMeta(StructuralRoles.StructuralDeck, assembly, StationZ: zc, DeckUp: plateTop, Joins: ribJoins),
-            minHalf: 0.012f);
-        CalypsoLockGenerator.TryAddStructureBar(
-            entities, loa, $"{baseName}-peri-stbd",
-            y + halfY - periT * 0.5f, ribUp, zc, periT * 0.5f, ribHu, halfLenZ * 0.95f,
-            meta: new StructuralSolidMeta(StructuralRoles.StructuralDeck, assembly, StationZ: zc, DeckUp: plateTop, Joins: ribJoins),
-            minHalf: 0.012f);
-        CalypsoLockGenerator.TryAddStructureBar(
-            entities, loa, $"{baseName}-peri-fore",
-            y, ribUp, zc + halfLenZ - periT * 0.5f, halfY * 0.95f, ribHu, periT * 0.5f,
-            meta: new StructuralSolidMeta(StructuralRoles.StructuralDeck, assembly, StationZ: zc, DeckUp: plateTop, Joins: ribJoins),
-            minHalf: 0.012f);
-        CalypsoLockGenerator.TryAddStructureBar(
-            entities, loa, $"{baseName}-peri-aft",
-            y, ribUp, zc - halfLenZ + periT * 0.5f, halfY * 0.95f, ribHu, periT * 0.5f,
-            meta: new StructuralSolidMeta(StructuralRoles.StructuralDeck, assembly, StationZ: zc, DeckUp: plateTop, Joins: ribJoins),
-            minHalf: 0.012f);
+        var periSideJoins = ribJoins;
+        var periAftJoins = new List<string>(ribJoins);
+        if (foreFrameAsm is not null) periAftJoins.Add(foreFrameAsm);
+        var periForeJoins = new List<string>(ribJoins);
+        if (aftFrameAsm is not null) periForeJoins.Add(aftFrameAsm);
+        if (bulkheadAsms is not null)
+        {
+            periAftJoins.AddRange(bulkheadAsms);
+            periForeJoins.AddRange(bulkheadAsms);
+        }
+
+        void Peri(string name, float py, float pu, float pz, float phy, float phu, float phz, IReadOnlyList<string> joins)
+        {
+            var before = entities.Count;
+            CalypsoLockGenerator.TryAddStructureBar(
+                entities, loa, name, py, pu, pz, phy, phu, phz,
+                meta: new StructuralSolidMeta(StructuralRoles.StructuralDeck, assembly, StationZ: pz, DeckUp: plateTop, Joins: joins),
+                minHalf: 0.012f);
+            TagDeckSurface(entities, before, "core");
+        }
+
+        Peri($"{baseName}-peri-port", y - halfY + periT * 0.5f, ribUp, zc, periT * 0.5f, ribHu, halfLenZ * 0.95f, periSideJoins);
+        Peri($"{baseName}-peri-stbd", y + halfY - periT * 0.5f, ribUp, zc, periT * 0.5f, ribHu, halfLenZ * 0.95f, periSideJoins);
+        Peri($"{baseName}-peri-fore", y, ribUp, zc + halfLenZ - periT * 0.5f, halfY * 0.95f, ribHu, periT * 0.5f, periForeJoins);
+        Peri($"{baseName}-peri-aft", y, ribUp, zc - halfLenZ + periT * 0.5f, halfY * 0.95f, ribHu, periT * 0.5f, periAftJoins);
+    }
+
+    private static void TagDeckSurface(List<CadEntity> entities, int beforeCount, string surface)
+    {
+        for (var i = beforeCount; i < entities.Count; i++)
+        {
+            var e = entities[i];
+            e.Properties ??= new Dictionary<string, System.Text.Json.JsonElement>();
+            e.Properties["deckSurface"] = System.Text.Json.JsonSerializer.SerializeToElement(surface);
+        }
     }
 
     /// <summary>
@@ -684,7 +775,10 @@ internal static class CalypsoShipbuildingFrames
         float tPlate,
         float zc,
         float halfLenZ,
-        float halfY)
+        float halfY,
+        string? foreFrameAsm = null,
+        string? aftFrameAsm = null,
+        IReadOnlyList<string>? bulkheadAsms = null)
     {
         // Lock circulation defaults: CORR inner/outer ±5…±8 m.
         const float CorrInner = 5f;
@@ -700,10 +794,10 @@ internal static class CalypsoShipbuildingFrames
         var asm = $"deck-dk{deckTag}";
         EmitSandwichPanel(
             entities, loa, $"deck-sandwich-dk{deckTag}-corrP-b{bayIndex}",
-            yPort, plateTop, tPlate, zc, hy, halfLenZ, asm);
+            yPort, plateTop, tPlate, zc, hy, halfLenZ, asm, foreFrameAsm, aftFrameAsm, bulkheadAsms);
         EmitSandwichPanel(
             entities, loa, $"deck-sandwich-dk{deckTag}-corrS-b{bayIndex}",
-            yStbd, plateTop, tPlate, zc, hy, halfLenZ, asm);
+            yStbd, plateTop, tPlate, zc, hy, halfLenZ, asm, foreFrameAsm, aftFrameAsm, bulkheadAsms);
     }
 
     /// <summary>

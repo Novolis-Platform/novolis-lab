@@ -3,64 +3,50 @@ using System.Numerics;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// K9 Thunder-class educational scale for the Kristiansand heritage-site defense:
-/// one SPG on Odderøya covering inbound road approaches. Kvadraturen itself (~1.2 km)
-/// sits inside the HE minimum; the piece fights columns on the approaches, not downtown.
-/// Catalog figures are open-source approximations only.
+/// Mission / map scale for the Kristiansand heritage-site defense.
+/// Piece MV, PE, and tube limits live on <see cref="IArtilleryPieceSpec"/> via <see cref="ArtilleryPieceCatalog"/>.
+/// Charge ordinal arrays here stay as thin shims so existing UI/agent code keeps working.
 /// </summary>
 internal static class SimulationUnits
 {
-  /// <summary>Map east/north come from georef; this is camera/chase fallback scale.</summary>
-  public const float ExtentMeters = 26_000f;
+    public const float ExtentMeters = 26_000f;
 
-  public const float GunPivotX = 100f;
-  public const float GunHeightOffset = 2.4f;
+    public const float GunPivotX = 100f;
 
-  /// <summary>
-  /// Educational HE minimum for standard 155 mm (open-source M107-class band ~3.9–4.7 km).
-  /// Closest legal MPI — not a classified table.
-  /// </summary>
-  public const float MinEffectiveRangeMeters = 4_000f;
+    public static float GunHeightOffset => ArtilleryPieceCatalog.Default.GunHeightOffsetMeters;
 
-  /// <summary>
-  /// Predicted ground range below this is treated as “detonation at the piece”
-  /// (muzzle/terrain clearance failure), not a usable fire solution.
-  /// </summary>
-  public const float LaunchClearanceMeters = 400f;
+    public static float MinEffectiveRangeMeters => ArtilleryPieceCatalog.Default.MinEffectiveRangeMeters;
 
-  /// <summary>
-  /// Column spawn ring from the fort: ~2.25× HE minimum so the battery has time to observe,
-  /// lay, and fire before the lead vehicle closes the HE floor.
-  /// </summary>
-  public const float MinOpeningEngagementMeters = MinEffectiveRangeMeters * 2.25f;
+    public static float LaunchClearanceMeters => ArtilleryPieceCatalog.Default.LaunchClearanceMeters;
 
-  /// <summary>Fixed pool of road-network spawn mouths around the HE ring.</summary>
-  public const int ApproachSpawnCount = 18;
+    public static float MinOpeningEngagementMeters => MinEffectiveRangeMeters * 2.25f;
 
-  /// <summary>Outer city-approach band the Odderøya battery is expected to cover (m).</summary>
-  public const float MaxCityApproachMeters = 14_000f;
+    public const int ApproachSpawnCount = 18;
 
-  /// <summary>
-  /// Educational modular charges (m/s), ordered reduced / standard / max / low.
-  /// Reduced covers just above min range; standard/max cover outer approach waves.
-  /// </summary>
-  public static readonly float[] ChargeSpeedsMps = [420f, 560f, 720f, 360f];
+    public const float MaxCityApproachMeters = 14_000f;
 
-  public static readonly string[] ChargeLabels = ["reduced", "standard", "max", "low"];
+    public static float[] ChargeSpeedsMps { get; } =
+        ArtilleryPieceCatalog.Default.Charges.Select(static c => c.MuzzleSpeedMps).ToArray();
 
-  /// <summary>Typical educational max range for reduced / standard / max (km).</summary>
-  public static readonly float[] ReferenceMaxRangeKm = [10f, 16f, 24f];
+    public static string[] ChargeLabels { get; } =
+        ArtilleryPieceCatalog.Default.Charges.Select(static c => c.Label).ToArray();
 
-  public const float FixedCamLookAhead = 2500f;
-  public static readonly Vector3 FixedCamEyeOffset = new(-1200f, 700f, 900f);
+    public static float[] ReferenceMaxRangeKm { get; } =
+        ArtilleryPieceCatalog.Default.Charges
+            .Where(static c => c.Id is not "low")
+            .Select(static c => c.ReferenceMaxRangeKm)
+            .ToArray();
 
-  public const float ChaseCamBack = 280f;
-  public const float ChaseCamUp = 120f;
-  public const float ChaseCamLeadMax = 200f;
+    public const float FixedCamLookAhead = 2500f;
+    public static readonly Vector3 FixedCamEyeOffset = new(-1200f, 700f, 900f);
 
-  public static string FormatRange(float meters) =>
-      meters >= 1000f ? $"{meters / 1000f:F2} km" : $"{meters:F0} m";
+    public const float ChaseCamBack = 280f;
+    public const float ChaseCamUp = 120f;
+    public const float ChaseCamLeadMax = 200f;
 
-  public static float ReferenceMaxRangeKmForCharge(int chargeIndex) =>
-      ReferenceMaxRangeKm[Math.Clamp(chargeIndex, 0, ReferenceMaxRangeKm.Length - 1)];
+    public static string FormatRange(float meters) =>
+        meters >= 1000f ? $"{meters / 1000f:F2} km" : $"{meters:F0} m";
+
+    public static float ReferenceMaxRangeKmForCharge(int chargeIndex) =>
+        ArtilleryPieceCatalog.Default.ChargeAt(chargeIndex).ReferenceMaxRangeKm;
 }

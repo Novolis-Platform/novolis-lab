@@ -8,6 +8,7 @@ namespace ArtillerySimulator;
 /// <summary>
 /// Drapes committed <c>map/layers/nvdb-roads.bin</c> onto the NDH mesh.
 /// Main = E/R/S/F (single dark-gray centerline); local K/P/… optional thin gray. Never reads PNG.
+/// Geometry outside the heightfield cutout is discarded — nothing is clamped onto the border.
 /// </summary>
 internal static class KristiansandNvdbRoads
 {
@@ -44,20 +45,28 @@ internal static class KristiansandNvdbRoads
         return batch.AsSpan().ToArray();
     }
 
-    /// <summary>Primary (E/R/S/F) consecutive vertex pairs for column routing.</summary>
+    /// <summary>Primary (E/R/S/F) consecutive vertex pairs for column routing — on-map only.</summary>
     public static IReadOnlyList<(Vector2 A, Vector2 B)> PrimarySegments()
     {
         EnsureLoaded();
         if (_strokes is null || _strokes.Length == 0)
             return [];
 
+        var east = KristiansandHeightSampler.EastMeters;
+        var north = KristiansandHeightSampler.NorthMeters;
         var list = new List<(Vector2, Vector2)>(65_536);
         foreach (var stroke in _strokes)
         {
             if (!stroke.Primary || stroke.Points.Length < 2)
                 continue;
             for (var i = 1; i < stroke.Points.Length; i++)
-                list.Add((stroke.Points[i - 1], stroke.Points[i]));
+            {
+                var a = stroke.Points[i - 1];
+                var b = stroke.Points[i];
+                if (!ClipSegmentToMap(ref a, ref b, east, north))
+                    continue;
+                list.Add((a, b));
+            }
         }
 
         return list;
@@ -84,17 +93,22 @@ internal static class KristiansandNvdbRoads
         try
         {
             var segments = ReadBin(path);
-            _strokes = new RoadStroke[segments.Count];
+            var east = KristiansandHeightSampler.EastMeters;
+            var north = KristiansandHeightSampler.NorthMeters;
+            var kept = new List<RoadStroke>(segments.Count);
             for (var i = 0; i < segments.Count; i++)
             {
                 var s = segments[i];
                 var pts = new Vector2[s.Points.Length];
                 for (var p = 0; p < s.Points.Length; p++)
                     pts[p] = new Vector2(s.Points[p].X, s.Points[p].Z);
-                _strokes[i] = new RoadStroke(s.IsMain, pts);
+                pts = ClipStrokeToMap(pts, east, north);
+                if (pts.Length >= 2)
+                    kept.Add(new RoadStroke(s.IsMain, pts));
             }
 
-            Console.WriteLine($"NVDB roads: {_strokes.Length} segments from {path}");
+            _strokes = kept.ToArray();
+            Console.WriteLine($"NVDB roads: {_strokes.Length} on-map segments from {path}");
         }
         catch (Exception ex) when (ex is not FileNotFoundException)
         {
@@ -154,6 +168,74 @@ internal static class KristiansandNvdbRoads
         return list;
     }
 
+    /// <summary>Keep only on-map vertices; cut edge-crossing chords at the boundary.</summary>
+    private static Vector2[] ClipStrokeToMap(Vector2[] points, float east, float north)
+    {
+        if (points.Length < 2)
+            return [];
+
+        var outPts = new List<Vector2>(points.Length);
+        for (var i = 1; i < points.Length; i++)
+        {
+            var a = points[i - 1];
+            var b = points[i];
+            if (!ClipSegmentToMap(ref a, ref b, east, north))
+                continue;
+
+            if (outPts.Count == 0 || Vector2.DistanceSquared(outPts[^1], a) > 0.01f)
+                outPts.Add(a);
+            outPts.Add(b);
+        }
+
+        return outPts.Count >= 2 ? outPts.ToArray() : [];
+    }
+
+    /// <summary>
+    /// Liang–Barsky style clip of segment AB against [0,east]×[0,north].
+    /// Returns false when the segment lies entirely outside.
+    /// </summary>
+    internal static bool ClipSegmentToMap(ref Vector2 a, ref Vector2 b, float east, float north)
+    {
+        var dx = b.X - a.X;
+        var dy = b.Y - a.Y;
+        var t0 = 0f;
+        var t1 = 1f;
+
+        bool Clip(float p, float q)
+        {
+            if (MathF.Abs(p) < 1e-8f)
+                return q >= 0f;
+            var r = q / p;
+            if (p < 0f)
+            {
+                if (r > t1)
+                    return false;
+                if (r > t0)
+                    t0 = r;
+            }
+            else
+            {
+                if (r < t0)
+                    return false;
+                if (r < t1)
+                    t1 = r;
+            }
+
+            return true;
+        }
+
+        if (!Clip(-dx, a.X) || !Clip(dx, east - a.X) || !Clip(-dy, a.Y) || !Clip(dy, north - a.Y))
+            return false;
+        if (t1 < t0)
+            return false;
+
+        var na = new Vector2(a.X + t0 * dx, a.Y + t0 * dy);
+        var nb = new Vector2(a.X + t1 * dx, a.Y + t1 * dy);
+        a = na;
+        b = nb;
+        return Vector2.DistanceSquared(a, b) >= 0.25f;
+    }
+
     private static void DrapePolyline(
         SilkWireBatch wires,
         IHeightSampler heights,
@@ -170,6 +252,9 @@ internal static class KristiansandNvdbRoads
         {
             var a2 = points[i - 1];
             var b2 = points[i];
+            if (!ClipSegmentToMap(ref a2, ref b2, east, north))
+                continue;
+
             var dx = b2.X - a2.X;
             var dz = b2.Y - a2.Y;
             var len = MathF.Sqrt(dx * dx + dz * dz);
@@ -179,8 +264,8 @@ internal static class KristiansandNvdbRoads
             if (len <= drapeMeters)
             {
                 wires.Line(
-                    Place(heights, east, north, a2.X, a2.Y),
-                    Place(heights, east, north, b2.X, b2.Y),
+                    Place(heights, a2.X, a2.Y),
+                    Place(heights, b2.X, b2.Y),
                     color);
                 continue;
             }
@@ -194,7 +279,7 @@ internal static class KristiansandNvdbRoads
                 var t = s * inv;
                 var x = a2.X + dx * t;
                 var z = a2.Y + dz * t;
-                var p = Place(heights, east, north, x, z);
+                var p = Place(heights, x, z);
                 if (prev is { } p0)
                     wires.Line(p0, p, color);
                 prev = p;
@@ -202,12 +287,8 @@ internal static class KristiansandNvdbRoads
         }
     }
 
-    private static Vector3 Place(IHeightSampler heights, float east, float north, float x, float z)
-    {
-        x = Math.Clamp(x, 0f, east);
-        z = Math.Clamp(z, 0f, north);
-        return new Vector3(x, heights.SampleHeight(x, z) + LiftMeters, z);
-    }
+    private static Vector3 Place(IHeightSampler heights, float x, float z) =>
+        new(x, heights.SampleHeight(x, z) + LiftMeters, z);
 
     private readonly record struct RoadStroke(bool Primary, Vector2[] Points);
 }

@@ -97,11 +97,17 @@ internal static class CalypsoDnvReviewChecks
             "hold cargo hatch registered",
             openings.Any(o => string.Equals(o.Name, "HOLD-P-DKM1", StringComparison.OrdinalIgnoreCase)));
 
+        var openFrameSteel = doc.Entities.Count(e =>
+        {
+            var n = e.Name ?? "";
+            return n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+                   && (n.Contains("-ring-", StringComparison.OrdinalIgnoreCase)
+                       || n.Contains("-chord-", StringComparison.OrdinalIgnoreCase));
+        });
         Add(
             "frame-first ring webs",
-            (doc.Entities.Count(e => e.Name?.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase) == true) >= 40
-             && FrameWebPlateRegistry.All.Count >= 10),
-            "transverse web plates with passageway voids");
+            openFrameSteel >= 40 && FrameWebPlateRegistry.All.Count >= 10,
+            $"ring+chord={openFrameSteel} profiles={FrameWebPlateRegistry.All.Count}");
         Add(
             "no portal knee solids",
             !doc.Entities.Any(e => e.Name?.Contains("-knee-", StringComparison.OrdinalIgnoreCase) == true));

@@ -469,6 +469,12 @@ internal static class CalypsoAcceptance
             e.Name?.Contains("-join-", StringComparison.OrdinalIgnoreCase) == true);
         Add("frame↔girder join stubs", joinStubs >= 12, $"joins={joinStubs}");
 
+        var deckSeats = entities.Count(e =>
+            e.Name?.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase) == true);
+        Add("critical deck seats (BH×deck + frame×deck)", deckSeats >= 24, $"deckSeats={deckSeats}");
+        var (criticalOk, criticalDetail) = CriticalStructureConnectivity.Validate(doc);
+        Add("critical structure connected (BH↔frame↔deck)", criticalOk, criticalDetail);
+
         CadLayersDocument? layersDoc = null;
         var genDir = generatedDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

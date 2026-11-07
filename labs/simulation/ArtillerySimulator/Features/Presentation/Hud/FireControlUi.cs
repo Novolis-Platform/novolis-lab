@@ -138,11 +138,11 @@ internal sealed class FireControlUi : IDisposable
         var sampleAlt = shot.Phase == BallisticTrajectoryPhase.InFlight
             ? shot.CurrentPosition.Y
             : terrain.GunBaseline.Y;
-        var wind = atmosphere.SurfaceWindMetersPerSecond;
-        var windSpeed = wind.Length();
-        var windBearing = MathF.Atan2(wind.Z, wind.X) * (180f / MathF.PI);
-        if (windBearing < 0f)
-            windBearing += 360f;
+        var windSpeed = atmosphere.WindSpeedMetersPerSecond;
+        var windFrom = atmosphere.WindFromDegrees;
+        var tempC = atmosphere.ReferenceTemperatureKelvin - 273.15;
+        var qnh = atmosphere.ReferencePressurePa / 100.0;
+        var rh = atmosphere.RelativeHumidity * 100.0;
 
         var orderedElevMils = orderedElevation * 6400f / 360f;
         var orderedDeflMils = (orderedAzimuth - gun.CenterAzimuthDegrees) * 6400f / 360f;
@@ -161,7 +161,7 @@ internal sealed class FireControlUi : IDisposable
 
         var signature = string.Create(
             CultureInfo.InvariantCulture,
-            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{predictedRangeMeters:F0}|{predictedTofSeconds:F1}|{heroRange:F0}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{windSpeed:F0}|{windBearing:F0}|{predictedImpact.Y:F0}");
+            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{predictedRangeMeters:F0}|{predictedTofSeconds:F1}|{heroRange:F0}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{windSpeed:F1}|{windFrom:F0}|{tempC:F0}|{qnh:F0}|{rh:F0}|{predictedImpact.Y:F0}");
         _rasterAge += frame.DeltaSeconds;
         var dirty = signature != _lastSignature || _rasterAge >= 0.12f;
         if (dirty)
@@ -181,7 +181,7 @@ internal sealed class FireControlUi : IDisposable
                 launchDetonation,
                 predictedRangeMeters,
                 predictedTofSeconds);
-            DrawMetPanel(canvas, atmosphere, sampleAlt, windSpeed, windBearing, predictedImpact, terrain);
+            DrawMetPanel(canvas, atmosphere, sampleAlt, windSpeed, windFrom, tempC, qnh, rh, predictedImpact, terrain);
             DrawChargeMenu(canvas, gun);
             DrawCameraRow(canvas, followProjectile);
             DrawFireButton(canvas, canFire);
@@ -192,7 +192,7 @@ internal sealed class FireControlUi : IDisposable
 
         frame.SetTitle(string.Create(
             CultureInfo.InvariantCulture,
-            $"Kristiansand K9  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
+            $"Kristiansand {gun.Spec.ShortName}  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
 
         frame.ClearDepth();
         frame.BlitOverlay(_pixels, _width, _height);
@@ -208,10 +208,10 @@ internal sealed class FireControlUi : IDisposable
         AddButton("charge-toggle", bx, by, bw, bh, $"CHARGE  {gun.ChargeLabel.ToUpperInvariant()}", selected: true);
         if (_chargeMenuOpen)
         {
-            for (var i = 0; i < SimulationUnits.ChargeLabels.Length; i++)
+            for (var i = 0; i < gun.Spec.Charges.Count; i++)
             {
                 var y = by - (i + 1) * (bh + 4 * _scale);
-                AddButton($"charge-{i}", bx, y, bw, bh, SimulationUnits.ChargeLabels[i], gun.ChargeIndex == i);
+                AddButton($"charge-{i}", bx, y, bw, bh, gun.Spec.Charges[i].Label, gun.ChargeIndex == i);
             }
         }
 
@@ -357,29 +357,34 @@ internal sealed class FireControlUi : IDisposable
         AtmosphereModel atmosphere,
         float sampleAlt,
         float windSpeed,
-        float windBearing,
+        float windFrom,
+        double tempC,
+        double qnh,
+        double rh,
         Vector3 predictedImpact,
         TerrainWorld terrain)
     {
         var pw = 360f * _scale;
-        var ph = 170f * _scale;
+        var ph = 210f * _scale;
         var px = _width - pw - 8;
         var py = 92f * _scale;
         PanelBox(canvas, px, py, pw, ph);
 
         var lx = px + 16 * _scale;
         var ly = py + 28 * _scale;
-        var ls = 16f * _scale;
-        var lh = 28f * _scale;
+        var ls = 15f * _scale;
+        var lh = 26f * _scale;
         var rho = atmosphere.DensityKgPerM3At(sampleAlt);
 
         DrawText(canvas, "MET / MPI", lx, ly, 18f * _scale, Accent);
         ly += lh;
-        DrawText(canvas, $"AIR   {rho:F3} KG/M3  {atmosphere.TemperatureAt(sampleAlt):F0} K", lx, ly, ls, Text);
+        DrawText(canvas, string.Create(CultureInfo.InvariantCulture, $"AIR   {rho:F3} KG/M3  {tempC:F0} C"), lx, ly, ls, Text);
         ly += lh;
-        DrawText(canvas, $"WIND  {windSpeed:F0} M/S  BRG {windBearing:F0}", lx, ly, ls, Text);
+        DrawText(canvas, string.Create(CultureInfo.InvariantCulture, $"QNH   {qnh:F0}  RH {rh:F0}%"), lx, ly, ls, Text);
         ly += lh;
-        DrawText(canvas, $"LAT   {KristiansandHeightSampler.MeanLatitudeDegrees:F1} N", lx, ly, ls, Text);
+        DrawText(canvas, string.Create(CultureInfo.InvariantCulture, $"WIND  {windSpeed:F1} M/S  FROM {windFrom:F0}"), lx, ly, ls, Text);
+        ly += lh;
+        DrawText(canvas, $"LAT   {KristiansandHeightSampler.MeanLatitudeDegrees:F1} N  KRS COAST", lx, ly, ls, Text);
         ly += lh;
         var mpiRange = Horiz(terrain.GunBaseline, predictedImpact);
         DrawText(
@@ -403,10 +408,11 @@ internal sealed class FireControlUi : IDisposable
         if (!_chargeMenuOpen)
             return;
 
-        for (var i = 0; i < SimulationUnits.ChargeLabels.Length; i++)
+        for (var i = 0; i < gun.Spec.Charges.Count; i++)
         {
             var y = by - (i + 1) * (bh + 4 * _scale);
-            var item = $"{i + 1}  {SimulationUnits.ChargeLabels[i].ToUpperInvariant()}  {SimulationUnits.ChargeSpeedsMps[i]:F0} M/S";
+            var zone = gun.Spec.Charges[i];
+            var item = $"{i + 1}  {zone.Label.ToUpperInvariant()}  {zone.MuzzleSpeedMps:F0} M/S";
             DrawButtonVisual(canvas, bx, y, bw, bh, item, gun.ChargeIndex == i);
         }
     }

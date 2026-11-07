@@ -20,7 +20,6 @@ internal sealed class CrewDrill
     public const float TraverseMilsPerSecond = 80f;
 
     private const float OnLayMils = 1.25f;
-    private const float MilsPerDegree = 6400f / 360f;
 
     private Stage _stage = Stage.Ready;
     private float _remaining;
@@ -51,13 +50,13 @@ internal sealed class CrewDrill
 
     public void OrderAim(GunModel gun, float elevation, float azimuth)
     {
-        OrderedElevation = Math.Clamp(elevation, GunModel.MinElevationDegrees, GunModel.MaxElevationDegrees);
+        OrderedElevation = Math.Clamp(elevation, gun.Spec.MinElevationDegrees, gun.Spec.MaxElevationDegrees);
         var delta = azimuth - gun.CenterAzimuthDegrees;
         while (delta > 180f)
             delta -= 360f;
         while (delta < -180f)
             delta += 360f;
-        delta = Math.Clamp(delta, -GunModel.MaxTraverseDegrees, GunModel.MaxTraverseDegrees);
+        delta = Math.Clamp(delta, -gun.Spec.MaxTraverseDegrees, gun.Spec.MaxTraverseDegrees);
         OrderedAzimuth = gun.CenterAzimuthDegrees + delta;
     }
 
@@ -66,7 +65,7 @@ internal sealed class CrewDrill
 
     public void OrderCharge(GunModel gun, int index)
     {
-        index = Math.Clamp(index, 0, SimulationUnits.ChargeSpeedsMps.Length - 1);
+        index = Math.Clamp(index, 0, gun.Spec.Charges.Count - 1);
         if (index == OrderedCharge)
             return;
 
@@ -186,8 +185,8 @@ internal sealed class CrewDrill
 
     private float LaySeconds(GunModel gun)
     {
-        var elevation = MathF.Abs(OrderedElevation - gun.ElevationDegrees) * MilsPerDegree;
-        var azimuth = MathF.Abs(Wrap(OrderedAzimuth - gun.AzimuthDegrees)) * MilsPerDegree;
+        var elevation = MathF.Abs(OrderedElevation - gun.ElevationDegrees) * NatoMils.MilsPerDegree;
+        var azimuth = MathF.Abs(Wrap(OrderedAzimuth - gun.AzimuthDegrees)) * NatoMils.MilsPerDegree;
         if (elevation <= OnLayMils && azimuth <= OnLayMils)
             return 0f;
 
@@ -196,8 +195,8 @@ internal sealed class CrewDrill
 
     private void Slew(GunModel gun, float seconds)
     {
-        var elevate = ElevateMilsPerSecond / MilsPerDegree * seconds;
-        var traverse = TraverseMilsPerSecond / MilsPerDegree * seconds;
+        var elevate = ElevateMilsPerSecond / NatoMils.MilsPerDegree * seconds;
+        var traverse = TraverseMilsPerSecond / NatoMils.MilsPerDegree * seconds;
         gun.NudgeElevation(Math.Clamp(OrderedElevation - gun.ElevationDegrees, -elevate, elevate));
         gun.NudgeAzimuth(Math.Clamp(Wrap(OrderedAzimuth - gun.AzimuthDegrees), -traverse, traverse));
     }
