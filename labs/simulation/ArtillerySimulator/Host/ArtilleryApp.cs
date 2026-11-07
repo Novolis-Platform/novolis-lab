@@ -11,7 +11,6 @@ namespace ArtillerySimulator;
 
 internal sealed class ArtilleryApp : IDisposable
 {
-    private const float PhysicsHz = 120f;
     private const float FineMilsPerSecond = 12f;
     /// <summary>Wall-clock seconds of WASD hold to reach full lay rate (smooth take-up).</summary>
     private const float LayRampSeconds = 0.4f;
@@ -24,8 +23,8 @@ internal sealed class ArtilleryApp : IDisposable
     private static readonly Color SunColor = Color.FromArgb(120, 255, 186, 110);
 
     private readonly TerrainWorld _terrain = new();
+    private readonly BattleSession _session;
     private GunModel _gun = null!;
-    private DeliverySampler _delivery = null!;
     private readonly List<BallisticTrajectoryRunner> _rounds = [];
     private BallisticTrajectoryRunner _shot = null!;
     private ProjectileBallisticSimulation _ballistics = null!;
@@ -38,6 +37,9 @@ internal sealed class ArtilleryApp : IDisposable
     private readonly FrameProfiler _liveProfiler = new(warmupFrames: 5);
     private readonly bool _skipShell;
     private IGameLevel _level;
+    private float _previewGunElev;
+    private float _previewGunAz;
+    private int _previewCharge = -1;
 
     private readonly SmoothedFps _fps = new();
     private readonly CrewDrill _crew = new();
@@ -65,13 +67,19 @@ internal sealed class ArtilleryApp : IDisposable
     private string _profileFlash = "";
     private float _profileFlashAge = -1f;
 
-    public ArtilleryApp(IGameLevel? level = null, IArtilleryPieceSpec? piece = null, bool skipShell = false)
+    public ArtilleryApp(
+        IGameLevel? level = null,
+        IArtilleryPieceSpec? piece = null,
+        bool skipShell = false,
+        int? seed = null)
     {
         _skipShell = skipShell;
         _level = level ?? GameLevelCatalog.Default;
         if (!_level.IsPlayable)
             _level = GameLevelCatalog.Default;
-        BindPiece(piece ?? _level.ResolvePiece());
+        var resolved = piece ?? _level.ResolvePiece();
+        _session = new BattleSession(resolved, seed ?? HashCode.Combine(Environment.TickCount, _level.Id));
+        BindPiece(_session.Piece);
         _shot = CreateRound();
         _rounds.Add(_shot);
         _agent = new ArtilleryLiveHost(this);
@@ -80,9 +88,10 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void BindPiece(IArtilleryPieceSpec piece)
     {
+        _session.RebindPiece(piece);
         _gun = new GunModel(piece);
-        _delivery = new DeliverySampler(piece.Errors);
         _ballistics = new ProjectileBallisticSimulation(piece.Projectile, DragCoefficientLaw.BoatTail);
+        _aimDirty = true;
     }
 
     private void SelectLevel(int delta)
@@ -109,7 +118,7 @@ internal sealed class ArtilleryApp : IDisposable
         {
             Step = new ProjectileTerrainStepOptions
             {
-                DtSeconds = 1.0 / 120.0,
+                DtSeconds = FixedStepClock.DtSeconds,
                 ProjectileRadius = _gun.Spec.MuzzleRadiusMeters,
             },
         });
@@ -124,7 +133,8 @@ internal sealed class ArtilleryApp : IDisposable
     public FrameProfiler? Profiler => _profiler;
 
     internal GunModel Gun => _gun;
-    internal DeliverySampler Delivery => _delivery;
+    internal DeliverySampler Delivery => _session.Delivery;
+    internal BattleSession Session => _session;
     internal TerrainWorld Terrain => _terrain;
     internal BallisticTrajectoryRunner Shot => _shot;
     internal AtmosphereModel Atmosphere => _atmosphere;
@@ -153,11 +163,11 @@ internal sealed class ArtilleryApp : IDisposable
     internal void SetFollowCamera(bool followShell) => _camera.FollowProjectile = followShell;
 
     /// <summary>True when the arc dies at the piece (terrain / muzzle clearance) — blocks fire.</summary>
-    internal bool LaunchDetonation => PredictedRangeMeters < SimulationUnits.LaunchClearanceMeters;
+    internal bool LaunchDetonation => PredictedRangeMeters < _gun.Spec.LaunchClearanceMeters;
 
     /// <summary>Below HE min (warning / red tint) — fire still allowed if the shell clears the piece.</summary>
     internal bool BelowHeMin =>
-        !LaunchDetonation && PredictedRangeMeters < SimulationUnits.MinEffectiveRangeMeters;
+        !LaunchDetonation && PredictedRangeMeters < _gun.Spec.MinEffectiveRangeMeters;
 
     /// <summary>Red-tinge aim when clearance fails or the MPI is inside HE min.</summary>
     internal bool SolutionUnsafe => LaunchDetonation || BelowHeMin;
@@ -182,7 +192,7 @@ internal sealed class ArtilleryApp : IDisposable
         _crew.SnapTube(_gun);
         var muzzle = _gun.MuzzlePosition(_terrain.GunBaseline);
         // PE residuals from the piece error budget; live met stays on AtmosphereModel.
-        var delivery = _delivery.SampleFire(_gun.ElevationDegrees, _gun.AzimuthDegrees, _gun.MuzzleSpeedMps);
+        var delivery = _session.Delivery.SampleFire(_gun.ElevationDegrees, _gun.AzimuthDegrees, _gun.MuzzleSpeedMps);
         var fireDir = GunModel.DirectionOf(delivery.ElevationDegrees, delivery.AzimuthDegrees);
         _shot = AcquireRound();
         _shot.Begin(_gun.CreateProjectileState(muzzle, fireDir, delivery.MuzzleSpeedMps));
@@ -319,8 +329,9 @@ internal sealed class ArtilleryApp : IDisposable
         _loadingStatus = $"Building {_level.DisplayName}…";
         _level.RebuildMap(_terrain);
         _loadingStatus = $"Seating {_gun.Spec.ShortName} battery…";
-        _mission = _level.StartMission(_terrain);
-        _terrain.PlaceGun(_mission.GunX, _mission.GunZ);
+        _session.Clock.Reset();
+        _mission = _level.StartMission(_terrain, _session.Piece, _session.Seed);
+        _terrain.PlaceGun(_mission.GunX, _mission.GunZ, _session.Piece.GunHeightOffsetMeters);
         _gun.LayCenter(_mission.TrailBearingDegrees);
         _gun.SetCharge(_mission.OpeningChargeIndex);
         _gun.SetElevation(_mission.OpeningElevationDegrees);
@@ -572,34 +583,42 @@ internal sealed class ArtilleryApp : IDisposable
             return;
         }
 
-        // Realtime battle clock — aim/crew/shell stay correct even when FPS dips.
-        var battleSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
-        // Coastal met feeds the same BallisticEnvironment used by previews and live rounds.
-        _atmosphere.Advance(battleSeconds);
-        if (_atmosphere.ConsumeAimInvalidation())
-            _aimDirty = true;
-        // Advance the crew before fire input so Space/FIRE works on the same frame the breech closes.
-        _crew.Advance(_gun, battleSeconds);
-        HandleInput(frame, battleSeconds);
+        // Authoritative fixed-step battle clock (independent of render FPS).
+        var steps = _session.Clock.Consume(frame.DeltaSeconds);
+        var battleSeconds = steps * FixedStepClock.DtSeconds;
+        // Lay/input uses wall time so handwheels stay responsive during catch-up.
+        var controlSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
 
-        var steps = Math.Clamp((int)MathF.Round(battleSeconds * PhysicsHz), 1, 512);
-        Vector3? incoming = null;
-        foreach (var round in _rounds)
+        if (steps > 0)
         {
-            if (round.Phase != BallisticTrajectoryPhase.InFlight)
-                continue;
-
-            for (var i = 0; i < steps && round.Phase == BallisticTrajectoryPhase.InFlight; i++)
-            {
-                var env = _atmosphere.BallisticEnvironment(round.CurrentPosition.Y);
-                round.AdvanceOne(_ballistics, env, _terrain.Collision, _terrain.Field, _terrain.GunBaseline);
-            }
-
-            if (round.Phase == BallisticTrajectoryPhase.InFlight)
-                incoming ??= round.CurrentPosition;
+            _atmosphere.Advance(battleSeconds);
+            if (_atmosphere.ConsumeAimInvalidation())
+                _aimDirty = true;
+            _crew.Advance(_gun, battleSeconds);
         }
 
-        _mission?.Advance(battleSeconds, incoming);
+        HandleInput(frame, controlSeconds);
+
+        Vector3? incoming = null;
+        if (steps > 0)
+        {
+            foreach (var round in _rounds)
+            {
+                if (round.Phase != BallisticTrajectoryPhase.InFlight)
+                    continue;
+
+                for (var i = 0; i < steps && round.Phase == BallisticTrajectoryPhase.InFlight; i++)
+                {
+                    var env = _atmosphere.BallisticEnvironment(round.CurrentPosition.Y);
+                    round.AdvanceOne(_ballistics, env, _terrain.Collision, _terrain.Field, _terrain.GunBaseline);
+                }
+
+                if (round.Phase == BallisticTrajectoryPhase.InFlight)
+                    incoming ??= round.CurrentPosition;
+            }
+
+            _mission?.Advance(battleSeconds, incoming);
+        }
 
         foreach (var round in _rounds)
         {
@@ -627,13 +646,18 @@ internal sealed class ArtilleryApp : IDisposable
         if (_muzzleFlash > 0f)
             _muzzleFlash = MathF.Max(0f, _muzzleFlash - frame.DeltaSeconds);
 
-        if (_aimDirty || !_crew.Ready(_gun))
+        if (_aimDirty || TubePreviewStale())
             RebuildAimPreview();
 
         if (_mission is { } mission)
             _camera.SetBattleFocus(mission.BattleFocus(_terrain.GunBaseline));
         _camera.Update(frame, _terrain.GunBaseline, _shot, allowMouseLook: !_ui.PointerOverUi);
     }
+
+    private bool TubePreviewStale() =>
+        MathF.Abs(_gun.ElevationDegrees - _previewGunElev) > 0.05f
+        || MathF.Abs(_gun.AzimuthDegrees - _previewGunAz) > 0.05f
+        || _gun.ChargeIndex != _previewCharge;
 
     private void Render(SilkFrame frame)
     {
@@ -736,7 +760,7 @@ internal sealed class ArtilleryApp : IDisposable
 
         // Probability envelope from the piece PE budget (expandable via IArtilleryPieceSpec).
         _dispersionPreviews.Clear();
-        foreach (var s in _delivery.EnvelopeCorners())
+        foreach (var s in _session.Delivery.EnvelopeCorners())
         {
             var arc = BuildPreview(
                 elev + s.ElevationDegrees,
@@ -748,6 +772,9 @@ internal sealed class ArtilleryApp : IDisposable
                 _dispersionPreviews.Add(arc);
         }
 
+        _previewGunElev = _gun.ElevationDegrees;
+        _previewGunAz = _gun.AzimuthDegrees;
+        _previewCharge = _gun.ChargeIndex;
         _aimDirty = false;
     }
 
@@ -965,7 +992,7 @@ internal sealed class ArtilleryApp : IDisposable
     private void DrawMinRangeRing(SilkWireBatch wires)
     {
         var gun = _terrain.GunBaseline;
-        wires.Ring(gun, SimulationUnits.MinEffectiveRangeMeters, BallisticArcColors.MinRange);
+        wires.Ring(gun, _gun.Spec.MinEffectiveRangeMeters, BallisticArcColors.MinRange);
     }
 
     private void DrawAimPreview(SilkWireBatch wires)

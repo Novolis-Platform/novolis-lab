@@ -23,6 +23,6 @@ internal interface IGameLevel
     /// <summary>Rebuild heightfield / roads for this level into the shared terrain host.</summary>
     void RebuildMap(TerrainWorld terrain);
 
-    /// <summary>Start a fresh mission on an already-rebuilt terrain.</summary>
-    IDefenseMission StartMission(TerrainWorld terrain);
+    /// <summary>Start a fresh mission on an already-rebuilt terrain with the session piece and seed.</summary>
+    IDefenseMission StartMission(TerrainWorld terrain, IArtilleryPieceSpec piece, int seed);
 }

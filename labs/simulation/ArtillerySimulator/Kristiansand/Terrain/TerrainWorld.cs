@@ -84,21 +84,19 @@ internal sealed class TerrainWorld : IDisposable
         KristiansandNvdbRoads.Reset();
         _cachedRoadWires = KristiansandNvdbRoads.Build(_sampler);
 
-        GunBaseline = new Vector3(
-            SimulationUnits.GunPivotX,
-            _field.SampleHeight(SimulationUnits.GunPivotX, NorthMeters * 0.5f) + SimulationUnits.GunHeightOffset,
-            NorthMeters * 0.5f);
+        var pivotY = _field.SampleHeight(SimulationUnits.GunPivotX, NorthMeters * 0.5f);
+        GunBaseline = new Vector3(SimulationUnits.GunPivotX, pivotY, NorthMeters * 0.5f);
 
         Console.WriteLine(string.Create(
             CultureInfo.InvariantCulture,
             $"Terrain rebuild: mesh={afterMesh}ms fill={afterFill - afterMesh}ms roads={sw.ElapsedMilliseconds - afterFill}ms total={sw.ElapsedMilliseconds}ms (draw={DisplayCells} coll={CollisionCells} tris={TerrainTriangleCount} roadSeg={RoadLineCount})"));
     }
 
-    public void PlaceGun(float x, float z)
+    public void PlaceGun(float x, float z, float gunHeightOffsetMeters = 0f)
     {
         x = Math.Clamp(x, 0f, EastMeters);
         z = Math.Clamp(z, 0f, NorthMeters);
-        GunBaseline = new Vector3(x, _field.SampleHeight(x, z) + SimulationUnits.GunHeightOffset, z);
+        GunBaseline = new Vector3(x, _field.SampleHeight(x, z) + gunHeightOffsetMeters, z);
     }
 
     /// <summary>Uploads solid fill + roads once; redraws from GPU each frame.</summary>

@@ -12,8 +12,6 @@ namespace ArtillerySimulator;
 /// </summary>
 internal sealed class KristiansandDefenseMission : IDefenseMission
 {
-    public float CaughtMeters => ArtilleryPieceCatalog.Default.Warhead.CaughtMeters;
-    public float PinnedMeters => ArtilleryPieceCatalog.Default.Warhead.PinnedMeters;
     public const float ObjectiveRadiusMeters = 180f;
     /// <summary>
     /// Wheeled column on primary roads (~45 km/h). Soft margin keeps spawn/place inside the cutout.
@@ -23,24 +21,32 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
     public const float SpacingMeters = 55f;
     /// <summary>Tiny inset so units/roads are not glued to the far clip edge.</summary>
     private const float MapMarginMeters = 20f;
+    private const int MaxTrackedWrecks = 96;
 
     private readonly TerrainWorld _terrain;
+    private readonly IArtilleryPieceSpec _piece;
     private readonly List<string> _approaches = [];
     private readonly List<RouteLane> _lanes = [];
     private readonly List<ColumnUnit> _units = [];
+    private readonly List<ColumnUnit> _wrecks = [];
     private readonly List<DefenderUnit> _defenders = [];
     private readonly List<GroundPolyline> _spawnRoutes = [];
-    private readonly Random _rng = new(unchecked(Environment.TickCount ^ 0x4B3951));
+    private readonly Random _rng;
     private readonly List<int> _spawnDeck = [];
     private float _battleSeconds;
     private int _round = 1;
     private float _nextWaveAt;
     private float _columnSpeed = BaseColumnSpeedMetersPerSecond;
     private int _waveSerial;
+    private bool _heldLatched;
 
-    public KristiansandDefenseMission(TerrainWorld terrain)
+    public KristiansandDefenseMission(TerrainWorld terrain, IArtilleryPieceSpec piece, int seed)
     {
         _terrain = terrain;
+        _piece = piece ?? throw new ArgumentNullException(nameof(piece));
+        _rng = new Random(seed ^ unchecked((int)0x4B3951u));
+        CaughtMeters = piece.Warhead.CaughtMeters;
+        PinnedMeters = piece.Warhead.PinnedMeters;
 
         var downtown = KristiansandHeightSampler.ToWorldMeters(58.1464, 7.9956);
         Objective = new Vector3(
@@ -50,10 +56,11 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
         var fort = KristiansandFort.ToWorldMeters();
         var fortY = terrain.Field.SampleHeight(fort.X, fort.Y);
+        var ring = SimulationUnits.MinOpeningEngagementMeters(piece);
         var site = new GunSite(
             new Vector3(fort.X, fortY, fort.Y),
             openingElevationDegrees: 35f,
-            columnLeadMeters: SimulationUnits.MinOpeningEngagementMeters);
+            columnLeadMeters: ring);
         GunX = site.Position.X;
         GunZ = site.Position.Z;
         TrailBearingDegrees = OpeningFirePlan.BearingDegrees(site.Position, Objective);
@@ -68,14 +75,24 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
         _nextWaveAt = _battleSeconds + WaveIntervalSeconds();
 
         RefreshNearest();
-        var lay = OpeningFirePlan.Tune(terrain, site.Position, TrailBearingDegrees, site.OpeningElevationDegrees, _units, Objective);
+        var lay = OpeningFirePlan.Tune(
+            terrain,
+            site.Position,
+            TrailBearingDegrees,
+            site.OpeningElevationDegrees,
+            _units,
+            Objective,
+            piece);
         OpeningElevationDegrees = lay.Elevation;
         OpeningChargeIndex = lay.Charge;
         OpeningAzimuthDegrees = lay.Bearing;
         Console.WriteLine(string.Create(
             CultureInfo.InvariantCulture,
-            $"Mission boot: spawns={afterSpawns}ms tune={sw.ElapsedMilliseconds - afterSpawns}ms total={sw.ElapsedMilliseconds}ms approaches={_spawnRoutes.Count}"));
+            $"Mission boot: seed={seed:x8} piece={piece.Id} spawns={afterSpawns}ms tune={sw.ElapsedMilliseconds - afterSpawns}ms total={sw.ElapsedMilliseconds}ms approaches={_spawnRoutes.Count}"));
     }
+
+    public float CaughtMeters { get; }
+    public float PinnedMeters { get; }
 
     public float GunX { get; }
     public float GunZ { get; }
@@ -93,23 +110,25 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
     public int SpawnPointCount => _spawnRoutes.Count;
 
     public string AvenueName => _approaches.Count == 0 ? "the primary roads" : string.Join(", ", _approaches);
-    public int Remaining => _units.Count(unit => unit.Alive);
-    public int Stopped => _units.Count(u => !u.Alive);
+    public int Remaining => _units.Count;
+    public int Stopped => _wrecks.Count;
     public int DefendersAlive => _defenders.Count(d => d.Alive);
-    /// <summary>Endless road waves — victory only if the player holds through late rounds with the roads jammed.</summary>
-    public bool Held =>
-        !ObjectiveLost
-        && !FratricideLoss
-        && DefendersAlive > 0
-        && _round >= 8
-        && Remaining == 0
-        && ApproachesBlocked();
+    /// <summary>
+    /// Wave-survival victory: hold through late rounds with living defenders and roads jammed by wrecks.
+    /// Once latched, Advance stops spawning and moving columns.
+    /// </summary>
+    public bool Held => _heldLatched || EvaluateHeld();
 
     public void Advance(float simSeconds, Vector3? incomingShell)
     {
-        // Do not gate on Held: a wiped wave must still escalate into the next round.
         if (ObjectiveLost || FratricideLoss || simSeconds <= 0f)
             return;
+
+        if (EvaluateHeld())
+        {
+            _heldLatched = true;
+            return;
+        }
 
         _battleSeconds += simSeconds;
 
@@ -125,16 +144,12 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
             _nextWaveAt = _battleSeconds + WaveIntervalSeconds();
         }
 
-        for (var i = 0; i < _units.Count; i++)
+        for (var i = _units.Count - 1; i >= 0; i--)
         {
             var unit = _units[i];
-            if (!unit.Alive)
-                continue;
-
             var lane = _lanes[unit.Lane];
-            var gap = GapAhead(unit, lane, out _);
+            var gap = GapAhead(unit, lane, out var wreckAhead);
 
-            // Columns never halt — only suppression slows them.
             if (incomingShell is Vector3 shell && ShellArriving(unit, shell))
                 unit.Scare = MathF.Max(unit.Scare, 2.4f);
 
@@ -142,23 +157,51 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
                 unit.Scare = MathF.Max(0f, unit.Scare - simSeconds);
 
             var suppressed = unit.Scare > 0f;
-            // Per-vehicle speed jitter (~±8%) so the column does not slide as a rigid block.
             var jitter = 0.92f + (unit.Id % 7) * 0.025f;
             var speed = (suppressed ? _columnSpeed * 0.35f : _columnSpeed) * jitter;
             var posture = suppressed ? "pinned" : "advancing";
 
+            // Wrecks block the lane unless the vehicle is already passing around them.
+            if (wreckAhead && gap < SpacingMeters * 0.9f && !unit.Passing)
+            {
+                if (gap < SpacingMeters * 0.55f && CanStartPass(unit, lane, gap))
+                {
+                    unit.Passing = true;
+                    posture = "passing";
+                }
+                else
+                {
+                    unit.Posture = "blocked";
+                    unit.Offset *= MathF.Max(0f, 1f - 2f * simSeconds);
+                    _units[i] = unit;
+                    continue;
+                }
+            }
+
             if (unit.Passing && gap > 160f)
                 unit.Passing = false;
+            else if (!wreckAhead && gap < SpacingMeters * 0.65f && gap < 90f && CanStartPass(unit, lane, gap))
+            {
+                unit.Passing = true;
+                posture = "passing";
+            }
 
             var desiredOffset = 0f;
             if (unit.Passing)
+            {
                 desiredOffset = (unit.Id & 1) == 0 ? 5.5f : -5.5f;
+                posture = "passing";
+            }
             else if (suppressed)
                 desiredOffset = (unit.Id & 1) == 0 ? -4f : 4f;
 
             var step = 8f * simSeconds;
             unit.Offset += Math.Clamp(desiredOffset - unit.Offset, -step, step);
             unit.Offset = Math.Clamp(unit.Offset, -6.5f, 6.5f);
+
+            // Passing vehicles crawl past a wreck; blocked ones already continued.
+            if (wreckAhead && unit.Passing)
+                speed *= 0.55f;
 
             var next = unit.Arc - lane.Away * speed * simSeconds;
             if (MathF.Abs(next - lane.CrossingArc) <= ObjectiveRadiusMeters)
@@ -171,33 +214,37 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
                 return;
             }
 
-            // Off-map = gone. No freezing on the border.
             var probe = lane.Line.At(next);
             if (!InPlayableMap(probe.X, probe.Y))
             {
-                unit.Alive = false;
-                unit.Posture = "stopped";
-                _units[i] = unit;
+                ArchiveUnit(i, ref unit);
                 continue;
             }
 
             unit.Arc = next;
             Place(lane, ref unit);
             if (!InPlayableMap(unit.X, unit.Z))
-            {
-                unit.Alive = false;
-                unit.Posture = "stopped";
-            }
+                ArchiveUnit(i, ref unit);
             else
             {
                 unit.Posture = posture;
+                _units[i] = unit;
             }
-
-            _units[i] = unit;
         }
 
         RefreshNearest();
     }
+
+    private bool EvaluateHeld() =>
+        !ObjectiveLost
+        && !FratricideLoss
+        && DefendersAlive > 0
+        && _round >= 8
+        && Remaining == 0
+        && ApproachesBlocked();
+
+    private static bool CanStartPass(ColumnUnit unit, RouteLane lane, float gap) =>
+        gap > 12f && MathF.Abs(unit.Offset) < 5.5f;
 
     public void ResolveImpact(Vector3 point)
     {
@@ -220,12 +267,9 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
             ObjectiveLost = true;
         }
 
-        for (var i = 0; i < _units.Count; i++)
+        for (var i = _units.Count - 1; i >= 0; i--)
         {
             var unit = _units[i];
-            if (!unit.Alive)
-                continue;
-
             var dx = unit.X - point.X;
             var dz = unit.Z - point.Z;
             var distance = MathF.Sqrt(dx * dx + dz * dz);
@@ -234,11 +278,7 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
             if (distance <= CaughtMeters)
             {
-                unit.Alive = false;
-                unit.Posture = "stopped";
-                unit.Offset = 0f;
-                unit.Scare = 0f;
-                _units[i] = unit;
+                ArchiveUnit(i, ref unit);
                 LastBracket++;
                 continue;
             }
@@ -255,7 +295,7 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
     }
 
     public void Draw(SilkWireBatch wires) =>
-        DefenseSceneDraw.Draw(wires, _terrain, Objective, ObjectiveRadiusMeters, _units, _lanes, _defenders);
+        DefenseSceneDraw.Draw(wires, _terrain, Objective, ObjectiveRadiusMeters, _units, _wrecks, _lanes, _defenders);
 
     public string HudLine()
     {
@@ -363,27 +403,32 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
     public ThreatReport[] Reports(Vector3 gun)
     {
-        var reports = new ThreatReport[_units.Count];
-        for (var i = 0; i < _units.Count; i++)
+        var reports = new ThreatReport[_units.Count + _wrecks.Count];
+        var n = 0;
+        void Add(ColumnUnit unit)
         {
-            var unit = _units[i];
             var dx = unit.X - gun.X;
             var dz = unit.Z - gun.Z;
             var bearing = MathF.Atan2(dz, dx) * (180f / MathF.PI);
-            reports[i] = new ThreatReport
+            reports[n++] = new ThreatReport
             {
                 Id = unit.Id,
                 Road = _lanes[unit.Lane].Name,
                 X = unit.X,
                 Z = unit.Z,
                 Alive = unit.Alive,
-                InArc = MathF.Abs(OpeningFirePlan.DeltaDegrees(bearing, TrailBearingDegrees)) <= ArtilleryPieceCatalog.Default.MaxTraverseDegrees,
+                InArc = MathF.Abs(OpeningFirePlan.DeltaDegrees(bearing, TrailBearingDegrees)) <= _piece.MaxTraverseDegrees,
                 Posture = unit.Alive ? unit.Posture : "stopped",
                 MetersFromGun = MathF.Sqrt(dx * dx + dz * dz),
                 BearingDegrees = bearing,
                 MetersToCrossing = Vector2.Distance(new Vector2(unit.X, unit.Z), new Vector2(Objective.X, Objective.Z)),
             };
         }
+
+        foreach (var unit in _units)
+            Add(unit);
+        foreach (var wreck in _wrecks)
+            Add(wreck);
 
         return reports;
     }
@@ -392,7 +437,7 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
     {
         var goal = new Vector2(Objective.X, Objective.Z);
         var gun = new Vector2(GunX, GunZ);
-        var ring = SimulationUnits.MinOpeningEngagementMeters;
+        var ring = SimulationUnits.MinOpeningEngagementMeters(_piece);
         var routes = PrimaryRoadNetwork.BuildApproachSpawns(
             goal,
             gun,
@@ -536,32 +581,20 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
     private bool ApproachesBlocked()
     {
-        if (Stopped == 0)
+        if (_wrecks.Count == 0)
             return false;
 
-        foreach (var unit in _units)
+        // Enough wrecks on distinct approach lanes to jam the network.
+        var lanesWithWrecks = 0;
+        var seen = new HashSet<int>();
+        foreach (var wreck in _wrecks)
         {
-            if (unit.Alive && !HasWreckCloser(unit))
-                return false;
-        }
-
-        return true;
-    }
-
-    private bool HasWreckCloser(ColumnUnit unit)
-    {
-        var lane = _lanes[unit.Lane];
-        foreach (var other in _units)
-        {
-            if (other.Alive || other.Lane != unit.Lane)
+            if (!seen.Add(wreck.Lane))
                 continue;
-
-            var toward = (unit.Arc - other.Arc) * lane.Away;
-            if (toward > 8f)
-                return true;
+            lanesWithWrecks++;
         }
 
-        return false;
+        return lanesWithWrecks >= Math.Min(3, Math.Max(1, _lanes.Count));
     }
 
     private float GapAhead(ColumnUnit unit, RouteLane lane, out bool wreckAhead)
@@ -569,21 +602,42 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
         wreckAhead = false;
         var best = float.MaxValue;
         var dead = false;
-        foreach (var other in _units)
+
+        void Consider(ColumnUnit other, bool isWreck)
         {
             if (other.Lane != unit.Lane || other.Id == unit.Id)
-                continue;
+                return;
 
             var toward = (unit.Arc - other.Arc) * lane.Away;
             if (toward <= 8f || toward >= best)
-                continue;
+                return;
 
             best = toward;
-            dead = !other.Alive;
+            dead = isWreck;
         }
+
+        foreach (var other in _units)
+            Consider(other, isWreck: false);
+        foreach (var wreck in _wrecks)
+            Consider(wreck, isWreck: true);
 
         wreckAhead = dead;
         return best;
+    }
+
+    private void ArchiveUnit(int index, ref ColumnUnit unit)
+    {
+        unit.Alive = false;
+        unit.Posture = "stopped";
+        unit.Passing = false;
+        unit.Scare = 0f;
+        unit.Offset = 0f;
+        _wrecks.Add(unit);
+        if (index >= 0 && index < _units.Count)
+            _units.RemoveAt(index);
+
+        while (_wrecks.Count > MaxTrackedWrecks)
+            _wrecks.RemoveAt(0);
     }
 
     private bool ShellArriving(ColumnUnit unit, Vector3 shell)
@@ -621,7 +675,7 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
         var line = new GroundPolyline(template.Name, template.Kind, (Vector2[])template.Points.Clone());
         var gun = new Vector2(GunX, GunZ);
         var goal = new Vector2(Objective.X, Objective.Z);
-        var ring = SimulationUnits.MinOpeningEngagementMeters;
+        var ring = SimulationUnits.MinOpeningEngagementMeters(_piece);
         var minOpen = ring * 0.92f;
         var maxOpen = MathF.Min(SimulationUnits.MaxCityApproachMeters, ring * 1.4f);
         var minCity = ObjectiveRadiusMeters + 900f;
@@ -678,12 +732,14 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
             CrossingArc = crossingArc,
             Away = away,
             Name = line.Name,
+            Ribbon = DefenseSceneDraw.BuildRibbon(_terrain, line),
         });
         if (!_approaches.Contains(line.Name))
             _approaches.Add(line.Name);
 
         var before = _units.Count;
         var used = new HashSet<int>();
+        var nextId = _units.Count + _wrecks.Count + 1;
         for (var i = 0; i < count; i++)
         {
             var arc = Math.Clamp(leadArc + away * i * spacing, 40f, line.Length - 40f);
@@ -701,7 +757,7 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
             var unit = new ColumnUnit
             {
-                Id = _units.Count + 1,
+                Id = nextId++,
                 Lane = lane,
                 Arc = arc,
                 Alive = true,

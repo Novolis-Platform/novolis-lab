@@ -4,9 +4,8 @@ using Novolis.Physics.Ballistics;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Opening charge / elevation for Odderøya city defense. Prefer the shortest charge that
-/// reaches the nearest column at or beyond <see cref="SimulationUnits.MinEffectiveRangeMeters"/>
-/// (HE min ~4 km — downtown is inside that floor).
+/// Opening charge / elevation. Prefer the shortest charge that reaches the nearest column
+/// at or beyond the active piece's HE min range.
 /// </summary>
 internal static class OpeningFirePlan
 {
@@ -18,8 +17,11 @@ internal static class OpeningFirePlan
         float trailBearingDegrees,
         float fallbackElevation,
         IReadOnlyList<ColumnUnit> units,
-        Vector3 objective)
+        Vector3 objective,
+        IArtilleryPieceSpec piece)
     {
+        ArgumentNullException.ThrowIfNull(piece);
+
         var desired = float.MaxValue;
         var aimBearing = trailBearingDegrees;
         var nearestCrossing = float.MaxValue;
@@ -29,7 +31,7 @@ internal static class OpeningFirePlan
                 continue;
 
             var bearing = MathF.Atan2(unit.Z - gun.Z, unit.X - gun.X) * (180f / MathF.PI);
-            if (MathF.Abs(DeltaDegrees(bearing, trailBearingDegrees)) > ArtilleryPieceCatalog.Default.MaxTraverseDegrees)
+            if (MathF.Abs(DeltaDegrees(bearing, trailBearingDegrees)) > piece.MaxTraverseDegrees)
                 continue;
 
             var toCrossing = Horizontal(objective, new Vector3(unit.X, objective.Y, unit.Z));
@@ -42,34 +44,33 @@ internal static class OpeningFirePlan
         }
 
         if (desired == float.MaxValue)
-            desired = MathF.Max(Horizontal(gun, objective), SimulationUnits.MinEffectiveRangeMeters);
+            desired = MathF.Max(Horizontal(gun, objective), piece.MinEffectiveRangeMeters);
 
-        // HE floor … outer approach band (never open inside min range or on deep max-zone lob).
         desired = Math.Clamp(
             desired,
-            SimulationUnits.MinEffectiveRangeMeters,
+            piece.MinEffectiveRangeMeters,
             SimulationUnits.MaxCityApproachMeters);
 
         var atmosphere = AtmosphereModel.CreateRegionalDefault();
-        var piece = ArtilleryPieceCatalog.Default;
         var simulation = new ProjectileBallisticSimulation(piece.Projectile, DragCoefficientLaw.BoatTail);
         var bestElev = fallbackElevation;
-        var bestCharge = 3;
+        var bestCharge = Math.Min(3, piece.Charges.Count - 1);
         var bestScore = float.NegativeInfinity;
         var closestError = float.MaxValue;
         var closeElev = fallbackElevation;
-        var closeCharge = 3;
+        var closeCharge = bestCharge;
 
-        // Prefer low → reduced → standard → max (shortest usable zone first).
-        // Coarse elevation steps — opening lay is a seed, not a fire-for-effect table.
         ReadOnlySpan<int> chargeOrder = [3, 0, 1, 2];
         foreach (var charge in chargeOrder)
         {
+            if (charge < 0 || charge >= piece.Charges.Count)
+                continue;
+
             var speed = piece.ChargeAt(charge).MuzzleSpeedMps;
             for (var elev = piece.MaxElevationDegrees; elev >= 12f; elev -= 2f)
             {
-                var reach = ReachMeters(terrain, atmosphere, simulation, gun, aimBearing, elev, speed);
-                if (reach < SimulationUnits.MinEffectiveRangeMeters - 50f)
+                var reach = ReachMeters(terrain, atmosphere, simulation, gun, aimBearing, elev, piece, speed);
+                if (reach < piece.MinEffectiveRangeMeters - 50f)
                     continue;
 
                 var error = MathF.Abs(reach - desired);
@@ -80,12 +81,10 @@ internal static class OpeningFirePlan
                     closeCharge = charge;
                 }
 
-                // Prefer slightly short of the column (safer near downtown) within ~120 m.
                 var longBy = reach - desired;
                 if (longBy > 80f || longBy < -140f)
                     continue;
 
-                // Lower charge index weight + moderate elevation (shorter TOF) + tight error.
                 var chargeBias = charge switch
                 {
                     3 => 40f,
@@ -103,13 +102,12 @@ internal static class OpeningFirePlan
                 bestCharge = charge;
             }
 
-            // Take the first charge tier that produced an acceptable bracket.
             if (bestScore > float.NegativeInfinity)
                 return new Lay(bestElev, bestCharge, aimBearing);
         }
 
         if (closestError == float.MaxValue)
-            return new Lay(Math.Clamp(fallbackElevation, 18f, 55f), 3, aimBearing);
+            return new Lay(Math.Clamp(fallbackElevation, 18f, 55f), closeCharge, aimBearing);
 
         return new Lay(closeElev, closeCharge, aimBearing);
     }
@@ -121,14 +119,16 @@ internal static class OpeningFirePlan
         Vector3 gun,
         float azimuthDegrees,
         float elevationDegrees,
+        IArtilleryPieceSpec piece,
         float muzzleSpeedMps = 0f)
     {
+        ArgumentNullException.ThrowIfNull(piece);
+
         var elev = elevationDegrees * (MathF.PI / 180f);
         var az = azimuthDegrees * (MathF.PI / 180f);
         var cosE = MathF.Cos(elev);
         var direction = Vector3.Normalize(new Vector3(cosE * MathF.Cos(az), MathF.Sin(elev), cosE * MathF.Sin(az)));
-        var pivot = gun + new Vector3(0f, SimulationUnits.GunHeightOffset, 0f);
-        var piece = ArtilleryPieceCatalog.Default;
+        var pivot = gun + new Vector3(0f, piece.GunHeightOffsetMeters, 0f);
         var muzzle = pivot + direction * piece.BarrelLengthMeters;
         var speed = muzzleSpeedMps > 1f ? muzzleSpeedMps : piece.ChargeAt(1).MuzzleSpeedMps;
         var state = new ProjectileState(muzzle, direction * speed, piece.Projectile.MassKg, timeSeconds: 0);

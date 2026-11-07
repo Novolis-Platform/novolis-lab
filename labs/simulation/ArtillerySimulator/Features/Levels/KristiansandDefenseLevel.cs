@@ -15,5 +15,6 @@ internal sealed class KristiansandDefenseLevel : IGameLevel
 
     public void RebuildMap(TerrainWorld terrain) => terrain.Rebuild();
 
-    public IDefenseMission StartMission(TerrainWorld terrain) => new KristiansandDefenseMission(terrain);
+    public IDefenseMission StartMission(TerrainWorld terrain, IArtilleryPieceSpec piece, int seed) =>
+        new KristiansandDefenseMission(terrain, piece, seed);
 }
