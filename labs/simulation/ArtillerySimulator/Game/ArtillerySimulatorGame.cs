@@ -200,8 +200,6 @@ internal sealed class ArtillerySimulatorGame
 
         // Cached terrain wires (built once). Dynamic overlay rebuilt each frame.
         frame.DrawWorldLines(_terrain.CachedWires, mvp);
-        // Kommunekart 3D Tiles → wires is not trustworthy yet (quantized/instanced glTF).
-        // Do not draw KristiansandKommunekartBuildings until a correct converter lands.
 
         _wires.Clear();
         DrawSky(_wires);

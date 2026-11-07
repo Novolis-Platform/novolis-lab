@@ -65,13 +65,19 @@
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
       "encoding": "height_shades_only_where_water_mask",
-      "rule": "water_mask_wins_conflicts"
+      "rule": "water_mask_wins_conflicts_sea_connected_zero"
+    },
+    {
+      "id": "sea-connected",
+      "imageFile": "layers/sea-connected.bin",
+      "role": "sea_connected",
+      "encoding": "uint8_grid_1_equals_border_flood_water"
     },
     {
       "id": "water-elevation",
       "imageFile": "layers/water-elevation.bin",
       "role": "water_meters",
-      "encoding": "int16_grid_land_sentinel_-32768"
+      "encoding": "int16_grid_land_sentinel_-32768_sea_flattened"
     },
     {
       "id": "land-mask",

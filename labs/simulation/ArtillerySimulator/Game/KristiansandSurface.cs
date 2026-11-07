@@ -1,8 +1,8 @@
 namespace ArtillerySimulator.Game;
 
 /// <summary>
-/// Land vs water. Binary <c>water-mask.png</c> is unbreakable for where water is;
-/// NDH under that mask is the water surface height (rivers fall, ponds sit high).
+/// Land vs water. Binary <c>water-mask.png</c> is unbreakable for where water is.
+/// Heightfield has sea-connected water flattened to 0 m; inland lakes keep NDH.
 /// </summary>
 internal static class KristiansandSurface
 {

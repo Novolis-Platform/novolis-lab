@@ -8,10 +8,13 @@
 using SkiaSharp;
 
 // A) elevation.png — land height only (water transparent)
-// B) water-mask.png — binary silhouette (flat cyan; authoritative where-water)
-// C) water-heightmap.png — blue NDH shades (may have errors)
-// D) water-combined.png — height shades ONLY where water-mask says water (mask wins)
-// E) heightfield-1025.bin — game mesh meters
+// B) water-mask.png — binary silhouette (authoritative where-water)
+// C) water-heightmap.png — blue shades: sea=0, inland lakes/rivers keep NDH
+// D) water-combined.png — height only where water-mask says water (mask wins)
+// E) heightfield-1025.bin — game mesh (sea-connected water flattened to 0)
+//
+// Open-sea rule: flood-fill water from image border → force 0 m.
+// Inland water (not sea-connected) keeps NDH so ponds sit on hills.
 //
 //   dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\build-elevation-water-layers.cs
 
@@ -24,46 +27,64 @@ var waterMaskPngPath = Path.Combine(layersDir, "water-mask.png");
 var waterHeightPngPath = Path.Combine(layersDir, "water-heightmap.png");
 var waterCombinedPngPath = Path.Combine(layersDir, "water-combined.png");
 var waterElevBinPath = Path.Combine(layersDir, "water-elevation.bin");
+var seaBinPath = Path.Combine(layersDir, "sea-connected.bin");
 var heightfieldPath = Path.Combine(layersDir, "heightfield-1025.bin");
 const float eastMeters = 24008.08f;
 const float northMeters = 16266.16f;
 const int meshGrid = 1025;
 
-var (w, h, heights) = ReadInt16Grid(elevBinPath);
+var (w, h, rawHeights) = ReadInt16Grid(elevBinPath);
 var water = File.ReadAllBytes(waterBinPath);
 if (water.Length != w * h)
     throw new InvalidDataException($"water-mask.bin length {water.Length} != {w}*{h}");
 
+var sea = MarkSeaConnected(water, w, h);
+var heights = ApplySeaFlatten(rawHeights, water, sea);
+File.WriteAllBytes(seaBinPath, sea);
+
 short landMin = short.MaxValue, landMax = short.MinValue;
-short waterMin = short.MaxValue, waterMax = short.MinValue;
+short inlandMin = short.MaxValue, inlandMax = short.MinValue;
 var waterCount = 0;
+var seaCount = 0;
+var inlandCount = 0;
 for (var i = 0; i < heights.Length; i++)
 {
-    var m = heights[i];
-    if (water[i] != 0)
+    if (water[i] == 0)
     {
-        waterCount++;
-        if (m < waterMin) waterMin = m;
-        if (m > waterMax) waterMax = m;
+        if (rawHeights[i] < landMin) landMin = rawHeights[i];
+        if (rawHeights[i] > landMax) landMax = rawHeights[i];
+        continue;
     }
-    else
+
+    waterCount++;
+    if (sea[i] != 0)
     {
-        if (m < landMin) landMin = m;
-        if (m > landMax) landMax = m;
+        seaCount++;
+        continue;
     }
+
+    inlandCount++;
+    if (heights[i] < inlandMin) inlandMin = heights[i];
+    if (heights[i] > inlandMax) inlandMax = heights[i];
 }
 
 if (waterCount == 0)
     throw new InvalidDataException("No water cells in water-mask.bin");
 if (landMin == short.MaxValue)
     landMin = landMax = 0;
+if (inlandCount == 0)
+{
+    inlandMin = 0;
+    inlandMax = 1;
+}
 
-WriteLandElevationPng(elevPngPath, heights, water, w, h, landMin, landMax);
+// Land preview still uses raw land NDH; water holes transparent.
+WriteLandElevationPng(elevPngPath, rawHeights, water, w, h, landMin, landMax);
 WriteBinaryWaterMaskPng(waterMaskPngPath, water, w, h);
-WriteWaterHeightmapPng(waterHeightPngPath, heights, water, w, h, waterMin, waterMax);
+// Water products use flattened heights (sea = 0).
+WriteWaterHeightmapPng(waterHeightPngPath, heights, water, w, h, inlandMin, inlandMax);
 WriteWaterElevationBin(waterElevBinPath, heights, water, w, h);
 
-// Third layer: combine mask + heightmap. water-mask.png wins every conflict.
 var stripped = WriteWaterCombinedPng(
     waterCombinedPngPath,
     waterMaskPngPath,
@@ -72,8 +93,8 @@ var stripped = WriteWaterCombinedPng(
     water,
     w,
     h,
-    waterMin,
-    waterMax);
+    inlandMin,
+    inlandMax);
 
 var mesh = ResampleHeights(heights, w, h, meshGrid);
 WriteHeightGridBin(heightfieldPath, meshGrid, mesh);
@@ -91,11 +112,65 @@ File.Copy(waterHeightPngPath, Path.Combine(mapDir, "kristiansand-water-heightmap
 File.Copy(waterCombinedPngPath, Path.Combine(mapDir, "kristiansand-water-combined.png"), overwrite: true);
 
 Console.WriteLine($"elevation.png       land {landMin}–{landMax} m (water transparent)");
-Console.WriteLine($"water-mask.png      binary silhouette ({waterCount} cells, {100.0 * waterCount / (w * h):F1}%) — AUTHORITATIVE");
-Console.WriteLine($"water-heightmap.png water {waterMin}–{waterMax} m blue heightmap");
-Console.WriteLine($"water-combined.png  mask∩height (stripped {stripped} heightmap-only pixels)");
-Console.WriteLine($"heightfield-1025.bin mesh {meshGrid}×{meshGrid}");
-Console.WriteLine($"water-elevation.bin int16 meters under mask");
+Console.WriteLine($"water-mask.png      binary ({waterCount} cells) — AUTHORITATIVE");
+Console.WriteLine($"sea-connected.bin   {seaCount} cells → 0 m ({100.0 * seaCount / waterCount:F1}% of water)");
+Console.WriteLine($"inland water        {inlandCount} cells keep NDH {inlandMin}–{inlandMax} m");
+Console.WriteLine($"water-heightmap.png sea flat + inland blue heightmap");
+Console.WriteLine($"water-combined.png  mask∩height (stripped {stripped} heightmap-only)");
+Console.WriteLine($"heightfield-1025.bin mesh {meshGrid}×{meshGrid} (sea flattened)");
+
+/// <summary>4-connected flood fill from border water → open sea / fjords connected to ocean.</summary>
+static byte[] MarkSeaConnected(byte[] water, int w, int h)
+{
+    var sea = new byte[w * h];
+    var queue = new Queue<int>();
+
+    void TryEnqueue(int i)
+    {
+        if (water[i] == 0 || sea[i] != 0)
+            return;
+        sea[i] = 1;
+        queue.Enqueue(i);
+    }
+
+    for (var x = 0; x < w; x++)
+    {
+        TryEnqueue(x);
+        TryEnqueue((h - 1) * w + x);
+    }
+
+    for (var y = 0; y < h; y++)
+    {
+        TryEnqueue(y * w);
+        TryEnqueue(y * w + (w - 1));
+    }
+
+    while (queue.Count > 0)
+    {
+        var i = queue.Dequeue();
+        var x = i % w;
+        var y = i / w;
+        if (x > 0) TryEnqueue(i - 1);
+        if (x + 1 < w) TryEnqueue(i + 1);
+        if (y > 0) TryEnqueue(i - w);
+        if (y + 1 < h) TryEnqueue(i + w);
+    }
+
+    return sea;
+}
+
+/// <summary>Sea-connected water → 0 m; inland mask-water keeps NDH; land unchanged.</summary>
+static short[] ApplySeaFlatten(short[] raw, byte[] water, byte[] sea)
+{
+    var heights = (short[])raw.Clone();
+    for (var i = 0; i < heights.Length; i++)
+    {
+        if (water[i] != 0 && sea[i] != 0)
+            heights[i] = 0;
+    }
+
+    return heights;
+}
 
 static (int W, int H, short[] Heights) ReadInt16Grid(string path)
 {
@@ -173,10 +248,6 @@ static void WriteWaterHeightmapPng(string path, short[] heights, byte[] water, i
     File.WriteAllBytes(path, encoded.ToArray());
 }
 
-/// <summary>
-/// Unbreakable rule: water-mask.png defines water. Heightmap shades apply only on mask-water;
-/// heightmap-only pixels are stripped. Mask-water with missing heightmap uses NDH shade.
-/// </summary>
 static int WriteWaterCombinedPng(
     string path,
     string maskPath,
@@ -211,7 +282,6 @@ static int WriteWaterCombinedPng(
 
             if (!maskWater)
             {
-                // Mask wins: heightmap-only "water" is not water.
                 if (heightWater)
                     stripped++;
                 continue;

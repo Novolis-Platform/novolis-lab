@@ -198,13 +198,12 @@ static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
         for (var x = 0; x < w; x++)
         {
             var i = y * w + x;
-            // Keep NDH under water too (gentle foreshore). Wire color still comes from the PDF mask.
+            // Keep NDH under water too; sea-connected cells flattened after the loop.
             var u = w <= 1 ? 0.0 : x / (double)(w - 1);
             var dx = u * (dw - 1);
             var metersF = SampleFloatBilinear(dtmGrid, dw, dh, dx, dy);
             if (float.IsNaN(metersF) || metersF < -50f || metersF > 2500f)
                 metersF = 0f;
-            // Keep real NDH under lakes/rivers. Sea is ~0 in NDH; do not zero elevated water.
             var meters = (short)Math.Clamp(Math.Round(metersF), -30, 32000);
             heights[i] = meters;
             if (water[i] == 0)
@@ -216,6 +215,20 @@ static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
 
     if (landSamples == 0 || minH == short.MaxValue)
         minH = maxH = 0;
+
+    // Open sea / fjords connected to the map border → 0 m. Inland lakes/ponds keep NDH.
+    var sea = MarkSeaConnected(water, w, h);
+    File.WriteAllBytes(Path.Combine(layers.State.Input.LayersDir, "sea-connected.bin"), sea);
+    var seaCount = 0;
+    for (var i = 0; i < heights.Length; i++)
+    {
+        if (water[i] == 0 || sea[i] == 0)
+            continue;
+        heights[i] = 0;
+        seaCount++;
+    }
+
+    Console.WriteLine($"sea-connected: {seaCount} water cells flattened to 0 m");
 
     WriteLandElevationPng(layers.ElevationPath, heights, water, w, h, minH, maxH);
     // water-mask.png stays the flat binary silhouette from SplitReliefMasks (authoritative).
@@ -514,6 +527,46 @@ static void WriteWaterElevationBin(string path, short[] heights, byte[] water, i
     writer.Write(h);
     for (var i = 0; i < heights.Length; i++)
         writer.Write(water[i] != 0 ? heights[i] : (short)-32768);
+}
+
+/// <summary>4-connected flood fill from border water → open sea / fjords connected to ocean.</summary>
+static byte[] MarkSeaConnected(byte[] water, int w, int h)
+{
+    var sea = new byte[w * h];
+    var queue = new Queue<int>();
+
+    void TryEnqueue(int i)
+    {
+        if (water[i] == 0 || sea[i] != 0)
+            return;
+        sea[i] = 1;
+        queue.Enqueue(i);
+    }
+
+    for (var x = 0; x < w; x++)
+    {
+        TryEnqueue(x);
+        TryEnqueue((h - 1) * w + x);
+    }
+
+    for (var y = 0; y < h; y++)
+    {
+        TryEnqueue(y * w);
+        TryEnqueue(y * w + (w - 1));
+    }
+
+    while (queue.Count > 0)
+    {
+        var i = queue.Dequeue();
+        var x = i % w;
+        var y = i / w;
+        if (x > 0) TryEnqueue(i - 1);
+        if (x + 1 < w) TryEnqueue(i + 1);
+        if (y > 0) TryEnqueue(i - w);
+        if (y + 1 < h) TryEnqueue(i + w);
+    }
+
+    return sea;
 }
 
 static MapDataBundle CompositeLayers(MapDataBundle data)
@@ -936,8 +989,9 @@ static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid, stri
             new { id = "relief-source", imageFile = "layers/relief-source.png", role = "relief_source", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
             new { id = "water-mask", imageFile = "layers/water-mask.png", role = "water_binary", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "opaque_cyan_water_transparent_land", authority = "where_water_unbreakable", sourcePdfPath = g.ReliefPdf },
             new { id = "water-heightmap", imageFile = "layers/water-heightmap.png", role = "water_heightmap", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "opaque_blue_shade_ndh_meters_transparent_land" },
-            new { id = "water-combined", imageFile = "layers/water-combined.png", role = "water_combined", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "height_shades_only_where_water_mask", rule = "water_mask_wins_conflicts" },
-            new { id = "water-elevation", imageFile = "layers/water-elevation.bin", role = "water_meters", encoding = "int16_grid_land_sentinel_-32768" },
+            new { id = "water-combined", imageFile = "layers/water-combined.png", role = "water_combined", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "height_shades_only_where_water_mask", rule = "water_mask_wins_conflicts_sea_connected_zero" },
+            new { id = "sea-connected", imageFile = "layers/sea-connected.bin", role = "sea_connected", encoding = "uint8_grid_1_equals_border_flood_water" },
+            new { id = "water-elevation", imageFile = "layers/water-elevation.bin", role = "water_meters", encoding = "int16_grid_land_sentinel_-32768_sea_flattened" },
             new { id = "land-mask", imageFile = "layers/land-mask.png", role = "land", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
             new { id = "elevation", imageFile = "layers/elevation.png", role = "land_elevation_preview", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "opaque_land_green_shade_water_transparent", source = "NHM_DTM_25833" },
             new { id = "ndh-dtm", imageFile = "layers/ndh-dtm.tif", role = "dtm", source = "https://hoydedata.no/arcgis/rest/services/NHM_DTM_25833/ImageServer" },
