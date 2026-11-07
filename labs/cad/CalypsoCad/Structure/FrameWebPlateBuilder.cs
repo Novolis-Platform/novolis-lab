@@ -209,16 +209,18 @@ internal static class FrameWebPlateBuilder
         _ = holeLoops;
         _ = inset;
         _ = web;
-        // 1) Perimeter ring along IML octagon (primary closed load path).
-        CalypsoShipbuildingFrames.AddPerimeterRingPublic(
-            entities, loa, frameId, zStem, web, halfDepthZ, inset);
+        // 1) Perimeter ring on plating-join octagon (knuckles = outer-hull plate seams).
+        CalypsoShipbuildingFrames.AddPerimeterRingAtInset(
+            entities, loa, frameId, zStem, web, halfDepthZ,
+            CalypsoShipbuildingFrames.PlatingJoinInset);
 
         // 2) Deck chords — athwart load transfer at lock plate tops (split at passage tracks).
         var chordHalf = MathF.Max(0.08f, web * 0.45f);
+        var chordInset = CalypsoShipbuildingFrames.PlatingJoinInset;
         var cellIndex = 0;
         foreach (var deckUp in decks)
         {
-            var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp, inset) - 0.15f;
+            var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp, chordInset) - 0.15f;
             if (halfY < 0.35f)
                 continue;
             foreach (var (ya, yb) in CalypsoLockGenerator.SolidSpansPublic(-halfY, halfY, athwartGaps))

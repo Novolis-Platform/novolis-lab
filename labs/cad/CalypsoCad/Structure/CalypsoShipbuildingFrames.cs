@@ -9,6 +9,8 @@ namespace CalypsoCad.Structure;
 internal static class CalypsoShipbuildingFrames
 {
     internal const float DefaultSkinInset = 0.18f;
+    /// <summary>IML inset for outer-hull plating joins (octagon knuckles) — shared by frames + join stringers.</summary>
+    internal const float PlatingJoinInset = DefaultSkinInset + 0.06f;
     /// <summary>Solid transverse web: plate on inner octagon with per-deck passageway/hatch portals.</summary>
     public static void AddTransverseFrameWeb(
         List<CadEntity> entities,
@@ -47,8 +49,8 @@ internal static class CalypsoShipbuildingFrames
         IReadOnlyList<float> deckUps,
         float tPlate)
     {
-        var inset = DefaultSkinInset;
-        AddPerimeterRingPublic(entities, loa, frameId, zStem, web, halfDepthZ, inset);
+        var inset = PlatingJoinInset;
+        AddPerimeterRingAtInset(entities, loa, frameId, zStem, web, halfDepthZ, inset);
         if (deckUps.Count == 0)
             return;
         var floorUp = deckUps[0];
@@ -206,8 +208,8 @@ internal static class CalypsoShipbuildingFrames
     }
 
     /// <summary>
-    /// Skin stringers along the IML octagon — longitudinals at ring vertices + three-tier
-    /// port/stbd side runs (HOLD bay-noshell outer cage). Bay segments meet at stations.
+    /// Outer-hull plating-join longitudinals: one knuckle stringer at each of the 8 IML octagon
+    /// vertices between consecutive frame stations (same construction as the two-bay proof).
     /// </summary>
     public static void AddOuterHullStringers(
         List<CadEntity> entities,
@@ -215,94 +217,154 @@ internal static class CalypsoShipbuildingFrames
         float zStart,
         float zEnd,
         float web,
-        float frameBay)
+        float frameBay,
+        IReadOnlyList<(string Id, float ZStem, bool BowAligned)>? frameStations = null)
     {
+        if (frameStations is { Count: >= 2 })
+        {
+            for (var i = 0; i < frameStations.Count - 1; i++)
+            {
+                var (id0, z0, _) = frameStations[i];
+                var (id1, z1, _) = frameStations[i + 1];
+                if (z1 - z0 < 0.4f)
+                    continue;
+                var fore = id0.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id0 : $"frame-{id0}";
+                var aft = id1.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id1 : $"frame-{id1}";
+                AddPlatingJoinStringersBetweenFrames(
+                    entities, loa, z0, z1, web, $"b{i}", fore, aft);
+                AddShellPlatingStripsBetweenFrames(
+                    entities, loa, z0, z1, web, $"b{i}", fore, aft);
+            }
+
+            return;
+        }
+
+        // Fallback: uniform bay pitch when frame schedule unavailable.
         if (zEnd <= zStart + 1f)
             return;
-
-        // Deep inset so bow taper + midbody sides both nest (was skipping stem bays entirely).
-        var inset = DefaultSkinInset + web * 0.9f + 0.15f;
-        var stiffHy = MathF.Max(0.045f, web * 0.24f);
-        var stiffHu = MathF.Max(0.05f, web * 0.28f);
         var bayIndex = 0;
         for (var z = zStart; z < zEnd - 0.35f; z += frameBay)
         {
             var z0 = z;
             var z1 = MathF.Min(z + frameBay, zEnd);
-            var zc = (z0 + z1) * 0.5f;
-            var halfLenZ = (z1 - z0) * 0.5f;
-            if (halfLenZ < 0.2f)
+            if (z1 - z0 < 0.4f)
                 break;
-
-            CalypsoLockGenerator.SectionAtPublic(zc, out var halfB, out var halfH, out var mid, out _, out _);
-            if (halfB < 0.35f || halfH < 0.35f)
-            {
-                bayIndex++;
-                continue;
-            }
-
-            // Narrowest section along the bay so ends never poke past taper.
-            CalypsoLockGenerator.SectionAtPublic(z0 + 0.05f, out var halfB0, out var halfH0, out _, out _, out _);
-            CalypsoLockGenerator.SectionAtPublic(z1 - 0.05f, out var halfB1, out var halfH1, out _, out _, out _);
-            var useHalfB = MathF.Min(halfB, MathF.Min(halfB0, halfB1));
-            var useHalfH = MathF.Min(halfH, MathF.Min(halfH0, halfH1));
-            _ = useHalfH;
-
-            // 1) Vertex stringers — one longitudinal at each IML octagon corner.
-            var ring = InnerOctagonRing(zc, inset);
-            // Scale ring into the narrowest bay half-beam so stem segments still connect.
-            CalypsoLockGenerator.SectionAtPublic(zc, out var refB, out _, out _, out _, out _);
-            var scale = refB > 0.2f ? MathF.Min(1f, (useHalfB - inset) / MathF.Max(0.2f, refB - inset)) : 1f;
-            scale = Math.Clamp(scale, 0.55f, 1f);
-            var (cy, cu) = ring.GetSectionCenter();
-            for (var i = 0; i < ring.Length; i++)
-            {
-                var y = cy + (ring[i].Y - cy) * scale;
-                var up = cu + (ring[i].Up - cu) * scale;
-                var inwardY = cy - y;
-                var inwardU = cu - up;
-                var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
-                if (inwardLen > 1e-4f)
-                {
-                    var pull = MathF.Min(stiffHy * 1.6f, inwardLen * 0.4f);
-                    y += inwardY / inwardLen * pull;
-                    up += inwardU / inwardLen * pull;
-                }
-
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities, loa, $"stringer-v{i}-d{bayIndex}",
-                    y, up, zc, stiffHy, stiffHu, halfLenZ,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.ShellStiffener, "stringer-skin",
-                        StationZ: zc, DeckUp: up));
-            }
-
-            // 2) Mid-side tiers (port/stbd) — same three-band read as bay shell stiffeners.
-            var yFace = useHalfB - inset - stiffHy;
-            var uBot = mid - halfH + inset + stiffHu;
-            var uTop = mid + halfH - inset - stiffHu;
-            var huSide = (uTop - uBot) * 0.48f;
-            if (yFace >= 0.25f && huSide >= 0.3f)
-            {
-                for (var i = -1; i <= 1; i++)
-                {
-                    var up = mid + i * (huSide * 0.55f);
-                    CalypsoLockGenerator.TryAddStructureBar(
-                        entities, loa, $"stringer-port-{i}-d{bayIndex}",
-                        -yFace, up, zc, stiffHy, stiffHu, halfLenZ * 0.98f,
-                        meta: new StructuralSolidMeta(
-                            StructuralRoles.ShellStiffener, "stringer-skin",
-                            StationZ: zc, DeckUp: up));
-                    CalypsoLockGenerator.TryAddStructureBar(
-                        entities, loa, $"stringer-stbd-{i}-d{bayIndex}",
-                        yFace, up, zc, stiffHy, stiffHu, halfLenZ * 0.98f,
-                        meta: new StructuralSolidMeta(
-                            StructuralRoles.ShellStiffener, "stringer-skin",
-                            StationZ: zc, DeckUp: up));
-                }
-            }
-
+            AddPlatingJoinStringersBetweenFrames(
+                entities, loa, z0, z1, web, $"d{bayIndex}", $"frame-F{z0:0}", $"frame-F{z1:0}");
+            AddShellPlatingStripsBetweenFrames(
+                entities, loa, z0, z1, web, $"d{bayIndex}", $"frame-F{z0:0}", $"frame-F{z1:0}");
             bayIndex++;
+        }
+    }
+
+    /// <summary>
+    /// Longitudinal at each outer-hull plating join (octagon vertex) spanning one frame bay.
+    /// Outer face coincides with the plate seam — shrink section before pulling into the volume.
+    /// </summary>
+    public static void AddPlatingJoinStringersBetweenFrames(
+        List<CadEntity> entities,
+        float loa,
+        float z0,
+        float z1,
+        float web,
+        string bayTag,
+        string foreFrame,
+        string aftFrame)
+    {
+        var zc = (z0 + z1) * 0.5f;
+        var halfLenZ = (z1 - z0) * 0.5f + web * 0.45f;
+        var ring = InnerOctagonRing(zc, PlatingJoinInset);
+        var (cy, cu) = ring.GetSectionCenter();
+        for (var i = 0; i < ring.Length; i++)
+        {
+            var vx = ring[i].Y;
+            var vu = ring[i].Up;
+            var inwardY = cy - vx;
+            var inwardU = cu - vu;
+            var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
+            var ny = inwardLen > 1e-4f ? inwardY / inwardLen : 0f;
+            var nu = inwardLen > 1e-4f ? inwardU / inwardLen : 0f;
+            var stiffHy = MathF.Max(0.04f, web * 0.22f);
+            var stiffHu = MathF.Max(0.045f, web * 0.24f);
+            var name = $"stringer-join-v{i}-{bayTag}";
+            for (var shrink = 0; shrink < 8; shrink++)
+            {
+                var hy = stiffHy * MathF.Pow(0.88f, shrink);
+                var hu = stiffHu * MathF.Pow(0.88f, shrink);
+                if (hy < 0.028f || hu < 0.028f)
+                    break;
+                var pull = MathF.Max(hy, hu) * 1.42f;
+                var y = vx + ny * pull;
+                var up = vu + nu * pull;
+                var before = entities.Count;
+                if (!CalypsoLockGenerator.TryAddStructureBar(
+                        entities, loa, name, y, up, zc, hy, hu, halfLenZ,
+                        meta: new StructuralSolidMeta(
+                            StructuralRoles.LongitudinalGirder, "plating-join",
+                            StationZ: zc, DeckUp: up, Joins: [foreFrame, aftFrame])))
+                    continue;
+                for (var e = before; e < entities.Count; e++)
+                {
+                    var props = entities[e].Properties
+                                ?? new Dictionary<string, System.Text.Json.JsonElement>();
+                    props["platingJoinVertex"] =
+                        System.Text.Json.JsonSerializer.SerializeToElement(i);
+                    props["platingJoin"] =
+                        System.Text.Json.JsonSerializer.SerializeToElement(true);
+                    entities[e].Properties = props;
+                }
+
+                break;
+            }
+        }
+    }
+
+    /// <summary>Shell plate facets between plating-join vertices for one frame bay.</summary>
+    public static void AddShellPlatingStripsBetweenFrames(
+        List<CadEntity> entities,
+        float loa,
+        float z0,
+        float z1,
+        float web,
+        string bayTag,
+        string foreFrame,
+        string aftFrame)
+    {
+        var zc = (z0 + z1) * 0.5f;
+        var halfLenZ = (z1 - z0) * 0.5f + web * 0.2f;
+        var ring = InnerOctagonRing(zc, PlatingJoinInset);
+        var (cy, cu) = ring.GetSectionCenter();
+        var t = MathF.Max(0.04f, web * 0.22f);
+        for (var i = 0; i < ring.Length; i++)
+        {
+            var a = ring[i];
+            var b = ring[(i + 1) % ring.Length];
+            var dy = b.Y - a.Y;
+            var du = b.Up - a.Up;
+            var len = MathF.Sqrt(dy * dy + du * du);
+            if (len < 0.2f)
+                continue;
+            var y = (a.Y + b.Y) * 0.5f;
+            var up = (a.Up + b.Up) * 0.5f;
+            var inwardY = cy - y;
+            var inwardU = cu - up;
+            var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
+            if (inwardLen > 1e-4f)
+            {
+                y += inwardY / inwardLen * (t * 0.6f);
+                up += inwardU / inwardLen * (t * 0.6f);
+            }
+
+            var angle = MathF.Atan2(du, dy);
+            CalypsoLockGenerator.TryAddOrientedStructureBar(
+                entities, loa, $"shell-panel-{bayTag}-e{i}", y, up, zc,
+                halfAlongEdge: len * 0.48f,
+                halfFlange: t * 0.5f,
+                halfDepthZ: halfLenZ,
+                orientZ: angle,
+                meta: new StructuralSolidMeta(
+                    StructuralRoles.ShellPanel, "bay-shell",
+                    StationZ: zc, DeckUp: up, Joins: [foreFrame, aftFrame]));
         }
     }
 
@@ -327,8 +389,8 @@ internal static class CalypsoShipbuildingFrames
         for (var z = girderStart; z < zEnd - 0.5f; z += frameBay)
         {
             var zc = MathF.Min(z + frameBay * 0.5f, zEnd - 0.2f);
-            // half = bay/2 so adjacent bay segments meet at station planes (continuous load path).
-            var halfLenZ = MathF.Min(frameBay * 0.5f, zEnd - zc);
+            // Overlap into frame webs so adjacent bay girders form a continuous load path.
+            var halfLenZ = MathF.Min(frameBay * 0.5f + web * 0.45f, zEnd - zc);
             if (halfLenZ < 0.25f)
                 break;
 

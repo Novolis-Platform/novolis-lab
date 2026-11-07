@@ -55,7 +55,7 @@ internal static class StructuralBayGeometry
 
         // Every outer-hull plating join (8 octagon vertices) carries a longitudinal per bay.
         var joinMiss = 0;
-        var platingInset = CalypsoShipbuildingFrames.DefaultSkinInset + 0.06f;
+        var platingInset = CalypsoShipbuildingFrames.PlatingJoinInset;
         foreach (var zStem in new[] { 26f, 30f }) // bay mid-stations F24–28 and F28–32
         {
             var ring = CalypsoShipbuildingFrames.InnerOctagonRing(zStem, platingInset);
@@ -118,8 +118,8 @@ internal static class StructuralBayGeometry
             }
 
             // Bay frames use plating inset (knuckles = outer-hull plate seams).
-            var inset = CalypsoShipbuildingFrames.DefaultSkinInset + 0.06f;
-            var expected = CalypsoShipbuildingFrames.InnerOctagonRing(zStem, inset);
+            var expected = CalypsoShipbuildingFrames.InnerOctagonRing(
+                zStem, CalypsoShipbuildingFrames.PlatingJoinInset);
             for (var i = 0; i < expected.Length; i++)
             {
                 var a = expected[i];
