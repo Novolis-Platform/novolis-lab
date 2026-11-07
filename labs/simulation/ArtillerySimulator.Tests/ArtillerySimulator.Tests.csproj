@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>ArtillerySimulator.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TUnit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ArtillerySimulator\ArtillerySimulator.csproj" />
+  </ItemGroup>
+  <!-- Runtime map assets for integration-style smoke (same set as the game). -->
+  <ItemGroup>
+    <None Include="..\ArtillerySimulator\map\layers\heightfield-1025.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\heightfield-1025.bin" />
+    <None Include="..\ArtillerySimulator\map\layers\nvdb-roads.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\nvdb-roads.bin" />
+    <None Include="..\ArtillerySimulator\map\layers\water-mask.png" CopyToOutputDirectory="PreserveNewest" Link="map\layers\water-mask.png" />
+    <None Include="..\ArtillerySimulator\map\layers\water-mask.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\water-mask.bin" />
+    <None Include="..\ArtillerySimulator\map\kristiansand-land-sea-mask.bin" CopyToOutputDirectory="PreserveNewest" Link="map\kristiansand-land-sea-mask.bin" />
+    <None Include="..\ArtillerySimulator\map\kommunekart-3d-view.json" CopyToOutputDirectory="PreserveNewest" Link="map\kommunekart-3d-view.json" />
+  </ItemGroup>
+</Project>

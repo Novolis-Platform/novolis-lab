@@ -22,6 +22,8 @@ internal sealed class CalypsoRenderer
     private static readonly Color DeckPlate = Color.FromArgb(255, 52, 56, 60);
     private static readonly Color Lining = Color.FromArgb(255, 168, 172, 176);
     private static readonly Color Bulkhead = Color.FromArgb(255, 90, 96, 104);
+    /// <summary>Heavy BH plate — distinguishable from ordinary frame steel gray.</summary>
+    private static readonly Color HeavyBulkhead = Color.FromArgb(255, 168, 92, 58);
     private static readonly Color Steel = Color.FromArgb(255, 78, 86, 96);
     private static readonly Color AccentLight = Color.FromArgb(255, 210, 170, 90);
     private static readonly Color AccentCyan = Color.FromArgb(255, 90, 170, 190);
@@ -1328,13 +1330,13 @@ internal sealed class CalypsoRenderer
         var sy = Math.Abs(he.Y) * 2f * gap;
         var sz = Math.Abs(he.Z) * 2f * gap;
         var isBh = box.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true;
-        // Pressure BH: solid steel (ENG tinted warmer) — never wire-rib only in structure slides.
+        // Heavy BH: warm plate (distinct from ordinary frame steel gray). ENG slightly darker.
         if (isBh)
         {
             var eng = box.Name!.Contains("ENG", StringComparison.OrdinalIgnoreCase);
             color = eng
-                ? Color.FromArgb(255, 120, 118, 112)
-                : Color.FromArgb(255, 96, 100, 108);
+                ? Color.FromArgb(255, 148, 78, 48)
+                : HeavyBulkhead;
         }
 
         var body = ShadeColor(color, isC40 ? 0.55f : 0.4f, isC40 ? 0.25f : (isBh ? 0.75f : 0.65f), Vector3.UnitY, LightDir);
@@ -2323,8 +2325,8 @@ internal sealed class CalypsoRenderer
     {
         var halfLoa = loa * 0.5f;
         var stations = new SortedSet<float>();
-        foreach (var (_, zStem, _) in CalypsoBulkheads.BuildSchedule(loa))
-            stations.Add(halfLoa - zStem);
+        foreach (var bh in CalypsoBulkheads.BuildSchedule(loa))
+            stations.Add(halfLoa - bh.ZStem);
         return stations;
     }
 

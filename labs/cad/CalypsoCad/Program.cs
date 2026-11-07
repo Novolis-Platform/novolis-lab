@@ -59,6 +59,13 @@ internal static class Program
             return;
         }
 
+        var hullFirst = args.Any(a => string.Equals(a, "--hull-first", StringComparison.OrdinalIgnoreCase));
+        if (hullFirst)
+        {
+            Environment.ExitCode = RunHullFirst();
+            return;
+        }
+
         if (blueprints || blueprintDetails)
         {
             Environment.ExitCode = RunBlueprints(emitDetails: blueprints || blueprintDetails);
@@ -170,6 +177,57 @@ internal static class Program
             CalypsoSilkHost.Run(session, renderer);
         else
             CalypsoExplorerHost.Run(session, renderer);
+    }
+
+    /// <summary>Hull-first: regenerate → transverse skeleton validation → Views A–D.</summary>
+    private static int RunHullFirst()
+    {
+        Console.WriteLine("CalypsoCad hull-first transverse skeleton");
+        var failures = 0;
+        void Check(string name, bool ok, string detail = "")
+        {
+            if (ok)
+            {
+                Console.WriteLine($"  OK  {name}");
+                return;
+            }
+
+            failures++;
+            Console.WriteLine($"  FAIL {name}{(string.IsNullOrEmpty(detail) ? "" : ": " + detail)}");
+        }
+
+        try
+        {
+            var session = new CalypsoSession();
+            session.RegenerateAndLoad();
+            Console.WriteLine($"Wrote CAD → {session.GeneratedDirectory}");
+
+            var report = HullFirstValidation.Evaluate(session.Document);
+            var reportPath = Path.Combine(CalypsoProjectPaths.RendersDirectory, "hull-first", "validation-report.md");
+            HullFirstValidation.WriteMarkdown(report, reportPath);
+            Console.WriteLine($"Validation → {reportPath}");
+            foreach (var c in report.Checks)
+                Check(c.Name, c.Ok, c.Detail);
+
+            var renderer = new CalypsoRenderer(session);
+            renderer.Fit();
+            var stills = HeadlessHullFirstExporter.Export(session, renderer);
+            Console.WriteLine($"Hull-first PNGs ({stills.Count}) → {Path.Combine(CalypsoProjectPaths.RendersDirectory, "hull-first")}");
+            foreach (var path in stills)
+                Console.WriteLine($"  {path}");
+            Check("hull-first PNGs written", stills.Count >= 6, $"count={stills.Count}");
+            Check("hull-first gate", report.Ok);
+        }
+        catch (Exception ex)
+        {
+            Check("hull-first pipeline", false, ex.Message);
+            Console.Error.WriteLine(ex);
+        }
+
+        Console.WriteLine(failures == 0
+            ? "CalypsoCad hull-first OK"
+            : $"CalypsoCad hull-first FAILED ({failures})");
+        return failures == 0 ? 0 : 1;
     }
 
     /// <summary>Whole-ship deck footprints: regenerate → geometric validation → inspection PNGs.</summary>

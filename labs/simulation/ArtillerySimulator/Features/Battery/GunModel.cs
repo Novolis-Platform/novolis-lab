@@ -19,15 +19,6 @@ internal sealed class GunModel
 
     public IArtilleryPieceSpec Spec { get; }
 
-    // Compatibility shims for call sites that still use GunModel.* statics.
-    public static float BarrelLength => ArtilleryPieceCatalog.Default.BarrelLengthMeters;
-    public static float MuzzleRadius => ArtilleryPieceCatalog.Default.MuzzleRadiusMeters;
-    public static float MinElevationDegrees => ArtilleryPieceCatalog.Default.MinElevationDegrees;
-    public static float MaxElevationDegrees => ArtilleryPieceCatalog.Default.MaxElevationDegrees;
-    public static float MaxTraverseDegrees => ArtilleryPieceCatalog.Default.MaxTraverseDegrees;
-    public static bool ContinuousTraverse => ArtilleryPieceCatalog.Default.ContinuousTraverse;
-    public static ProjectileProfile Educational155Profile => ArtilleryPieceCatalog.Default.Projectile;
-
     public float ElevationDegrees { get; private set; }
 
     /// <summary>World bearing. Azimuth 0 fires east (+X).</summary>

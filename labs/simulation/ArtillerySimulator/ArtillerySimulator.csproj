@@ -8,7 +8,16 @@
     <ApplicationIcon>assets\k9-dog-icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="map\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="map" />
+    <InternalsVisibleTo Include="ArtillerySimulator.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Runtime map assets only — pipeline TIFFs / diagnose / POC stay in the source tree. -->
+    <None Include="map\layers\heightfield-1025.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\heightfield-1025.bin" />
+    <None Include="map\layers\nvdb-roads.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\nvdb-roads.bin" />
+    <None Include="map\layers\water-mask.png" CopyToOutputDirectory="PreserveNewest" Link="map\layers\water-mask.png" />
+    <None Include="map\layers\water-mask.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\water-mask.bin" />
+    <None Include="map\kristiansand-land-sea-mask.bin" CopyToOutputDirectory="PreserveNewest" Link="map\kristiansand-land-sea-mask.bin" />
+    <None Include="map\kommunekart-3d-view.json" CopyToOutputDirectory="PreserveNewest" Link="map\kommunekart-3d-view.json" />
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="assets" />
     <!-- File-based map pipeline apps; not part of the game compile. -->
     <Compile Remove="scripts\**\*" />

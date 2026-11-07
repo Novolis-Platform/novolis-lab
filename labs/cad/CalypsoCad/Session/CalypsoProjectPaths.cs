@@ -21,6 +21,9 @@ internal static class CalypsoProjectPaths
     /// <summary>Whole-ship deck footprint diagnostics + geometric validation report.</summary>
     public static string DeckGeometryDirectory => Path.Combine(RendersDirectory, "deck-geometry");
 
+    /// <summary>Hull-first transverse skeleton acceptance stills + validation.</summary>
+    public static string HullFirstDirectory => Path.Combine(RendersDirectory, "hull-first");
+
     /// <summary>Curated visual-gate baselines (subset of renders).</summary>
     public static string PreviewDirectory => Path.Combine(ProjectRoot, "docs", "preview");
 

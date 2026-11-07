@@ -2151,25 +2151,30 @@ internal static class CalypsoLockGenerator
         var deckUps = topo.DeckUps;
         var tPlate = topo.TPlate;
         var openAtriums = topo.OpenAtriumSpans;
-        var bhSchedule = CalypsoBulkheads.BuildSchedule(loa);
+        var bhStationMap = BulkheadStationMap(lockDoc);
+        var bhSchedule = CalypsoBulkheads.BuildSchedule(loa, bhStationMap);
 
         var zMax = ActiveStations[^1].Z;
         var skin = TShell + 0.05f;
 
-        // 1) Bulkheads — limited pressure plates + passageway portals.
+        // 1) Heavy bulkheads first — explicit red-plan stations; own their transverse station.
         CalypsoBulkheads.AddAll(
             entities,
             loa,
             topo.TBh,
             (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
             deckUps,
+            bhStationMap,
             hatchPortalsAt: (z, margin) => CollectHatchWebPortals(lockDoc, z, margin, deckUps));
 
         void PlaceFrame(string id, float zStem, bool bowAligned = false)
         {
+            // Hull-first: heavy BH owns the station — do not duplicate an ordinary frame there.
+            if (CalypsoBulkheads.OwnsFrameStation(zStem, bhSchedule))
+                return;
+
             var z = Math.Clamp(zStem, web * 0.5f + skin, zMax - web * 0.5f - skin);
-            SectionAt(z, out var halfB, out var halfH, out _, out _, out _);
-            if (halfB < 0.5f || halfH < 0.5f)
+            if (!HullSectionAuthority.HasStructuralSection(z, minHalf: 0.5f))
                 return;
             var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
             var gaps = CollectAthwartPassageGaps(lockDoc, z, margin: 0.28f);
@@ -2182,7 +2187,7 @@ internal static class CalypsoLockGenerator
                 return;
             }
 
-            // Open frames: passageway track gaps only. Hatch punches belong on pressure BHs.
+            // Ordinary open frames from local IML section (HullSectionAuthority via FrameWebPlateBuilder).
             CalypsoShipbuildingFrames.AddTransverseFrameWeb(
                 entities, loa, frameName, z, web, halfDepthZ, gaps, bowAligned, deckUps, hatchPortals: null);
             if (!bowAligned)
@@ -2192,8 +2197,11 @@ internal static class CalypsoLockGenerator
             }
         }
 
-        // 2) Bay frames (HOLD uses perimeter-only path above).
-        foreach (var (id, zStem, bowAligned) in topo.FrameStations)
+        // 2) Ordinary bay frames — schedule excludes stations owned by heavy BHs.
+        var ordinaryFrames = topo.FrameStations
+            .Where(f => !CalypsoBulkheads.OwnsFrameStation(f.ZStem, bhSchedule))
+            .ToList();
+        foreach (var (id, zStem, bowAligned) in ordinaryFrames)
             PlaceFrame(id, zStem, bowAligned);
 
         // 3) Continuous longitudinals (keel/sides through HOLD; no upper tiers in cargo void).
@@ -2202,21 +2210,23 @@ internal static class CalypsoLockGenerator
 
         // 3a) Outer-hull plating-join stringers + shell facets (same recipe as two-bay proof).
         CalypsoShipbuildingFrames.AddOuterHullStringers(
-            entities, loa, topo.ZStart, topo.ZEnd, web, topo.FrameBay, topo.FrameStations);
+            entities, loa, topo.ZStart, topo.ZEnd, web, topo.FrameBay, ordinaryFrames);
 
-        // 3b) Explicit frame ↔ girder weld stubs at crossings.
+        // 3b) Explicit frame ↔ girder weld stubs at crossings (ordinary frames only).
         CalypsoShipbuildingFrames.AddFrameGirderJoinStubs(
-            entities, loa, topo.FrameStations, web, halfDepthZ, deckUps, tPlate,
+            entities, loa, ordinaryFrames, web, halfDepthZ, deckUps, tPlate,
             topo.InOpenHoldCell, openAtriums);
 
         // 4) Cellular sandwich decks — bay edges on frame stations, joins to frames/BHs.
         var bhStations = bhSchedule.Select(b => (b.Id, b.ZStem)).ToList();
         CalypsoShipbuildingFrames.AddCellularSandwichDecks(
             entities, loa, topo.ZStart, topo.ZEnd, topo.FrameBay, topo.SandwichDecks, tPlate, openAtriums,
-            web, topo.FrameStations, bhStations);
+            web, ordinaryFrames, bhStations);
 
         // 4b) Critical structure seats: BH×deck + frame×deck + BH×nearest frame joints.
-        var joints = CriticalStructureConnectivity.Connect(entities, loa, topo, bhSchedule);
+        var joints = CriticalStructureConnectivity.Connect(
+            entities, loa, topo,
+            bhSchedule.Select(b => (b.Id, b.ZStem, b.ThicknessScale)).ToList());
 
         // 5) Aft coaming / ramp (thrust / stern aperture).
         var doorW = lockDoc.Hold?.DoorW is > 0 ? (float)lockDoc.Hold.DoorW : 14f;
@@ -3365,5 +3375,38 @@ internal static class CalypsoLockGenerator
         public double CabinClearW { get; set; }
         [JsonPropertyName("CABIN_MODULE_W")]
         public double CabinModuleW { get; set; }
+        [JsonPropertyName("Z_BRIDGE_AFT")]
+        public double ZBridgeAft { get; set; }
+        [JsonPropertyName("Z_CROSS_FORE")]
+        public double ZCrossFore { get; set; }
+        [JsonPropertyName("Z_CROSS_AFT")]
+        public double ZCrossAft { get; set; }
+        [JsonPropertyName("Z_CREW_AFT")]
+        public double ZCrewAft { get; set; }
+        [JsonPropertyName("Z_ENG_FORE")]
+        public double ZEngFore { get; set; }
+        [JsonPropertyName("Z_ENG_AFT")]
+        public double ZEngAft { get; set; }
+    }
+
+    private static Dictionary<string, float> BulkheadStationMap(CalypsoLockDocument lockDoc)
+    {
+        var map = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
+        var s = lockDoc.Stations;
+        if (s is null)
+            return map;
+        void Add(string key, double v)
+        {
+            if (v > 0)
+                map[key] = (float)v;
+        }
+
+        Add("Z_BRIDGE_AFT", s.ZBridgeAft);
+        Add("Z_CROSS_FORE", s.ZCrossFore);
+        Add("Z_CROSS_AFT", s.ZCrossAft);
+        Add("Z_CREW_AFT", s.ZCrewAft);
+        Add("Z_ENG_FORE", s.ZEngFore);
+        Add("Z_ENG_AFT", s.ZEngAft);
+        return map;
     }
 }

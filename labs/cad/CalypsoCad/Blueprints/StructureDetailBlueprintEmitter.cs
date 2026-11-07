@@ -929,7 +929,7 @@ internal static class StructureDetailBlueprintEmitter
                 TPlate = tPlate > 0 ? tPlate : 0.1,
                 RoomH = roomH > 0 ? roomH : 3.2,
                 FrameBayM = bayM > 0 ? bayM : 4f,
-                BhSchedule = bh,
+                BhSchedule = bh.Select(s => (s.Id, s.ZStem, s.ThicknessScale)).ToList(),
                 Compartments = comps,
                 Loft = loft,
             };

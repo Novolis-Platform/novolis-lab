@@ -107,7 +107,7 @@ for (var volley = 1; volley <= rounds; volley++)
         continue;
     }
 
-    Console.WriteLine("FIRE    waiting for impact…");
+    Console.WriteLine("FIRE    round away (impact is async)…");
     var fire = await client.CommandAsync(new AgentCommand
     {
         ActionId = "artillery.fire",
@@ -116,12 +116,14 @@ for (var volley = 1; volley <= rounds; volley++)
     });
     shots++;
     Console.WriteLine($"FIRE    ok={fire.Ok}  {fire.Message}");
-    ParseBattleResult(fire.Message, ref kills, ref pins);
-    if (fire.Snapshot is { } after)
-    {
-        PrintSnapshot(after);
-        maxMissionRoundSeen = Math.Max(maxMissionRoundSeen, ParseMissionRound(after));
-    }
+    if (!fire.Ok)
+        continue;
+
+    // Fire no longer blocks on impact — poll until the active shot leaves InFlight.
+    var after = await WaitImpactAsync(client, timeoutSeconds: 90);
+    ParseBattleResult(after.LastAction?.Message ?? after.Observations?.FirstOrDefault()?.Summary ?? "", ref kills, ref pins);
+    PrintSnapshot(after);
+    maxMissionRoundSeen = Math.Max(maxMissionRoundSeen, ParseMissionRound(after));
 }
 
 Console.WriteLine();
@@ -289,6 +291,23 @@ static async Task WaitCrewReadyAsync(AgentHttpClient httpClient, int timeoutSeco
         Console.WriteLine($"  … crew={crew} reload={reload}");
         await Task.Delay(800);
     }
+}
+
+static async Task<AgentSnapshot> WaitImpactAsync(AgentHttpClient httpClient, int timeoutSeconds)
+{
+    var deadline = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+    AgentSnapshot? last = null;
+    while (DateTime.UtcNow < deadline)
+    {
+        last = await httpClient.SnapshotAsync();
+        var phase = Status(last, "phase");
+        if (!string.Equals(phase, "InFlight", StringComparison.OrdinalIgnoreCase))
+            return last;
+        Console.WriteLine($"  … flight phase={phase} tof≈{Status(last, "flightSeconds")}");
+        await Task.Delay(400);
+    }
+
+    return last ?? await httpClient.SnapshotAsync();
 }
 
 static void PrintSnapshot(AgentSnapshot snap)

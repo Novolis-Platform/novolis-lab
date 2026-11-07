@@ -339,7 +339,7 @@ internal sealed class FireControlUi : IDisposable
         }
         else if (solutionUnsafe)
         {
-            DrawText(canvas, $"BELOW HE MIN {SimulationUnits.MinEffectiveRangeMeters / 1000f:F1} KM", lx, ly, ls, Alert);
+            DrawText(canvas, $"BELOW HE MIN {gun.Spec.MinEffectiveRangeMeters / 1000f:F1} KM", lx, ly, ls, Alert);
             ly += lh;
         }
 

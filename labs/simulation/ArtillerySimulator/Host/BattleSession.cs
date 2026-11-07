@@ -22,7 +22,14 @@ internal sealed class BattleSession
 
     public void RebindPiece(IArtilleryPieceSpec piece)
     {
-        Piece = piece ?? throw new ArgumentNullException(nameof(piece));
+        ArgumentNullException.ThrowIfNull(piece);
+        if (ReferenceEquals(Piece, piece) || string.Equals(Piece.Id, piece.Id, StringComparison.Ordinal))
+        {
+            Piece = piece;
+            return;
+        }
+
+        Piece = piece;
         Delivery = new DeliverySampler(piece.Errors, Seed);
     }
 }

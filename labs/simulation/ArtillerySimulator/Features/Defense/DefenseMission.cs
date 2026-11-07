@@ -119,9 +119,23 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
     /// </summary>
     public bool Held => _heldLatched || EvaluateHeld();
 
+    public MissionOutcome Outcome
+    {
+        get
+        {
+            if (FratricideLoss)
+                return MissionOutcome.Fratricide;
+            if (ObjectiveLost)
+                return MissionOutcome.ObjectiveLost;
+            if (Held)
+                return MissionOutcome.Held;
+            return MissionOutcome.Open;
+        }
+    }
+
     public void Advance(float simSeconds, Vector3? incomingShell)
     {
-        if (ObjectiveLost || FratricideLoss || simSeconds <= 0f)
+        if (Outcome is not MissionOutcome.Open || simSeconds <= 0f)
             return;
 
         if (EvaluateHeld())
@@ -297,15 +311,13 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
     public void Draw(SilkWireBatch wires) =>
         DefenseSceneDraw.Draw(wires, _terrain, Objective, ObjectiveRadiusMeters, _units, _wrecks, _lanes, _defenders);
 
-    public string HudLine()
+    public string HudLine() => Outcome switch
     {
-        if (ObjectiveLost)
-            return "crossing lost";
-        if (Held)
-            return $"city held    {DefendersAlive} defenders    {Stopped} stopped";
-
-        return $"ROUND {_round}  CROSSING {_waveSerial}  {Remaining}  {PostureLine()}  NEAREST {NearestMeters / 1000f:F1} KM";
-    }
+        MissionOutcome.Fratricide => "FRATRICIDE — city lost",
+        MissionOutcome.ObjectiveLost => "CROSSING LOST",
+        MissionOutcome.Held => $"CITY HELD    {DefendersAlive} defenders    {Stopped} stopped",
+        _ => $"ROUND {_round}  CROSSING {_waveSerial}  {Remaining}  {PostureLine()}  NEAREST {NearestMeters / 1000f:F1} KM",
+    };
 
     public string Observation()
     {
@@ -581,20 +593,19 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
     private bool ApproachesBlocked()
     {
+        // With no living columns (Held already requires Remaining == 0), wrecks mean the roads are jammed.
         if (_wrecks.Count == 0)
             return false;
 
-        // Enough wrecks on distinct approach lanes to jam the network.
         var lanesWithWrecks = 0;
         var seen = new HashSet<int>();
         foreach (var wreck in _wrecks)
         {
-            if (!seen.Add(wreck.Lane))
-                continue;
-            lanesWithWrecks++;
+            if (seen.Add(wreck.Lane))
+                lanesWithWrecks++;
         }
 
-        return lanesWithWrecks >= Math.Min(3, Math.Max(1, _lanes.Count));
+        return lanesWithWrecks >= 1;
     }
 
     private float GapAhead(ColumnUnit unit, RouteLane lane, out bool wreckAhead)

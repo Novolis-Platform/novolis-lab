@@ -12,6 +12,8 @@ dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\A
 
 Splash → ←/→ pick level → load → play. **Esc / P** pause, **L** licenses. Full text: `assets/NOTICE.txt`.
 
+Optional: `--seed <int>` for reproducible PE / convoy RNG (also shown as `SeedHash` on agent snapshots).
+
 If MSBuild dies with `MSB4166` (child node exited prematurely), clear the sticky servers and retry:
 
 ```powershell

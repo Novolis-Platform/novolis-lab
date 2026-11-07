@@ -19,6 +19,12 @@ internal interface IDefenseMission
     bool ObjectiveLost { get; }
     bool FratricideLoss { get; }
     bool Held { get; }
+
+    /// <summary>Open while fighting; Held / ObjectiveLost / Fratricide are terminal.</summary>
+    MissionOutcome Outcome { get; }
+
+    /// <summary>True when <see cref="Outcome"/> is no longer <see cref="MissionOutcome.Open"/>.</summary>
+    bool IsTerminal => Outcome is not MissionOutcome.Open;
     int Round { get; }
     int Remaining { get; }
     int Stopped { get; }

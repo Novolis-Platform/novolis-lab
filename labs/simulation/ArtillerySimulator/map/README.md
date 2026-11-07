@@ -10,6 +10,8 @@
 
 PNG heatmaps / `roads-debug.png` / legacy PDF `roads.png` are **debug only**. Deleting them must leave the sim playable.
 
+**Output copy:** `ArtillerySimulator.csproj` ships only runtime binaries (`heightfield-1025.bin`, `nvdb-roads.bin`, water masks, `kommunekart-3d-view.json`). NHM TIFFs, align-diagnose, and POC sheets stay in the source tree and are not copied to `bin/`.
+
 ## Rebuild
 
 ```powershell

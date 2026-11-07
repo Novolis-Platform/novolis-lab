@@ -58,6 +58,10 @@ internal static class CriticalStructureConnectivity
 
         foreach (var (id, zStem, _) in topo.FrameStations)
         {
+            // Heavy BH owns this transverse station — no ordinary frame seats.
+            if (bulkheads.Any(b => MathF.Abs(b.ZStem - zStem) <= 2.05f))
+                continue;
+
             var z = Math.Clamp(zStem, web * 0.5f, loa - web * 0.5f);
             var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
             var frameAsm = FrameAssembly(frameName);
@@ -91,15 +95,16 @@ internal static class CriticalStructureConnectivity
             }
         }
 
-        // Nearest frame ↔ BH at each bulkhead station (shared transverse plane family).
+        // Nearest ordinary frame ↔ BH (exclude stations owned by the BH itself).
         foreach (var (id, zStem, _) in bulkheads)
         {
             var bhAsm = $"bh-{id}";
             var nearest = topo.FrameStations
+                .Where(f => MathF.Abs(f.ZStem - zStem) > 2.05f)
                 .Select(f => (f.Id, f.ZStem, Dist: MathF.Abs(f.ZStem - zStem)))
                 .OrderBy(f => f.Dist)
                 .FirstOrDefault();
-            if (nearest.Id is null || nearest.Dist > topo.FrameBay * 0.55f)
+            if (nearest.Id is null || nearest.Dist > topo.FrameBay * 1.1f)
                 continue;
 
             var frameName = nearest.Id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)

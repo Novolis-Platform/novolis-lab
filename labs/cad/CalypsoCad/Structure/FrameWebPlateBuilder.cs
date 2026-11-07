@@ -131,7 +131,7 @@ internal static class FrameWebPlateBuilder
         if (u1 <= u0 + 0.2f)
             return false;
 
-        var ringRaw = CalypsoShipbuildingFrames.InnerOctagonRing(zStem, skinInset);
+        var ringRaw = HullSectionAuthority.InnerRing(zStem, skinInset);
         var (rawCy, rawCu) = ringRaw.GetSectionCenter();
         ring = ringRaw.Select(v => (Y: v.Y - rawCy, Up: v.Up - (rawCu - sectionMid))).ToArray();
         gaps = NormalizeGaps(athwartGaps, zStem, skinInset, bowAligned);

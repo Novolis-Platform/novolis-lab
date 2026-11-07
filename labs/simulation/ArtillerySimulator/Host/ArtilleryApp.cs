@@ -112,6 +112,9 @@ internal sealed class ArtilleryApp : IDisposable
     internal bool IsPaused => _phase is ShellPhase.Paused or ShellPhase.Legal;
     internal ShellPhase Phase => _phase;
     internal IGameLevel Level => _level;
+    internal bool WorldReady => _worldReady;
+    internal bool IsMissionTerminal => _mission?.IsTerminal == true;
+    internal MissionOutcome MissionOutcome => _mission?.Outcome ?? MissionOutcome.Open;
 
     private BallisticTrajectoryRunner CreateRound() =>
         new(new BallisticTrajectoryRunnerOptions
@@ -174,6 +177,15 @@ internal sealed class ArtilleryApp : IDisposable
 
     internal string? FireBlockReason()
     {
+        if (IsMissionTerminal)
+            return MissionOutcome switch
+            {
+                MissionOutcome.Held => "City held — mission complete.",
+                MissionOutcome.Fratricide => "Fratricide — mission lost.",
+                MissionOutcome.ObjectiveLost => "Crossing lost — mission over.",
+                _ => "Mission complete.",
+            };
+
         // Autoloader only — rounds already in the air do not block the next fire.
         // HE min is a warning (red arcs), not a hard fire interlock.
         if (!_crew.BreechReady)
@@ -323,6 +335,14 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void LoadWorldAndAttachAgent()
     {
+        LoadWorld(attachAgent: true);
+    }
+
+    /// <summary>
+    /// Boots terrain + mission. Tests pass <paramref name="attachAgent"/> false to avoid binding HTTP.
+    /// </summary>
+    internal void LoadWorld(bool attachAgent = true)
+    {
         if (_worldReady)
             return;
 
@@ -344,6 +364,12 @@ internal sealed class ArtilleryApp : IDisposable
         _layHoldSeconds = 0f;
         _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         RebuildAimPreview();
+        _phase = ShellPhase.Playing;
+        _worldReady = true;
+
+        if (!attachAgent)
+            return;
+
         var def = AgentSurfaceDefinition.From<IArtillerySurface>();
         _surface = AgentSurface.AttachAll(
             _agent,
@@ -354,7 +380,90 @@ internal sealed class ArtilleryApp : IDisposable
         else
             Console.WriteLine($"Agent surface attach incomplete — expected HTTP :{def.DefaultHttpPort}");
         Console.WriteLine(ProductLegal.Tagline);
-        _worldReady = true;
+        Console.WriteLine($"Session seed={_session.SeedHash}  level={_level.Id}  piece={_session.Piece.Id}");
+    }
+
+    /// <summary>
+    /// Advances the authoritative battle clock by wall time without a Silk frame.
+    /// Returns the number of fixed physics steps consumed.
+    /// </summary>
+    internal int TickBattle(float wallSeconds)
+    {
+        if (!_worldReady || IsPaused || IsMissionTerminal)
+            return 0;
+
+        var steps = _session.Clock.Consume(wallSeconds);
+        if (steps <= 0)
+            return 0;
+
+        var battleSeconds = steps * FixedStepClock.DtSeconds;
+        AdvanceBattleSystems(steps, battleSeconds, wallSeconds);
+        MaybePauseOnMissionEnd();
+        return steps;
+    }
+
+    private void AdvanceBattleSystems(int steps, float battleSeconds, float wallSeconds)
+    {
+        _atmosphere.Advance(battleSeconds);
+        if (_atmosphere.ConsumeAimInvalidation())
+            _aimDirty = true;
+        _crew.Advance(_gun, battleSeconds);
+
+        Vector3? incoming = null;
+        foreach (var round in _rounds)
+        {
+            if (round.Phase != BallisticTrajectoryPhase.InFlight)
+                continue;
+
+            for (var i = 0; i < steps && round.Phase == BallisticTrajectoryPhase.InFlight; i++)
+            {
+                var env = _atmosphere.BallisticEnvironment(round.CurrentPosition.Y);
+                round.AdvanceOne(_ballistics, env, _terrain.Collision, _terrain.Field, _terrain.GunBaseline);
+            }
+
+            if (round.Phase == BallisticTrajectoryPhase.InFlight)
+                incoming ??= round.CurrentPosition;
+        }
+
+        _mission?.Advance(battleSeconds, incoming);
+
+        foreach (var round in _rounds)
+        {
+            if (round.Phase != BallisticTrajectoryPhase.Impacted
+                || round.Impact is not { } landed
+                || !_impactHandled.Add(round))
+                continue;
+
+            _burstAge = 0f;
+            _burstAt = landed.Position;
+            _mission?.ResolveImpact(landed.Position);
+        }
+
+        if (_burstAge >= 0f)
+        {
+            _burstAge += wallSeconds;
+            if (_killcamActive && _burstAge >= KillcamReturnSeconds)
+            {
+                _killcamActive = false;
+                _camera.FollowProjectile = false;
+                _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+            }
+        }
+
+        if (_muzzleFlash > 0f)
+            _muzzleFlash = MathF.Max(0f, _muzzleFlash - wallSeconds);
+
+        if (_aimDirty || TubePreviewStale())
+            RebuildAimPreview();
+    }
+
+    private void MaybePauseOnMissionEnd()
+    {
+        if (!IsMissionTerminal || _phase is not ShellPhase.Playing)
+            return;
+
+        _phase = ShellPhase.Paused;
+        Console.WriteLine(_mission?.Observation() ?? "Mission complete.");
     }
 
     private void HandleShellKeys(SilkFrame frame)
@@ -583,71 +692,16 @@ internal sealed class ArtilleryApp : IDisposable
             return;
         }
 
-        // Authoritative fixed-step battle clock (independent of render FPS).
-        var steps = _session.Clock.Consume(frame.DeltaSeconds);
-        var battleSeconds = steps * FixedStepClock.DtSeconds;
         // Lay/input uses wall time so handwheels stay responsive during catch-up.
         var controlSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
+        if (!IsMissionTerminal)
+            HandleInput(frame, controlSeconds);
 
+        var steps = _session.Clock.Consume(frame.DeltaSeconds);
         if (steps > 0)
-        {
-            _atmosphere.Advance(battleSeconds);
-            if (_atmosphere.ConsumeAimInvalidation())
-                _aimDirty = true;
-            _crew.Advance(_gun, battleSeconds);
-        }
+            AdvanceBattleSystems(steps, steps * FixedStepClock.DtSeconds, frame.DeltaSeconds);
 
-        HandleInput(frame, controlSeconds);
-
-        Vector3? incoming = null;
-        if (steps > 0)
-        {
-            foreach (var round in _rounds)
-            {
-                if (round.Phase != BallisticTrajectoryPhase.InFlight)
-                    continue;
-
-                for (var i = 0; i < steps && round.Phase == BallisticTrajectoryPhase.InFlight; i++)
-                {
-                    var env = _atmosphere.BallisticEnvironment(round.CurrentPosition.Y);
-                    round.AdvanceOne(_ballistics, env, _terrain.Collision, _terrain.Field, _terrain.GunBaseline);
-                }
-
-                if (round.Phase == BallisticTrajectoryPhase.InFlight)
-                    incoming ??= round.CurrentPosition;
-            }
-
-            _mission?.Advance(battleSeconds, incoming);
-        }
-
-        foreach (var round in _rounds)
-        {
-            if (round.Phase != BallisticTrajectoryPhase.Impacted
-                || round.Impact is not { } landed
-                || !_impactHandled.Add(round))
-                continue;
-
-            _burstAge = 0f;
-            _burstAt = landed.Position;
-            _mission?.ResolveImpact(landed.Position);
-        }
-
-        if (_burstAge >= 0f)
-        {
-            _burstAge += frame.DeltaSeconds;
-            if (_killcamActive && _burstAge >= KillcamReturnSeconds)
-            {
-                _killcamActive = false;
-                _camera.FollowProjectile = false;
-                _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
-            }
-        }
-
-        if (_muzzleFlash > 0f)
-            _muzzleFlash = MathF.Max(0f, _muzzleFlash - frame.DeltaSeconds);
-
-        if (_aimDirty || TubePreviewStale())
-            RebuildAimPreview();
+        MaybePauseOnMissionEnd();
 
         if (_mission is { } mission)
             _camera.SetBattleFocus(mission.BattleFocus(_terrain.GunBaseline));
