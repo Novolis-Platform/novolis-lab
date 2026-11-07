@@ -53,14 +53,35 @@ internal static class CadJsonStructureQuery
         {
             if (e.Name is null || !SandwichName.IsMatch(e.Name))
                 continue;
+            // Prefer face-top (or legacy single slab); skip core / face-bot duplicates.
+            var n = e.Name;
+            if (n.Contains("-core", StringComparison.OrdinalIgnoreCase)
+                || n.Contains("-face-bot", StringComparison.OrdinalIgnoreCase))
+                continue;
             if (!TryBox(e, out var center, out var half))
                 continue;
 
             var deckNum = ParseDeckNum(e.Name);
-            var upCenter = center.Y;
-            var halfUp = MathF.Abs(half.Y);
-            var plateTop = upCenter + halfUp;
-            var tPlate = halfUp * 2f;
+            float plateTop;
+            float tPlate;
+            if (e.Properties is not null
+                && e.Properties.TryGetValue("deckUp", out var duEl)
+                && duEl.ValueKind == JsonValueKind.Number)
+            {
+                plateTop = (float)duEl.GetDouble();
+                // face-top half-height is thin; recover stack thickness from name convention (~tPlate).
+                tPlate = n.Contains("-face-top", StringComparison.OrdinalIgnoreCase)
+                    ? MathF.Max(0.08f, MathF.Abs(half.Y) * 2f / 0.22f)
+                    : MathF.Abs(half.Y) * 2f;
+            }
+            else
+            {
+                var upCenter = center.Y;
+                var halfUp = MathF.Abs(half.Y);
+                plateTop = upCenter + halfUp;
+                tPlate = halfUp * 2f;
+            }
+
             var zStem = loa * 0.5f - center.Z;
             var halfZ = MathF.Abs(half.Z);
             list.Add(new SandwichPanel(

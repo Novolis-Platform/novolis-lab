@@ -4,7 +4,10 @@ internal static class CalypsoVisualLayerPresets
 {
     private static readonly (CalypsoVisualLayers Layers, string Label)[] OrbitCycle =
     [
-        (CalypsoVisualLayers.DefaultOrbit, "all"),
+        (CalypsoVisualLayers.PrimaryStructure, "primary structure"),
+        (CalypsoVisualLayers.PrimaryPlusDecks, "primary + decks"),
+        (CalypsoVisualLayers.PressureStructure, "pressure structure"),
+        (CalypsoVisualLayers.CompleteArrangement, "complete arrangement"),
         (CalypsoVisualLayers.Dk001Plan, "DK-001 plan"),
         (CalypsoVisualLayers.StructureNoHull, "structure no OML"),
         (CalypsoVisualLayers.InteriorStructureNoHull, "interiors no OML"),

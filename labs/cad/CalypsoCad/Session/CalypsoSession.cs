@@ -20,7 +20,7 @@ internal sealed class CalypsoSession
     public Guid? SelectedHookId { get; set; }
     public CalypsoWireMeshMode WireMeshMode { get; set; } = CalypsoWireMeshMode.CutawayPartial;
     /// <summary>Start without solid OML — edge guide + interiors/structure read as one hull.</summary>
-    public CalypsoVisualLayers VisualLayers { get; set; } = CalypsoVisualLayers.HoldCargo;
+    public CalypsoVisualLayers VisualLayers { get; set; } = CalypsoVisualLayers.PrimaryStructure;
     public string StatusText { get; set; } = "";
 
     /// <summary>

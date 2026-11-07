@@ -374,6 +374,67 @@ internal static class CalypsoAcceptance
             e.Name?.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase) == true);
         Add("transverse deck beams at frames", deckBeams >= 30, $"deckBeams={deckBeams}");
 
+        // Topology-first gates: primary skeleton before interiors; HOLD keel/side continuity.
+        var entities = doc.Entities ?? [];
+        var firstStruct = entities.FindIndex(e =>
+        {
+            var n = e.Name ?? "";
+            return n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+                   || n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+                   || n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
+                   || n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase);
+        });
+        var firstSpace = entities.FindIndex(e =>
+            string.Equals(e.Kind, "space", StringComparison.OrdinalIgnoreCase));
+        var firstPartition = entities.FindIndex(e =>
+        {
+            var n = e.Name ?? "";
+            return n.StartsWith("wall-", StringComparison.OrdinalIgnoreCase)
+                   || n.StartsWith("partition-", StringComparison.OrdinalIgnoreCase);
+        });
+        var firstOutfit = entities.FindIndex(e =>
+            e.Name?.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase) == true
+            || e.Name?.StartsWith("C40-", StringComparison.OrdinalIgnoreCase) == true);
+        Add(
+            "primary skeleton before interiors",
+            firstStruct >= 0
+            && (firstSpace < 0 || firstStruct < firstSpace)
+            && (firstPartition < 0 || firstStruct < firstPartition)
+            && (firstOutfit < 0 || firstStruct < firstOutfit),
+            $"struct@{firstStruct} space@{firstSpace} partition@{firstPartition} outfit@{firstOutfit}");
+
+        var holdGirders = entities.Count(e =>
+        {
+            if (e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) != true)
+                return false;
+            if (e.Properties is null
+                || !e.Properties.TryGetValue("stationZ", out var sz)
+                || sz.ValueKind != System.Text.Json.JsonValueKind.Number)
+                return false;
+            var z = (float)sz.GetDouble();
+            return z > 49.5f && z < 67.5f;
+        });
+        Add("HOLD stem longitudinal girders", holdGirders > 0, $"holdGirders={holdGirders}");
+
+        var withRole = entities.Count(e =>
+            e.Properties is not null
+            && e.Properties.ContainsKey("structuralRole")
+            && e.Properties.ContainsKey("assembly"));
+        Add("structural metadata on steel", withRole >= 40, $"tagged={withRole}");
+
+        var sandwichFaces = entities.Count(e =>
+            e.Name?.Contains("-face-top", StringComparison.OrdinalIgnoreCase) == true
+            && e.Name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase));
+        var sandwichCores = entities.Count(e =>
+            e.Name?.Contains("-core", StringComparison.OrdinalIgnoreCase) == true
+            && e.Name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase));
+        Add("cellular sandwich face+core solids", sandwichFaces >= 8 && sandwichCores >= 8,
+            $"faceTop={sandwichFaces} core={sandwichCores}");
+
+        var joinStubs = entities.Count(e =>
+            e.Name?.Contains("-join-", StringComparison.OrdinalIgnoreCase) == true);
+        Add("frame↔girder join stubs", joinStubs >= 12, $"joins={joinStubs}");
+
         CadLayersDocument? layersDoc = null;
         var genDir = generatedDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

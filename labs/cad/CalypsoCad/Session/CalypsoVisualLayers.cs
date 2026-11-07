@@ -65,6 +65,14 @@ internal enum CalypsoVisualLayers
     StructureNoHull = Frames | Bulkheads | Longitudinals | DeckPlates | Openings,
     /// <summary>Hide-hull skeleton test: open webs + BH + girders (no decks / outfit).</summary>
     ShipSkeleton = Frames | Bulkheads | Longitudinals,
+    /// <summary>Stage 1 — primary steel skeleton (alias of <see cref="ShipSkeleton"/>).</summary>
+    PrimaryStructure = ShipSkeleton,
+    /// <summary>Stage 2 — primary + cellular sandwich decks.</summary>
+    PrimaryPlusDecks = PrimaryStructure | DeckPlates,
+    /// <summary>Stage 3 — pressure boundary (shell + BH + openings).</summary>
+    PressureStructure = HullShell | Bulkheads | Openings,
+    /// <summary>Stage 4 — full arrangement (alias of <see cref="DefaultOrbit"/>).</summary>
+    CompleteArrangement = DefaultOrbit,
     /// <summary>Open HOLD read: ship steel + decks + containers.</summary>
     HoldCargo = Frames | Bulkheads | Longitudinals | DeckPlates | Cargo | Openings,
     All = Ship | DeckScoped,

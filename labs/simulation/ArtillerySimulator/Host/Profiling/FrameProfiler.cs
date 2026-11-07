@@ -110,7 +110,7 @@ internal sealed class FrameProfiler
         sb.AppendLine(CultureInfo.InvariantCulture,
             $"frames={_frames}  avg={avg:F2}ms  min={SafeMin():F2}ms  max={_frameMaxMs:F2}ms  ~{fps:F1} FPS");
         sb.AppendLine(CultureInfo.InvariantCulture,
-            $"geometry  terrainLines={_terrainLines}  roadLines={_roadLines}  dynamicLines={_dynamicLines}  hudLines={_hudLines}");
+            $"geometry  fillTris={_terrainLines}  roadLines={_roadLines}  dynamicLines={_dynamicLines}  hudLines={_hudLines}");
         sb.AppendLine("sections (avg ms / frame, share of frame):");
         foreach (var (name, stats) in _sections.OrderByDescending(kv => kv.Value.TotalMs))
         {
@@ -132,7 +132,7 @@ internal sealed class FrameProfiler
         sb.Append(CultureInfo.InvariantCulture,
             $"\"frames\":{_frames},\"avgMs\":{avg:F3},\"minMs\":{SafeMin():F3},\"maxMs\":{_frameMaxMs:F3},\"fps\":{fps:F2},");
         sb.Append(CultureInfo.InvariantCulture,
-            $"\"terrainLines\":{_terrainLines},\"roadLines\":{_roadLines},\"dynamicLines\":{_dynamicLines},\"hudLines\":{_hudLines},");
+            $"\"fillTris\":{_terrainLines},\"roadLines\":{_roadLines},\"dynamicLines\":{_dynamicLines},\"hudLines\":{_hudLines},");
         sb.Append("\"sections\":{");
         var first = true;
         foreach (var (name, stats) in _sections.OrderByDescending(kv => kv.Value.TotalMs))

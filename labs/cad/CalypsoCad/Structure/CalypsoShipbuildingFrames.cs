@@ -149,8 +149,8 @@ internal static class CalypsoShipbuildingFrames
 
         var bayIndex = 0;
         // Start at zStart — HalfBeamInside + ySide<0.35 already taper-clips the extreme stem.
-        // A hard 20 m floor left bow frames/BH floating ahead of the girder cage.
         var girderStart = zStart;
+        var floorDeck = deckUps.Count > 0 ? deckUps[0] : 0.5f;
         for (var z = girderStart; z < zEnd - 0.5f; z += frameBay)
         {
             var zc = MathF.Min(z + frameBay * 0.5f, zEnd - 0.2f);
@@ -158,15 +158,14 @@ internal static class CalypsoShipbuildingFrames
             if (halfLenZ < 0.25f)
                 break;
 
-            if (IsHoldCargoStem(zc, openAtriumSpans))
-            {
-                bayIndex++;
-                continue; // open HOLD — sandwich floor only, no girder forest through cargo
-            }
-
+            var inHold = IsHoldCargoStem(zc, openAtriumSpans);
             foreach (var deckUp in deckUps)
             {
-                if (IsOpenAtriumDeck(zc, deckUp, openAtriumSpans))
+                // HOLD: keep continuous keel + side girders on the cargo floor only —
+                // no upper deck girder tiers across the open bay.
+                if (inHold && deckUp > floorDeck + 0.15f)
+                    continue;
+                if (!inHold && IsOpenAtriumDeck(zc, deckUp, openAtriumSpans))
                     continue; // ENG atrium — no floating girders across the void
 
                 // Use the narrowest beam along the girder span so ends never poke past the taper.
@@ -182,8 +181,13 @@ internal static class CalypsoShipbuildingFrames
                 if (ySide < 0.35f)
                     continue;
                 // Sit under plate underside (plate top = deckUp); not a second floating floor.
-                var up = deckUp - tPlate - web * 0.35f;
+                // HOLD floor run uses a deeper web box for continuous side/keel strength.
+                var webH = inHold ? web * 0.55f : web * 0.35f;
+                var up = deckUp - tPlate - webH;
 
+                var keelAsm = "girder-keel";
+                var portAsm = "girder-port";
+                var stbdAsm = "girder-stbd";
                 CalypsoLockGenerator.TryAddStructureBar(
                     entities,
                     loa,
@@ -192,8 +196,10 @@ internal static class CalypsoShipbuildingFrames
                     up,
                     zc,
                     MathF.Min(0.12f, web),
-                    web * 0.35f,
-                    halfLenZ);
+                    webH,
+                    halfLenZ,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.LongitudinalGirder, keelAsm, StationZ: zc, DeckUp: deckUp));
 
                 CalypsoLockGenerator.TryAddStructureBar(
                     entities,
@@ -203,8 +209,10 @@ internal static class CalypsoShipbuildingFrames
                     up,
                     zc,
                     web * 0.4f,
-                    web * 0.35f,
-                    halfLenZ);
+                    webH,
+                    halfLenZ,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.LongitudinalGirder, portAsm, StationZ: zc, DeckUp: deckUp));
 
                 CalypsoLockGenerator.TryAddStructureBar(
                     entities,
@@ -214,11 +222,79 @@ internal static class CalypsoShipbuildingFrames
                     up,
                     zc,
                     web * 0.4f,
-                    web * 0.35f,
-                    halfLenZ);
+                    webH,
+                    halfLenZ,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.LongitudinalGirder, stbdAsm, StationZ: zc, DeckUp: deckUp));
             }
 
             bayIndex++;
+        }
+    }
+
+    /// <summary>
+    /// Short bracket stubs at frame × keel/port/stbd girder crossings (weld tags via <c>joins</c>).
+    /// </summary>
+    public static void AddFrameGirderJoinStubs(
+        List<CadEntity> entities,
+        float loa,
+        IReadOnlyList<(string Id, float ZStem, bool BowAligned)> frameStations,
+        float web,
+        float halfDepthZ,
+        IReadOnlyList<float> deckUps,
+        float tPlate,
+        Func<float, bool> inOpenHoldCell,
+        IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null)
+    {
+        var stubHy = MathF.Max(0.06f, web * 0.35f);
+        var stubHu = MathF.Max(0.06f, web * 0.28f);
+        var stubHz = MathF.Max(halfDepthZ, web * 0.45f);
+
+        foreach (var (id, zStem, _) in frameStations)
+        {
+            if (inOpenHoldCell(zStem))
+                continue;
+            var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
+            var frameAsm = frameName.Contains('-')
+                ? string.Join('-', frameName.Split('-').Take(2))
+                : frameName;
+
+            foreach (var deckUp in deckUps)
+            {
+                if (IsOpenAtriumDeck(zStem, deckUp, openAtriumSpans))
+                    continue;
+
+                var inset = DefaultSkinInset + 0.28f;
+                var halfB = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp, inset);
+                var ySide = halfB - web * 0.85f;
+                if (ySide < 0.35f)
+                    continue;
+                var up = deckUp - tPlate - web * 0.35f;
+
+                void Stub(string side, float y, string girderAsm)
+                {
+                    CalypsoLockGenerator.TryAddStructureBar(
+                        entities,
+                        loa,
+                        $"{frameName}-join-{side}-d{deckUp:0.#}",
+                        y,
+                        up,
+                        zStem,
+                        stubHy,
+                        stubHu,
+                        stubHz,
+                        meta: new StructuralSolidMeta(
+                            StructuralRoles.TransverseFrame,
+                            frameAsm,
+                            StationZ: zStem,
+                            DeckUp: deckUp,
+                            Joins: [girderAsm, frameAsm]));
+                }
+
+                Stub("keel", 0f, "girder-keel");
+                Stub("port", -ySide, "girder-port");
+                Stub("stbd", ySide, "girder-stbd");
+            }
         }
     }
 
@@ -264,8 +340,8 @@ internal static class CalypsoShipbuildingFrames
     }
 
     /// <summary>
-    /// Cellular sandwich deck panels: top face = lock plate top, thickness <paramref name="tPlate"/>.
-    /// Entity names <c>deck-sandwich-dk{n}-*</c> are the one-model plate SoT for viz + blueprints.
+    /// Cellular sandwich deck panels: top face + core + bottom face per bay.
+    /// Names <c>deck-sandwich-dk{n}-*-face-top|core|face-bot</c>; plate top = lock elevation.
     /// Upper decks do not cross ENG atrium / HOLD cargo (floor plate at <c>FloorTop</c> remains).
     /// </summary>
     public static void AddCellularSandwichDecks(
@@ -281,7 +357,6 @@ internal static class CalypsoShipbuildingFrames
         if (zEnd <= zStart + 0.5f || decks.Count == 0 || tPlate < 0.02f)
             return;
 
-        var halfT = tPlate * 0.5f;
         var bayIndex = 0;
         for (var z = zStart; z < zEnd - 0.25f; z += frameBay)
         {
@@ -310,24 +385,54 @@ internal static class CalypsoShipbuildingFrames
                     if (IsHoldCargoStem(zc, openAtriumSpans))
                         continue; // HOLD = open bay, no upper plates at all
                     EmitCorridorDeckStrips(
-                        entities, loa, tag, bayIndex, plateTop, halfT, zc, halfLenZ, halfY);
+                        entities, loa, tag, bayIndex, plateTop, tPlate, zc, halfLenZ, halfY);
                     continue;
                 }
 
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities,
-                    loa,
-                    $"deck-sandwich-dk{tag}-b{bayIndex}",
-                    0f,
-                    plateTop - halfT,
-                    zc,
-                    halfY * 0.98f,
-                    halfT,
-                    halfLenZ);
+                EmitSandwichPanel(
+                    entities, loa, $"deck-sandwich-dk{tag}-b{bayIndex}",
+                    0f, plateTop, tPlate, zc, halfY * 0.98f, halfLenZ, $"deck-dk{tag}");
             }
 
             bayIndex++;
         }
+    }
+
+    /// <summary>Three stacked solids: face-top (full footprint), core (inset), face-bot.</summary>
+    private static void EmitSandwichPanel(
+        List<CadEntity> entities,
+        float loa,
+        string baseName,
+        float y,
+        float plateTop,
+        float tPlate,
+        float zc,
+        float halfY,
+        float halfLenZ,
+        string assembly)
+    {
+        // Face half-extent must stay ≥ TryAddStructureBar min (0.02 m).
+        var faceT = MathF.Max(0.045f, tPlate * 0.28f);
+        var coreT = MathF.Max(0.04f, tPlate);
+        var faceHalf = MathF.Max(0.022f, faceT * 0.5f);
+        var coreHalf = MathF.Max(0.022f, coreT * 0.5f);
+        var topCenter = plateTop - faceHalf;
+        var botCenter = plateTop - tPlate + faceHalf;
+        var coreCenter = (topCenter - faceHalf + botCenter + faceHalf) * 0.5f;
+
+        void Add(string suffix, float up, float hy, float hu, IReadOnlyList<string>? joins = null)
+        {
+            CalypsoLockGenerator.TryAddStructureBar(
+                entities, loa, $"{baseName}-{suffix}",
+                y, up, zc, hy, hu, halfLenZ,
+                meta: new StructuralSolidMeta(
+                    StructuralRoles.StructuralDeck, assembly,
+                    StationZ: zc, DeckUp: plateTop, Joins: joins));
+        }
+
+        Add("face-top", topCenter, halfY, faceHalf, [$"{baseName}-core"]);
+        Add("core", coreCenter, halfY * 0.92f, coreHalf, [$"{baseName}-face-top", $"{baseName}-face-bot"]);
+        Add("face-bot", botCenter, halfY, faceHalf, [$"{baseName}-core"]);
     }
 
     /// <summary>
@@ -340,7 +445,7 @@ internal static class CalypsoShipbuildingFrames
         string deckTag,
         int bayIndex,
         float plateTop,
-        float halfT,
+        float tPlate,
         float zc,
         float halfLenZ,
         float halfY)
@@ -356,12 +461,13 @@ internal static class CalypsoShipbuildingFrames
         var hy = (yOut - yIn) * 0.5f;
         var yPort = -(yIn + yOut) * 0.5f;
         var yStbd = -yPort;
-        CalypsoLockGenerator.TryAddStructureBar(
+        var asm = $"deck-dk{deckTag}";
+        EmitSandwichPanel(
             entities, loa, $"deck-sandwich-dk{deckTag}-corrP-b{bayIndex}",
-            yPort, plateTop - halfT, zc, hy, halfT, halfLenZ);
-        CalypsoLockGenerator.TryAddStructureBar(
+            yPort, plateTop, tPlate, zc, hy, halfLenZ, asm);
+        EmitSandwichPanel(
             entities, loa, $"deck-sandwich-dk{deckTag}-corrS-b{bayIndex}",
-            yStbd, plateTop - halfT, zc, hy, halfT, halfLenZ);
+            yStbd, plateTop, tPlate, zc, hy, halfLenZ, asm);
     }
 
     /// <summary>
@@ -379,7 +485,6 @@ internal static class CalypsoShipbuildingFrames
         {
             if (zStem <= z0 + 0.05f || zStem >= z1 - 0.05f)
                 continue;
-            // Upper decks through the void — and ALL girders/plates in HOLD cargo (open bay).
             if (plateTop > floorTop + 0.15f)
                 return true;
         }
@@ -387,7 +492,7 @@ internal static class CalypsoShipbuildingFrames
         return false;
     }
 
-    /// <summary>HOLD cargo cell: no longitudinal girders at any deck (floor sandwich stays).</summary>
+    /// <summary>HOLD cargo cell stem (long aft atrium ≥ 12 m).</summary>
     internal static bool IsHoldCargoStem(
         float zStem,
         IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans)

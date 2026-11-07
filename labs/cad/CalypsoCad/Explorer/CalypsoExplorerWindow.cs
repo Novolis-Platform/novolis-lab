@@ -33,7 +33,7 @@ internal sealed class CalypsoExplorerWindow : Window
         Height = 940;
         FontFamily = GraphicalProfile.BodyFont;
 
-        ApplyPresetHoldCargo();
+        ApplyStagePreset(CalypsoVisualLayers.PrimaryStructure, "PrimaryStructure · rings + girders + BH");
 
         GraphicalProfileBinding.Bind(this, BackgroundProperty, GraphicalProfile.BackgroundResourceKey);
 
@@ -86,14 +86,21 @@ internal sealed class CalypsoExplorerWindow : Window
         SyncUiFromSession();
     }
 
-    private void ApplyPresetHoldCargo()
+    private void ApplyStagePreset(CalypsoVisualLayers layers, string status)
     {
         _controller.SetView(CalypsoViewMode.Orbit);
         _controller.SetWire(CalypsoWireMeshMode.None);
-        _controller.Session.VisualLayers = CalypsoVisualLayers.HoldCargo;
-        _controller.Session.ShowOmlGuide = true;
+        _controller.Session.VisualLayers = layers;
+        _controller.Session.ShowOmlGuide = layers == CalypsoVisualLayers.PressureStructure
+                                          || layers == CalypsoVisualLayers.HoldCargo;
         _controller.Session.DeckFilter = null;
-        _controller.Session.StatusText = "preset:HOLD cargo · Shaded";
+        _controller.Session.StatusText = $"preset:{status}";
+    }
+
+    private void ApplyPresetHoldCargo()
+    {
+        ApplyStagePreset(CalypsoVisualLayers.HoldCargo, "HOLD cargo · Shaded");
+        _controller.Session.ShowOmlGuide = true;
     }
 
     private Control BuildChrome()
@@ -130,25 +137,15 @@ internal sealed class CalypsoExplorerWindow : Window
         panel.Children.Add(Hint("Does not hide Ship layer (hull / frames / BHs / girders)."));
 
         panel.Children.Add(Header("Presets"));
+        panel.Children.Add(Btn("1 Primary structure", () => ApplyStagePreset(
+            CalypsoVisualLayers.PrimaryStructure, "PrimaryStructure · rings + girders + BH")));
+        panel.Children.Add(Btn("2 Primary + decks", () => ApplyStagePreset(
+            CalypsoVisualLayers.PrimaryPlusDecks, "PrimaryPlusDecks · + sandwich plates")));
+        panel.Children.Add(Btn("3 Pressure structure", () => ApplyStagePreset(
+            CalypsoVisualLayers.PressureStructure, "PressureStructure · shell + BH + openings")));
+        panel.Children.Add(Btn("4 Complete arrangement", () => ApplyStagePreset(
+            CalypsoVisualLayers.CompleteArrangement, "CompleteArrangement · full ship")));
         panel.Children.Add(Btn("HOLD cargo", ApplyPresetHoldCargo));
-        panel.Children.Add(Btn("Ship skeleton", () =>
-        {
-            _controller.SetView(CalypsoViewMode.Orbit);
-            _controller.SetWire(CalypsoWireMeshMode.None);
-            _controller.Session.VisualLayers = CalypsoVisualLayers.ShipSkeleton;
-            _controller.Session.ShowOmlGuide = false;
-            _controller.Session.DeckFilter = null;
-            _controller.Session.StatusText = "preset:Ship skeleton · open webs + few BH";
-        }));
-        panel.Children.Add(Btn("Full ship shaded", () =>
-        {
-            _controller.SetView(CalypsoViewMode.Orbit);
-            _controller.SetWire(CalypsoWireMeshMode.None);
-            _controller.Session.VisualLayers = CalypsoVisualLayers.DefaultOrbit;
-            _controller.Session.ShowOmlGuide = false;
-            _controller.Session.DeckFilter = null;
-            _controller.Session.StatusText = "preset:full shaded";
-        }));
 
         panel.Children.Add(Header("Ship (full-height)"));
         panel.Children.Add(Hint("Keel→weather skeleton — frames are open rings, not walls."));

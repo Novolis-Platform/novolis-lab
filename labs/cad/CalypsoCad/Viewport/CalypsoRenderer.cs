@@ -2146,6 +2146,23 @@ internal sealed class CalypsoRenderer
 
     private static CalypsoVisualLayers StructureFlagForBox(CadEntity box)
     {
+        // Metadata-first; name-prefix fallback for legacy solids.
+        if (box.Properties is not null
+            && box.Properties.TryGetValue("structuralRole", out var roleEl)
+            && roleEl.ValueKind == System.Text.Json.JsonValueKind.String)
+        {
+            var role = roleEl.GetString() ?? "";
+            if (string.Equals(role, "TransverseFrame", StringComparison.OrdinalIgnoreCase))
+                return CalypsoVisualLayers.Frames;
+            if (string.Equals(role, "PressureBulkhead", StringComparison.OrdinalIgnoreCase))
+                return CalypsoVisualLayers.Bulkheads;
+            if (string.Equals(role, "StructuralDeck", StringComparison.OrdinalIgnoreCase))
+                return CalypsoVisualLayers.DeckPlates;
+            if (string.Equals(role, "LongitudinalGirder", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase))
+                return CalypsoVisualLayers.Longitudinals;
+        }
+
         var n = box.Name ?? "";
         if (n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Frames;

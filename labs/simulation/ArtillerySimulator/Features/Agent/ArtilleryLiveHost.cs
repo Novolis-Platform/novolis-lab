@@ -14,6 +14,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
     private readonly Queue<Pending> _queue = new();
     private readonly Dictionary<string, AgentCommandResult> _completed = new(StringComparer.Ordinal);
     private Pending? _shot;
+    private BallisticTrajectoryRunner? _awaitingImpact;
     private long _revision = 1;
     private long _sequence;
     private string _seen = "";
@@ -159,12 +160,14 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
 
     private void CompleteShot(List<Pending> finished)
     {
-        if (_shot is null || _game.Shot.Phase == BallisticTrajectoryPhase.InFlight)
+        if (_shot is null || _awaitingImpact is null || _awaitingImpact.Phase == BallisticTrajectoryPhase.InFlight)
             return;
 
         var item = _shot;
+        var impact = _awaitingImpact.Impact;
         _shot = null;
-        item.Result = FinishFire(item.Command);
+        _awaitingImpact = null;
+        item.Result = FinishFire(item.Command, impact);
         Remember(item);
         finished.Add(item);
     }
@@ -216,15 +219,15 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 if (_game.FireBlockReason() is { } blocked)
                     return Reject(command, "unavailable", blocked);
                 _game.TryFire();
+                _awaitingImpact = _game.Shot;
                 return null;
             default:
                 return Reject(command, "unavailable", "Unknown action.");
         }
     }
 
-    private AgentCommandResult FinishFire(AgentCommand command)
+    private AgentCommandResult FinishFire(AgentCommand command, ProjectileTerrainImpact? impact)
     {
-        var impact = _game.Shot.Impact;
         var message = impact is { } hit
             ? string.Create(
                 CultureInfo.InvariantCulture,

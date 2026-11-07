@@ -261,7 +261,8 @@ internal static class FrameWebPlateBuilder
         bool bowAligned,
         ref int cellIndex)
     {
-        const float MaxResidualWidth = 0.55f;
+        // Perimeter-adjacent residual only — wide remnants read as walls.
+        const float MaxResidualWidth = 0.40f;
         var bands = BuildElevationBands(upMin, upMax, decks);
         if (bands.Count == 0)
             bands.Add((upMin, upMax));

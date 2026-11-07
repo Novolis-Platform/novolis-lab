@@ -15,8 +15,11 @@ internal sealed class ArtilleryApp : IDisposable
     private static readonly float[] PaceMultipliers = [1f, 3f, 8f, 24f];
     private const float PhysicsHz = 120f;
     private const float MilsPerDegree = 6400f / 360f;
-    private const float FineMilsPerSecond = 22f;
+    private const float FineMilsPerSecond = 12f;
+    /// <summary>Wall-clock seconds of WASD hold to reach full lay rate (smooth take-up).</summary>
+    private const float LayRampSeconds = 0.4f;
     private const float KillcamReturnSeconds = 3f;
+    private const int MaxLiveRounds = 12;
     /// <summary>Educational laying / MV / met uncertainty for the probability envelope (not a classified table).</summary>
     private const float DispersionElevMils = 10f;
     private const float DispersionDeflMils = 14f;
@@ -30,14 +33,8 @@ internal sealed class ArtilleryApp : IDisposable
 
     private readonly TerrainWorld _terrain = new();
     private readonly GunModel _gun = new();
-    private readonly BallisticTrajectoryRunner _shot = new(new BallisticTrajectoryRunnerOptions
-    {
-        Step = new ProjectileTerrainStepOptions
-        {
-            DtSeconds = 1.0 / 120.0,
-            ProjectileRadius = GunModel.MuzzleRadius,
-        },
-    });
+    private readonly List<BallisticTrajectoryRunner> _rounds = [];
+    private BallisticTrajectoryRunner _shot;
     private readonly ProjectileBallisticSimulation _ballistics = new(GunModel.Educational155Profile, DragCoefficientLaw.BoatTail);
     private readonly ArtilleryCameras _camera = new();
     private readonly AtmosphereModel _atmosphere = AtmosphereModel.CreateRegionalDefault();
@@ -58,6 +55,8 @@ internal sealed class ArtilleryApp : IDisposable
     private float _burstAge = -1f;
     private Vector3 _burstAt;
     private bool _killcamActive;
+    private float _layHoldSeconds;
+    private readonly HashSet<BallisticTrajectoryRunner> _impactHandled = [];
     private readonly ArtilleryLiveHost _agent;
     private AgentSurface? _surface;
     private FrameProfiler? _profiler;
@@ -69,8 +68,20 @@ internal sealed class ArtilleryApp : IDisposable
 
     public ArtilleryApp()
     {
+        _shot = CreateRound();
+        _rounds.Add(_shot);
         _agent = new ArtilleryLiveHost(this);
     }
+
+    private static BallisticTrajectoryRunner CreateRound() =>
+        new(new BallisticTrajectoryRunnerOptions
+        {
+            Step = new ProjectileTerrainStepOptions
+            {
+                DtSeconds = 1.0 / 120.0,
+                ProjectileRadius = GunModel.MuzzleRadius,
+            },
+        });
 
     public void EnableProfile(int frames, string? jsonPath = null)
     {
@@ -110,8 +121,7 @@ internal sealed class ArtilleryApp : IDisposable
 
     internal string? FireBlockReason()
     {
-        if (_shot.Phase == BallisticTrajectoryPhase.InFlight)
-            return "A shot is already in flight.";
+        // Autoloader only — rounds already in the air do not block the next fire.
         if (!_crew.BreechReady)
             return _crew.Phrase(_gun);
         return null;
@@ -125,15 +135,56 @@ internal sealed class ArtilleryApp : IDisposable
         // Fire the ordered lay the instant the breech is closed — do not wait out the slew.
         _crew.SnapTube(_gun);
         var muzzle = _gun.MuzzlePosition(_terrain.GunBaseline);
+        _shot = AcquireRound();
         _shot.Begin(_gun.CreateProjectileState(muzzle, _gun.BarrelDirection()));
+        _impactHandled.Remove(_shot);
         _muzzleFlash = 0.22f;
-        _burstAge = -1f;
         _crew.BeginReload();
-        // Stay on the gun; press F while the round is in flight for optional killcam.
+        // Stay on the gun; press F while any round is in flight for optional killcam.
         _camera.FollowProjectile = false;
         _killcamActive = false;
         _aimDirty = true;
         return true;
+    }
+
+    private BallisticTrajectoryRunner AcquireRound()
+    {
+        foreach (var round in _rounds)
+        {
+            if (round.Phase is BallisticTrajectoryPhase.Ready)
+                return round;
+            if (round.Phase == BallisticTrajectoryPhase.Impacted
+                && round != _shot
+                && !_camera.FollowProjectile)
+            {
+                _impactHandled.Remove(round);
+                round.Reset();
+                return round;
+            }
+        }
+
+        if (_rounds.Count >= MaxLiveRounds)
+        {
+            // Prefer recycling the oldest finished round; otherwise the oldest flyer.
+            for (var i = 0; i < _rounds.Count; i++)
+            {
+                if (_rounds[i].Phase != BallisticTrajectoryPhase.InFlight && _rounds[i] != _shot)
+                {
+                    _impactHandled.Remove(_rounds[i]);
+                    _rounds[i].Reset();
+                    return _rounds[i];
+                }
+            }
+
+            var steal = _rounds[0];
+            _impactHandled.Remove(steal);
+            steal.Reset();
+            return steal;
+        }
+
+        var created = CreateRound();
+        _rounds.Add(created);
+        return created;
     }
 
     public void Initialize(SilkFrame frame)
@@ -146,7 +197,11 @@ internal sealed class ArtilleryApp : IDisposable
         _gun.SetElevation(_mission.OpeningElevationDegrees);
         _gun.NudgeAzimuth(_mission.OpeningAzimuthDegrees - _mission.TrailBearingDegrees);
         _crew.SeatOpening(_gun);
-        _shot.Reset();
+        foreach (var round in _rounds)
+            round.Reset();
+        _impactHandled.Clear();
+        _shot = _rounds[0];
+        _layHoldSeconds = 0f;
         _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         RebuildAimPreview();
         _surface = AgentSurface.AttachAll(
@@ -168,7 +223,7 @@ internal sealed class ArtilleryApp : IDisposable
             active.Time("simulate", () => _agent.RunFrame(() => Simulate(frame)));
             active.Time("render", () => Render(frame));
             active.SetGeometry(
-                _terrain.TerrainLineCount,
+                _terrain.TerrainTriangleCount,
                 _terrain.RoadLineCount,
                 _wires.AsSpan().Length / 2,
                 FireControlUi.LastOverlayLineCount);
@@ -256,7 +311,7 @@ internal sealed class ArtilleryApp : IDisposable
         sb.AppendLine(CultureInfo.InvariantCulture,
             $"FRAME  {p.LastFrameMs:F2} ms   samples {p.Frames}");
         sb.AppendLine(CultureInfo.InvariantCulture,
-            $"GEO  terrain {_terrain.TerrainLineCount}  roads {_terrain.RoadLineCount}  dyn {_wires.AsSpan().Length / 2}");
+            $"GEO  fillTris {_terrain.TerrainTriangleCount}  roads {_terrain.RoadLineCount}  dyn {_wires.AsSpan().Length / 2}");
         sb.AppendLine(CultureInfo.InvariantCulture,
             $"VIEW  {frame.Width}x{frame.Height}  pace {PaceLabel()}  follow={(_camera.FollowProjectile ? "shell" : "gun")}");
         sb.AppendLine(CultureInfo.InvariantCulture,
@@ -333,7 +388,7 @@ internal sealed class ArtilleryApp : IDisposable
         sb.AppendLine(CultureInfo.InvariantCulture,
             $"east={_terrain.EastMeters:F0}  north={_terrain.NorthMeters:F0}  gun={_terrain.GunBaseline}");
         sb.AppendLine(CultureInfo.InvariantCulture,
-            $"terrainLines={_terrain.TerrainLineCount}  roadLines={_terrain.RoadLineCount}");
+            $"fillTris={_terrain.TerrainTriangleCount}  roadLines={_terrain.RoadLineCount}");
         return sb.ToString();
     }
 
@@ -344,21 +399,33 @@ internal sealed class ArtilleryApp : IDisposable
         // Advance the crew before fire input so Space/FIRE works on the same frame the breech closes.
         _crew.Advance(_gun, battleSeconds);
         HandleInput(frame, battleSeconds);
-        if (_shot.Phase == BallisticTrajectoryPhase.InFlight)
+
+        var steps = Math.Clamp((int)MathF.Round(battleSeconds * PhysicsHz), 1, 512);
+        Vector3? incoming = null;
+        foreach (var round in _rounds)
         {
-            var steps = Math.Clamp((int)MathF.Round(battleSeconds * PhysicsHz), 1, 512);
-            for (var i = 0; i < steps && _shot.Phase == BallisticTrajectoryPhase.InFlight; i++)
+            if (round.Phase != BallisticTrajectoryPhase.InFlight)
+                continue;
+
+            for (var i = 0; i < steps && round.Phase == BallisticTrajectoryPhase.InFlight; i++)
             {
-                var env = _atmosphere.BallisticEnvironment(_shot.CurrentPosition.Y);
-                _shot.AdvanceOne(_ballistics, env, _terrain.Collision, _terrain.Field, _terrain.GunBaseline);
+                var env = _atmosphere.BallisticEnvironment(round.CurrentPosition.Y);
+                round.AdvanceOne(_ballistics, env, _terrain.Collision, _terrain.Field, _terrain.GunBaseline);
             }
+
+            if (round.Phase == BallisticTrajectoryPhase.InFlight)
+                incoming ??= round.CurrentPosition;
         }
 
-        Vector3? incoming = _shot.Phase == BallisticTrajectoryPhase.InFlight ? _shot.CurrentPosition : null;
         _mission?.Advance(battleSeconds, incoming);
 
-        if (_shot.Phase == BallisticTrajectoryPhase.Impacted && _burstAge < 0f && _shot.Impact is { } landed)
+        foreach (var round in _rounds)
         {
+            if (round.Phase != BallisticTrajectoryPhase.Impacted
+                || round.Impact is not { } landed
+                || !_impactHandled.Add(round))
+                continue;
+
             _burstAge = 0f;
             _burstAt = landed.Position;
             _mission?.ResolveImpact(landed.Position);
@@ -420,7 +487,7 @@ internal sealed class ArtilleryApp : IDisposable
             _gun.Draw(
                 _wires,
                 _terrain.GunBaseline,
-                showPivotGlow: _shot.Phase != BallisticTrajectoryPhase.InFlight && _crew.BreechReady,
+                showPivotGlow: _crew.BreechReady,
                 loading: _crew.Loading);
             DrawMuzzleFlash(_wires);
             DrawShot(_wires);
@@ -572,9 +639,23 @@ internal sealed class ArtilleryApp : IDisposable
             _camera.ShowMapOverview(_terrain.EastMeters, _terrain.NorthMeters);
 
         // WASD + arrows lay the tube. Shift = fine. Mouse never aims.
+        // Order rates follow the battle clock (same as turret slew) so high pace compresses
+        // lay time without making a single tap jump half the arc.
         var fine = frame.IsKeyDown(Key.ShiftLeft) || frame.IsKeyDown(Key.ShiftRight);
-        var elevate = (fine ? FineMilsPerSecond : CrewDrill.ElevateMilsPerSecond) / MilsPerDegree * battleSeconds;
-        var traverse = (fine ? FineMilsPerSecond : CrewDrill.TraverseMilsPerSecond) / MilsPerDegree * battleSeconds;
+        var laying = frame.IsKeyDown(Key.W) || frame.IsKeyDown(Key.Up)
+            || frame.IsKeyDown(Key.S) || frame.IsKeyDown(Key.Down)
+            || frame.IsKeyDown(Key.A) || frame.IsKeyDown(Key.Left)
+            || frame.IsKeyDown(Key.D) || frame.IsKeyDown(Key.Right);
+
+        if (laying)
+            _layHoldSeconds += MathF.Max(1e-4f, frame.DeltaSeconds);
+        else
+            _layHoldSeconds = 0f;
+
+        // Soft take-up on wall clock so taps stay small; full rate after LayRampSeconds.
+        var ramp = Math.Clamp(_layHoldSeconds / LayRampSeconds, 0.2f, 1f);
+        var elevate = (fine ? FineMilsPerSecond : CrewDrill.ElevateMilsPerSecond) / MilsPerDegree * battleSeconds * ramp;
+        var traverse = (fine ? FineMilsPerSecond : CrewDrill.TraverseMilsPerSecond) / MilsPerDegree * battleSeconds * ramp;
 
         var dElev = 0f;
         var dTrav = 0f;
@@ -601,8 +682,12 @@ internal sealed class ArtilleryApp : IDisposable
     /// </summary>
     private void ToggleOptionalShellFollow()
     {
-        var roundLive = _shot.Phase is BallisticTrajectoryPhase.InFlight
-            || (_shot.Phase == BallisticTrajectoryPhase.Impacted && _burstAge >= 0f && _burstAge < KillcamReturnSeconds);
+        var round = RoundForCamera();
+        var roundLive = round is not null
+            && (round.Phase is BallisticTrajectoryPhase.InFlight
+                || (round.Phase == BallisticTrajectoryPhase.Impacted
+                    && _burstAge >= 0f
+                    && _burstAge < KillcamReturnSeconds));
 
         if (!roundLive)
         {
@@ -612,10 +697,25 @@ internal sealed class ArtilleryApp : IDisposable
             return;
         }
 
+        _shot = round!;
         _camera.ToggleFollowTarget();
         _killcamActive = _camera.FollowProjectile;
         if (!_killcamActive)
             _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+    }
+
+    private BallisticTrajectoryRunner? RoundForCamera()
+    {
+        if (_shot.Phase is BallisticTrajectoryPhase.InFlight or BallisticTrajectoryPhase.Impacted)
+            return _shot;
+
+        for (var i = _rounds.Count - 1; i >= 0; i--)
+        {
+            if (_rounds[i].Phase == BallisticTrajectoryPhase.InFlight)
+                return _rounds[i];
+        }
+
+        return null;
     }
 
     private Vector3 PredictedImpact() =>
@@ -748,31 +848,39 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void DrawShot(SilkWireBatch wires)
     {
-        var trail = _shot.Trail;
-        var spanNow = HorizontalRange(_terrain.GunBaseline, _shot.CurrentPosition);
-        var ribbon = Math.Clamp(spanNow * 0.0035f, 1.5f, 22f);
-        for (var i = 1; i < trail.Count; i++)
+        foreach (var round in _rounds)
         {
-            var heat = i / (float)trail.Count;
-            var color = Color.FromArgb(
-                (int)(TrailCool.A + (TrailHot.A - TrailCool.A) * heat),
-                (int)(TrailCool.R + (TrailHot.R - TrailCool.R) * heat),
-                (int)(TrailCool.G + (TrailHot.G - TrailCool.G) * heat),
-                (int)(TrailCool.B + (TrailHot.B - TrailCool.B) * heat));
-            var lift = Vector3.UnitY * (ribbon * heat);
-            wires.Line(trail[i - 1], trail[i], color);
-            wires.Line(trail[i - 1] + lift, trail[i] + lift, color);
-        }
+            if (round.Phase is not (BallisticTrajectoryPhase.InFlight or BallisticTrajectoryPhase.Impacted))
+                continue;
 
-        if (_shot.Phase == BallisticTrajectoryPhase.InFlight)
-        {
-            var span = HorizontalRange(_terrain.GunBaseline, _shot.CurrentPosition);
+            var trail = round.Trail;
+            var spanNow = round.Phase == BallisticTrajectoryPhase.InFlight
+                ? HorizontalRange(_terrain.GunBaseline, round.CurrentPosition)
+                : round.Impact?.HorizontalRangeMeters ?? 0f;
+            var ribbon = Math.Clamp(spanNow * 0.0035f, 1.5f, 22f);
+            for (var i = 1; i < trail.Count; i++)
+            {
+                var heat = i / (float)trail.Count;
+                var color = Color.FromArgb(
+                    (int)(TrailCool.A + (TrailHot.A - TrailCool.A) * heat),
+                    (int)(TrailCool.R + (TrailHot.R - TrailCool.R) * heat),
+                    (int)(TrailCool.G + (TrailHot.G - TrailCool.G) * heat),
+                    (int)(TrailCool.B + (TrailHot.B - TrailCool.B) * heat));
+                var lift = Vector3.UnitY * (ribbon * heat);
+                wires.Line(trail[i - 1], trail[i], color);
+                wires.Line(trail[i - 1] + lift, trail[i] + lift, color);
+            }
+
+            if (round.Phase != BallisticTrajectoryPhase.InFlight)
+                continue;
+
+            var span = HorizontalRange(_terrain.GunBaseline, round.CurrentPosition);
             var radius = Math.Clamp(span * 0.012f, 14f, 70f);
-            wires.WireSphere(_shot.CurrentPosition, radius * 0.45f, TrailHot, segments: 10);
-            wires.WireSphere(_shot.CurrentPosition, radius, FlashColor, segments: 10);
-            var ground = _terrain.Field.SampleHeight(_shot.CurrentPosition.X, _shot.CurrentPosition.Z);
-            var drop = new Vector3(_shot.CurrentPosition.X, ground + 2f, _shot.CurrentPosition.Z);
-            wires.Line(_shot.CurrentPosition, drop, Color.FromArgb(160, TrailHot.R, TrailHot.G, TrailHot.B));
+            wires.WireSphere(round.CurrentPosition, radius * 0.45f, TrailHot, segments: 10);
+            wires.WireSphere(round.CurrentPosition, radius, FlashColor, segments: 10);
+            var ground = _terrain.Field.SampleHeight(round.CurrentPosition.X, round.CurrentPosition.Z);
+            var drop = new Vector3(round.CurrentPosition.X, ground + 2f, round.CurrentPosition.Z);
+            wires.Line(round.CurrentPosition, drop, Color.FromArgb(160, TrailHot.R, TrailHot.G, TrailHot.B));
         }
 
         if (_burstAge >= 0f)

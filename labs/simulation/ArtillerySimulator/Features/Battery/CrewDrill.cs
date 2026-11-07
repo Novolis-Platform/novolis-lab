@@ -12,9 +12,12 @@ internal sealed class CrewDrill
     public const float ChargeSeconds = 1.6f;
     public const float ChargeSwapSeconds = 4.5f;
     public const float CloseSeconds = 0.6f;
-    /// <summary>Coarse WASD lay rates — kept moderate so Shift-fine is optional, not mandatory.</summary>
-    public const float ElevateMilsPerSecond = 95f;
-    public const float TraverseMilsPerSecond = 300f;
+    /// <summary>
+    /// Powered-turret slew (battle clock). ~4.5°/s traverse / ~2.5°/s elevate —
+    /// a 30° azimuth change takes ~7 s; Shift is for fine corrections.
+    /// </summary>
+    public const float ElevateMilsPerSecond = 45f;
+    public const float TraverseMilsPerSecond = 80f;
 
     private const float OnLayMils = 1.25f;
     private const float MilsPerDegree = 6400f / 360f;

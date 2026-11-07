@@ -303,8 +303,8 @@ internal static class CalypsoLockGenerator
         if (iml is not null)
             entities.Add(iml);
 
-        // Cargo peek only — never invent a second exterior (no nacelles / blister shells).
-        AddInteriorCargoDetails(entities, lockDoc, loa);
+        // Topology-first: primary skeleton + structural decks before any rooms/partitions/cargo.
+        AddStructure(entities, lockDoc, loa, beam, oah);
 
         var wallJobs = new List<(CadEntity Space, int Deck, float Up0, float Height)>();
         foreach (var comp in lockDoc.Compartments ?? [])
@@ -435,8 +435,9 @@ internal static class CalypsoLockGenerator
             entities.Add(ShipCad.CreatePressureVolume("Hold", [holdSpace.Id], "cargo", 101.3f));
         }
 
-        AddStructure(entities, lockDoc, loa, beam, oah);
+        // Arrangement last: outfit, cargo, hatch frames (structure already present).
         AddOutfit(entities, lockDoc, loa);
+        AddInteriorCargoDetails(entities, lockDoc, loa);
         AddInteriorDetail(entities, loa);
         AddPassagewayHatchFrames(entities, lockDoc, loa);
         IntegrateInteriorHatches(entities, loa);
@@ -1924,49 +1925,79 @@ internal static class CalypsoLockGenerator
             .ToArray();
     }
 
-    private static void AddStructure(List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa, float beam, float oah)
+    private static StructuralTopology BuildStructuralTopology(CalypsoLockDocument lockDoc, float loa)
     {
-        _ = beam;
-        _ = oah;
         var web = lockDoc.Frames?.WebM is > 0 ? (float)lockDoc.Frames.WebM : 0.15f;
         var depth = lockDoc.Frames?.DepthM is > 0 ? (float)lockDoc.Frames.DepthM : 0.25f;
         var tBh = lockDoc.Structure?.TBh is > 0.05 ? (float)lockDoc.Structure.TBh : 0.15f;
         var frameBay = lockDoc.Frames?.BayM is > 0.5
             ? (float)lockDoc.Frames.BayM
             : CalypsoDrafting.DefaultFrameBayM;
-        var halfDepthZ = web * 0.5f;
-        var deckUps = DeckStructureElevations(lockDoc);
         var tPlate = lockDoc.Decks?.TPlate is > 0.02 ? (float)lockDoc.Decks.TPlate : 0.1f;
+        var deckUps = DeckStructureElevations(lockDoc);
 
-        var zMax = ActiveStations[^1].Z;
-        var skin = TShell + 0.05f;
-
-        // 1) Bulkheads first — massive plates at DK-001 BH lines, then boolean passageway portals.
-        CalypsoBulkheads.AddAll(
-            entities,
-            loa,
-            tBh,
-            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
-            deckUps,
-            hatchPortalsAt: (z, margin) => CollectHatchWebPortals(lockDoc, z, margin, deckUps));
-
-        // Open HOLD cargo cell: no transverse webs/deckbeams (ENG-AFT closes the bay fore).
         var holdComp = lockDoc.Compartments?.FirstOrDefault(c =>
             string.Equals(c.Id, "HOLD", StringComparison.OrdinalIgnoreCase));
         var holdFore = lockDoc.Hold?.CatwalkFore is > 0
             ? (float)lockDoc.Hold.CatwalkFore
             : holdComp is not null ? (float)holdComp.Z0 : 49.25f;
         var holdAft = holdComp is not null ? (float)holdComp.Z1 : loa;
-        var holdDoorBand = 1.5f; // leave coaming/ramp region for stern structure
-        bool InOpenHoldCell(float zStem) =>
-            zStem > holdFore + 0.05f && zStem < holdAft - holdDoorBand;
 
-        // ENG atrium + HOLD cargo: floor plate only — no DK0/DK+1 slabs through the void.
-        var openAtriums = CollectOpenAtriumSpans(lockDoc);
+        var frames = new List<(string Id, float ZStem, bool BowAligned)>();
+        foreach (var (id, zStem) in CalypsoDrafting.BuildUniformFrameSchedule(loa, frameBay))
+            frames.Add((id, zStem, zStem < 18f));
+
+        return new StructuralTopology
+        {
+            Loa = loa,
+            Web = web,
+            Depth = depth,
+            TBh = tBh,
+            FrameBay = frameBay,
+            TPlate = tPlate,
+            DeckUps = deckUps,
+            FrameStations = frames,
+            OpenAtriumSpans = CollectOpenAtriumSpans(lockDoc),
+            HoldFore = holdFore,
+            HoldAft = holdAft,
+            HoldDoorBand = 1.5f,
+            ZStart = frameBay,
+            ZEnd = loa - TShell - 0.2f,
+            SandwichDecks =
+            [
+                (-1, deckUps[0]),
+                (0, deckUps[1]),
+                (1, deckUps[2]),
+            ],
+        };
+    }
+
+    private static void AddStructure(List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa, float beam, float oah)
+    {
+        _ = beam;
+        _ = oah;
+        var topo = BuildStructuralTopology(lockDoc, loa);
+        var web = topo.Web;
+        var halfDepthZ = web * 0.5f;
+        var deckUps = topo.DeckUps;
+        var tPlate = topo.TPlate;
+        var openAtriums = topo.OpenAtriumSpans;
+
+        var zMax = ActiveStations[^1].Z;
+        var skin = TShell + 0.05f;
+
+        // 1) Bulkheads — limited pressure plates + passageway portals.
+        CalypsoBulkheads.AddAll(
+            entities,
+            loa,
+            topo.TBh,
+            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
+            deckUps,
+            hatchPortalsAt: (z, margin) => CollectHatchWebPortals(lockDoc, z, margin, deckUps));
 
         void PlaceFrame(string id, float zStem, bool bowAligned = false)
         {
-            if (InOpenHoldCell(zStem))
+            if (topo.InOpenHoldCell(zStem))
                 return; // tramp hold = open bay; girders + shell + ENG-AFT only
 
             var z = Math.Clamp(zStem, web * 0.5f + skin, zMax - web * 0.5f - skin);
@@ -1974,10 +2005,8 @@ internal static class CalypsoLockGenerator
             if (halfB < 0.5f || halfH < 0.5f)
                 return;
             var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
-            // DK-001 track portals only (ACCESS / CORR_P/S) — never full-height room guts.
             var gaps = CollectAthwartPassageGaps(lockDoc, z, margin: 0.28f);
             var hatchPortals = CollectHatchWebPortals(lockDoc, z, 0.28f, deckUps);
-            // Bay web frames = CNC plate-webs (primary skeleton). Few bh-* elsewhere.
             CalypsoShipbuildingFrames.AddTransverseFrameWeb(
                 entities, loa, frameName, z, web, halfDepthZ, gaps, bowAligned, deckUps, hatchPortals);
             if (!bowAligned)
@@ -1987,36 +2016,39 @@ internal static class CalypsoLockGenerator
             }
         }
 
-        // 2) Constant bay frames outside open HOLD (mold ST* are shape samples, not frames).
-        foreach (var (id, zStem) in CalypsoDrafting.BuildUniformFrameSchedule(loa, frameBay))
-            PlaceFrame(id, zStem, bowAligned: zStem < 18f);
+        // 2) Open bay frames outside HOLD.
+        foreach (var (id, zStem, bowAligned) in topo.FrameStations)
+            PlaceFrame(id, zStem, bowAligned);
 
-        var zStart = frameBay;
-        var zEnd = loa - TShell - 0.2f;
-        var sandwichDecks = new List<(int DeckNum, float PlateTop)>
-        {
-            (-1, deckUps[0]),
-            (0, deckUps[1]),
-            (1, deckUps[2]),
-        };
-        CalypsoShipbuildingFrames.AddCellularSandwichDecks(
-            entities, loa, zStart, zEnd, frameBay, sandwichDecks, tPlate, openAtriums);
+        // 3) Continuous longitudinals (keel/sides through HOLD; no upper tiers in cargo void).
         CalypsoShipbuildingFrames.AddDeckLongitudinalGirders(
-            entities, loa, zStart, zEnd, web, frameBay, deckUps, tPlate, openAtriums);
+            entities, loa, topo.ZStart, topo.ZEnd, web, topo.FrameBay, deckUps, tPlate, openAtriums);
 
+        // 3b) Explicit frame ↔ girder weld stubs at crossings.
+        CalypsoShipbuildingFrames.AddFrameGirderJoinStubs(
+            entities, loa, topo.FrameStations, web, halfDepthZ, deckUps, tPlate,
+            topo.InOpenHoldCell, openAtriums);
+
+        // 4) Cellular sandwich decks (face + core + face).
+        CalypsoShipbuildingFrames.AddCellularSandwichDecks(
+            entities, loa, topo.ZStart, topo.ZEnd, topo.FrameBay, topo.SandwichDecks, tPlate, openAtriums);
+
+        // 5) Aft coaming / ramp (thrust / stern aperture).
         var doorW = lockDoc.Hold?.DoorW is > 0 ? (float)lockDoc.Hold.DoorW : 14f;
         var doorH = lockDoc.Hold?.DoorH is > 0 ? (float)lockDoc.Hold.DoorH : 8.5f;
         var sill = lockDoc.Hold?.Sill is > 0 ? (float)lockDoc.Hold.Sill : 0.25f;
         var apron = lockDoc.Hold?.ApronD is > 0 ? (float)lockDoc.Hold.ApronD : 12.25f;
         var stern = loa - TShell - web * 0.5f - 0.04f;
         var halfW = doorW * 0.5f;
-        TryAddBar(entities, loa, "coaming-aft-sill", 0f, sill + web * 0.5f, stern, halfW, web * 0.5f, web * 0.5f);
-        TryAddBar(entities, loa, "coaming-aft-head", 0f, sill + doorH - web * 0.5f, stern, halfW, web * 0.5f, web * 0.5f);
-        TryAddBar(entities, loa, "coaming-aft-port", -halfW, sill + doorH * 0.5f, stern, web * 0.5f, doorH * 0.5f - web, web * 0.5f);
-        TryAddBar(entities, loa, "coaming-aft-stbd", halfW, sill + doorH * 0.5f, stern, web * 0.5f, doorH * 0.5f - web, web * 0.5f);
+        var coamingMeta = new StructuralSolidMeta(StructuralRoles.ThrustStructure, "coaming-aft", StationZ: stern);
+        TryAddBar(entities, loa, "coaming-aft-sill", 0f, sill + web * 0.5f, stern, halfW, web * 0.5f, web * 0.5f, meta: coamingMeta);
+        TryAddBar(entities, loa, "coaming-aft-head", 0f, sill + doorH - web * 0.5f, stern, halfW, web * 0.5f, web * 0.5f, meta: coamingMeta);
+        TryAddBar(entities, loa, "coaming-aft-port", -halfW, sill + doorH * 0.5f, stern, web * 0.5f, doorH * 0.5f - web, web * 0.5f, meta: coamingMeta);
+        TryAddBar(entities, loa, "coaming-aft-stbd", halfW, sill + doorH * 0.5f, stern, web * 0.5f, doorH * 0.5f - web, web * 0.5f, meta: coamingMeta);
         var rampHalf = MathF.Max(0.3f, (apron - 0.2f) * 0.5f);
         var rampZ = stern - web - rampHalf;
-        TryAddBar(entities, loa, "ramp-aft", 0f, sill + 0.06f, rampZ, halfW, 0.04f, rampHalf);
+        TryAddBar(entities, loa, "ramp-aft", 0f, sill + 0.06f, rampZ, halfW, 0.04f, rampHalf,
+            meta: new StructuralSolidMeta(StructuralRoles.ThrustStructure, "ramp-aft", StationZ: rampZ));
     }
 
     private static List<float> DeckStructureElevations(CalypsoLockDocument lockDoc)
@@ -2220,8 +2252,9 @@ internal static class CalypsoLockGenerator
         float halfY,
         float halfUp,
         float halfZ,
-        string? fabPartId = null) =>
-        TryAddBar(entities, loa, name, y, up, zFromStem, halfY, halfUp, halfZ, fabPartId);
+        string? fabPartId = null,
+        StructuralSolidMeta? meta = null) =>
+        TryAddBar(entities, loa, name, y, up, zFromStem, halfY, halfUp, halfZ, fabPartId, meta);
 
     private static void TryAddBar(
         List<CadEntity> entities,
@@ -2233,7 +2266,8 @@ internal static class CalypsoLockGenerator
         float halfY,
         float halfUp,
         float halfZ,
-        string? fabPartId = null)
+        string? fabPartId = null,
+        StructuralSolidMeta? meta = null)
     {
         var hy = MathF.Abs(halfY);
         var hu = MathF.Abs(halfUp);
@@ -2247,7 +2281,7 @@ internal static class CalypsoLockGenerator
         {
             if (BoxFits(y, up, zFromStem, hy, hu, hz))
             {
-                AddFrameBar(entities, loa, name, y, up, zFromStem, hy, hu, hz, fabPartId);
+                AddFrameBar(entities, loa, name, y, up, zFromStem, hy, hu, hz, fabPartId, meta);
                 return;
             }
 
@@ -2269,10 +2303,61 @@ internal static class CalypsoLockGenerator
         float halfY,
         float halfUp,
         float halfZ,
-        string? fabPartId = null)
+        string? fabPartId = null,
+        StructuralSolidMeta? meta = null)
     {
         var center = LockToWorld(y, up, zFromStem, loa);
-        entities.Add(MakeSolid(name, LayerStruct, ShapeHullInt, center, new Vector3(MathF.Abs(halfY), MathF.Abs(halfUp), MathF.Abs(halfZ)), [0.55f, 0.58f, 0.62f], "structure", fabPartId));
+        var resolved = meta ?? InferStructuralMeta(name, zFromStem, up);
+        entities.Add(MakeSolid(
+            name, LayerStruct, ShapeHullInt, center,
+            new Vector3(MathF.Abs(halfY), MathF.Abs(halfUp), MathF.Abs(halfZ)),
+            [0.55f, 0.58f, 0.62f], "structure", fabPartId, resolved));
+    }
+
+    internal static StructuralSolidMeta InferStructuralMeta(string name, float zFromStem, float up)
+    {
+        if (name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
+        {
+            // bh-ENG-AFT-web-0 → assembly bh-ENG-AFT
+            var dash = name.IndexOf("-web-", StringComparison.OrdinalIgnoreCase);
+            var assembly = dash > 0
+                ? name[..dash]
+                : string.Join('-', name.Split('-').Take(3));
+            return new StructuralSolidMeta(StructuralRoles.PressureBulkhead, assembly, StationZ: zFromStem, DeckUp: up);
+        }
+
+        if (name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
+        {
+            var segs = name.Split('-');
+            var assembly = segs.Length >= 2 ? $"frame-{segs[1]}" : name;
+            return new StructuralSolidMeta(StructuralRoles.TransverseFrame, assembly, StationZ: zFromStem, DeckUp: up);
+        }
+
+        if (name.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
+            || name.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase))
+        {
+            var segs = name.Split('-');
+            var assembly = segs.Length >= 2 ? $"{segs[0]}-{segs[1]}" : name;
+            return new StructuralSolidMeta(StructuralRoles.LongitudinalGirder, assembly, StationZ: zFromStem, DeckUp: up);
+        }
+
+        if (name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase))
+        {
+            var segs = name.Split('-');
+            // deck-sandwich-dk0-… → deck-dk0
+            var deckTag = segs.Length >= 3 ? segs[2] : "dk";
+            return new StructuralSolidMeta(
+                StructuralRoles.StructuralDeck, $"deck-{deckTag}", StationZ: zFromStem, DeckUp: up);
+        }
+
+        if (name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase))
+        {
+            return new StructuralSolidMeta(StructuralRoles.ThrustStructure, name.Split('-')[0], StationZ: zFromStem);
+        }
+
+        return new StructuralSolidMeta(StructuralRoles.TransverseFrame, name, StationZ: zFromStem, DeckUp: up);
     }
 
     private static void AddOutfit(List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa)
@@ -2599,7 +2684,8 @@ internal static class CalypsoLockGenerator
         Vector3 half,
         float[] color,
         string role,
-        string? fabPartId = null)
+        string? fabPartId = null,
+        StructuralSolidMeta? structural = null)
     {
         var props = new Dictionary<string, JsonElement>
         {
@@ -2609,6 +2695,18 @@ internal static class CalypsoLockGenerator
         };
         if (!string.IsNullOrEmpty(fabPartId))
             props[ShipPropertyKeys.FabPartId] = JsonSerializer.SerializeToElement(fabPartId);
+        if (structural is { } meta)
+        {
+            props["structuralRole"] = JsonSerializer.SerializeToElement(meta.Role);
+            props["assembly"] = JsonSerializer.SerializeToElement(meta.Assembly);
+            if (meta.StationZ is { } sz)
+                props["stationZ"] = JsonSerializer.SerializeToElement(sz);
+            if (meta.DeckUp is { } du)
+                props["deckUp"] = JsonSerializer.SerializeToElement(du);
+            if (meta.Joins is { Count: > 0 } joins)
+                props["joins"] = JsonSerializer.SerializeToElement(joins);
+        }
+
         return new CadEntity
         {
             Kind = "box",

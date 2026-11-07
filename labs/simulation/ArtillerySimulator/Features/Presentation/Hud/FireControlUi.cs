@@ -162,7 +162,8 @@ internal sealed class FireControlUi : IDisposable
         };
         var underMin = predictedRangeMeters < SimulationUnits.MinEffectiveRangeMeters;
         // reloadLine is null once the breech is closed — fire snaps the tube; do not wait on lay.
-        var canFire = reloadLine is null && shot.Phase != BallisticTrajectoryPhase.InFlight;
+        // Rounds already airborne do not block the next fire (autoloader only).
+        var canFire = reloadLine is null;
 
         // Rebuild hit boxes every frame (cheap); rasterize Skia only when chrome meaningfully changes.
         _buttons.Clear();
@@ -289,15 +290,13 @@ internal sealed class FireControlUi : IDisposable
         var topH = 72f * _scale;
         PanelBox(canvas, 8, 8, _width - 16, topH);
 
-        var phase = shot.Phase switch
-        {
-            BallisticTrajectoryPhase.InFlight => "IN FLIGHT",
-            BallisticTrajectoryPhase.Impacted => "IMPACT",
-            _ => reloadLine is null ? "READY" : "BUSY",
-        };
-        var phaseColor = shot.Phase == BallisticTrajectoryPhase.InFlight ? Accent
+        // Status is breech/crew — multiple rounds may be airborne while READY to fire again.
+        var phase = reloadLine is not null ? "BUSY"
+            : shot.Phase == BallisticTrajectoryPhase.Impacted ? "IMPACT"
+            : "READY";
+        var phaseColor = reloadLine is not null ? Alert
             : shot.Phase == BallisticTrajectoryPhase.Impacted ? Alert
-            : reloadLine is null ? Ready : Alert;
+            : Ready;
 
         DrawText(canvas, phase, 20 * _scale, 28 * _scale, 22f * _scale, phaseColor);
         DrawText(

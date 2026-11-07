@@ -9,19 +9,15 @@ using Novolis.Simulation.World.Builders;
 
 namespace ArtillerySimulator;
 
-/// <summary>Kristiansand NDH heightfield range — wire terrain + primary-road overlay.</summary>
+/// <summary>Kristiansand NDH heightfield — solid land/water fill + primary-road overlay.</summary>
 internal sealed class TerrainWorld : IDisposable
 {
     private static readonly Color BoundaryColor = Color.FromArgb(255, 200, 180, 90);
 
     /// <summary>
-    /// Display mesh density — match the 1025 NDH heightfield (~23 m/cell).
-    /// Collision stays at 512 for ballistics cost.
+    /// Fill mesh density (512 ≈ 47 m/cell on the long axis). Collision stays independent.
     /// </summary>
-    public const int DisplayCells = 1024;
-
-    /// <summary>Every Nth display cell emits a wire (4 ≈ 16× fewer lines than full 1024 grid).</summary>
-    public const int WireCellStride = 4;
+    public const int DisplayCells = 512;
 
     private WorldExtentOptions _extentOptions = new()
     {
@@ -35,9 +31,9 @@ internal sealed class TerrainWorld : IDisposable
     private IHeightSampler _sampler = null!;
     private BvhStaticWorld _collision = null!;
     private Vector3[] _drawVertices = [];
-    private WorldLineVertex[] _cachedWires = [];
+    private WorldSolidVertex[] _cachedFill = [];
     private WorldLineVertex[] _cachedRoadWires = [];
-    private WorldLineGpuMesh? _terrainMesh;
+    private WorldSolidGpuMesh? _fillMesh;
     private WorldLineGpuMesh? _roadMesh;
     private int _drawCells;
 
@@ -47,8 +43,12 @@ internal sealed class TerrainWorld : IDisposable
     public BoundedHeightfield Field => _field;
     public BvhStaticWorld Collision => _collision;
     public Vector3 GunBaseline { get; private set; }
-    public ReadOnlySpan<WorldLineVertex> CachedWires => _cachedWires;
-    public int TerrainLineCount => _cachedWires.Length / 2;
+
+    /// <summary>Legacy wire count — terrain is solid now (always 0).</summary>
+    public int TerrainLineCount => 0;
+
+    public int TerrainTriangleCount => _cachedFill.Length / 3;
+
     public int RoadLineCount => _cachedRoadWires.Length / 2;
 
     public void Rebuild()
@@ -70,7 +70,7 @@ internal sealed class TerrainWorld : IDisposable
         _drawVertices = mesh.DrawVertices;
         _drawCells = mesh.DrawCells;
 
-        _cachedWires = KristiansandLandWireGrid.Build(_drawVertices, _drawCells, _drawCells, WireCellStride);
+        _cachedFill = KristiansandLandFillMesh.Build(_drawVertices, _drawCells, _drawCells);
 
         KristiansandMapFeatures.ResetClipCache();
         KristiansandNvdbRoads.Reset();
@@ -89,12 +89,12 @@ internal sealed class TerrainWorld : IDisposable
         GunBaseline = new Vector3(x, _field.SampleHeight(x, z) + SimulationUnits.GunHeightOffset, z);
     }
 
-    /// <summary>Uploads static terrain (+ roads) once; redraws from GPU each frame.</summary>
+    /// <summary>Uploads solid fill + roads once; redraws from GPU each frame.</summary>
     public void DrawStatic(SilkFrame frame, in Matrix4x4 viewProjection)
     {
         EnsureGpuMeshes(frame);
-        if (_terrainMesh is not null)
-            frame.DrawWorldLineMesh(_terrainMesh, viewProjection);
+        if (_fillMesh is not null)
+            frame.DrawWorldSolidMesh(_fillMesh, viewProjection);
         if (_roadMesh is not null)
             frame.DrawWorldLineMesh(_roadMesh, viewProjection);
     }
@@ -108,8 +108,8 @@ internal sealed class TerrainWorld : IDisposable
 
     private void EnsureGpuMeshes(SilkFrame frame)
     {
-        _terrainMesh ??= _cachedWires.Length >= 2
-            ? frame.CreateWorldLineMesh(_cachedWires)
+        _fillMesh ??= _cachedFill.Length >= 3
+            ? frame.CreateWorldSolidMesh(_cachedFill)
             : null;
         if (_roadMesh is null && _cachedRoadWires.Length >= 2)
             _roadMesh = frame.CreateWorldLineMesh(_cachedRoadWires);
@@ -117,8 +117,8 @@ internal sealed class TerrainWorld : IDisposable
 
     private void InvalidateGpuMeshes()
     {
-        _terrainMesh?.Dispose();
-        _terrainMesh = null;
+        _fillMesh?.Dispose();
+        _fillMesh = null;
         _roadMesh?.Dispose();
         _roadMesh = null;
     }
