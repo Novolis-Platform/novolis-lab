@@ -146,7 +146,7 @@ internal static class CalypsoLockGenerator
         var lockDoc = LoadLock();
         var corrW = lockDoc.Circulation?.CorrW is > 0 ? (float)lockDoc.Circulation.CorrW : 3f;
         var minClear = corrW - 0.12f;
-        // Sample the CORR spine only (DK-001) — ACCESS is ACCESS_W≈2 m, CROSS is full beam.
+        // Sample the CORR spine only (DK-001) — ACCESS clear = CORR_W; CROSS F–A = CORR_W.
         const float corrZ0 = 23f;
         var corrZ1 = MathF.Min(49.25f, loa - 4f);
         for (var z = corrZ0; z <= corrZ1 + 1e-3f; z += 4f)
@@ -558,7 +558,7 @@ internal static class CalypsoLockGenerator
                 var floors = new (int d, float y)[]
                 {
                     (-1, decks is null ? 0.5f : (float)decks.M1),
-                    (0, decks is null ? 4f : (float)decks.D0),
+                    (0, decks is null ? 4.4f : (float)decks.D0),
                     (1, decks is null ? 8f : (float)decks.D1),
                 };
                 foreach (var (d, y) in floors)
@@ -1927,6 +1927,7 @@ internal static class CalypsoLockGenerator
             : CalypsoDrafting.DefaultFrameBayM;
         var halfDepthZ = web * 0.5f;
         var deckUps = DeckStructureElevations(lockDoc);
+        var tPlate = lockDoc.Decks?.TPlate is > 0.02 ? (float)lockDoc.Decks.TPlate : 0.1f;
 
         var zMax = ActiveStations[^1].Z;
         var skin = TShell + 0.05f;
@@ -1939,8 +1940,25 @@ internal static class CalypsoLockGenerator
             (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin, ringPreserveCross: false),
             deckUps);
 
+        // Open HOLD cargo cell: no transverse webs/deckbeams (ENG-AFT closes the bay fore).
+        var holdComp = lockDoc.Compartments?.FirstOrDefault(c =>
+            string.Equals(c.Id, "HOLD", StringComparison.OrdinalIgnoreCase));
+        var holdFore = lockDoc.Hold?.CatwalkFore is > 0
+            ? (float)lockDoc.Hold.CatwalkFore
+            : holdComp is not null ? (float)holdComp.Z0 : 49.25f;
+        var holdAft = holdComp is not null ? (float)holdComp.Z1 : loa;
+        var holdDoorBand = 1.5f; // leave coaming/ramp region for stern structure
+        bool InOpenHoldCell(float zStem) =>
+            zStem > holdFore + 0.05f && zStem < holdAft - holdDoorBand;
+
+        // ENG atrium + HOLD cargo: floor plate only — no DK0/DK+1 slabs through the void.
+        var openAtriums = CollectOpenAtriumSpans(lockDoc);
+
         void PlaceFrame(string id, float zStem, bool bowAligned = false)
         {
+            if (InOpenHoldCell(zStem))
+                return; // tramp hold = open bay; girders + shell + ENG-AFT only
+
             var z = Math.Clamp(zStem, web * 0.5f + skin, zMax - web * 0.5f - skin);
             SectionAt(z, out var halfB, out var halfH, out _, out _, out _);
             if (halfB < 0.5f || halfH < 0.5f)
@@ -1954,18 +1972,26 @@ internal static class CalypsoLockGenerator
             if (!bowAligned)
             {
                 CalypsoShipbuildingFrames.AddTransverseDeckBeams(
-                    entities, loa, z, frameName, web, halfDepthZ, deckUps, gaps);
+                    entities, loa, z, frameName, web, halfDepthZ, deckUps, gaps, tPlate, openAtriums);
             }
         }
 
-        // 2) Constant bay frames (mold ST* are shape samples, not frames).
+        // 2) Constant bay frames outside open HOLD (mold ST* are shape samples, not frames).
         foreach (var (id, zStem) in CalypsoDrafting.BuildUniformFrameSchedule(loa, frameBay))
             PlaceFrame(id, zStem, bowAligned: zStem < 18f);
 
         var zStart = frameBay;
         var zEnd = loa - TShell - 0.2f;
+        var sandwichDecks = new List<(int DeckNum, float PlateTop)>
+        {
+            (-1, deckUps[0]),
+            (0, deckUps[1]),
+            (1, deckUps[2]),
+        };
+        CalypsoShipbuildingFrames.AddCellularSandwichDecks(
+            entities, loa, zStart, zEnd, frameBay, sandwichDecks, tPlate, openAtriums);
         CalypsoShipbuildingFrames.AddDeckLongitudinalGirders(
-            entities, loa, zStart, zEnd, web, frameBay, deckUps);
+            entities, loa, zStart, zEnd, web, frameBay, deckUps, tPlate, openAtriums);
 
         var doorW = lockDoc.Hold?.DoorW is > 0 ? (float)lockDoc.Hold.DoorW : 14f;
         var doorH = lockDoc.Hold?.DoorH is > 0 ? (float)lockDoc.Hold.DoorH : 8.5f;
@@ -1985,9 +2011,37 @@ internal static class CalypsoLockGenerator
     private static List<float> DeckStructureElevations(CalypsoLockDocument lockDoc)
     {
         var m1 = lockDoc.Decks?.M1 is > 0 ? (float)lockDoc.Decks.M1 : 0.5f;
-        var d0 = lockDoc.Decks?.D0 is > 0 ? (float)lockDoc.Decks.D0 : 4f;
+        var d0 = lockDoc.Decks?.D0 is > 0 ? (float)lockDoc.Decks.D0 : 4.4f;
         var d1 = lockDoc.Decks?.D1 is > 0 ? (float)lockDoc.Decks.D1 : 8f;
         return [m1, d0, d1];
+    }
+
+    /// <summary>
+    /// Multi-deck open cells (ENG atrium, HOLD cargo): upper sandwich/girders must not cross them.
+    /// FloorTop = compartment up0 (= DK−1 plate top).
+    /// </summary>
+    private static List<(float Z0, float Z1, float FloorTop)> CollectOpenAtriumSpans(CalypsoLockDocument lockDoc)
+    {
+        var list = new List<(float Z0, float Z1, float FloorTop)>();
+        foreach (var c in lockDoc.Compartments ?? [])
+        {
+            var isOpen =
+                string.Equals(c.Id, "ENG", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(c.Id, "HOLD", StringComparison.OrdinalIgnoreCase);
+            if (!isOpen && c.Deck.ValueKind == JsonValueKind.String)
+            {
+                var s = c.Deck.GetString();
+                isOpen = string.Equals(s, "atrium", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(s, "cargo", StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (!isOpen)
+                continue;
+
+            list.Add(((float)c.Z0, (float)c.Z1, (float)c.Up0));
+        }
+
+        return list;
     }
 
     /// <summary>
@@ -2306,7 +2360,8 @@ internal static class CalypsoLockGenerator
             }
             else if (string.Equals(name, "CROSSING", StringComparison.OrdinalIgnoreCase))
             {
-                PlaceInSpace(entities, loa, space, $"{prefix}-deck-plate", midY, floor + 0.03f, midZ, spanY * 0.42f, 0.025f, spanZ * 0.42f, [0.4f, 0.42f, 0.46f], "outfit");
+                // Cosmetic finish snaps to sandwich plate top (floor = lock plate top).
+                PlaceInSpace(entities, loa, space, $"{prefix}-deck-plate", midY, floor, midZ, spanY * 0.42f, 0.01f, spanZ * 0.42f, [0.4f, 0.42f, 0.46f], "outfit");
             }
             else if (string.Equals(name, "BRIDGE", StringComparison.OrdinalIgnoreCase) && space.Deck == 0)
             {
@@ -2558,7 +2613,7 @@ internal static class CalypsoLockGenerator
         _ = oah;
     }
 
-    /// <summary>C40 stacks in the hold — interior cargo, not a second exterior hull.</summary>
+    /// <summary>C40 stacks in the hold — 5×3 = 15 containers on the DK−1 plate (not a second hull).</summary>
     private static void AddInteriorCargoDetails(List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa)
     {
         var hold = lockDoc.Hold;
@@ -2569,6 +2624,7 @@ internal static class CalypsoLockGenerator
         var cell = c40?.Cell is > 0 ? (float)c40.Cell : 0.2f;
         var cols = c40?.Cols is > 0 ? c40.Cols : 5;
         var tiers = c40?.Tiers is > 0 ? c40.Tiers : 3;
+        var floor = lockDoc.Decks?.M1 is > 0 ? (float)lockDoc.Decks.M1 : 0.5f;
         var gridW = cols * c40W + (cols - 1) * cell;
         var c40Fore = c40?.Fore is > 0
             ? (float)c40.Fore
@@ -2580,7 +2636,8 @@ internal static class CalypsoLockGenerator
             var x = left + col * (c40W + cell) + c40W * 0.5f;
             for (var tier = 0; tier < tiers; tier++)
             {
-                var y = 1f + c40H * (tier + 0.5f);
+                // Sit on HOLD floor (DK−1 plate top); tier stack upward.
+                var y = floor + c40H * (tier + 0.5f);
                 entities.Add(new CadEntity
                 {
                     Kind = "box",
@@ -2597,7 +2654,7 @@ internal static class CalypsoLockGenerator
                     Thickness = c40W,
                     Properties = new Dictionary<string, JsonElement>
                     {
-                        // Hold cargo — visible in cutaway/interior, not as a sealed-exterior orange blob.
+                        // Hold cargo — visible in cutaway/orbit Outfit layer + HOLD interior.
                         ["interiorOnly"] = JsonSerializer.SerializeToElement(true),
                         ["exterior"] = JsonSerializer.SerializeToElement(false),
                     },
@@ -2781,6 +2838,9 @@ internal static class CalypsoLockGenerator
         public double D1 { get; set; }
         [JsonPropertyName("roomH")]
         public double RoomH { get; set; }
+        /// <summary>Sandwich deckplate thickness (m). Finished floor = plate top (m1/d0/d1).</summary>
+        [JsonPropertyName("tPlate")]
+        public double TPlate { get; set; } = 0.1;
     }
 
     private sealed class LockCompartment

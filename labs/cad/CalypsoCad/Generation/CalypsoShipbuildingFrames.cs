@@ -128,7 +128,9 @@ internal static class CalypsoShipbuildingFrames
         float zEnd,
         float web,
         float frameBay,
-        IReadOnlyList<float> deckUps)
+        IReadOnlyList<float> deckUps,
+        float tPlate = 0.1f,
+        IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null)
     {
         if (zEnd <= zStart + 1f)
             return;
@@ -146,6 +148,9 @@ internal static class CalypsoShipbuildingFrames
 
             foreach (var deckUp in deckUps)
             {
+                if (IsOpenAtriumDeck(zc, deckUp, openAtriumSpans))
+                    continue; // ENG atrium / HOLD cargo — no floating girders across the void
+
                 // Use the narrowest beam along the girder span so ends never poke past the taper.
                 var zA = zc - halfLenZ;
                 var zB = zc + halfLenZ;
@@ -158,7 +163,8 @@ internal static class CalypsoShipbuildingFrames
                 var ySide = halfB - web * 0.85f;
                 if (ySide < 0.35f)
                     continue;
-                var up = deckUp + web * 0.35f;
+                // Sit under plate underside (plate top = deckUp); not a second floating floor.
+                var up = deckUp - tPlate - web * 0.35f;
 
                 CalypsoLockGenerator.TryAddStructureBar(
                     entities,
@@ -206,10 +212,15 @@ internal static class CalypsoShipbuildingFrames
         float web,
         float halfDepthZ,
         IReadOnlyList<float> deckUps,
-        IReadOnlyList<(float Y0, float Y1)> athwartGaps)
+        IReadOnlyList<(float Y0, float Y1)> athwartGaps,
+        float tPlate = 0.1f,
+        IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null)
     {
         foreach (var deckUp in deckUps)
         {
+            if (IsOpenAtriumDeck(zStem, deckUp, openAtriumSpans))
+                continue;
+
             var deckInset = DefaultSkinInset + 0.28f;
             var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp, deckInset) - web * 1.25f;
             if (halfY < 0.35f)
@@ -225,12 +236,95 @@ internal static class CalypsoShipbuildingFrames
                     loa,
                     $"{frameId}-deckbeam-{deckUp:0.#}-y{ya:0.#}",
                     cy,
-                    deckUp + web * 0.35f,
+                    deckUp - tPlate - web * 0.35f,
                     zStem,
                     hy,
                     web * 0.35f,
                     halfDepthZ * 0.8f);
             }
         }
+    }
+
+    /// <summary>
+    /// Cellular sandwich deck panels: top face = lock plate top, thickness <paramref name="tPlate"/>.
+    /// Entity names <c>deck-sandwich-dk{n}-*</c> are the one-model plate SoT for viz + blueprints.
+    /// Upper decks do not cross ENG atrium / HOLD cargo (floor plate at <c>FloorTop</c> remains).
+    /// </summary>
+    public static void AddCellularSandwichDecks(
+        List<CadEntity> entities,
+        float loa,
+        float zStart,
+        float zEnd,
+        float frameBay,
+        IReadOnlyList<(int DeckNum, float PlateTop)> decks,
+        float tPlate,
+        IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null)
+    {
+        if (zEnd <= zStart + 0.5f || decks.Count == 0 || tPlate < 0.02f)
+            return;
+
+        var halfT = tPlate * 0.5f;
+        var bayIndex = 0;
+        for (var z = zStart; z < zEnd - 0.25f; z += frameBay)
+        {
+            var zc = MathF.Min(z + frameBay * 0.5f, zEnd - 0.15f);
+            var halfLenZ = MathF.Min(frameBay * 0.48f, zEnd - zc);
+            if (halfLenZ < 0.2f)
+                break;
+
+            foreach (var (deckNum, plateTop) in decks)
+            {
+                if (IsOpenAtriumDeck(zc, plateTop, openAtriumSpans))
+                    continue; // keep ENG/HOLD as open multi-deck voids
+
+                var zA = zc - halfLenZ;
+                var zB = zc + halfLenZ;
+                var inset = DefaultSkinInset + 0.12f;
+                var halfY = MathF.Min(
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zA, plateTop, inset),
+                    MathF.Min(
+                        CalypsoLockGenerator.HalfBeamInsidePublic(zc, plateTop, inset),
+                        CalypsoLockGenerator.HalfBeamInsidePublic(zB, plateTop, inset)));
+                if (halfY < 0.4f)
+                    continue;
+
+                var tag = deckNum < 0 ? "m1" : deckNum.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                CalypsoLockGenerator.TryAddStructureBar(
+                    entities,
+                    loa,
+                    $"deck-sandwich-dk{tag}-b{bayIndex}",
+                    0f,
+                    plateTop - halfT,
+                    zc,
+                    halfY * 0.98f,
+                    halfT,
+                    halfLenZ);
+            }
+
+            bayIndex++;
+        }
+    }
+
+    /// <summary>
+    /// True when <paramref name="plateTop"/> is an intermediate deck through an open atrium/cargo cell
+    /// (above the cell floor). Floor plates at <c>FloorTop</c> stay.
+    /// </summary>
+    internal static bool IsOpenAtriumDeck(
+        float zStem,
+        float plateTop,
+        IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans)
+    {
+        if (openAtriumSpans is null || openAtriumSpans.Count == 0)
+            return false;
+        foreach (var (z0, z1, floorTop) in openAtriumSpans)
+        {
+            if (zStem <= z0 + 0.05f || zStem >= z1 - 0.05f)
+                continue;
+            // Any plate clearly above the atrium floor is a false deck through the void.
+            if (plateTop > floorTop + 0.15f)
+                return true;
+        }
+
+        return false;
     }
 }

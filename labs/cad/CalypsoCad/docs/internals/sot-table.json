@@ -1,9 +1,9 @@
 {
   "id": "calypso-sot-bh-stations",
-  "generatedUtc": "2026-11-07T00:00:00Z",
+  "generatedUtc": "2026-11-07T14:00:00Z",
   "loaM": 69,
   "spine": "mid athwart (X=0) × mid height (OAH/2) × stem→stern",
-  "oahMidM": 6,
+  "oahMidM": 6.2,
   "sourceLock": "CAL-INT-GA-001.json",
   "sourceBulkheads": "CalypsoBulkheads.BuildSchedule",
   "faces": [
@@ -14,10 +14,22 @@
       "bhId": "BOW-COLLISION"
     },
     {
-      "face": "Airlock mid-CROSS",
-      "zFromStem": 21,
-      "compartmentEdges": ["(not a room edge — CROSS pressure transition)"],
-      "bhId": "AIRLOCK-CROSS"
+      "face": "CROSS fore (ahead of athwart corridor)",
+      "zFromStem": 19,
+      "compartmentEdges": ["ACCESS z1", "CROSSING z0", "airlock fore"],
+      "bhId": "CROSS-FORE"
+    },
+    {
+      "face": "CROSS aft (aft of athwart corridor / crew fore)",
+      "zFromStem": 23,
+      "compartmentEdges": ["CROSSING z1", "CORR z0", "CREW_n z0", "airlock aft"],
+      "bhId": "CROSS-AFT"
+    },
+    {
+      "face": "Crew aft (behind cabin band)",
+      "zFromStem": 30.28,
+      "compartmentEdges": ["CREW_n z1", "Z_MED_FORE", "INFIRMARY/GALLEY fore"],
+      "bhId": "CREW-AFT"
     },
     {
       "face": "ENG fore",
@@ -34,7 +46,7 @@
   ],
   "notes": [
     "Do not thrash z mid-loop — one SoT edit → one Pass B regen.",
-    "AIRLOCK-CROSS stays at z=21 (not 19/23).",
-    "Acceptance: structure-audit.json + verify-calypso-bh-spine + blueprints/details — not Silk FPS."
+    "Never place a BH through mid-CROSS — use CROSS-FORE @ 19 and CROSS-AFT @ 23.",
+    "Acceptance: structure-audit.json + verify-calypso-bh-spine + verify-calypso-blueprints — not Silk FPS."
   ]
 }

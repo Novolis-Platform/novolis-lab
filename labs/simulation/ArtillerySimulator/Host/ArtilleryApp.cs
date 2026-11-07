@@ -11,14 +11,10 @@ internal sealed class ArtilleryApp : IDisposable
 {
     private static readonly int[] PaceSteps = [2, 6, 16, 48];
     private const float MilsPerDegree = 6400f / 360f;
-    private const float FineMilsPerSecond = 20f;
-    private const float CoarseMilsPerPixel = 0.35f;
-    private const float FineMilsPerPixel = 0.07f;
+    private const float FineMilsPerSecond = 28f;
 
-    private static readonly Color TrailHot = Color.FromArgb(255, 255, 176, 86);
+    private static readonly Color TrailHot = BallisticArcColors.Flight;
     private static readonly Color TrailCool = Color.FromArgb(90, 180, 140, 70);
-    private static readonly Color PreviewColor = Color.FromArgb(210, 255, 186, 92);
-    private static readonly Color ImpactColor = Color.FromArgb(255, 255, 120, 72);
     private static readonly Color FlashColor = Color.FromArgb(255, 255, 214, 150);
     private static readonly Color SunColor = Color.FromArgb(120, 255, 186, 110);
 
@@ -36,12 +32,14 @@ internal sealed class ArtilleryApp : IDisposable
     private readonly ArtilleryCameras _camera = new();
     private readonly AtmosphereModel _atmosphere = AtmosphereModel.CreateRegionalDefault();
     private readonly SilkWireBatch _wires = new();
+    private readonly FireControlUi _ui = new();
 
     private readonly SmoothedFps _fps = new();
     private readonly CrewDrill _crew = new();
     private int _paceIndex = 1;
     private KristiansandDefenseMission? _mission;
-    private IReadOnlyList<Vector3> _aimPreview = [];
+    private IReadOnlyList<Vector3> _orderedPreview = [];
+    private IReadOnlyList<Vector3> _tubePreview = [];
     private bool _aimDirty = true;
     private float _muzzleFlash;
     private float _burstAge = -1f;
@@ -57,7 +55,6 @@ internal sealed class ArtilleryApp : IDisposable
         _agent = new ArtilleryLiveHost(this);
     }
 
-    /// <summary>When set, runs headless for N frames then closes and prints a timing report.</summary>
     public void EnableProfile(int frames, string? jsonPath = null)
     {
         _profiler = new FrameProfiler(warmupFrames: Math.Min(20, Math.Max(0, frames / 6)));
@@ -70,7 +67,7 @@ internal sealed class ArtilleryApp : IDisposable
     internal GunModel Gun => _gun;
     internal TerrainWorld Terrain => _terrain;
     internal BallisticTrajectoryRunner Shot => _shot;
-    internal CameraMode CameraMode => _camera.Mode;
+    internal CameraMode CameraMode => CameraMode.Orbit;
     internal string PaceText => PaceLabel();
     internal KristiansandDefenseMission? Mission => _mission;
     internal float PredictedRangeMeters => HorizontalRange(_terrain.GunBaseline, PredictedImpact());
@@ -92,8 +89,7 @@ internal sealed class ArtilleryApp : IDisposable
 
     internal void SetPace(int index) => _paceIndex = Math.Clamp(index, 0, PaceSteps.Length - 1);
 
-    internal void SetFollowCamera(bool follow) =>
-        _camera.Use(follow ? CameraMode.Orbit : CameraMode.Freecam);
+    internal void SetFollowCamera(bool followShell) => _camera.FollowProjectile = followShell;
 
     internal string? FireBlockReason()
     {
@@ -114,6 +110,7 @@ internal sealed class ArtilleryApp : IDisposable
         _muzzleFlash = 0.22f;
         _burstAge = -1f;
         _crew.BeginReload();
+        _camera.FollowProjectile = true;
         return true;
     }
 
@@ -149,7 +146,7 @@ internal sealed class ArtilleryApp : IDisposable
                 _terrain.TerrainLineCount,
                 _terrain.RoadLineCount,
                 _wires.AsSpan().Length / 2,
-                SimulationHud.LastOverlayLineCount);
+                FireControlUi.LastOverlayLineCount);
             _profiler.EndFrame();
             if (_profileFramesRemaining > 0)
             {
@@ -215,13 +212,12 @@ internal sealed class ArtilleryApp : IDisposable
         if (_muzzleFlash > 0f)
             _muzzleFlash = MathF.Max(0f, _muzzleFlash - frame.DeltaSeconds);
 
-        // Rebuild only when aim/charge changed or the tube is still laying onto ordered values.
         if (_aimDirty || !_crew.Ready(_gun))
             RebuildAimPreview();
 
         if (_mission is { } mission)
             _camera.SetBattleFocus(mission.BattleFocus(_terrain.GunBaseline));
-        _camera.Update(frame, _terrain.GunBaseline, _shot);
+        _camera.Update(frame, _terrain.GunBaseline, _shot, allowMouseLook: !_ui.PointerOverUi);
     }
 
     private void Render(SilkFrame frame)
@@ -229,7 +225,6 @@ internal sealed class ArtilleryApp : IDisposable
         frame.Clear(Rgba32.Black);
         var cam = _camera.Build(frame.DeltaSeconds);
         var aspect = frame.Width / (float)Math.Max(1, frame.Height);
-        // Kommunekart dump: plain Cesium look-at (map X-flip would swap N/S when facing east).
         var view = _camera.MatchKommunekartOrientation
             ? KristiansandGeoref.CreateCesiumMatchedView(cam.Position, cam.Target, cam.Up)
             : KristiansandGeoref.CreateMapView(cam.Position, cam.Target, cam.Up);
@@ -242,7 +237,6 @@ internal sealed class ArtilleryApp : IDisposable
             far);
         var mvp = view * proj;
 
-        // Static terrain + roads live on the GPU after first upload.
         if (_profiler is not null)
             _profiler.Time("draw.static", () => _terrain.DrawStatic(frame, mvp));
         else
@@ -254,6 +248,7 @@ internal sealed class ArtilleryApp : IDisposable
             DrawSky(_wires);
             _terrain.DrawDynamic(_wires);
             _mission?.Draw(_wires);
+            DrawMinRangeRing(_wires);
             DrawAimPreview(_wires);
             _gun.Draw(
                 _wires,
@@ -277,9 +272,11 @@ internal sealed class ArtilleryApp : IDisposable
         _fps.Update(frame.DeltaSeconds);
         var predicted = PredictedImpact();
         var predictedRange = HorizontalRange(_terrain.GunBaseline, predicted);
+        var tof = EstimateTofSeconds(_orderedPreview);
+
         void DrawHud()
         {
-            SimulationHud.Draw(
+            _ui.Draw(
                 frame,
                 _gun,
                 _crew.OrderedElevation,
@@ -287,9 +284,12 @@ internal sealed class ArtilleryApp : IDisposable
                 _terrain,
                 _atmosphere,
                 _shot,
-                _camera,
+                _camera.FollowProjectile,
                 _fps.Value,
                 predictedRange,
+                tof,
+                predicted,
+                _paceIndex,
                 PaceLabel(),
                 _mission?.HudLine(),
                 _crew.Ready(_gun) ? null : _crew.Phrase(_gun));
@@ -303,12 +303,19 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void RebuildAimPreview()
     {
-        var start = _gun.PredictState(
-            _terrain.GunBaseline,
-            _crew.OrderedElevation,
-            _crew.OrderedAzimuth,
-            _gun.MuzzleSpeedMps);
-        _aimPreview = BallisticTrajectoryRunner.BuildPreview(
+        _orderedPreview = BuildPreview(_crew.OrderedElevation, _crew.OrderedAzimuth, _gun.MuzzleSpeedMps);
+        var tubeDiffers = MathF.Abs(_gun.ElevationDegrees - _crew.OrderedElevation) > 0.05f
+            || MathF.Abs(_gun.AzimuthDegrees - _crew.OrderedAzimuth) > 0.05f;
+        _tubePreview = tubeDiffers
+            ? BuildPreview(_gun.ElevationDegrees, _gun.AzimuthDegrees, _gun.MuzzleSpeedMps)
+            : [];
+        _aimDirty = false;
+    }
+
+    private IReadOnlyList<Vector3> BuildPreview(float elevation, float azimuth, float speed)
+    {
+        var start = _gun.PredictState(_terrain.GunBaseline, elevation, azimuth, speed);
+        return BallisticTrajectoryRunner.BuildPreview(
             _ballistics,
             _atmosphere.BallisticEnvironment(start.Position.Y),
             _terrain.Field,
@@ -316,111 +323,63 @@ internal sealed class ArtilleryApp : IDisposable
             dtSeconds: 1.0 / 60.0,
             maxTimeSeconds: 90.0,
             maxPoints: 6_000);
-        _aimDirty = false;
     }
 
     private void HandleInput(SilkFrame frame, float battleSeconds)
     {
+        var actions = _ui.HandleMouse(frame);
+        if (actions.ChargeIndex is { } charge)
+        {
+            _crew.OrderCharge(_gun, charge);
+            _aimDirty = true;
+        }
+
+        if (actions.PaceIndex is { } pace)
+            _paceIndex = pace;
+
+        if (actions.Fire || frame.IsKeyPressed(Key.Space))
+            TryFire();
+
+        if (actions.ToggleFollow || frame.IsKeyPressed(Key.C))
+            _camera.ToggleFollowTarget();
+
+        if (actions.SnapGun)
+            _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+
+        if (actions.SnapBattle && _mission is { } battle)
+        {
+            _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+            _camera.LookAtBattle(_terrain.GunBaseline, battle.NearestAlive(_terrain.GunBaseline));
+        }
+
+        if (actions.MapOverview)
+            _camera.ShowMapOverview(_terrain.EastMeters, _terrain.NorthMeters);
+
+        // WASD + arrows lay the tube. Shift = fine. Mouse never aims.
         var fine = frame.IsKeyDown(Key.ShiftLeft) || frame.IsKeyDown(Key.ShiftRight);
         var elevate = (fine ? FineMilsPerSecond : CrewDrill.ElevateMilsPerSecond) / MilsPerDegree * battleSeconds;
         var traverse = (fine ? FineMilsPerSecond : CrewDrill.TraverseMilsPerSecond) / MilsPerDegree * battleSeconds;
 
-        if (_camera.Mode != CameraMode.Freecam)
-        {
-            if (frame.IsKeyDown(Key.W))
-            {
-                _crew.NudgeOrder(_gun, elevate, 0f);
-                _aimDirty = true;
-            }
+        var dElev = 0f;
+        var dTrav = 0f;
+        if (frame.IsKeyDown(Key.W) || frame.IsKeyDown(Key.Up))
+            dElev += elevate;
+        if (frame.IsKeyDown(Key.S) || frame.IsKeyDown(Key.Down))
+            dElev -= elevate;
+        if (frame.IsKeyDown(Key.A) || frame.IsKeyDown(Key.Left))
+            dTrav -= traverse;
+        if (frame.IsKeyDown(Key.D) || frame.IsKeyDown(Key.Right))
+            dTrav += traverse;
 
-            if (frame.IsKeyDown(Key.S))
-            {
-                _crew.NudgeOrder(_gun, -elevate, 0f);
-                _aimDirty = true;
-            }
-        }
-
-        if (frame.IsKeyDown(Key.Q))
+        if (dElev != 0f || dTrav != 0f)
         {
-            _crew.NudgeOrder(_gun, 0f, -traverse);
+            _crew.NudgeOrder(_gun, dElev, dTrav);
             _aimDirty = true;
         }
-
-        if (frame.IsKeyDown(Key.E))
-        {
-            _crew.NudgeOrder(_gun, 0f, traverse);
-            _aimDirty = true;
-        }
-
-        // Left-drag lays the piece; Shift+Left is orbit pan (see ArtilleryCameras).
-        if (frame.IsMouseButtonDown(MouseButton.Left)
-            && !frame.IsKeyDown(Key.ShiftLeft)
-            && !frame.IsKeyDown(Key.ShiftRight))
-        {
-            var milsPerPixel = fine ? FineMilsPerPixel : CoarseMilsPerPixel;
-            var degreesPerPixel = milsPerPixel / MilsPerDegree;
-            var azimuth = Math.Clamp(frame.MouseDeltaX * degreesPerPixel, -traverse, traverse);
-            var elevation = Math.Clamp(-frame.MouseDeltaY * degreesPerPixel, -elevate, elevate);
-            _crew.NudgeOrder(_gun, elevation, azimuth);
-            _aimDirty = true;
-        }
-
-        if (frame.IsKeyPressed(Key.Number1))
-        {
-            _crew.OrderCharge(_gun, 0);
-            _aimDirty = true;
-        }
-
-        if (frame.IsKeyPressed(Key.Number2))
-        {
-            _crew.OrderCharge(_gun, 1);
-            _aimDirty = true;
-        }
-
-        if (frame.IsKeyPressed(Key.Number3))
-        {
-            _crew.OrderCharge(_gun, 2);
-            _aimDirty = true;
-        }
-
-        if (frame.IsKeyPressed(Key.Number4))
-        {
-            _crew.OrderCharge(_gun, 3);
-            _aimDirty = true;
-        }
-
-        if (frame.IsKeyPressed(Key.Comma) || frame.IsKeyPressed(Key.KeypadSubtract))
-            _paceIndex = Math.Max(0, _paceIndex - 1);
-        if (frame.IsKeyPressed(Key.Period) || frame.IsKeyPressed(Key.KeypadAdd))
-            _paceIndex = Math.Min(PaceSteps.Length - 1, _paceIndex + 1);
-
-        if (frame.IsKeyPressed(Key.C))
-            _camera.ToggleMode();
-
-        if (frame.IsKeyPressed(Key.V) || frame.IsKeyPressed(Key.O))
-            _camera.ShowMapOverview(_terrain.EastMeters, _terrain.NorthMeters);
-
-        if (frame.IsKeyPressed(Key.M))
-            Kommunekart3DView.ApplyStartupCamera(_camera, _terrain);
-
-        if (frame.IsKeyPressed(Key.G) && _mission is { } mapGun)
-        {
-            _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
-            _camera.LookAtBattle(_terrain.GunBaseline, mapGun.NearestAlive(_terrain.GunBaseline));
-        }
-
-        if (frame.IsKeyPressed(Key.R) && _mission is { } fort)
-        {
-            _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
-            _ = fort;
-        }
-
-        if (frame.IsKeyPressed(Key.Space))
-            TryFire();
     }
 
     private Vector3 PredictedImpact() =>
-        _aimPreview.Count == 0 ? _terrain.GunBaseline : _aimPreview[^1];
+        _orderedPreview.Count == 0 ? _terrain.GunBaseline : _orderedPreview[^1];
 
     private string PaceLabel() => _paceIndex switch
     {
@@ -435,6 +394,14 @@ internal sealed class ArtilleryApp : IDisposable
         var dx = point.X - origin.X;
         var dz = point.Z - origin.Z;
         return MathF.Sqrt(dx * dx + dz * dz);
+    }
+
+    private static float EstimateTofSeconds(IReadOnlyList<Vector3> preview)
+    {
+        if (preview.Count < 2)
+            return 0f;
+        // Preview built at 1/60 s steps.
+        return (preview.Count - 1) / 60f;
     }
 
     private void DrawSky(SilkWireBatch wires)
@@ -453,19 +420,41 @@ internal sealed class ArtilleryApp : IDisposable
         wires.WireSphere(muzzle, radius, FlashColor, segments: 10);
     }
 
+    private void DrawMinRangeRing(SilkWireBatch wires)
+    {
+        var gun = _terrain.GunBaseline;
+        wires.Ring(gun, SimulationUnits.MinEffectiveRangeMeters, BallisticArcColors.MinRange);
+    }
+
     private void DrawAimPreview(SilkWireBatch wires)
     {
-        if (_shot.Phase == BallisticTrajectoryPhase.InFlight || _aimPreview.Count < 2)
+        if (_shot.Phase == BallisticTrajectoryPhase.InFlight)
             return;
 
-        var stride = Math.Max(1, _aimPreview.Count / 160);
-        for (var i = stride; i < _aimPreview.Count; i += stride)
-            wires.Line(_aimPreview[i - stride], _aimPreview[i], PreviewColor);
+        if (_tubePreview.Count >= 2)
+            DrawArc(wires, _tubePreview, BallisticArcColors.Tube);
 
-        var last = _aimPreview.Count - 1;
+        if (_orderedPreview.Count >= 2)
+        {
+            DrawArc(wires, _orderedPreview, BallisticArcColors.Ordered);
+            var mpi = _orderedPreview[^1];
+            wires.WireSphere(mpi, 28f, BallisticArcColors.MpiMark, segments: 10);
+            wires.Ring(mpi, 40f, BallisticArcColors.MpiMark);
+            var ground = _terrain.Field.SampleHeight(mpi.X, mpi.Z);
+            wires.Line(mpi, new Vector3(mpi.X, ground + 1f, mpi.Z), BallisticArcColors.MpiMark);
+        }
+    }
+
+    private static void DrawArc(SilkWireBatch wires, IReadOnlyList<Vector3> points, Color color)
+    {
+        var stride = Math.Max(1, points.Count / 180);
+        for (var i = stride; i < points.Count; i += stride)
+            wires.Line(points[i - stride], points[i], color);
+
+        var last = points.Count - 1;
         var drawn = last - (last % stride);
         if (drawn != last && drawn >= 0)
-            wires.Line(_aimPreview[drawn], _aimPreview[last], PreviewColor);
+            wires.Line(points[drawn], points[last], color);
     }
 
     private void DrawShot(SilkWireBatch wires)
@@ -506,8 +495,8 @@ internal sealed class ArtilleryApp : IDisposable
         var age = MathF.Min(_burstAge, 8f);
         var fade = 1f - age / 8f;
         var alpha = (int)(220 * Math.Clamp(fade, 0.35f, 1f));
-        var color = Color.FromArgb(alpha, ImpactColor.R, ImpactColor.G, ImpactColor.B);
-        var pale = Color.FromArgb(alpha / 2, ImpactColor.R, ImpactColor.G, ImpactColor.B);
+        var color = Color.FromArgb(alpha, BallisticArcColors.Impact.R, BallisticArcColors.Impact.G, BallisticArcColors.Impact.B);
+        var pale = Color.FromArgb(alpha / 2, BallisticArcColors.Impact.R, BallisticArcColors.Impact.G, BallisticArcColors.Impact.B);
         var column = 40f + age * 30f;
         wires.Line(_burstAt, _burstAt + Vector3.UnitY * column, color);
         wires.WireSphere(_burstAt + Vector3.UnitY * (10f + age * 4f), 18f + age * 6f, color, segments: 12);

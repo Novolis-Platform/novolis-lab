@@ -21,8 +21,10 @@ internal static class CalypsoDnvReviewEmitter
         ("layer-cutaway-fitout.png", "Partitions, outfit, openings (no frame solids)"),
         ("orbit-cutaway-long.png", "Longitudinal cutaway — combined layers"),
         ("plan-deck-0.png", "Deck 0 plan"),
-        ("plan-deck-p1.png", "Deck +1 plan"),
+        ("interior-solid-bridge.png", "Bridge interior — solid"),
         ("interior-cutaway-portCorridor.png", "Port corridor — transverse frames at spine"),
+        ("layer-structure-wire.png", "Structure wire — web plates"),
+        ("orbit-bow-quarter.png", "Bow quarter — stem taper"),
     ];
 
     public static string Emit(string? outputDirectory = null, bool runHeadlessExports = false)

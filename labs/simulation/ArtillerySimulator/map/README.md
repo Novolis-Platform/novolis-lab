@@ -2,33 +2,43 @@
 
 ## Source of truth
 
-Only the two Norgeskart PDFs in `kristiansand-norgeskart-source-pdfs.json`.
+| Layer | Authority |
+| --- | --- |
+| Water silhouette | Norgeskart **relief** PDF → `layers/water-mask.bin` (+ PNG debug twin) |
+| Land meters | Kartverket **NHM_DTM_25833** → `ndh-dtm.tif` → `elevation.bin` → `heightfield-1025.bin` |
+| Roads | **NVDB** vegnett → `layers/nvdb-roads.bin` (E/R/S/F main, K/P local) |
+
+PNG heatmaps / `roads-debug.png` / legacy PDF `roads.png` are **debug only**. Deleting them must leave the sim playable.
+
+## Rebuild
 
 ```powershell
 dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\build-kristiansand-map.cs -p:NovolisUseProjectReferences=true
 ```
 
-## Layers (`layers/`)
-
-| File | From |
-| --- | --- |
-| `elevation.png` | NDH land height preview (water **transparent**) |
-| `water-mask.png` | Binary water silhouette (flat cyan) — **authoritative where-water** |
-| `water-heightmap.png` | Water elevation heightmap (sea-connected = 0 m; inland lakes keep NDH) |
-| `water-combined.png` | Height shades **only** where `water-mask` says water (mask wins conflicts) |
-| `sea-connected.bin` | 1 = water flood-filled from map border (open sea / fjords) |
-| `water-elevation.bin` | int16 meters on water cells (`-32768` on land; sea flattened) |
-| `elevation.bin` | Raw NDH int16 grid (land + under-water; not sea-flattened) |
-| `heightfield-1025.bin` | Game mesh meters (1025²; sea-connected water = 0) |
-| `shoreline.png` | Water classification of elevation |
-| `roads.png` | Roads PDF, images-only (resampled to elevation grid) |
-| `placenames.png` + `.json` | Text spans from roads PDF |
-| `raw-relief/` / `raw-roads/` | Every embedded PDF image dump |
-
-Rebuild previews from existing bins (no NDH re-fetch):
+Roads-only refresh:
 
 ```powershell
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\build-elevation-water-layers.cs
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\fetch-nvdb-roads.cs
 ```
 
-Also: `kristiansand-layered-composite.png`, `kristiansand-reference.png`, mask bin/png, `kristiansand-map-stack.json`.
+NHM TIFF refresh:
+
+```powershell
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\fetch-hoydedata-nhm.cs
+```
+
+## Layers (`layers/`)
+
+| File | Role |
+| --- | --- |
+| `nvdb-roads.bin` | **Runtime roads** (polylines + vegkategori) |
+| `heightfield-1025.bin` | **Runtime height** (1025²; sea-connected = 0 m) |
+| `water-mask.bin` | **Runtime water** byte grid |
+| `ndh-dtm.tif` | F32 DTM authority |
+| `ndh-dom.tif` / `ndh-topobathy.tif` | QA (optional) |
+| `elevation.bin` / `sea-connected.bin` / `water-elevation.bin` | Build intermediates |
+| `elevation.png`, `water-*.png`, `roads-debug.png` | Debug previews |
+| `roads.png` | Legacy PDF raster (debug) |
+
+Also: `kristiansand-map-stack.json`, KLSM `../kristiansand-land-sea-mask.bin`.

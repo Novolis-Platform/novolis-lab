@@ -3,7 +3,7 @@ using System.Numerics;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Graph of <strong>primary</strong> roads from <c>roads.png</c> (Norgeskart red ink).
+/// Graph of <strong>primary</strong> roads from <c>nvdb-roads.bin</c> (E/R/S/F).
 /// Hostile columns pathfind on this network toward Kvadraturen.
 /// </summary>
 internal static class PrimaryRoadNetwork
@@ -140,7 +140,7 @@ internal static class PrimaryRoadNetwork
             return;
         _built = true;
 
-        var primaries = KristiansandPdfRoads.PrimarySegments();
+        var primaries = KristiansandNvdbRoads.PrimarySegments();
         if (primaries.Count == 0)
             return;
 

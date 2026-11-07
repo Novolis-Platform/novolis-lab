@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Novolis.Cad.Primitives;
 
 namespace CalypsoCad.Generation;
@@ -10,19 +11,28 @@ namespace CalypsoCad.Generation;
 /// </summary>
 internal static class CalypsoBulkheads
 {
-    /// <summary>Canonical limited BH stations (z from stem) + relative thickness scale.</summary>
+    /// <summary>
+    /// Canonical limited BH stations (z from stem) + relative thickness scale.
+    /// Prefer lock <c>stations.*</c> when <paramref name="stations"/> is provided.
+    /// CROSS gets one face ahead and one aft (never a plate through mid-CROSS).
+    /// CREW-AFT closes the cabin band before the med/galley pack.
+    /// </summary>
     public static List<(string Id, float ZStem, float ThicknessScale)> BuildSchedule(
-        float loa, float minSep = 0.55f)
+        float loa,
+        IReadOnlyDictionary<string, float>? stations = null,
+        float minSep = 0.55f)
     {
+        float Z(string key, float fallback) =>
+            stations is not null && stations.TryGetValue(key, out var v) ? v : fallback;
+
         var faces = new List<(string Id, float Z, float Scale)>
         {
-            // Bow / forward collision protection
-            ("BOW-COLLISION", 13f, 1.6f),
-            // Airlock / pressure-transition (CROSS band)
-            ("AIRLOCK-CROSS", 21f, 1.4f),
-            // Engineering machinery boundaries — on stations.* SoT (Z_ENG_FORE / Z_ENG_AFT)
-            ("ENG-FORE", 41f, 3.8f),
-            ("ENG-AFT", 49.25f, 3.8f),
+            ("BOW-COLLISION", Z("Z_BRIDGE_AFT", 13f), 1.6f),
+            ("CROSS-FORE", Z("Z_CROSS_FORE", 19f), 1.4f),
+            ("CROSS-AFT", Z("Z_CROSS_AFT", 23f), 1.4f),
+            ("CREW-AFT", Z("Z_CREW_AFT", 30.28f), 1.5f),
+            ("ENG-FORE", Z("Z_ENG_FORE", 41f), 3.8f),
+            ("ENG-AFT", Z("Z_ENG_AFT", 49.25f), 3.8f),
         };
 
         faces.Sort((a, b) => a.Z.CompareTo(b.Z));
@@ -38,14 +48,29 @@ internal static class CalypsoBulkheads
         return merged;
     }
 
+    public static Dictionary<string, float> StationsFromLock(JsonElement root)
+    {
+        var map = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
+        if (!root.TryGetProperty("stations", out var st) || st.ValueKind != JsonValueKind.Object)
+            return map;
+        foreach (var p in st.EnumerateObject())
+        {
+            if (p.Value.ValueKind == JsonValueKind.Number)
+                map[p.Name] = (float)p.Value.GetDouble();
+        }
+
+        return map;
+    }
+
     public static void AddAll(
         List<CadEntity> entities,
         float loa,
         float tBh,
         Func<float, float, List<(float Y0, float Y1)>> passageGapsAt,
-        IReadOnlyList<float> deckUps)
+        IReadOnlyList<float> deckUps,
+        IReadOnlyDictionary<string, float>? stations = null)
     {
-        foreach (var (id, zStem, scale) in BuildSchedule(loa))
+        foreach (var (id, zStem, scale) in BuildSchedule(loa, stations))
         {
             var thickness = Math.Clamp(tBh * scale, 0.18f, 0.65f);
             var halfDepthZ = MathF.Max(0.09f, thickness * 0.5f);
@@ -55,8 +80,6 @@ internal static class CalypsoBulkheads
                 continue;
 
             var gaps = passageGapsAt(z, 0.28f);
-            // ENG machinery walls: dense plate scan so atrium faces read as continuous steel.
-            // Bow/airlock: coarse spans (thin remnant wings after passageway cuts).
             var engMassive = id.StartsWith("ENG-", StringComparison.OrdinalIgnoreCase);
             FrameWebPlateBuilder.EmitBulkhead(
                 entities,
@@ -68,7 +91,6 @@ internal static class CalypsoBulkheads
                 gaps,
                 bowAligned: z < 18f,
                 deckUps,
-                // Pressure BH: passageway cuts only — no lightening swiss-cheese.
                 skipLightening: true,
                 useCoarseSpans: !engMassive);
         }

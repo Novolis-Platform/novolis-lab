@@ -7,9 +7,10 @@ using SkiaSharp;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Drapes Norgeskart <c>roads.png</c> onto the NDH mesh.
-/// 8-connected tracing at ~12 m, primary roads as a 3-wire ribbon, secondary as a single wire.
+/// Legacy PNG road tracer. Superseded by <see cref="KristiansandNvdbRoads"/> (<c>nvdb-roads.bin</c>).
+/// Kept for reference; not called from <see cref="TerrainWorld"/>.
 /// </summary>
+[Obsolete("Use KristiansandNvdbRoads — PNG roads are debug-only.")]
 internal static class KristiansandPdfRoads
 {
     private static readonly Color PrimaryColor = Color.FromArgb(255, 228, 72, 58);

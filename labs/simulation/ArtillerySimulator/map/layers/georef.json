@@ -21,5 +21,8 @@
   "ScaleDenominator": 60000,
   "ScaleBarMeters": 3700,
   "MetersPerPdfPoint": 21.166666666666664,
-  "MetersPerPixel": 6.928738815630218
+  "MetersPerPixel": 6.928738815630218,
+  "UtmOriginEasting": 78006.0606925211,
+  "UtmOriginNorthing": 6456827.344358499,
+  "Placement": "epsg25833_utm_frame_hoydedata"
 }

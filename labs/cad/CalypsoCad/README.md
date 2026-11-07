@@ -10,7 +10,8 @@ Ship Designer Lab (`d:\novolis\novolis-lab\labs\cad\ShipDesignerLab`) imports th
 |--------|------|
 | `Generation/` | Lock → CAD emit, BH/frames, acceptance, fab orchestration (Calypso-specific) |
 | `Blueprints/` | ISO HTML + structure detail sheets |
-| `Host/` | Session, Silk window, view/layer modes, project paths |
+| `Host/` | Session, Silk window, viewport controller, view/layer modes |
+| `Shell/` | Avalonia `--explorer` chrome + Silk viewport (GraphicalProfile) |
 | `Rendering/` | Calypso Silk renderer + exterior draw rules |
 | `Export/` | Headless PNG / build-steps / structure audit |
 | `Agent/` | `calypso.*` agent surface |
@@ -64,12 +65,17 @@ Generator `outfit-*` boxes are authoritative; the renderer skips duplicate compa
 ## Run
 
 ```powershell
+# Human default: Avalonia explorer chrome + Silk “Calypso CAD” 3D window
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true
+# Explicit explorer / GLFW-only
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --explorer
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --silk
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --generate-only --json-only
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --structure-audit
 dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-bh-spine.cs
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --acceptance
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --blueprints
+dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-blueprints.cs
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --headless
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --mcp
 # optional human glance (not structure acceptance):

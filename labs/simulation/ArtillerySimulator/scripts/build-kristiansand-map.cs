@@ -13,6 +13,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ArtillerySimulator.MapPipeline;
 using Novolis.Pdf.Core;
 using Novolis.Pdf.Parsing;
 using Novolis.Pdf.Rendering;
@@ -20,6 +21,15 @@ using Novolis.Pdf.Rendering.Skia;
 using Novolis.WorkflowEngine.Pipeline;
 using SkiaSharp;
 using PipelineFactory = Novolis.WorkflowEngine.Pipeline.Pipeline;
+
+var cli = Environment.GetCommandLineArgs();
+var skipDom = cli.Any(static a => a is "--skip-dom" or "--dtm-only");
+var skipTopobathy = cli.Any(static a => a is "--skip-topobathy" or "--dtm-only");
+var skipNvdb = cli.Any(static a => a is "--skip-nvdb");
+var writeDebugPng = !cli.Any(static a => a is "--skip-debug-png")
+    && cli.Any(static a => a is "--write-debug-png");
+// Default: emit debug PNGs unless --skip-debug-png; --write-debug-png forces on.
+var emitDebugPng = !cli.Any(static a => a is "--skip-debug-png");
 
 var appDir = ResolveAppDir();
 var mapDir = Path.Combine(appDir, "map");
@@ -32,7 +42,8 @@ var pipeline = PipelineFactory
     .Then(LoadConfig)
     .Then(state => new ValueTask<MapBuildState>(ExtractPdfImagesAsync(state)))
     .Then(state => new ValueTask<MapLayerBundle>(RasterFourLayersAsync(state)))
-    .Then(state => new ValueTask<MapDataBundle>(BuildLayerDataAsync(state)))
+    .Then(state => new ValueTask<MapDataBundle>(BuildLayerDataAsync(state, skipDom, skipTopobathy, emitDebugPng)))
+    .Then(state => new ValueTask<MapDataBundle>(FetchNvdbRoadsAsync(state, skipNvdb, writeDebugPng || emitDebugPng)))
     .Then(CompositeLayers)
     .Then(WriteMeshAndGameOutputs);
 
@@ -161,7 +172,11 @@ static async Task<MapLayerBundle> RasterFourLayersAsync(MapBuildState state)
         georef);
 }
 
-static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
+static async Task<MapDataBundle> BuildLayerDataAsync(
+    MapLayerBundle layers,
+    bool skipDom,
+    bool skipTopobathy,
+    bool emitDebugPng)
 {
     using var waterMask = SKBitmap.Decode(layers.WaterMaskPath)
         ?? throw new InvalidDataException(layers.WaterMaskPath);
@@ -178,30 +193,49 @@ static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
     var g = layers.Georef;
     var dtmWidth = Math.Min(w, 4096);
     var dtmHeight = Math.Min(h, 4096);
-    Console.WriteLine($"NDH DTM: fetching NHM_DTM_25833 @ {dtmWidth}×{dtmHeight} for WGS84 bbox…");
-    var dtm = await FetchNdhDtmAsync(g.WestLon, g.SouthLat, g.EastLon, g.NorthLat, dtmWidth, dtmHeight);
+    // Hoydedata EPSG:25833 rectangle = scenario meters (same origin as NVDB).
+    var minE = g.UtmOriginEasting;
+    var minN = g.UtmOriginNorthing;
+    var maxE = minE + g.EastMeters;
+    var maxN = minN + g.NorthMeters;
+    using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(8) };
+    var dtmBytes = await NhmImageServer.FetchFloatTiffUtmAsync(
+        http, NhmImageServer.Dtm25833, minE, minN, maxE, maxN, dtmWidth, dtmHeight);
     var dtmPath = Path.Combine(layers.State.Input.LayersDir, "ndh-dtm.tif");
-    await File.WriteAllBytesAsync(dtmPath, dtm.TiffBytes);
-    var dtmGrid = DecodeTiledFloatTiff(dtm.TiffBytes, out var dw, out var dh);
+    await File.WriteAllBytesAsync(dtmPath, dtmBytes);
+    var dtmGrid = TiledFloatTiff.Decode(dtmBytes, out var dw, out var dh);
     if (dw != dtmWidth || dh != dtmHeight)
         Console.WriteLine($"NDH DTM: server returned {dw}×{dh} (requested {dtmWidth}×{dtmHeight})");
 
+    if (!skipDom)
+    {
+        var domBytes = await NhmImageServer.FetchFloatTiffUtmAsync(
+            http, NhmImageServer.Dom25833, minE, minN, maxE, maxN, dtmWidth, dtmHeight);
+        await File.WriteAllBytesAsync(Path.Combine(layers.State.Input.LayersDir, "ndh-dom.tif"), domBytes);
+    }
+
+    if (!skipTopobathy)
+    {
+        var topoBytes = await NhmImageServer.FetchFloatTiffUtmAsync(
+            http, NhmImageServer.Topobathy25833, minE, minN, maxE, maxN, dtmWidth, dtmHeight);
+        await File.WriteAllBytesAsync(Path.Combine(layers.State.Input.LayersDir, "ndh-topobathy.tif"), topoBytes);
+    }
+
+    // TIFF UV == scenario UV (north-up): row 0 = north edge of the UTM frame.
     var heights = new short[w * h];
     short minH = short.MaxValue;
     short maxH = short.MinValue;
     var landSamples = 0;
     for (var y = 0; y < h; y++)
     {
-        // PDF / mask row 0 = north; DTM export row 0 = north.
         var v = h <= 1 ? 0.0 : y / (double)(h - 1);
-        var dy = v * (dh - 1);
         for (var x = 0; x < w; x++)
         {
             var i = y * w + x;
-            // Keep NDH under water too; sea-connected cells flattened after the loop.
             var u = w <= 1 ? 0.0 : x / (double)(w - 1);
             var dx = u * (dw - 1);
-            var metersF = SampleFloatBilinear(dtmGrid, dw, dh, dx, dy);
+            var dy = v * (dh - 1);
+            var metersF = TiledFloatTiff.SampleBilinear(dtmGrid, dw, dh, dx, dy);
             if (float.IsNaN(metersF) || metersF < -50f || metersF > 2500f)
                 metersF = 0f;
             var meters = (short)Math.Clamp(Math.Round(metersF), -30, 32000);
@@ -216,28 +250,29 @@ static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
     if (landSamples == 0 || minH == short.MaxValue)
         minH = maxH = 0;
 
-    // Open sea / fjords connected to the map border → 0 m. Inland lakes/ponds keep NDH.
-    var sea = ArtillerySimulator.MapPipeline.WaterSeaConnected.Mark(water, w, h);
+    var sea = WaterSeaConnected.Mark(water, w, h);
     File.WriteAllBytes(Path.Combine(layers.State.Input.LayersDir, "sea-connected.bin"), sea);
-    var seaCount = ArtillerySimulator.MapPipeline.WaterSeaConnected.FlattenSeaHeights(heights, water, sea);
+    var seaCount = WaterSeaConnected.FlattenSeaHeights(heights, water, sea);
     Console.WriteLine($"sea-connected: {seaCount} water cells flattened to 0 m");
 
-    WriteLandElevationPng(layers.ElevationPath, heights, water, w, h, minH, maxH);
-    // water-mask.png stays the flat binary silhouette from SplitReliefMasks (authoritative).
-    // water-heightmap.png = NDH shades; water-combined.png = height only where mask says water.
-    var waterHeightPath = Path.Combine(layers.State.Input.LayersDir, "water-heightmap.png");
-    var waterCombinedPath = Path.Combine(layers.State.Input.LayersDir, "water-combined.png");
-    WriteWaterHeightmapPng(waterHeightPath, heights, water, w, h, minH, maxH);
-    WriteWaterCombinedFromMaskAndHeight(
-        waterCombinedPath,
-        layers.WaterMaskPath,
-        waterHeightPath,
-        heights,
-        water,
-        w,
-        h,
-        minH,
-        maxH);
+    if (emitDebugPng)
+    {
+        WriteLandElevationPng(layers.ElevationPath, heights, water, w, h, minH, maxH);
+        var waterHeightPath = Path.Combine(layers.State.Input.LayersDir, "water-heightmap.png");
+        var waterCombinedPath = Path.Combine(layers.State.Input.LayersDir, "water-combined.png");
+        WriteWaterHeightmapPng(waterHeightPath, heights, water, w, h, minH, maxH);
+        WriteWaterCombinedFromMaskAndHeight(
+            waterCombinedPath,
+            layers.WaterMaskPath,
+            waterHeightPath,
+            heights,
+            water,
+            w,
+            h,
+            minH,
+            maxH);
+    }
+
     WriteWaterElevationBin(Path.Combine(layers.State.Input.LayersDir, "water-elevation.bin"), heights, water, w, h);
 
     var heightsPath = Path.Combine(layers.State.Input.LayersDir, "elevation.bin");
@@ -249,121 +284,91 @@ static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
     return new MapDataBundle(layers, heightsPath, waterPath, heights, water, minH, maxH);
 }
 
-static async Task<(byte[] TiffBytes, int Width, int Height)> FetchNdhDtmAsync(
-    double westLon,
-    double southLat,
-    double eastLon,
-    double northLat,
-    int width,
-    int height)
+static async Task<MapDataBundle> FetchNvdbRoadsAsync(MapDataBundle data, bool skipNvdb, bool writeDebugPng)
 {
-    var bbox = string.Create(
-        System.Globalization.CultureInfo.InvariantCulture,
-        $"{westLon},{southLat},{eastLon},{northLat}");
-    var url =
-        "https://hoydedata.no/arcgis/rest/services/NHM_DTM_25833/ImageServer/exportImage" +
-        $"?bbox={bbox}&bboxSR=4326&imageSR=25833&size={width},{height}" +
-        "&format=tiff&pixelType=F32&noDataInterpretation=esriNoDataMatchAny" +
-        "&interpolation=RSP_BilinearInterpolation&f=image";
-    using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
-    var bytes = await http.GetByteArrayAsync(url);
-    if (bytes.Length < 8 || bytes[0] != (byte)'I' || bytes[1] != (byte)'I')
-        throw new InvalidDataException($"NDH export was not a little-endian TIFF ({bytes.Length} bytes).");
-    return (bytes, width, height);
-}
-
-static float[] DecodeTiledFloatTiff(byte[] bytes, out int width, out int height)
-{
-    static uint U32(byte[] b, int o) => System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(b.AsSpan(o));
-    static ushort U16(byte[] b, int o) => System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(b.AsSpan(o));
-
-    var ifd = (int)U32(bytes, 4);
-    var n = U16(bytes, ifd);
-    uint w = 0, h = 0, bps = 0, comp = 0, sf = 0, tileW = 0, tileH = 0;
-    var tileOffPtr = 0;
-    var tileBytePtr = 0;
-    var tileCount = 0;
-    for (var i = 0; i < n; i++)
+    if (skipNvdb)
     {
-        var o = ifd + 2 + i * 12;
-        var tag = U16(bytes, o);
-        var type = U16(bytes, o + 2);
-        var count = U32(bytes, o + 4);
-        var val = U32(bytes, o + 8);
-        var s = (ushort)(val & 0xFFFF);
-        switch (tag)
-        {
-            case 256: w = type == 3 ? s : val; break;
-            case 257: h = type == 3 ? s : val; break;
-            case 258: bps = type == 3 ? s : val; break;
-            case 259: comp = type == 3 ? s : val; break;
-            case 322: tileW = type == 3 ? s : val; break;
-            case 323: tileH = type == 3 ? s : val; break;
-            case 324: tileOffPtr = (int)val; tileCount = (int)count; break;
-            case 325: tileBytePtr = (int)val; break;
-            case 339: sf = type == 3 ? s : val; break;
-        }
+        var existing = Path.Combine(data.Layers.State.Input.LayersDir, "nvdb-roads.bin");
+        if (!File.Exists(existing))
+            throw new FileNotFoundException("nvdb-roads.bin missing and --skip-nvdb set.", existing);
+        Console.WriteLine($"NVDB: skipped fetch; using {existing}");
+        return data;
     }
 
-    if (comp != 1 || bps != 32 || sf != 3 || tileW == 0 || tileH == 0 || tileCount == 0)
-        throw new InvalidDataException($"Unsupported NDH TIFF (comp={comp} bps={bps} sf={sf} tile={tileW}x{tileH}).");
+    var g = data.Layers.Georef;
+    using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+    var raw = await NvdbVegnett.FetchCarSegmentsAsync(http, g.WestLon, g.SouthLat, g.EastLon, g.NorthLat);
+    var segments = NvdbVegnett.ToScenarioSegments(raw, g.UtmOriginEasting, g.UtmOriginNorthing);
+    Console.WriteLine(
+        FormattableString.Invariant(
+            $"NVDB: EPSG:25833 frame origin E0={g.UtmOriginEasting:F1} N0={g.UtmOriginNorthing:F1}"));
+    var outBin = Path.Combine(data.Layers.State.Input.LayersDir, "nvdb-roads.bin");
+    NvdbRoadsBinary.Write(outBin, segments);
+    var main = segments.Count(static s => s.IsMain);
+    Console.WriteLine($"NVDB: wrote {outBin} main={main:N0} local={segments.Count - main:N0}");
 
-    width = (int)w;
-    height = (int)h;
-    var tilesX = (int)((w + tileW - 1) / tileW);
-    var tilesY = (int)((h + tileH - 1) / tileH);
-    var grid = new float[width * height];
-    Array.Fill(grid, float.NaN);
-    for (var ty = 0; ty < tilesY; ty++)
+    if (writeDebugPng)
+        WriteNvdbDebugPng(
+            Path.Combine(data.Layers.State.Input.LayersDir, "roads-debug.png"),
+            segments,
+            data.Layers.Width,
+            data.Layers.Height,
+            (float)g.EastMeters,
+            (float)g.NorthMeters);
+
+    return data;
+}
+
+static void WriteNvdbDebugPng(
+    string path,
+    IReadOnlyList<NvdbRoadsBinary.Segment> segments,
+    int w,
+    int h,
+    float eastMeters,
+    float northMeters)
+{
+    using var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    using var canvas = new SKCanvas(bmp);
+    canvas.Clear(SKColors.Transparent);
+    using var localPaint = new SKPaint
     {
-        for (var tx = 0; tx < tilesX; tx++)
+        Color = new SKColor(168, 168, 168, 210),
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke,
+        StrokeWidth = 1.4f,
+        StrokeCap = SKStrokeCap.Round,
+    };
+    using var mainPaint = new SKPaint
+    {
+        Color = new SKColor(210, 35, 42, 255),
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke,
+        StrokeWidth = 3.2f,
+        StrokeCap = SKStrokeCap.Round,
+    };
+    void Draw(NvdbRoadsBinary.Segment seg, SKPaint paint)
+    {
+        using var skPath = new SKPath();
+        for (var i = 0; i < seg.Points.Length; i++)
         {
-            var ti = ty * tilesX + tx;
-            if (ti >= tileCount)
-                continue;
-            var off = (int)U32(bytes, tileOffPtr + ti * 4);
-            var len = (int)U32(bytes, tileBytePtr + ti * 4);
-            if (off == 0 || len == 0)
-                continue;
-            for (var row = 0; row < tileH; row++)
-            {
-                var gy = ty * (int)tileH + row;
-                if (gy >= height)
-                    break;
-                for (var col = 0; col < tileW; col++)
-                {
-                    var gx = tx * (int)tileW + col;
-                    if (gx >= width)
-                        break;
-                    grid[gy * width + gx] = BitConverter.ToSingle(bytes, off + (row * (int)tileW + col) * 4);
-                }
-            }
+            var px = seg.Points[i].X / eastMeters * (w - 1);
+            var py = (1f - seg.Points[i].Z / northMeters) * (h - 1);
+            if (i == 0) skPath.MoveTo(px, py);
+            else skPath.LineTo(px, py);
         }
+
+        canvas.DrawPath(skPath, paint);
     }
 
-    return grid;
-}
+    foreach (var s in segments.Where(static s => !s.IsMain))
+        Draw(s, localPaint);
+    foreach (var s in segments.Where(static s => s.IsMain))
+        Draw(s, mainPaint);
 
-static float SampleFloatBilinear(float[] src, int w, int h, double x, double y)
-{
-    var x0 = (int)Math.Floor(x);
-    var y0 = (int)Math.Floor(y);
-    var x1 = Math.Min(x0 + 1, w - 1);
-    var y1 = Math.Min(y0 + 1, h - 1);
-    x0 = Math.Clamp(x0, 0, w - 1);
-    y0 = Math.Clamp(y0, 0, h - 1);
-    var tx = x - x0;
-    var ty = y - y0;
-    var a = src[y0 * w + x0];
-    var b = src[y0 * w + x1];
-    var c = src[y1 * w + x0];
-    var d = src[y1 * w + x1];
-    static float OrZero(float v) => float.IsNaN(v) ? 0f : v;
-    var top = OrZero(a) + (OrZero(b) - OrZero(a)) * (float)tx;
-    var bot = OrZero(c) + (OrZero(d) - OrZero(c)) * (float)tx;
-    return top + (bot - top) * (float)ty;
+    using var encoded = SKImage.FromBitmap(bmp).Encode(SKEncodedImageFormat.Png, 90);
+    File.WriteAllBytes(path, encoded.ToArray());
+    Console.WriteLine($"NVDB debug PNG → {path}");
 }
-
 /// <summary>Land-only green height preview — water pixels are transparent.</summary>
 static void WriteLandElevationPng(string path, short[] heights, byte[] water, int w, int h, short minH, short maxH)
 {
@@ -622,10 +627,15 @@ static LayerGeoref BuildGeoref(MapBuildState state, PdfMapRasterResult elevation
         south = northLat = west = eastLon = 0;
     }
 
+    // Informational UTM footprint of the WGS84 box (PDF footer CRS). Placement for
+    // water / NVDB / mesh UVs stays equirectangular on the WGS84 box below.
+    var (utmOriginEasting, utmOriginNorthing) = Etrs89Utm33.FrameOriginFromWgs84Box(
+        south, west, northLat, eastLon, east, north);
+
     Console.WriteLine(
         $"georef: {east:F1} m E × {north:F1} m N @ 1:{state.ScaleDenominator} " +
         $"(scale bar {state.ScaleBarMeters:F0} m ≈ {scaleBarPdfPoints:F1} pt); " +
-        $"{metersPerPixel:F3} m/px; {state.Crs}");
+        $"{metersPerPixel:F3} m/px; {state.Crs}; shared WGS84 frame (UTM ref E0={utmOriginEasting:F1} N0={utmOriginNorthing:F1})");
 
     return new LayerGeoref(
         elevation.PixelWidth,
@@ -650,7 +660,9 @@ static LayerGeoref BuildGeoref(MapBuildState state, PdfMapRasterResult elevation
         state.ScaleDenominator,
         state.ScaleBarMeters,
         metersPerPdfPoint,
-        metersPerPixel);
+        metersPerPixel,
+        utmOriginEasting,
+        utmOriginNorthing);
 }
 
 /// <summary>
@@ -917,7 +929,7 @@ static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid, stri
     var doc = new
     {
         schema = "novolis.artillery.map-stack/3",
-        citation = "Land/sea/roads from Norgeskart PDFs; meters from Kartverket NHM_DTM_25833 (NDH).",
+        citation = "Water silhouette from Norgeskart relief PDF; meters from Kartverket NHM_DTM_25833; roads from NVDB vegnett (E/R/S/F main, K/P local). PNG previews are debug-only.",
         world = new
         {
             northUp = true,
@@ -935,6 +947,8 @@ static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid, stri
             elevationSource = "NHM_DTM_25833",
             wgs84 = new { south = g.SouthLat, north = g.NorthLat, west = g.WestLon, east = g.EastLon },
             extentSource = "pdf-footer-scale-x-map-frame",
+            placement = "shared_wgs84_equirectangular_pdf_frame",
+            utmFootprintRef = new { easting = g.UtmOriginEasting, northing = g.UtmOriginNorthing },
         },
         layers = new object[]
         {
@@ -947,7 +961,9 @@ static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid, stri
             new { id = "land-mask", imageFile = "layers/land-mask.png", role = "land", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
             new { id = "elevation", imageFile = "layers/elevation.png", role = "land_elevation_preview", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "opaque_land_green_shade_water_transparent", source = "NHM_DTM_25833" },
             new { id = "ndh-dtm", imageFile = "layers/ndh-dtm.tif", role = "dtm", source = "https://hoydedata.no/arcgis/rest/services/NHM_DTM_25833/ImageServer" },
-            new { id = "roads", imageFile = "layers/roads.png", role = "roads", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.RoadsPdf },
+            new { id = "nvdb-roads", binaryFile = "layers/nvdb-roads.bin", role = "roads", authority = "runtime_polylines", source = "NVDB vegnett trafikantgruppe=K", hierarchy = "E/R/S/F=main K/P=local" },
+            new { id = "roads-debug", imageFile = "layers/roads-debug.png", role = "debug", note = "optional QA raster; never loaded by Silk" },
+            new { id = "roads-legacy-pdf", imageFile = "layers/roads.png", role = "debug", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.RoadsPdf },
             new { id = "heightfield", imageFile = heightfieldRel, role = "heightfield", grid = meshGrid, northUp = true, source = "NHM_DTM_25833" },
         },
     };
@@ -1020,7 +1036,9 @@ sealed record LayerGeoref(
     double ScaleDenominator,
     double ScaleBarMeters,
     double MetersPerPdfPoint,
-    double MetersPerPixel);
+    double MetersPerPixel,
+    double UtmOriginEasting,
+    double UtmOriginNorthing);
 
 sealed class SourcePdfConfig
 {

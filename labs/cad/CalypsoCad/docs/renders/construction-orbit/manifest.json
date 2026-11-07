@@ -1,0 +1,49 @@
+{
+  "generatedUtc": "2026-11-07T14:21:31.6189880Z",
+  "width": 3840,
+  "height": 2160,
+  "fps": 24,
+  "frameCount": 240,
+  "framebuffer": "3840x1581",
+  "streamed": true,
+  "framesOnDisk": false,
+  "oml": "edge-guide-only",
+  "reveal": "none-full-model-layer-stages",
+  "stages": [
+    {
+      "index": 1,
+      "Id": "structure",
+      "Title": "Structure \u00B7 frames / BH / girders",
+      "layers": "StructureNoHull",
+      "wire": "Wire"
+    },
+    {
+      "index": 2,
+      "Id": "passage",
+      "Title": "Structure \u002B passageway cutouts",
+      "layers": "StructureNoHull",
+      "wire": "CutawayPartial"
+    },
+    {
+      "index": 3,
+      "Id": "interiors",
+      "Title": "Interiors \u00B7 partitions / spaces",
+      "layers": "InteriorStructureNoHull",
+      "wire": "CutawayPartial"
+    },
+    {
+      "index": 4,
+      "Id": "fitout",
+      "Title": "Fitout \u00B7 outfit \u002B openings",
+      "layers": "InteriorStructureNoHull",
+      "wire": "CutawayPartial"
+    },
+    {
+      "index": 5,
+      "Id": "all",
+      "Title": "All layers (no solid OML)",
+      "layers": "InteriorStructureNoHull",
+      "wire": "CutawayPartial"
+    }
+  ]
+}

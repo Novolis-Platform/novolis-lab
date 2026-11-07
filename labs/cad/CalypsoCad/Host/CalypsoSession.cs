@@ -19,7 +19,8 @@ internal sealed class CalypsoSession
     public Guid? SelectedSpaceId { get; set; }
     public Guid? SelectedHookId { get; set; }
     public CalypsoWireMeshMode WireMeshMode { get; set; } = CalypsoWireMeshMode.CutawayPartial;
-    public CalypsoVisualLayers VisualLayers { get; set; } = CalypsoVisualLayers.DefaultOrbit;
+    /// <summary>Start without solid OML — edge guide + interiors/structure read as one hull.</summary>
+    public CalypsoVisualLayers VisualLayers { get; set; } = CalypsoVisualLayers.InteriorStructureNoHull;
     public string StatusText { get; set; } = "";
 
     /// <summary>
@@ -29,10 +30,10 @@ internal sealed class CalypsoSession
     public HashSet<Guid>? RevealEntityIds { get; set; }
 
     /// <summary>
-    /// Optional faceted OML ghost when HullShell is off. Off by default — it fills the
-    /// volume and blocks structure / passageway reads on build-step slides.
+    /// OML boundary-edge wire guide when HullShell is off (never a filled second hull).
+    /// Toggle with H in the interactive host.
     /// </summary>
-    public bool ShowOmlGuide { get; set; }
+    public bool ShowOmlGuide { get; set; } = true;
 
     /// <summary>World cutaway plane origin (used when <see cref="WireMeshMode"/> is CutawayPartial).</summary>
     public Vector3 CutPlaneOrigin { get; set; } = new(0f, 4f, 0f);

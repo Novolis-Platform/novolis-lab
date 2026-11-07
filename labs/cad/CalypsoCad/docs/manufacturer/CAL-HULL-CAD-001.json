@@ -19,7 +19,7 @@
     "uns": "S31603",
     "en": "1.4404 / X2CrNiMo17-12-2",
     "product": "Annealed flat plate / sheet (cut to facet nets)",
-    "form": "flat only — no bending, no roll-forming",
+    "form": "flat only \u2014 no bending, no roll-forming",
     "density_kg_m3": 8000,
     "E_GPa": 193,
     "nu": 0.29,
@@ -31,14 +31,14 @@
       "process": "GTAW / GMAW per ECSS-Q-ST-70-39 class welding (or NASA-STD-5006 analogue)",
       "filler": "ER316L / ISO 14343 19 12 3 L",
       "condition": "as-welded (L-grade; no PWHT required for sensitization control)",
-      "notes": "Avoid unstabilized 316 (C>0.03%). Control ferrite in deposit to limit hot cracking."
+      "notes": "Avoid unstabilized 316 (C\u003E0.03%). Control ferrite in deposit to limit hot cracking."
     },
     "space": {
-      "spacematdb": "AISI 316L — space experience: Good",
+      "spacematdb": "AISI 316L \u2014 space experience: Good",
       "vacuum": "No atmospheric corrosion in vacuum; oxide does not self-heal if abraded",
-      "coldWeld": "Risk of cold welding metal-to-metal in vacuum — separate faying surfaces / coatings at mechanisms",
+      "coldWeld": "Risk of cold welding metal-to-metal in vacuum \u2014 separate faying surfaces / coatings at mechanisms",
       "whyNot301": "301 is for cold-worked formed sheet; this hull is explicitly not bent",
-      "whyNotCarbon": "Carbon/HSLA needs coatings and has poor vacuum/outgas + corrosion story for long dwell",
+      "whyNotCarbon": "Carbon/HSLA needs coatings and has poor vacuum/outgas \u002B corrosion story for long dwell",
       "whyNotTi": "Ti-6Al-4V better specific strength but costly/slow for large flat pepakura sheet weldments",
       "why316Lvs304L": "Both L-grades weld as-welded; 316L Mo improves ground-assembly / hangar pitting margin and is the usual structural plate pick in SPACEMATDB-class lists"
     },
@@ -49,7 +49,7 @@
       ],
       "thickness_m": 0.008,
       "thickness_mm": 8,
-      "tolerance_mm": "±0.3 plate thickness (EN 10029/ASTM A480 class; confirm PO)"
+      "tolerance_mm": "\u00B10.3 plate thickness (EN 10029/ASTM A480 class; confirm PO)"
     }
   },
   "coordinateSystem": {
@@ -60,19 +60,19 @@
     ],
     "pad": 0.5,
     "axes": {
-      "X": "+forward",
-      "Y": "+starboard",
-      "Z": "+up"
+      "X": "\u002Bforward",
+      "Y": "\u002Bstarboard",
+      "Z": "\u002Bup"
     },
     "moldLines": {
-      "OML": "outer mold line — exterior of 316L skin",
-      "IML": "inner mold line — OML inset by t=0.008 m along section (half-extents − t; aft/stem faces ±t in X)"
+      "OML": "outer mold line \u2014 exterior of 316L skin",
+      "IML": "inner mold line \u2014 OML inset by t=0.008 m along section (half-extents \u2212 t; aft/stem faces \u00B1t in X)"
     }
   },
   "envelope": {
     "LOA": 69,
-    "BEAM": 20,
-    "OAH": 12,
+    "BEAM": 20.8,
+    "OAH": 12.4,
     "L_FORE": 17,
     "L_MID": 48,
     "L_AFT": 4,
@@ -92,7 +92,7 @@
     "volume_m3": 30.36844,
     "mass_kg": 242947.52,
     "mass_t": 242.948,
-    "note": "OML loft facet area × t × density only — excludes frames, door gear, apron, coatings, fasteners",
+    "note": "OML loft facet area \u00D7 t \u00D7 density only \u2014 excludes frames, door gear, apron, coatings, fasteners",
     "arealDensity_kg_m2": 64
   },
   "rings": {
@@ -112,8 +112,8 @@
           "OML.ST0.P-L",
           "OML.ST0.P-U"
         ],
-        "halfBeam": 1.75,
-        "halfHeight": 2
+        "halfBeam": 1.82,
+        "halfHeight": 2.066666666666667
       },
       {
         "id": "ST1",
@@ -130,8 +130,8 @@
           "OML.ST1.P-L",
           "OML.ST1.P-U"
         ],
-        "halfBeam": 5,
-        "halfHeight": 3.75
+        "halfBeam": 5.2,
+        "halfHeight": 3.8750000000000004
       },
       {
         "id": "ST2",
@@ -148,8 +148,8 @@
           "OML.ST2.P-L",
           "OML.ST2.P-U"
         ],
-        "halfBeam": 8.5,
-        "halfHeight": 5.25
+        "halfBeam": 8.84,
+        "halfHeight": 5.425000000000001
       },
       {
         "id": "ST3",
@@ -166,8 +166,8 @@
           "OML.ST3.P-L",
           "OML.ST3.P-U"
         ],
-        "halfBeam": 10,
-        "halfHeight": 6
+        "halfBeam": 10.4,
+        "halfHeight": 6.200000000000001
       },
       {
         "id": "MB1",
@@ -184,8 +184,8 @@
           "OML.MB1.P-L",
           "OML.MB1.P-U"
         ],
-        "halfBeam": 10,
-        "halfHeight": 6
+        "halfBeam": 10.4,
+        "halfHeight": 6.200000000000001
       },
       {
         "id": "MB2",
@@ -202,8 +202,8 @@
           "OML.MB2.P-L",
           "OML.MB2.P-U"
         ],
-        "halfBeam": 10,
-        "halfHeight": 6
+        "halfBeam": 10.4,
+        "halfHeight": 6.200000000000001
       },
       {
         "id": "AFT",
@@ -220,8 +220,8 @@
           "OML.AFT.P-L",
           "OML.AFT.P-U"
         ],
-        "halfBeam": 10,
-        "halfHeight": 6
+        "halfBeam": 10.4,
+        "halfHeight": 6.200000000000001
       }
     ],
     "IML": [
@@ -240,8 +240,8 @@
           "IML.ST0.P-L",
           "IML.ST0.P-U"
         ],
-        "halfBeam": 1.742,
-        "halfHeight": 1.992
+        "halfBeam": 1.81168,
+        "halfHeight": 2.0584000000000002
       },
       {
         "id": "ST1",
@@ -258,8 +258,8 @@
           "IML.ST1.P-L",
           "IML.ST1.P-U"
         ],
-        "halfBeam": 4.992,
-        "halfHeight": 3.742
+        "halfBeam": 5.19168,
+        "halfHeight": 3.866733333333334
       },
       {
         "id": "ST2",
@@ -276,8 +276,8 @@
           "IML.ST2.P-L",
           "IML.ST2.P-U"
         ],
-        "halfBeam": 8.492,
-        "halfHeight": 5.242
+        "halfBeam": 8.83168,
+        "halfHeight": 5.416733333333334
       },
       {
         "id": "ST3",
@@ -294,8 +294,8 @@
           "IML.ST3.P-L",
           "IML.ST3.P-U"
         ],
-        "halfBeam": 9.992,
-        "halfHeight": 5.992
+        "halfBeam": 10.391680000000001,
+        "halfHeight": 6.1917333333333335
       },
       {
         "id": "MB1",
@@ -312,8 +312,8 @@
           "IML.MB1.P-L",
           "IML.MB1.P-U"
         ],
-        "halfBeam": 9.992,
-        "halfHeight": 5.992
+        "halfBeam": 10.391680000000001,
+        "halfHeight": 6.1917333333333335
       },
       {
         "id": "MB2",
@@ -330,8 +330,8 @@
           "IML.MB2.P-L",
           "IML.MB2.P-U"
         ],
-        "halfBeam": 9.992,
-        "halfHeight": 5.992
+        "halfBeam": 10.391680000000001,
+        "halfHeight": 6.1917333333333335
       },
       {
         "id": "AFT",
@@ -348,8 +348,8 @@
           "IML.AFT.P-L",
           "IML.AFT.P-U"
         ],
-        "halfBeam": 9.992,
-        "halfHeight": 5.992
+        "halfBeam": 10.391680000000001,
+        "halfHeight": 6.1917333333333335
       }
     ]
   },
@@ -1607,242 +1607,242 @@
     {
       "a": "OML.ST0.D-P",
       "b": "OML.ST1.D-P",
-      "group": "oml-loft:ST0->ST1"
+      "group": "oml-loft:ST0-\u003EST1"
     },
     {
       "a": "OML.ST0.D-S",
       "b": "OML.ST1.D-S",
-      "group": "oml-loft:ST0->ST1"
+      "group": "oml-loft:ST0-\u003EST1"
     },
     {
       "a": "OML.ST0.S-U",
       "b": "OML.ST1.S-U",
-      "group": "oml-loft:ST0->ST1"
+      "group": "oml-loft:ST0-\u003EST1"
     },
     {
       "a": "OML.ST0.S-L",
       "b": "OML.ST1.S-L",
-      "group": "oml-loft:ST0->ST1"
+      "group": "oml-loft:ST0-\u003EST1"
     },
     {
       "a": "OML.ST0.V-S",
       "b": "OML.ST1.V-S",
-      "group": "oml-loft:ST0->ST1"
+      "group": "oml-loft:ST0-\u003EST1"
     },
     {
       "a": "OML.ST0.V-P",
       "b": "OML.ST1.V-P",
-      "group": "oml-loft:ST0->ST1"
+      "group": "oml-loft:ST0-\u003EST1"
     },
     {
       "a": "OML.ST0.P-L",
       "b": "OML.ST1.P-L",
-      "group": "oml-loft:ST0->ST1"
+      "group": "oml-loft:ST0-\u003EST1"
     },
     {
       "a": "OML.ST0.P-U",
       "b": "OML.ST1.P-U",
-      "group": "oml-loft:ST0->ST1"
+      "group": "oml-loft:ST0-\u003EST1"
     },
     {
       "a": "OML.ST1.D-P",
       "b": "OML.ST2.D-P",
-      "group": "oml-loft:ST1->ST2"
+      "group": "oml-loft:ST1-\u003EST2"
     },
     {
       "a": "OML.ST1.D-S",
       "b": "OML.ST2.D-S",
-      "group": "oml-loft:ST1->ST2"
+      "group": "oml-loft:ST1-\u003EST2"
     },
     {
       "a": "OML.ST1.S-U",
       "b": "OML.ST2.S-U",
-      "group": "oml-loft:ST1->ST2"
+      "group": "oml-loft:ST1-\u003EST2"
     },
     {
       "a": "OML.ST1.S-L",
       "b": "OML.ST2.S-L",
-      "group": "oml-loft:ST1->ST2"
+      "group": "oml-loft:ST1-\u003EST2"
     },
     {
       "a": "OML.ST1.V-S",
       "b": "OML.ST2.V-S",
-      "group": "oml-loft:ST1->ST2"
+      "group": "oml-loft:ST1-\u003EST2"
     },
     {
       "a": "OML.ST1.V-P",
       "b": "OML.ST2.V-P",
-      "group": "oml-loft:ST1->ST2"
+      "group": "oml-loft:ST1-\u003EST2"
     },
     {
       "a": "OML.ST1.P-L",
       "b": "OML.ST2.P-L",
-      "group": "oml-loft:ST1->ST2"
+      "group": "oml-loft:ST1-\u003EST2"
     },
     {
       "a": "OML.ST1.P-U",
       "b": "OML.ST2.P-U",
-      "group": "oml-loft:ST1->ST2"
+      "group": "oml-loft:ST1-\u003EST2"
     },
     {
       "a": "OML.ST2.D-P",
       "b": "OML.ST3.D-P",
-      "group": "oml-loft:ST2->ST3"
+      "group": "oml-loft:ST2-\u003EST3"
     },
     {
       "a": "OML.ST2.D-S",
       "b": "OML.ST3.D-S",
-      "group": "oml-loft:ST2->ST3"
+      "group": "oml-loft:ST2-\u003EST3"
     },
     {
       "a": "OML.ST2.S-U",
       "b": "OML.ST3.S-U",
-      "group": "oml-loft:ST2->ST3"
+      "group": "oml-loft:ST2-\u003EST3"
     },
     {
       "a": "OML.ST2.S-L",
       "b": "OML.ST3.S-L",
-      "group": "oml-loft:ST2->ST3"
+      "group": "oml-loft:ST2-\u003EST3"
     },
     {
       "a": "OML.ST2.V-S",
       "b": "OML.ST3.V-S",
-      "group": "oml-loft:ST2->ST3"
+      "group": "oml-loft:ST2-\u003EST3"
     },
     {
       "a": "OML.ST2.V-P",
       "b": "OML.ST3.V-P",
-      "group": "oml-loft:ST2->ST3"
+      "group": "oml-loft:ST2-\u003EST3"
     },
     {
       "a": "OML.ST2.P-L",
       "b": "OML.ST3.P-L",
-      "group": "oml-loft:ST2->ST3"
+      "group": "oml-loft:ST2-\u003EST3"
     },
     {
       "a": "OML.ST2.P-U",
       "b": "OML.ST3.P-U",
-      "group": "oml-loft:ST2->ST3"
+      "group": "oml-loft:ST2-\u003EST3"
     },
     {
       "a": "OML.ST3.D-P",
       "b": "OML.MB1.D-P",
-      "group": "oml-loft:ST3->MB1"
+      "group": "oml-loft:ST3-\u003EMB1"
     },
     {
       "a": "OML.ST3.D-S",
       "b": "OML.MB1.D-S",
-      "group": "oml-loft:ST3->MB1"
+      "group": "oml-loft:ST3-\u003EMB1"
     },
     {
       "a": "OML.ST3.S-U",
       "b": "OML.MB1.S-U",
-      "group": "oml-loft:ST3->MB1"
+      "group": "oml-loft:ST3-\u003EMB1"
     },
     {
       "a": "OML.ST3.S-L",
       "b": "OML.MB1.S-L",
-      "group": "oml-loft:ST3->MB1"
+      "group": "oml-loft:ST3-\u003EMB1"
     },
     {
       "a": "OML.ST3.V-S",
       "b": "OML.MB1.V-S",
-      "group": "oml-loft:ST3->MB1"
+      "group": "oml-loft:ST3-\u003EMB1"
     },
     {
       "a": "OML.ST3.V-P",
       "b": "OML.MB1.V-P",
-      "group": "oml-loft:ST3->MB1"
+      "group": "oml-loft:ST3-\u003EMB1"
     },
     {
       "a": "OML.ST3.P-L",
       "b": "OML.MB1.P-L",
-      "group": "oml-loft:ST3->MB1"
+      "group": "oml-loft:ST3-\u003EMB1"
     },
     {
       "a": "OML.ST3.P-U",
       "b": "OML.MB1.P-U",
-      "group": "oml-loft:ST3->MB1"
+      "group": "oml-loft:ST3-\u003EMB1"
     },
     {
       "a": "OML.MB1.D-P",
       "b": "OML.MB2.D-P",
-      "group": "oml-loft:MB1->MB2"
+      "group": "oml-loft:MB1-\u003EMB2"
     },
     {
       "a": "OML.MB1.D-S",
       "b": "OML.MB2.D-S",
-      "group": "oml-loft:MB1->MB2"
+      "group": "oml-loft:MB1-\u003EMB2"
     },
     {
       "a": "OML.MB1.S-U",
       "b": "OML.MB2.S-U",
-      "group": "oml-loft:MB1->MB2"
+      "group": "oml-loft:MB1-\u003EMB2"
     },
     {
       "a": "OML.MB1.S-L",
       "b": "OML.MB2.S-L",
-      "group": "oml-loft:MB1->MB2"
+      "group": "oml-loft:MB1-\u003EMB2"
     },
     {
       "a": "OML.MB1.V-S",
       "b": "OML.MB2.V-S",
-      "group": "oml-loft:MB1->MB2"
+      "group": "oml-loft:MB1-\u003EMB2"
     },
     {
       "a": "OML.MB1.V-P",
       "b": "OML.MB2.V-P",
-      "group": "oml-loft:MB1->MB2"
+      "group": "oml-loft:MB1-\u003EMB2"
     },
     {
       "a": "OML.MB1.P-L",
       "b": "OML.MB2.P-L",
-      "group": "oml-loft:MB1->MB2"
+      "group": "oml-loft:MB1-\u003EMB2"
     },
     {
       "a": "OML.MB1.P-U",
       "b": "OML.MB2.P-U",
-      "group": "oml-loft:MB1->MB2"
+      "group": "oml-loft:MB1-\u003EMB2"
     },
     {
       "a": "OML.MB2.D-P",
       "b": "OML.AFT.D-P",
-      "group": "oml-loft:MB2->AFT"
+      "group": "oml-loft:MB2-\u003EAFT"
     },
     {
       "a": "OML.MB2.D-S",
       "b": "OML.AFT.D-S",
-      "group": "oml-loft:MB2->AFT"
+      "group": "oml-loft:MB2-\u003EAFT"
     },
     {
       "a": "OML.MB2.S-U",
       "b": "OML.AFT.S-U",
-      "group": "oml-loft:MB2->AFT"
+      "group": "oml-loft:MB2-\u003EAFT"
     },
     {
       "a": "OML.MB2.S-L",
       "b": "OML.AFT.S-L",
-      "group": "oml-loft:MB2->AFT"
+      "group": "oml-loft:MB2-\u003EAFT"
     },
     {
       "a": "OML.MB2.V-S",
       "b": "OML.AFT.V-S",
-      "group": "oml-loft:MB2->AFT"
+      "group": "oml-loft:MB2-\u003EAFT"
     },
     {
       "a": "OML.MB2.V-P",
       "b": "OML.AFT.V-P",
-      "group": "oml-loft:MB2->AFT"
+      "group": "oml-loft:MB2-\u003EAFT"
     },
     {
       "a": "OML.MB2.P-L",
       "b": "OML.AFT.P-L",
-      "group": "oml-loft:MB2->AFT"
+      "group": "oml-loft:MB2-\u003EAFT"
     },
     {
       "a": "OML.MB2.P-U",
       "b": "OML.AFT.P-U",
-      "group": "oml-loft:MB2->AFT"
+      "group": "oml-loft:MB2-\u003EAFT"
     },
     {
       "a": "OML.ST0.D-P",
@@ -2135,7 +2135,7 @@
         "OML.ST1.D-S",
         "OML.ST1.D-P"
       ],
-      "group": "loft:ST0->ST1"
+      "group": "loft:ST0-\u003EST1"
     },
     {
       "id": "OML.F.ST0.D-S",
@@ -2146,7 +2146,7 @@
         "OML.ST1.S-U",
         "OML.ST1.D-S"
       ],
-      "group": "loft:ST0->ST1"
+      "group": "loft:ST0-\u003EST1"
     },
     {
       "id": "OML.F.ST0.S-U",
@@ -2157,7 +2157,7 @@
         "OML.ST1.S-L",
         "OML.ST1.S-U"
       ],
-      "group": "loft:ST0->ST1"
+      "group": "loft:ST0-\u003EST1"
     },
     {
       "id": "OML.F.ST0.S-L",
@@ -2168,7 +2168,7 @@
         "OML.ST1.V-S",
         "OML.ST1.S-L"
       ],
-      "group": "loft:ST0->ST1"
+      "group": "loft:ST0-\u003EST1"
     },
     {
       "id": "OML.F.ST0.V-S",
@@ -2179,7 +2179,7 @@
         "OML.ST1.V-P",
         "OML.ST1.V-S"
       ],
-      "group": "loft:ST0->ST1"
+      "group": "loft:ST0-\u003EST1"
     },
     {
       "id": "OML.F.ST0.V-P",
@@ -2190,7 +2190,7 @@
         "OML.ST1.P-L",
         "OML.ST1.V-P"
       ],
-      "group": "loft:ST0->ST1"
+      "group": "loft:ST0-\u003EST1"
     },
     {
       "id": "OML.F.ST0.P-L",
@@ -2201,7 +2201,7 @@
         "OML.ST1.P-U",
         "OML.ST1.P-L"
       ],
-      "group": "loft:ST0->ST1"
+      "group": "loft:ST0-\u003EST1"
     },
     {
       "id": "OML.F.ST0.P-U",
@@ -2212,7 +2212,7 @@
         "OML.ST1.D-P",
         "OML.ST1.P-U"
       ],
-      "group": "loft:ST0->ST1"
+      "group": "loft:ST0-\u003EST1"
     },
     {
       "id": "OML.F.ST1.D-P",
@@ -2223,7 +2223,7 @@
         "OML.ST2.D-S",
         "OML.ST2.D-P"
       ],
-      "group": "loft:ST1->ST2"
+      "group": "loft:ST1-\u003EST2"
     },
     {
       "id": "OML.F.ST1.D-S",
@@ -2234,7 +2234,7 @@
         "OML.ST2.S-U",
         "OML.ST2.D-S"
       ],
-      "group": "loft:ST1->ST2"
+      "group": "loft:ST1-\u003EST2"
     },
     {
       "id": "OML.F.ST1.S-U",
@@ -2245,7 +2245,7 @@
         "OML.ST2.S-L",
         "OML.ST2.S-U"
       ],
-      "group": "loft:ST1->ST2"
+      "group": "loft:ST1-\u003EST2"
     },
     {
       "id": "OML.F.ST1.S-L",
@@ -2256,7 +2256,7 @@
         "OML.ST2.V-S",
         "OML.ST2.S-L"
       ],
-      "group": "loft:ST1->ST2"
+      "group": "loft:ST1-\u003EST2"
     },
     {
       "id": "OML.F.ST1.V-S",
@@ -2267,7 +2267,7 @@
         "OML.ST2.V-P",
         "OML.ST2.V-S"
       ],
-      "group": "loft:ST1->ST2"
+      "group": "loft:ST1-\u003EST2"
     },
     {
       "id": "OML.F.ST1.V-P",
@@ -2278,7 +2278,7 @@
         "OML.ST2.P-L",
         "OML.ST2.V-P"
       ],
-      "group": "loft:ST1->ST2"
+      "group": "loft:ST1-\u003EST2"
     },
     {
       "id": "OML.F.ST1.P-L",
@@ -2289,7 +2289,7 @@
         "OML.ST2.P-U",
         "OML.ST2.P-L"
       ],
-      "group": "loft:ST1->ST2"
+      "group": "loft:ST1-\u003EST2"
     },
     {
       "id": "OML.F.ST1.P-U",
@@ -2300,7 +2300,7 @@
         "OML.ST2.D-P",
         "OML.ST2.P-U"
       ],
-      "group": "loft:ST1->ST2"
+      "group": "loft:ST1-\u003EST2"
     },
     {
       "id": "OML.F.ST2.D-P",
@@ -2311,7 +2311,7 @@
         "OML.ST3.D-S",
         "OML.ST3.D-P"
       ],
-      "group": "loft:ST2->ST3"
+      "group": "loft:ST2-\u003EST3"
     },
     {
       "id": "OML.F.ST2.D-S",
@@ -2322,7 +2322,7 @@
         "OML.ST3.S-U",
         "OML.ST3.D-S"
       ],
-      "group": "loft:ST2->ST3"
+      "group": "loft:ST2-\u003EST3"
     },
     {
       "id": "OML.F.ST2.S-U",
@@ -2333,7 +2333,7 @@
         "OML.ST3.S-L",
         "OML.ST3.S-U"
       ],
-      "group": "loft:ST2->ST3"
+      "group": "loft:ST2-\u003EST3"
     },
     {
       "id": "OML.F.ST2.S-L",
@@ -2344,7 +2344,7 @@
         "OML.ST3.V-S",
         "OML.ST3.S-L"
       ],
-      "group": "loft:ST2->ST3"
+      "group": "loft:ST2-\u003EST3"
     },
     {
       "id": "OML.F.ST2.V-S",
@@ -2355,7 +2355,7 @@
         "OML.ST3.V-P",
         "OML.ST3.V-S"
       ],
-      "group": "loft:ST2->ST3"
+      "group": "loft:ST2-\u003EST3"
     },
     {
       "id": "OML.F.ST2.V-P",
@@ -2366,7 +2366,7 @@
         "OML.ST3.P-L",
         "OML.ST3.V-P"
       ],
-      "group": "loft:ST2->ST3"
+      "group": "loft:ST2-\u003EST3"
     },
     {
       "id": "OML.F.ST2.P-L",
@@ -2377,7 +2377,7 @@
         "OML.ST3.P-U",
         "OML.ST3.P-L"
       ],
-      "group": "loft:ST2->ST3"
+      "group": "loft:ST2-\u003EST3"
     },
     {
       "id": "OML.F.ST2.P-U",
@@ -2388,7 +2388,7 @@
         "OML.ST3.D-P",
         "OML.ST3.P-U"
       ],
-      "group": "loft:ST2->ST3"
+      "group": "loft:ST2-\u003EST3"
     },
     {
       "id": "OML.F.ST3.D-P",
@@ -2399,7 +2399,7 @@
         "OML.MB1.D-S",
         "OML.MB1.D-P"
       ],
-      "group": "loft:ST3->MB1"
+      "group": "loft:ST3-\u003EMB1"
     },
     {
       "id": "OML.F.ST3.D-S",
@@ -2410,7 +2410,7 @@
         "OML.MB1.S-U",
         "OML.MB1.D-S"
       ],
-      "group": "loft:ST3->MB1"
+      "group": "loft:ST3-\u003EMB1"
     },
     {
       "id": "OML.F.ST3.S-U",
@@ -2421,7 +2421,7 @@
         "OML.MB1.S-L",
         "OML.MB1.S-U"
       ],
-      "group": "loft:ST3->MB1"
+      "group": "loft:ST3-\u003EMB1"
     },
     {
       "id": "OML.F.ST3.S-L",
@@ -2432,7 +2432,7 @@
         "OML.MB1.V-S",
         "OML.MB1.S-L"
       ],
-      "group": "loft:ST3->MB1"
+      "group": "loft:ST3-\u003EMB1"
     },
     {
       "id": "OML.F.ST3.V-S",
@@ -2443,7 +2443,7 @@
         "OML.MB1.V-P",
         "OML.MB1.V-S"
       ],
-      "group": "loft:ST3->MB1"
+      "group": "loft:ST3-\u003EMB1"
     },
     {
       "id": "OML.F.ST3.V-P",
@@ -2454,7 +2454,7 @@
         "OML.MB1.P-L",
         "OML.MB1.V-P"
       ],
-      "group": "loft:ST3->MB1"
+      "group": "loft:ST3-\u003EMB1"
     },
     {
       "id": "OML.F.ST3.P-L",
@@ -2465,7 +2465,7 @@
         "OML.MB1.P-U",
         "OML.MB1.P-L"
       ],
-      "group": "loft:ST3->MB1"
+      "group": "loft:ST3-\u003EMB1"
     },
     {
       "id": "OML.F.ST3.P-U",
@@ -2476,7 +2476,7 @@
         "OML.MB1.D-P",
         "OML.MB1.P-U"
       ],
-      "group": "loft:ST3->MB1"
+      "group": "loft:ST3-\u003EMB1"
     },
     {
       "id": "OML.F.MB1.D-P",
@@ -2487,7 +2487,7 @@
         "OML.MB2.D-S",
         "OML.MB2.D-P"
       ],
-      "group": "loft:MB1->MB2"
+      "group": "loft:MB1-\u003EMB2"
     },
     {
       "id": "OML.F.MB1.D-S",
@@ -2498,7 +2498,7 @@
         "OML.MB2.S-U",
         "OML.MB2.D-S"
       ],
-      "group": "loft:MB1->MB2"
+      "group": "loft:MB1-\u003EMB2"
     },
     {
       "id": "OML.F.MB1.S-U",
@@ -2509,7 +2509,7 @@
         "OML.MB2.S-L",
         "OML.MB2.S-U"
       ],
-      "group": "loft:MB1->MB2"
+      "group": "loft:MB1-\u003EMB2"
     },
     {
       "id": "OML.F.MB1.S-L",
@@ -2520,7 +2520,7 @@
         "OML.MB2.V-S",
         "OML.MB2.S-L"
       ],
-      "group": "loft:MB1->MB2"
+      "group": "loft:MB1-\u003EMB2"
     },
     {
       "id": "OML.F.MB1.V-S",
@@ -2531,7 +2531,7 @@
         "OML.MB2.V-P",
         "OML.MB2.V-S"
       ],
-      "group": "loft:MB1->MB2"
+      "group": "loft:MB1-\u003EMB2"
     },
     {
       "id": "OML.F.MB1.V-P",
@@ -2542,7 +2542,7 @@
         "OML.MB2.P-L",
         "OML.MB2.V-P"
       ],
-      "group": "loft:MB1->MB2"
+      "group": "loft:MB1-\u003EMB2"
     },
     {
       "id": "OML.F.MB1.P-L",
@@ -2553,7 +2553,7 @@
         "OML.MB2.P-U",
         "OML.MB2.P-L"
       ],
-      "group": "loft:MB1->MB2"
+      "group": "loft:MB1-\u003EMB2"
     },
     {
       "id": "OML.F.MB1.P-U",
@@ -2564,7 +2564,7 @@
         "OML.MB2.D-P",
         "OML.MB2.P-U"
       ],
-      "group": "loft:MB1->MB2"
+      "group": "loft:MB1-\u003EMB2"
     },
     {
       "id": "OML.F.MB2.D-P",
@@ -2575,7 +2575,7 @@
         "OML.AFT.D-S",
         "OML.AFT.D-P"
       ],
-      "group": "loft:MB2->AFT"
+      "group": "loft:MB2-\u003EAFT"
     },
     {
       "id": "OML.F.MB2.D-S",
@@ -2586,7 +2586,7 @@
         "OML.AFT.S-U",
         "OML.AFT.D-S"
       ],
-      "group": "loft:MB2->AFT"
+      "group": "loft:MB2-\u003EAFT"
     },
     {
       "id": "OML.F.MB2.S-U",
@@ -2597,7 +2597,7 @@
         "OML.AFT.S-L",
         "OML.AFT.S-U"
       ],
-      "group": "loft:MB2->AFT"
+      "group": "loft:MB2-\u003EAFT"
     },
     {
       "id": "OML.F.MB2.S-L",
@@ -2608,7 +2608,7 @@
         "OML.AFT.V-S",
         "OML.AFT.S-L"
       ],
-      "group": "loft:MB2->AFT"
+      "group": "loft:MB2-\u003EAFT"
     },
     {
       "id": "OML.F.MB2.V-S",
@@ -2619,7 +2619,7 @@
         "OML.AFT.V-P",
         "OML.AFT.V-S"
       ],
-      "group": "loft:MB2->AFT"
+      "group": "loft:MB2-\u003EAFT"
     },
     {
       "id": "OML.F.MB2.V-P",
@@ -2630,7 +2630,7 @@
         "OML.AFT.P-L",
         "OML.AFT.V-P"
       ],
-      "group": "loft:MB2->AFT"
+      "group": "loft:MB2-\u003EAFT"
     },
     {
       "id": "OML.F.MB2.P-L",
@@ -2641,7 +2641,7 @@
         "OML.AFT.P-U",
         "OML.AFT.P-L"
       ],
-      "group": "loft:MB2->AFT"
+      "group": "loft:MB2-\u003EAFT"
     },
     {
       "id": "OML.F.MB2.P-U",
@@ -2652,7 +2652,7 @@
         "OML.AFT.D-P",
         "OML.AFT.P-U"
       ],
-      "group": "loft:MB2->AFT"
+      "group": "loft:MB2-\u003EAFT"
     }
   ],
   "doorVerts": {

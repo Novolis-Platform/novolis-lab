@@ -3,10 +3,8 @@ using SkiaSharp;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// PDF Norgeskart water silhouette — authoritative land/sea/lake/pond delineation.
-/// Prefers binary <c>map/layers/water-mask.png</c> (Alpha&gt;0 = water) — unbreakable where-water.
-/// Falls back to packed <c>kristiansand-land-sea-mask.bin</c>.
-/// Height shades: <c>water-heightmap.png</c>; mask-gated composite: <c>water-combined.png</c>.
+/// Land/sea mask on the shared EPSG:25833 frame (DTM-derived water-mask.bin / KLSM).
+/// Prefers binary grids over PNG debug twin.
 /// </summary>
 internal static class KristiansandLandSeaMask
 {
@@ -44,15 +42,21 @@ internal static class KristiansandLandSeaMask
             return _water is not null;
 
         _loadAttempted = true;
-        foreach (var path in CandidatePngPaths())
+        foreach (var path in CandidateRawMaskBinPaths())
         {
-            if (TryLoadPng(path))
+            if (TryLoadRawMaskBin(path))
                 return true;
         }
 
-        foreach (var path in CandidateBinPaths())
+        foreach (var path in CandidateKlsmPaths())
         {
             if (TryLoadBin(path))
+                return true;
+        }
+
+        foreach (var path in CandidatePngPaths())
+        {
+            if (TryLoadPng(path))
                 return true;
         }
 
@@ -66,11 +70,78 @@ internal static class KristiansandLandSeaMask
         yield return @"d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\map\layers\water-mask.png";
     }
 
-    private static IEnumerable<string> CandidateBinPaths()
+    private static IEnumerable<string> CandidateRawMaskBinPaths()
+    {
+        yield return Path.Combine(AppContext.BaseDirectory, "map", "layers", "water-mask.bin");
+        yield return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "map", "layers", "water-mask.bin"));
+        yield return @"d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\map\layers\water-mask.bin";
+    }
+
+    private static IEnumerable<string> CandidateKlsmPaths()
     {
         yield return Path.Combine(AppContext.BaseDirectory, "map", "kristiansand-land-sea-mask.bin");
         yield return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "map", "kristiansand-land-sea-mask.bin"));
         yield return @"d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\map\kristiansand-land-sea-mask.bin";
+    }
+
+    private static bool TryLoadRawMaskBin(string path)
+    {
+        if (!File.Exists(path))
+            return false;
+
+        try
+        {
+            var water = File.ReadAllBytes(path);
+            // Known PDF frame: 3466×2348. Also accept factorizations matching east/north aspect.
+            if (!TryInferMaskSize(water.Length, out var w, out var h))
+                return false;
+
+            var east = KristiansandHeightSampler.EastMeters;
+            var north = KristiansandHeightSampler.NorthMeters;
+            _imageWidth = w;
+            _imageHeight = h;
+            _pixelsPerMeter = (w - 1) / east;
+            _offsetPxX = 0f;
+            _offsetPxY = 0f;
+            _scenarioNorthMeters = north;
+            _water = water;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool TryInferMaskSize(int length, out int w, out int h)
+    {
+        w = h = 0;
+        if (length == 3466 * 2348)
+        {
+            w = 3466;
+            h = 2348;
+            return true;
+        }
+
+        // Generic: prefer width near 3466.
+        for (var candidateW = 1024; candidateW <= 8192; candidateW++)
+        {
+            if (length % candidateW != 0)
+                continue;
+            var candidateH = length / candidateW;
+            if (candidateH is < 512 or > 8192)
+                continue;
+            var aspect = candidateW / (double)candidateH;
+            var mapAspect = KristiansandHeightSampler.EastMeters / KristiansandHeightSampler.NorthMeters;
+            if (Math.Abs(aspect - mapAspect) < 0.05)
+            {
+                w = candidateW;
+                h = candidateH;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool TryLoadPng(string path)

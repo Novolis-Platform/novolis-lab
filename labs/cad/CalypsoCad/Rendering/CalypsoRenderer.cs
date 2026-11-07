@@ -675,10 +675,6 @@ internal sealed class CalypsoRenderer
                             DrawOpeningFrame(entity);
                         break;
                     case "box":
-                        // C40 is hold cargo only — never in orbit (reads as one giant orange cube).
-                        if (_session.ViewMode == CalypsoViewMode.Orbit
-                            && (entity.Name?.StartsWith("C40", StringComparison.OrdinalIgnoreCase) ?? false))
-                            break;
                         if (cutaway
                             && _session.ViewMode == CalypsoViewMode.Orbit
                             && entity.Name is { } hatchBox
@@ -1284,19 +1280,22 @@ internal sealed class CalypsoRenderer
         var he = SvgCoords.FromArray(box.Points[1]);
         var isC40 = box.Name?.StartsWith("C40", StringComparison.OrdinalIgnoreCase) == true;
         var isNacelle = box.Name?.Contains("nacelle", StringComparison.OrdinalIgnoreCase) == true;
-        // Nacelles: exterior-only. C40: HOLD interior only — never orbit (mega-cube / “box area”).
+        // Nacelles: exterior-only.
         if (isNacelle && _session.ViewMode == CalypsoViewMode.Interior)
             return;
-        if (isC40 && _session.ViewMode != CalypsoViewMode.Interior)
-            return;
-        if (isC40 && !ShowC40InInterior())
-            return;
-        // Near containers fill the FOV and read as "camera inside a wall" — keep a standoff.
-        if (isC40 && _session.ViewMode == CalypsoViewMode.Interior)
+        // C40 cargo: Outfit layer; Orbit+cutaway OK (open HOLD). Interior still needs HOLD selection.
+        if (isC40)
         {
-            var near = Math.Max(Math.Abs(he.X), Math.Max(Math.Abs(he.Y), Math.Abs(he.Z))) + 6.5f;
-            if (Vector3.Distance(c, _interiorEye) < near)
+            if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.Outfit))
                 return;
+            if (_session.ViewMode == CalypsoViewMode.Interior && !ShowC40InInterior())
+                return;
+            if (_session.ViewMode == CalypsoViewMode.Interior)
+            {
+                var near = Math.Max(Math.Abs(he.X), Math.Max(Math.Abs(he.Y), Math.Abs(he.Z))) + 6.5f;
+                if (Vector3.Distance(c, _interiorEye) < near)
+                    return;
+            }
         }
 
         var color = box.Color is { Length: >= 3 } rgb
@@ -1330,11 +1329,16 @@ internal sealed class CalypsoRenderer
         }
 
         var body = ShadeColor(color, isC40 ? 0.55f : 0.4f, isC40 ? 0.25f : (isBh ? 0.75f : 0.65f), Vector3.UnitY, LightDir);
-        _world.DrawCube(c, sx, sy, sz, body);
         var wireMode = _session.WireMeshMode == CalypsoWireMeshMode.Wire;
-        // BH stay solid in wire orbit so ENG faces read as plates, not lattice.
+        // Wire orbit: frames/girders are edges only — solid fill made bow webs look like a second hull.
+        // Pressure BH stay solid plates so ENG faces still read.
         if (wireMode && !isBh)
+        {
             _world.DrawCubeWiresV(c, new Vector3(sx, sy, sz), Bulkhead);
+            return;
+        }
+
+        _world.DrawCube(c, sx, sy, sz, body);
 
         if (isC40)
         {

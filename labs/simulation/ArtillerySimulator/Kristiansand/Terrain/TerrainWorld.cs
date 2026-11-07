@@ -73,8 +73,8 @@ internal sealed class TerrainWorld : IDisposable
         _cachedWires = KristiansandLandWireGrid.Build(_drawVertices, _drawCells, _drawCells, WireCellStride);
 
         KristiansandMapFeatures.ResetClipCache();
-        KristiansandPdfRoads.Reset();
-        _cachedRoadWires = KristiansandPdfRoads.Build(_sampler);
+        KristiansandNvdbRoads.Reset();
+        _cachedRoadWires = KristiansandNvdbRoads.Build(_sampler);
 
         GunBaseline = new Vector3(
             SimulationUnits.GunPivotX,

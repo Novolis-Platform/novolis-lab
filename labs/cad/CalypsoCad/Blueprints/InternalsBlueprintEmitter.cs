@@ -37,22 +37,27 @@ internal static class InternalsBlueprintEmitter
     private const double TbW = 180;
     private const double TbH = 56;
 
-    public static string Emit(string? lockJsonPath = null, string? outputDirectory = null)
+    public static string Emit(string? lockJsonPath = null, string? outputDirectory = null, string? cadJsonPath = null)
     {
         var jsonPath = lockJsonPath ?? ResolveLockPath();
         var outDir = outputDirectory ?? Path.GetDirectoryName(jsonPath)
                      ?? throw new InvalidOperationException("No output directory");
         Directory.CreateDirectory(outDir);
 
-        InternalsLockCabinPatch.Apply(jsonPath);
-        InternalsLockCorridorPatch.Apply(jsonPath);
+        // Read-only: never mutate CAL-INT-GA-001.json from --blueprints.
+        // Cabin/corridor authorship belongs in lock-edit / generator paths only.
 
         using var doc = JsonDocument.Parse(File.ReadAllText(jsonPath));
         var root = doc.RootElement;
         var lockDoc = LockSnapshot.From(root);
+        var cad = CadJsonStructureQuery.Load(cadJsonPath);
+        var sandwiches = CadJsonStructureQuery.SandwichPanels(cad, (float)lockDoc.Loa);
+        if (sandwiches.Count == 0)
+            throw new InvalidOperationException(
+                "calypso.cadjson has no deck-sandwich-* panels — regenerate structure before blueprints.");
 
         var written = new List<string>();
-        written.Add(Write(outDir, "CAL-INT-GA-001.html", BuildGaSheet(lockDoc)));
+        written.Add(Write(outDir, "CAL-INT-GA-001.html", BuildGaSheet(lockDoc, sandwiches)));
         written.Add(Write(outDir, "CAL-INT-DK-001.html", BuildDeckSheet(lockDoc, DeckAnnotMode.CadDimensions)));
         written.Add(Write(outDir, "CAL-INT-DK-002.html", BuildDeckSheet(lockDoc, DeckAnnotMode.ExpectedOverlay)));
         written.Add(Write(outDir, "CAL-INT-SCH-001.html", BuildScheduleSheet(lockDoc)));
@@ -103,7 +108,8 @@ internal static class InternalsBlueprintEmitter
 
     // ─── Sheets ──────────────────────────────────────────────────────────────
 
-    private static string BuildGaSheet(LockSnapshot L)
+    private static string BuildGaSheet(
+        LockSnapshot L, IReadOnlyList<CadJsonStructureQuery.SandwichPanel> sandwiches)
     {
         var drawX = FrameX + 8;
         var drawY = FrameY + 8;
@@ -120,7 +126,7 @@ internal static class InternalsBlueprintEmitter
 
         // VIEW A — profile
         ViewLabel(sb, drawX, drawY + 10, "A — SIDE ELEVATION (CL)");
-        DrawProfile(sb, L, drawX + 10, drawY + 18, drawW - 20, profileH - 28, out var sProf);
+        DrawProfile(sb, L, drawX + 10, drawY + 18, drawW - 20, profileH - 28, sandwiches, out var sProf);
         ScaleCallout(sb, drawX + 10, drawY + profileH - 6, sProf, "PROFILE");
 
         // VIEW B — deck 0 plan
@@ -222,7 +228,9 @@ internal static class InternalsBlueprintEmitter
 
     // ─── Drawing primitives ──────────────────────────────────────────────────
 
-    private static void DrawProfile(StringBuilder sb, LockSnapshot L, double x, double y, double w, double h, out double scale)
+    private static void DrawProfile(
+        StringBuilder sb, LockSnapshot L, double x, double y, double w, double h,
+        IReadOnlyList<CadJsonStructureQuery.SandwichPanel> sandwiches, out double scale)
     {
         scale = Math.Min(w / L.Loa, h / L.Oah) * 0.92;
         var ox = x + (w - L.Loa * scale) * 0.5;
@@ -234,11 +242,19 @@ internal static class InternalsBlueprintEmitter
         // Hull outline (soft chamfer box silhouette at stations)
         sb.Append($"<path d=\"{HullProfilePath(L, ox, oy, scale)}\" class=\"ol\" fill=\"none\"/>");
 
-        // Decks
-        foreach (var (name, up) in new[] { ("−1", L.DkM1), ("0", L.Dk0), ("+1", L.Dk1) })
+        // Deck plate tops from cadjson sandwich entities (not invented full-LOA bands).
+        foreach (var (name, deckNum, lockUp) in new[] { ("−1", -1, L.DkM1), ("0", 0, L.Dk0), ("+1", 1, L.Dk1) })
         {
+            var up = CadJsonStructureQuery.PlateTopForDeck(sandwiches, deckNum) ?? lockUp;
             var yy = oy - up * scale;
-            sb.Append($"<line x1=\"{F(ox)}\" y1=\"{F(yy)}\" x2=\"{F(ox + L.Loa * scale)}\" y2=\"{F(yy)}\" class=\"thin\"/>");
+            foreach (var (z0, z1) in CadJsonStructureQuery.MergedPlateSpans(sandwiches, deckNum))
+            {
+                var x0 = ShipX(ox, scale, L.Loa, z1);
+                var x1 = ShipX(ox, scale, L.Loa, z0);
+                sb.Append(
+                    $"<line x1=\"{F(Math.Min(x0, x1))}\" y1=\"{F(yy)}\" x2=\"{F(Math.Max(x0, x1))}\" y2=\"{F(yy)}\" class=\"thin\"/>");
+            }
+
             sb.Append($"<text x=\"{F(ox - 4)}\" y=\"{F(yy + 1)}\" class=\"anno\" text-anchor=\"end\">DK {name}</text>");
         }
 
@@ -285,7 +301,7 @@ internal static class InternalsBlueprintEmitter
         foreach (var z in L.BhStations)
         {
             var sx = ShipX(ox, scale, L.Loa, z);
-            var hb = HullBeamAt(L, z) * 0.5 * scale;
+            var hb = HullHalfBeamAt(L, z) * scale;
             sb.Append(
                 $"<line x1=\"{F(sx)}\" y1=\"{F(oy - hb)}\" x2=\"{F(sx)}\" y2=\"{F(oy + hb)}\" class=\"bh\"/>");
         }
@@ -464,20 +480,80 @@ internal static class InternalsBlueprintEmitter
 
     private static void DrawSpaceFootprint(StringBuilder sb, LockSnapshot L, Comp c, double ox, double oy, double scale)
     {
-        var x0 = ShipX(ox, scale, L.Loa, c.Z1);
-        var x1 = ShipX(ox, scale, L.Loa, c.Z0);
-        var y0 = oy - c.Y1 * scale;
-        var y1 = oy - c.Y0 * scale;
         var cls = c.Id is not null && c.Id.StartsWith("CORR", StringComparison.Ordinal) ? "corr"
             : c.Id is not null && c.Id.StartsWith("AIRLOCK", StringComparison.Ordinal) ? "air"
             : "space";
-        sb.Append(
-            $"<rect x=\"{F(Math.Min(x0, x1))}\" y=\"{F(Math.Min(y0, y1))}\" width=\"{F(Math.Abs(x1 - x0))}\" height=\"{F(Math.Abs(y1 - y0))}\" class=\"{cls}\"/>");
 
-        var cx = ShipX(ox, scale, L.Loa, (c.Z0 + c.Z1) * 0.5);
-        var cy = oy - (c.Y0 + c.Y1) * 0.5 * scale;
+        // Prefer lock planRing (fore taper); else AABB clipped to hull beam stations.
+        var ring = c.PlanRing is { Count: >= 3 } ? c.PlanRing : BuildHullClippedRing(c, L);
+        if (ring.Count >= 3)
+        {
+            var d = new StringBuilder("M");
+            for (var i = 0; i < ring.Count; i++)
+            {
+                var (yy, zz) = ring[i];
+                d.Append(i == 0 ? " " : " L ");
+                d.Append($"{F(ShipX(ox, scale, L.Loa, zz))},{F(oy - yy * scale)}");
+            }
+
+            d.Append(" Z");
+            sb.Append($"<path d=\"{d}\" class=\"{cls}\"/>");
+        }
+        else
+        {
+            var x0 = ShipX(ox, scale, L.Loa, c.Z1);
+            var x1 = ShipX(ox, scale, L.Loa, c.Z0);
+            var y0 = oy - c.Y1 * scale;
+            var y1 = oy - c.Y0 * scale;
+            sb.Append(
+                $"<rect x=\"{F(Math.Min(x0, x1))}\" y=\"{F(Math.Min(y0, y1))}\" width=\"{F(Math.Abs(x1 - x0))}\" height=\"{F(Math.Abs(y1 - y0))}\" class=\"{cls}\"/>");
+        }
+
+        double cx;
+        double cy;
+        if (ring.Count >= 3)
+        {
+            cx = ring.Average(p => ShipX(ox, scale, L.Loa, p.Z));
+            cy = ring.Average(p => oy - p.Y * scale);
+        }
+        else
+        {
+            cx = ShipX(ox, scale, L.Loa, (c.Z0 + c.Z1) * 0.5);
+            cy = oy - (c.Y0 + c.Y1) * 0.5 * scale;
+        }
+
         if (c.Id is not null && ShouldLabel(c.Id))
             sb.Append($"<text x=\"{F(cx)}\" y=\"{F(cy + 1)}\" class=\"room\" text-anchor=\"middle\">{Esc(ShortId(c.Id))}</text>");
+    }
+
+    private static List<(double Y, double Z)> BuildHullClippedRing(Comp c, LockSnapshot L, int samples = 16)
+    {
+        var ring = new List<(double Y, double Z)>(samples * 2 + 2);
+        var z0 = Math.Min(c.Z0, c.Z1);
+        var z1 = Math.Max(c.Z0, c.Z1);
+        for (var i = 0; i <= samples; i++)
+        {
+            var z = z0 + (z1 - z0) * i / samples;
+            var hb = HullHalfBeamAt(L, z);
+            var yHi = Math.Min(c.Y1, hb);
+            var yLo = Math.Max(c.Y0, -hb);
+            if (yHi < yLo)
+                yHi = yLo = Math.Clamp(0, c.Y0, c.Y1);
+            ring.Add((yHi, z));
+        }
+
+        for (var i = samples; i >= 0; i--)
+        {
+            var z = z0 + (z1 - z0) * i / samples;
+            var hb = HullHalfBeamAt(L, z);
+            var yHi = Math.Min(c.Y1, hb);
+            var yLo = Math.Max(c.Y0, -hb);
+            if (yHi < yLo)
+                yHi = yLo = Math.Clamp(0, c.Y0, c.Y1);
+            ring.Add((yLo, z));
+        }
+
+        return ring;
     }
 
     private static bool ShouldLabel(string id) =>
@@ -771,22 +847,27 @@ internal static class InternalsBlueprintEmitter
     private static double ShipX(double ox, double scale, double loa, double zFromStem) =>
         ox + (loa - zFromStem) * scale;
 
+    private static IEnumerable<double> HullSampleZs(LockSnapshot L)
+    {
+        if (L.Loft.Count > 0)
+            return L.Loft.Select(s => s.Z);
+        return new[] { 0.0, 3.25, 10, 17, L.Loa };
+    }
+
     private static string HullPlanPath(LockSnapshot L, double ox, double oy, double scale)
     {
-        // Port outline stem→aft then stbd aft→stem
-        var sb = new StringBuilder();
-        var zs = new List<double> { 0, 3.25, 10, 17, L.Loa };
-        sb.Append('M');
+        var zs = HullSampleZs(L).ToList();
+        var sb = new StringBuilder("M");
         foreach (var z in zs)
         {
-            var hb = HullBeamAt(L, z) * 0.5;
+            var hb = HullHalfBeamAt(L, z);
             sb.Append($" {F(ShipX(ox, scale, L.Loa, z))},{F(oy - hb * scale)}");
         }
 
         for (var i = zs.Count - 1; i >= 0; i--)
         {
             var z = zs[i];
-            var hb = HullBeamAt(L, z) * 0.5;
+            var hb = HullHalfBeamAt(L, z);
             sb.Append($" {F(ShipX(ox, scale, L.Loa, z))},{F(oy + hb * scale)}");
         }
 
@@ -796,53 +877,22 @@ internal static class InternalsBlueprintEmitter
 
     private static string HullProfilePath(LockSnapshot L, double ox, double oy, double scale)
     {
-        var zs = new[] { 0.0, 3.25, 10, 17, L.Loa };
+        var zs = HullSampleZs(L).ToList();
         var sb = new StringBuilder("M");
         foreach (var z in zs)
         {
-            var h = HullHeightAt(L, z);
-            sb.Append($" {F(ShipX(ox, scale, L.Loa, z))},{F(oy - h * scale)}");
+            LockDraftGeometry.SampleLoftUpRange(L.Loft, z, L.Oah, out _, out var upMax);
+            sb.Append($" {F(ShipX(ox, scale, L.Loa, z))},{F(oy - upMax * scale)}");
         }
 
-        for (var i = zs.Length - 1; i >= 0; i--)
+        for (var i = zs.Count - 1; i >= 0; i--)
             sb.Append($" {F(ShipX(ox, scale, L.Loa, zs[i]))},{F(oy)}");
         sb.Append(" Z");
         return sb.ToString();
     }
 
-    private static double HullBeamAt(LockSnapshot L, double z)
-    {
-        if (z <= 0) return 3.5;
-        if (z >= 17) return L.Beam;
-        (double z, double b)[] st = [(0, 3.5), (3.25, 10), (10, 17), (17, 20)];
-        for (var i = 0; i < st.Length - 1; i++)
-        {
-            if (z >= st[i].z && z <= st[i + 1].z)
-            {
-                var t = (z - st[i].z) / (st[i + 1].z - st[i].z);
-                return st[i].b + t * (st[i + 1].b - st[i].b);
-            }
-        }
-
-        return L.Beam;
-    }
-
-    private static double HullHeightAt(LockSnapshot L, double z)
-    {
-        if (z <= 0) return 4;
-        if (z >= 17) return L.Oah;
-        (double z, double h)[] st = [(0, 4), (3.25, 7.5), (10, 10.5), (17, 12)];
-        for (var i = 0; i < st.Length - 1; i++)
-        {
-            if (z >= st[i].z && z <= st[i + 1].z)
-            {
-                var t = (z - st[i].z) / (st[i + 1].z - st[i].z);
-                return st[i].h + t * (st[i + 1].h - st[i].h);
-            }
-        }
-
-        return L.Oah;
-    }
+    private static double HullHalfBeamAt(LockSnapshot L, double z) =>
+        LockDraftGeometry.LoftHalfBeam(L.Loft, z);
 
     private static bool MatchesDeck(Comp c, int deck)
     {
@@ -929,6 +979,7 @@ internal static class InternalsBlueprintEmitter
         public List<Hatch> Hatches { get; init; } = [];
         public HoldPack Hold { get; init; } = new();
         public List<double> BhStations { get; init; } = [];
+        public List<LockDraftGeometry.LoftStation> Loft { get; init; } = [];
         public double CorrZ0 { get; init; }
         public double CorrZ1 { get; init; }
 
@@ -989,6 +1040,7 @@ internal static class InternalsBlueprintEmitter
                 Hatches = hatches,
                 Hold = HoldPack.From(holdEl),
                 BhStations = bh.Distinct().OrderBy(z => z).ToList(),
+                Loft = LockDraftGeometry.ParseLoft(root),
                 CorrZ0 = corr?.Z0 ?? 23,
                 CorrZ1 = corr?.Z1 ?? 49.25,
             };

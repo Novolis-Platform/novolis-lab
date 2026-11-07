@@ -1,6 +1,6 @@
 {
   "schema": "novolis.artillery.map-stack/3",
-  "citation": "Land/sea/roads from Norgeskart PDFs; meters from Kartverket NHM_DTM_25833 (NDH).",
+  "citation": "Water + meters from Kartverket NHM_DTM_25833 (UTM); roads from NVDB; roads from NVDB vegnett (E/R/S/F main, K/P local). PNG previews are debug-only.",
   "world": {
     "northUp": true,
     "origin": "southwest_corner_meters",
@@ -21,7 +21,10 @@
       "west": 7.825738542655645,
       "east": 8.234261457344356
     },
-    "extentSource": "pdf-footer-scale-x-map-frame"
+    "extentSource": "pdf-footer-scale-x-map-frame",
+    "placement": "epsg25833_utm_frame_hoydedata",
+    "utmOriginEasting": 78006.06073350424,
+    "utmOriginNorthing": 6456827.344437925
   },
   "layers": [
     {
@@ -107,14 +110,40 @@
       "source": "https://hoydedata.no/arcgis/rest/services/NHM_DTM_25833/ImageServer"
     },
     {
-      "id": "roads",
-      "imageFile": "layers/roads.png",
+      "id": "nvdb-roads",
+      "binaryFile": "layers/nvdb-roads.bin",
       "role": "roads",
+      "authority": "runtime_polylines",
+      "source": "NVDB vegnett trafikantgruppe=K",
+      "hierarchy": "E/R/S/F=main K/P=local"
+    },
+    {
+      "id": "roads-debug",
+      "imageFile": "layers/roads-debug.png",
+      "role": "debug",
+      "note": "optional QA raster; never loaded by Silk"
+    },
+    {
+      "id": "roads-legacy-pdf",
+      "imageFile": "layers/roads.png",
+      "role": "debug",
       "pixelWidth": 3466,
       "pixelHeight": 2348,
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
       "sourcePdfPath": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf"
+    },
+    {
+      "id": "ndh-dom",
+      "imageFile": "layers/ndh-dom.tif",
+      "role": "qa",
+      "source": "https://hoydedata.no/arcgis/rest/services/NHM_DOM_25833/ImageServer"
+    },
+    {
+      "id": "ndh-topobathy",
+      "imageFile": "layers/ndh-topobathy.tif",
+      "role": "qa",
+      "source": "https://hoydedata.no/arcgis/rest/services/NHM_DTM_TOPOBATHY_25833/ImageServer"
     },
     {
       "id": "heightfield",

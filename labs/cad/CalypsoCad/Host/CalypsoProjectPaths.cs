@@ -12,6 +12,9 @@ internal static class CalypsoProjectPaths
     /// <summary>Progressive structure-wire build-step slides.</summary>
     public static string BuildStepsDirectory => Path.Combine(RendersDirectory, "build-steps");
 
+    /// <summary>4K construction-stage orbit video + keyframes.</summary>
+    public static string ConstructionOrbitDirectory => Path.Combine(RendersDirectory, "construction-orbit");
+
     /// <summary>Curated visual-gate baselines (subset of renders).</summary>
     public static string PreviewDirectory => Path.Combine(ProjectRoot, "docs", "preview");
 

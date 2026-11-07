@@ -2,7 +2,7 @@
   "reliefPdf": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf",
   "roadsPdf": "C:\\Users\\frank\\Downloads\\5fca740a-3d22-4d30-b66b-0cff7cef09c7.pdf",
   "dpi": 220,
-  "citation": "Source-of-truth Norgeskart / hoydedata.no prints. Georef from PDF footer (ETRS89/UTM 33N, A3 landscape, printed scale).",
+  "citation": "Relief PDF = water silhouette (+ legacy shared frame). Roads PDF optional/legacy for debug raster only — gameplay roads are NVDB nvdb-roads.bin. Meters from NHM_DTM_25833.",
   "crs": "EPSG:25833",
   "crsName": "ETRS89 / UTM zone 33N",
   "scaleDenominator": 60000,

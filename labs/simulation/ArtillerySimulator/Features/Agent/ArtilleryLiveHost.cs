@@ -206,10 +206,12 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 return Accept(command, _game.PaceText);
             case "artillery.camera":
                 if (!command.Params.TryGetValue("mode", out var mode))
-                    return Reject(command, "invalid-arguments", "Camera needs mode follow or free.");
-                var follow = mode.Equals("follow", StringComparison.OrdinalIgnoreCase) || mode.Equals("orbit", StringComparison.OrdinalIgnoreCase);
-                _game.SetFollowCamera(follow);
-                return Accept(command, follow ? "Camera follows the arc." : "Camera is free.");
+                    return Reject(command, "invalid-arguments", "Camera needs mode shell or gun.");
+                var followShell = mode.Equals("shell", StringComparison.OrdinalIgnoreCase)
+                    || mode.Equals("follow", StringComparison.OrdinalIgnoreCase)
+                    || mode.Equals("projectile", StringComparison.OrdinalIgnoreCase);
+                _game.SetFollowCamera(followShell);
+                return Accept(command, followShell ? "Camera follows the shell." : "Camera follows the gun.");
             case "artillery.fire":
                 if (_game.FireBlockReason() is { } blocked)
                     return Reject(command, "unavailable", blocked);
@@ -402,7 +404,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
         var entities = new List<AgentEntity>(reports.Length + 12);
         foreach (var threat in reports)
         {
-            var where = threat.InArc ? "in the trails" : "outside the trails";
+            var where = threat.InArc ? "in traverse" : "outside traverse";
             entities.Add(new AgentEntity
             {
                 Id = string.Create(CultureInfo.InvariantCulture, $"threat-{threat.Id}"),

@@ -4,9 +4,13 @@
     <RootNamespace>CalypsoCad</RootNamespace>
     <ApplicationTitle>Calypso CAD</ApplicationTitle>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <NovolisGraphicalProfile>false</NovolisGraphicalProfile>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <LibraryReference Include="Novolis.Avalonia.GraphicalProfile" />
+    <LibraryReference Include="Novolis.Avalonia.Rendering" />
     <LibraryReference Include="Novolis.Agent.Core" />
     <LibraryReference Include="Novolis.Agent.Surface" />
     <LibraryReference Include="Novolis.Cad.Primitives" />

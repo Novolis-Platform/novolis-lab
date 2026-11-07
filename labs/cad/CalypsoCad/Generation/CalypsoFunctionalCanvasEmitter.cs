@@ -10,25 +10,18 @@ namespace CalypsoCad.Generation;
 
 internal static class CalypsoFunctionalCanvasEmitter
 {
+    /// <summary>Curated headless set only — matches HeadlessPngExporter.CuratedExports.</summary>
     private static readonly (string FileName, string Const, string Title, string Caption)[] Figures =
     [
         ("orbit-bow-quarter.png", "BOW_QTR", "Bow quarter", "OML + interiors · bow must stay inside blue wire"),
+        ("orbit-three-quarter-high.png", "ORBIT_3Q", "Three-quarter high", "Elevated midbody orbit"),
         ("layer-structure-wire.png", "LAYER_STRUCT_WIRE", "Structure layer (wire)", "Transverse web plates + flanges + girders"),
         ("layer-cutaway-structure.png", "LAYER_STRUCT", "Layer: structure + passageway cutouts", "S-STRUCT only · transverse rings with corridor/hatch gaps (cyan voids)"),
         ("layer-cutaway-fitout.png", "LAYER_FITOUT", "Layer: partitions + outfit", "A-WALL + outfit · no frame solids · hatch openings highlighted"),
         ("orbit-cutaway-long.png", "CUTAWAY", "Longitudinal cutaway (all layers)", "Combined orbit cutaway · wet-ship read"),
-        ("plan-deck-m1.png", "PLAN_M1", "Deck −1 (M1)", "Plan · machinery / hold lower · verify ENG hatches and corridor spine"),
         ("plan-deck-0.png", "PLAN_0", "Deck 0", "Plan · crew / bridge / airlocks · footprints inside IML octagon"),
-        ("plan-deck-p1.png", "PLAN_P1", "Deck +1 (P1)", "Plan · PAX band and upper hold · hatch gaps on partition walls"),
         ("interior-cutaway-portCorridor.png", "INT_CORR_CUT", "Port corridor · structure layer", "Interior cutaway · frames at spine + passageway cutout markers"),
-        ("orbit-ramp-close.png", "RAMP", "Aft ramp", "Orbit · C40 hold door, coaming, ramp inside stern"),
         ("interior-solid-bridge.png", "INT_BRIDGE", "Bridge", "Interior solid · lock console + seats · CAL-INT bow stack"),
-        ("interior-solid-portCorridor.png", "INT_CORR", "Port corridor (CORR_P)", "Interior · 3 m clear walk deck, rails, trunks"),
-        ("interior-solid-airlockPort.png", "INT_AIRLOCK", "Port L-airlock", "Interior · vestibule + lock leaf · D3 exterior sealed"),
-        ("interior-solid-cabin1.png", "INT_CREW1", "Crew cabin (CREW_1)", "Interior · 1.92×7.2 m clear · berths and locker"),
-        ("interior-solid-pax1.png", "INT_PAX1", "Passenger cabin (PAX_1)", "Interior · deck +1 · lock berth + outfit band"),
-        ("interior-solid-lounge.png", "INT_LOUNGE", "Lounge", "Interior · deck +1 bow · lock bar outfit"),
-        ("interior-solid-engineering.png", "INT_ENG", "Engineering", "Interior · atrium tanks · service hatches on −1/0"),
     ];
 
     public static string Emit(string canvasPath, string? exportsDirectory = null)

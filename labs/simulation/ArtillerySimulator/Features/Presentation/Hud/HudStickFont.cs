@@ -13,6 +13,9 @@ internal static class HudStickFont
     public static float MeasureWidth(string text, float scale) =>
         text.Length * (6f * scale);
 
+    /// <summary>HUD line depth — nearer than solid panels so text is not depth-culled.</summary>
+    private const float HudZ = -0.4f;
+
     public static void Draw(
         SilkWireBatch wires,
         string text,
@@ -32,7 +35,7 @@ internal static class HudStickFont
                     var ay = y + strokes[i + 1] * scale;
                     var bx = cursor + strokes[i + 2] * scale;
                     var by = y + strokes[i + 3] * scale;
-                    wires.Line(new Vector3(ax, ay, 0f), new Vector3(bx, by, 0f), color);
+                    wires.Line(new Vector3(ax, ay, HudZ), new Vector3(bx, by, HudZ), color);
                 }
             }
 
@@ -42,10 +45,10 @@ internal static class HudStickFont
 
     public static void Rect(SilkWireBatch wires, float x, float y, float w, float h, Color color)
     {
-        var a = new Vector3(x, y, 0f);
-        var b = new Vector3(x + w, y, 0f);
-        var c = new Vector3(x + w, y + h, 0f);
-        var d = new Vector3(x, y + h, 0f);
+        var a = new Vector3(x, y, HudZ);
+        var b = new Vector3(x + w, y, HudZ);
+        var c = new Vector3(x + w, y + h, HudZ);
+        var d = new Vector3(x, y + h, HudZ);
         wires.Line(a, b, color);
         wires.Line(b, c, color);
         wires.Line(c, d, color);
@@ -55,7 +58,14 @@ internal static class HudStickFont
     public static void FillHatch(SilkWireBatch wires, float x, float y, float w, float h, Color color, float step = 8f)
     {
         for (var yy = y; yy <= y + h; yy += step)
-            wires.Line(new Vector3(x, yy, 0f), new Vector3(x + w, yy, 0f), color);
+            wires.Line(new Vector3(x, yy, HudZ), new Vector3(x + w, yy, HudZ), color);
+    }
+
+    /// <summary>Dense scanlines that read as a dark translucent panel over wire terrain.</summary>
+    public static void FillPanel(SilkWireBatch wires, float x, float y, float w, float h, Color color)
+    {
+        for (var yy = y; yy <= y + h; yy += 1f)
+            wires.Line(new Vector3(x, yy, HudZ), new Vector3(x + w, yy, HudZ), color);
     }
 
     private static Dictionary<char, byte[]> BuildGlyphs()

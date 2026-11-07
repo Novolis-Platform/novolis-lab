@@ -3,7 +3,11 @@ using Novolis.Physics.Ballistics;
 
 namespace ArtillerySimulator;
 
-/// <summary>Opening charge / elevation so the first round can reach the nearest column in the trail fan.</summary>
+/// <summary>
+/// Opening charge / elevation for Odderøya city defense. Prefer the shortest charge that
+/// reaches the nearest column at or beyond <see cref="SimulationUnits.MinEffectiveRangeMeters"/>
+/// (HE min ~4 km — downtown is inside that floor).
+/// </summary>
 internal static class OpeningFirePlan
 {
     internal readonly record struct Lay(float Elevation, int Charge, float Bearing);
@@ -25,7 +29,7 @@ internal static class OpeningFirePlan
                 continue;
 
             var bearing = MathF.Atan2(unit.Z - gun.Z, unit.X - gun.X) * (180f / MathF.PI);
-            if (MathF.Abs(DeltaDegrees(bearing, trailBearingDegrees)) > 22.5f)
+            if (MathF.Abs(DeltaDegrees(bearing, trailBearingDegrees)) > GunModel.MaxTraverseDegrees)
                 continue;
 
             var toCrossing = Horizontal(objective, new Vector3(unit.X, objective.Y, unit.Z));
@@ -38,24 +42,32 @@ internal static class OpeningFirePlan
         }
 
         if (desired == float.MaxValue)
-            desired = Horizontal(gun, objective);
+            desired = MathF.Max(Horizontal(gun, objective), SimulationUnits.MinEffectiveRangeMeters);
+
+        // HE floor … outer approach band (never open inside min range or on deep max-zone lob).
+        desired = Math.Clamp(
+            desired,
+            SimulationUnits.MinEffectiveRangeMeters,
+            SimulationUnits.MaxCityApproachMeters);
 
         var atmosphere = AtmosphereModel.CreateRegionalDefault();
         var simulation = new ProjectileBallisticSimulation(GunModel.Educational155Profile, DragCoefficientLaw.BoatTail);
-        var bestElev = 62f;
+        var bestElev = fallbackElevation;
         var bestCharge = 3;
         var bestScore = float.NegativeInfinity;
         var closestError = float.MaxValue;
-        var closeElev = 70f;
+        var closeElev = fallbackElevation;
         var closeCharge = 3;
-        for (var pass = 0; pass < 2; pass++)
+
+        // Prefer low → reduced → standard → max (shortest usable zone first).
+        ReadOnlySpan<int> chargeOrder = [3, 0, 1, 2];
+        foreach (var charge in chargeOrder)
         {
-            var charge = pass == 0 ? 3 : 0;
             var speed = SimulationUnits.ChargeSpeedsMps[charge];
-            for (var elev = 71.5f; elev >= 48f; elev -= 1f)
+            for (var elev = GunModel.MaxElevationDegrees; elev >= 12f; elev -= 0.5f)
             {
                 var reach = ReachMeters(terrain, atmosphere, simulation, gun, aimBearing, elev, speed);
-                if (reach < 600f)
+                if (reach < SimulationUnits.MinEffectiveRangeMeters - 50f)
                     continue;
 
                 var error = MathF.Abs(reach - desired);
@@ -66,11 +78,21 @@ internal static class OpeningFirePlan
                     closeCharge = charge;
                 }
 
+                // Prefer slightly short of the column (safer near downtown) within ~120 m.
                 var longBy = reach - desired;
-                if (longBy > 160f || longBy < -120f)
+                if (longBy > 80f || longBy < -140f)
                     continue;
 
-                var score = elev - MathF.Abs(longBy) * 0.04f;
+                // Lower charge index weight + moderate elevation (shorter TOF) + tight error.
+                var chargeBias = charge switch
+                {
+                    3 => 40f,
+                    0 => 30f,
+                    1 => 12f,
+                    _ => 0f,
+                };
+                var elevBias = elev <= 45f ? 8f : elev <= 60f ? 3f : 0f;
+                var score = chargeBias + elevBias - error * 0.08f - MathF.Max(0f, longBy) * 0.12f;
                 if (score <= bestScore)
                     continue;
 
@@ -78,13 +100,14 @@ internal static class OpeningFirePlan
                 bestElev = elev;
                 bestCharge = charge;
             }
+
+            // Take the first charge tier that produced an acceptable bracket.
+            if (bestScore > float.NegativeInfinity)
+                return new Lay(bestElev, bestCharge, aimBearing);
         }
 
-        if (bestScore > float.NegativeInfinity)
-            return new Lay(bestElev, bestCharge, aimBearing);
-
         if (closestError == float.MaxValue)
-            return new Lay(MathF.Max(fallbackElevation, 55f), 3, aimBearing);
+            return new Lay(Math.Clamp(fallbackElevation, 18f, 55f), 3, aimBearing);
 
         return new Lay(closeElev, closeCharge, aimBearing);
     }

@@ -3,7 +3,7 @@ using System.Numerics;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Old Odderøya Fort — Lasaretthøyden / festningsmurene on the northern island ridge,
+/// Customer heritage firing site: Odderøya Fort (Lasaretthøyden) — the lone K9 battery
 /// overlooking Østre havn toward Kvadraturen (not Galgebakken south tip).
 /// </summary>
 internal static class KristiansandFort

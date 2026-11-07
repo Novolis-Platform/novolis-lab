@@ -3,26 +3,44 @@ using System.Numerics;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// M777-class educational scale. Published HE ranges (open sources, not classified):
-/// M107 ~21 km, M795 ~23.5 km, ERFB/base-bleed ~30 km, Excalibur ~40 km;
-/// max zone muzzle velocity often quoted ~827 m/s (Charge 8S).
-/// Training area extent is sized so standard charges can land on terrain before the map edge.
+/// K9 Thunder-class educational scale for the Kristiansand heritage-site defense:
+/// one SPG on Odderøya covering inbound road approaches. Kvadraturen itself (~1.2 km)
+/// sits inside the HE minimum; the piece fights columns on the approaches, not downtown.
+/// Catalog figures are open-source approximations only.
 /// </summary>
 internal static class SimulationUnits
 {
-  /// <summary>Square training area — slightly beyond M795 range, inside ERFB class (m).</summary>
+  /// <summary>Map east/north come from georef; this is camera/chase fallback scale.</summary>
   public const float ExtentMeters = 26_000f;
 
   public const float GunPivotX = 100f;
-  public const float GunHeightOffset = 1.6f;
+  public const float GunHeightOffset = 2.4f;
 
-  /// <summary>Educational MACS-style low / mid / high muzzle velocity (m/s).</summary>
-  public static readonly float[] ChargeSpeedsMps = [427f, 594f, 780f, 255f];
+  /// <summary>
+  /// Educational HE minimum for standard 155 mm (open-source M107-class band ~3.9–4.7 km).
+  /// Closest legal MPI — not a classified table.
+  /// </summary>
+  public const float MinEffectiveRangeMeters = 4_000f;
+
+  /// <summary>
+  /// Opening column spawn floor from the fort. Well outside HE min so the first wave is a
+  /// plausible inbound approach (~7.5–12 km), not crowding the danger-close ring.
+  /// </summary>
+  public const float MinOpeningEngagementMeters = 7_500f;
+
+  /// <summary>Outer city-approach band the Odderøya battery is expected to cover (m).</summary>
+  public const float MaxCityApproachMeters = 14_000f;
+
+  /// <summary>
+  /// Educational modular charges (m/s), ordered reduced / standard / max / low.
+  /// Reduced covers just above min range; standard/max cover outer approach waves.
+  /// </summary>
+  public static readonly float[] ChargeSpeedsMps = [420f, 560f, 720f, 360f];
 
   public static readonly string[] ChargeLabels = ["reduced", "standard", "max", "low"];
 
-  /// <summary>Typical catalog max range for same charge tier (km, open-source HE).</summary>
-  public static readonly float[] ReferenceMaxRangeKm = [21f, 23.5f, 30f];
+  /// <summary>Typical educational max range for reduced / standard / max (km).</summary>
+  public static readonly float[] ReferenceMaxRangeKm = [10f, 16f, 24f];
 
   public const float FixedCamLookAhead = 2500f;
   public static readonly Vector3 FixedCamEyeOffset = new(-1200f, 700f, 900f);

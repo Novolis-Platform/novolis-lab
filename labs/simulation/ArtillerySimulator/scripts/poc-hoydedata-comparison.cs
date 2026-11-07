@@ -1,3 +1,4 @@
+#:project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\MapPipeline.Support\MapPipeline.Support.csproj
 #:property OutputType=Exe
 #:property TargetFramework=net10.0
 #:property ImplicitUsings=enable
@@ -7,6 +8,7 @@
 
 using System.Globalization;
 using System.Text.Json;
+using ArtillerySimulator.MapPipeline;
 using SkiaSharp;
 
 // POC only: fetch NHM ImageServer rasters and write a visual comparison sheet.
@@ -51,9 +53,9 @@ await File.WriteAllBytesAsync(Path.Combine(outDir, "poc-nhm-dom.tif"), domTiff);
 await File.WriteAllBytesAsync(Path.Combine(outDir, "poc-nhm-topobathy.tif"), bathyTiff);
 await File.WriteAllBytesAsync(Path.Combine(outDir, "poc-samferdsel-wms.png"), samferdselPng);
 
-var dtm = DecodeTiledFloatTiff(dtmTiff, out var dw, out var dh);
-var dom = DecodeTiledFloatTiff(domTiff, out var domW, out var domH);
-var bathy = DecodeTiledFloatTiff(bathyTiff, out var bw, out var bh);
+var dtm = TiledFloatTiff.Decode(dtmTiff, out var dw, out var dh);
+var dom = TiledFloatTiff.Decode(domTiff, out var domW, out var domH);
+var bathy = TiledFloatTiff.Decode(bathyTiff, out var bw, out var bh);
 if (domW != dw || domH != dh || bw != dw || bh != dh)
     throw new InvalidDataException($"Size mismatch DTM {dw}×{dh} DOM {domW}×{domH} BATHY {bw}×{bh}");
 
@@ -100,7 +102,7 @@ SavePng(Path.Combine(outDir, "COMPARE-sheet.png"), sheet);
 WriteReadme(outDir, west, south, east, north, fetchW, fetchH, dtm, water, dw, dh);
 Console.WriteLine($"Wrote comparison → {Path.Combine(outDir, "COMPARE-sheet.png")}");
 
-static async Task<byte[]> FetchAsync(
+static Task<byte[]> FetchAsync(
     HttpClient http,
     string service,
     double west,
@@ -108,21 +110,8 @@ static async Task<byte[]> FetchAsync(
     double east,
     double north,
     int width,
-    int height)
-{
-    var bbox = string.Create(CultureInfo.InvariantCulture, $"{west},{south},{east},{north}");
-    var url =
-        $"https://hoydedata.no/arcgis/rest/services/{service}/ImageServer/exportImage" +
-        $"?bbox={bbox}&bboxSR=4326&imageSR=25833&size={width},{height}" +
-        "&format=tiff&pixelType=F32&noDataInterpretation=esriNoDataMatchAny" +
-        "&interpolation=RSP_BilinearInterpolation&f=image";
-    Console.WriteLine($"GET {service}…");
-    var bytes = await http.GetByteArrayAsync(url);
-    if (bytes.Length < 8 || bytes[0] != (byte)'I' || bytes[1] != (byte)'I')
-        throw new InvalidDataException($"{service}: not little-endian TIFF ({bytes.Length} bytes)");
-    Console.WriteLine($"  {bytes.Length:N0} bytes");
-    return bytes;
-}
+    int height) =>
+    NhmImageServer.FetchFloatTiffAsync(http, service, west, south, east, north, width, height);
 
 /// <summary>
 /// Same source LaserInnsyn2 uses for the "Samferdsel" checkbox:
@@ -638,74 +627,3 @@ static void WriteReadme(
     File.WriteAllText(Path.Combine(outDir, "README.md"), md);
 }
 
-static float[] DecodeTiledFloatTiff(byte[] bytes, out int width, out int height)
-{
-    static uint U32(byte[] b, int o) => System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(b.AsSpan(o));
-    static ushort U16(byte[] b, int o) => System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(b.AsSpan(o));
-
-    var ifd = (int)U32(bytes, 4);
-    var n = U16(bytes, ifd);
-    uint w = 0, h = 0, bps = 0, comp = 0, sf = 0, tileW = 0, tileH = 0;
-    var tileOffPtr = 0;
-    var tileBytePtr = 0;
-    var tileCount = 0;
-    for (var i = 0; i < n; i++)
-    {
-        var o = ifd + 2 + i * 12;
-        var tag = U16(bytes, o);
-        var type = U16(bytes, o + 2);
-        var count = U32(bytes, o + 4);
-        var val = U32(bytes, o + 8);
-        var s = (ushort)(val & 0xFFFF);
-        switch (tag)
-        {
-            case 256: w = type == 3 ? s : val; break;
-            case 257: h = type == 3 ? s : val; break;
-            case 258: bps = type == 3 ? s : val; break;
-            case 259: comp = type == 3 ? s : val; break;
-            case 322: tileW = type == 3 ? s : val; break;
-            case 323: tileH = type == 3 ? s : val; break;
-            case 324: tileOffPtr = (int)val; tileCount = (int)count; break;
-            case 325: tileBytePtr = (int)val; break;
-            case 339: sf = type == 3 ? s : val; break;
-        }
-    }
-
-    if (comp != 1 || bps != 32 || sf != 3 || tileW == 0 || tileH == 0 || tileCount == 0)
-        throw new InvalidDataException($"Unsupported TIFF (comp={comp} bps={bps} sf={sf} tile={tileW}x{tileH}).");
-
-    width = (int)w;
-    height = (int)h;
-    var tilesX = (int)((w + tileW - 1) / tileW);
-    var tilesY = (int)((h + tileH - 1) / tileH);
-    var grid = new float[width * height];
-    Array.Fill(grid, float.NaN);
-    for (var ty = 0; ty < tilesY; ty++)
-    {
-        for (var tx = 0; tx < tilesX; tx++)
-        {
-            var ti = ty * tilesX + tx;
-            if (ti >= tileCount)
-                continue;
-            var off = (int)U32(bytes, tileOffPtr + ti * 4);
-            var len = (int)U32(bytes, tileBytePtr + ti * 4);
-            if (off == 0 || len == 0)
-                continue;
-            for (var row = 0; row < tileH; row++)
-            {
-                var gy = ty * (int)tileH + row;
-                if (gy >= height)
-                    break;
-                for (var col = 0; col < tileW; col++)
-                {
-                    var gx = tx * (int)tileW + col;
-                    if (gx >= width)
-                        break;
-                    grid[gy * width + gx] = BitConverter.ToSingle(bytes, off + (row * (int)tileW + col) * 4);
-                }
-            }
-        }
-    }
-
-    return grid;
-}

@@ -3,17 +3,17 @@ using System.Globalization;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Educational detachment drill on the battle clock. Loaders ram while the gunner lays,
-/// so a repeat at the same data is the loader cycle and a new quadrant only adds the handwheel time.
+/// Educational K9 autoloader + powered turret drill on the battle clock.
+/// Autoloader rams while the turret lays; a repeat at the same data is mostly the load cycle.
 /// </summary>
 internal sealed class CrewDrill
 {
-    public const float RamSeconds = 7f;
-    public const float ChargeSeconds = 3f;
-    public const float ChargeSwapSeconds = 6.5f;
-    public const float CloseSeconds = 0.9f;
-    public const float ElevateMilsPerSecond = 160f;
-    public const float TraverseMilsPerSecond = 200f;
+    public const float RamSeconds = 3.2f;
+    public const float ChargeSeconds = 1.6f;
+    public const float ChargeSwapSeconds = 4.5f;
+    public const float CloseSeconds = 0.6f;
+    public const float ElevateMilsPerSecond = 280f;
+    public const float TraverseMilsPerSecond = 900f;
 
     private const float OnLayMils = 1.25f;
     private const float MilsPerDegree = 6400f / 360f;

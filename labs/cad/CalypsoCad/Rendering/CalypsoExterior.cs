@@ -14,8 +14,7 @@ internal static class CalypsoExterior
 {
     private static readonly Color FallbackSolid = Color.FromArgb(255, 120, 150, 170);
     private static readonly Color AccentCargo = Color.FromArgb(255, 168, 128, 62);
-    private static readonly Color OmlFacet = Color.FromArgb(38, 70, 120, 150);
-    private static readonly Color OmlCrease = Color.FromArgb(120, 90, 160, 200);
+    private static readonly Color OmlCrease = Color.FromArgb(160, 90, 160, 200);
 
     public static bool IsExteriorDrawable(CadEntity entity)
     {
@@ -76,8 +75,8 @@ internal static class CalypsoExterior
     }
 
     /// <summary>
-    /// Soft faceted OML guide (filled plates + sparse creases) — not triangle-edge soup.
-    /// Ignores reveal/cutaway so structure slides keep full-hull context.
+    /// OML edge guide only (boundary seams) — never filled hull. Use when HullShell is off
+    /// so structure/interiors read as one ship inside a wire silhouette.
     /// </summary>
     public static void DrawOmlWireGuide(SilkCadWorld world, CadDocument document)
     {
@@ -95,21 +94,8 @@ internal static class CalypsoExterior
             if (mesh is null)
                 continue;
 
-            for (var i = 0; i < mesh.Indices.Count; i += 3)
-            {
-                var a = mesh.Vertices[mesh.Indices[i]];
-                var b = mesh.Vertices[mesh.Indices[i + 1]];
-                var c = mesh.Vertices[mesh.Indices[i + 2]];
-                world.DrawTriangle(a, b, c, OmlFacet);
-
-                // Crease every ~8th triangle edge — plate silhouette, not full tessellation.
-                if ((i / 3) % 8 == 0)
-                {
-                    world.DrawLine(a, b, OmlCrease);
-                    world.DrawLine(b, c, OmlCrease);
-                    world.DrawLine(c, a, OmlCrease);
-                }
-            }
+            foreach (var (i0, i1) in CollectBoundaryEdges(mesh.Indices))
+                world.DrawLine(mesh.Vertices[i0], mesh.Vertices[i1], OmlCrease);
         }
     }
 

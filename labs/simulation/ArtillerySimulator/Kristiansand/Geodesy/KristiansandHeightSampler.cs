@@ -5,11 +5,12 @@ namespace ArtillerySimulator;
 
 /// <summary>
 /// Bilinear sampler over <see cref="KristiansandElevation"/> (Kartverket NDH meters).
-/// World X is east, world Z is north, origin at the southwest corner.
+/// World X is east, world Z is north, origin at the southwest corner of the EPSG:25833 frame
+/// shared with hoydedata NHM / NVDB (not equirectangular WGS84 UV).
 /// </summary>
 internal sealed class KristiansandHeightSampler : IHeightSampler
 {
-    // Match layers/georef.json (PDF frame @ 1:60 000, ETRS89/UTM 33N).
+    // Match layers/georef.json map rectangle @ 1:60 000.
     public const double SouthLatitude = 58.06181603859646;
     public const double NorthLatitude = 58.20818396140355;
     public const double WestLongitude = 7.825738542655645;
@@ -19,6 +20,13 @@ internal sealed class KristiansandHeightSampler : IHeightSampler
     public static float EastMeters { get; } = 24008.08f;
     public static float NorthMeters { get; } = 16266.16f;
     public static float MapExtentMeters { get; } = MathF.Max(EastMeters, NorthMeters);
+
+    /// <summary>
+    /// SW corner of the scenario rectangle in EPSG:25833
+    /// (<c>FrameOriginFromWgs84Box</c> of the cutout + PDF meter extents).
+    /// </summary>
+    public const double UtmOriginEasting = 78006.06073350424;
+    public const double UtmOriginNorthing = 6456827.344437925;
 
     /// <summary>Peak NDH height in the loaded grid (meters).</summary>
     public static float MaxElevationMeters { get; } = ComputeMaxElevation();
@@ -64,9 +72,16 @@ internal sealed class KristiansandHeightSampler : IHeightSampler
 
     private static float At(int i, int j) => KristiansandElevation.Meters[j * KristiansandElevation.Count + i];
 
-    /// <summary>WGS84 → world meters. Lon→X never flips — see <see cref="KristiansandGeoref"/>.</summary>
-    public static Vector2 ToWorldMeters(double latitudeDegrees, double longitudeDegrees) =>
-        new(
-            KristiansandGeoref.LonToWorldX(longitudeDegrees, WestLongitude, EastLongitude, EastMeters),
-            KristiansandGeoref.LatToWorldZ(latitudeDegrees, SouthLatitude, NorthLatitude, NorthMeters));
+    /// <summary>WGS84 → world meters on the shared hoydedata EPSG:25833 frame.</summary>
+    public static Vector2 ToWorldMeters(double latitudeDegrees, double longitudeDegrees)
+    {
+        var (easting, northing) = Etrs89Utm33N.ToEastingNorthing(latitudeDegrees, longitudeDegrees);
+        return new(
+            (float)(easting - UtmOriginEasting),
+            (float)(northing - UtmOriginNorthing));
+    }
+
+    /// <summary>World meters → WGS84 (inverse of <see cref="ToWorldMeters"/>).</summary>
+    public static (double Latitude, double Longitude) ToLonLat(float xMeters, float zMeters) =>
+        Etrs89Utm33N.FromEastingNorthing(UtmOriginEasting + xMeters, UtmOriginNorthing + zMeters);
 }

@@ -91,9 +91,13 @@ internal static class FrameWebPlateBuilder
         const float sectionY = 0f;
 
         var gaps = NormalizeGaps(athwartGaps, zStem, inset, bowAligned);
-        var decks = deckUps is { Count: > 0 }
-            ? deckUps.Where(u => u > upMin + 0.25f && u < upMax - 0.25f).OrderBy(u => u).ToList()
-            : GuessDeckBands(upMin, upMax);
+        // Lock plate tops only — never invent a parallel 4.0 m schedule.
+        var decks = (deckUps is { Count: > 0 }
+                ? deckUps
+                : (IReadOnlyList<float>)[0.5f, 4.4f, 8.0f])
+            .Where(u => u > upMin + 0.25f && u < upMax - 0.25f)
+            .OrderBy(u => u)
+            .ToList();
 
         var outerLoop = ring.Select(v => (v.Y, v.Up)).ToList();
         // Step 2 — boolean cutters (passageway; lightening optional).
@@ -183,18 +187,6 @@ internal static class FrameWebPlateBuilder
         }
 
         return merged;
-    }
-
-    private static List<float> GuessDeckBands(float upMin, float upMax)
-    {
-        var decks = new List<float>();
-        foreach (var d in new[] { 0.5f, 4f, 8f })
-        {
-            if (d > upMin + 0.4f && d < upMax - 0.4f)
-                decks.Add(d);
-        }
-
-        return decks;
     }
 
     /// <summary>

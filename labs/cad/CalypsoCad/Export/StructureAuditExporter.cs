@@ -74,10 +74,8 @@ internal static class StructureAuditExporter
             cy /= sumV;
             cz /= sumV;
             var zStem = Loa * 0.5f - (float)cz;
-            // SectionAt mid = OAH/2 spine (set during generate). For audit without regen, use 6.
-            CalypsoLockGenerator.SectionAtPublic(zStem, out _, out _, out var sectionMid, out _, out _);
-            if (sectionMid < 1f)
-                sectionMid = 6f;
+            // Spine mid = lock envelope OAH/2 (audit process does not run generate, so ActiveOahMid is stale).
+            var sectionMid = LockOahMid();
             var absX = Math.Abs(cx);
             var deltaUp = cy - sectionMid;
             var passX = absX <= TolX;
@@ -156,4 +154,24 @@ internal static class StructureAuditExporter
     }
 
     private static double Round(double v) => Math.Round(v, 4);
+
+    private static float LockOahMid()
+    {
+        foreach (var path in new[]
+                 {
+                     Path.Combine(CalypsoProjectPaths.ProjectRoot, "docs", "internals", "CAL-INT-GA-001.json"),
+                     @"d:\novolis\novolis-lab\labs\cad\CalypsoCad\docs\internals\CAL-INT-GA-001.json",
+                 })
+        {
+            if (!File.Exists(path))
+                continue;
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (doc.RootElement.TryGetProperty("envelope", out var env)
+                && env.TryGetProperty("OAH", out var oah)
+                && oah.ValueKind == JsonValueKind.Number)
+                return (float)(oah.GetDouble() * 0.5);
+        }
+
+        return 6.2f;
+    }
 }

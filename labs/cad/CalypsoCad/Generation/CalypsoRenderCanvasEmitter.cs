@@ -11,29 +11,18 @@ namespace CalypsoCad.Generation;
 /// <summary>Writes cursor/canvas TSX with embedded headless PNG data URLs.</summary>
 internal static class CalypsoRenderCanvasEmitter
 {
+    /// <summary>Curated headless set only — matches HeadlessPngExporter.CuratedExports.</summary>
     private static readonly (string FileName, string Const, string Title, string Caption)[] MfgAnglesFigures =
     [
         ("orbit-bow-quarter.png", "ORBIT_BOW_Q", "Bow quarter", "Starboard bow quarter — stem taper and forward frames."),
-        ("orbit-bow-on.png", "ORBIT_BOW_ON", "Bow on", "On-axis bow view along stem."),
         ("orbit-three-quarter-high.png", "ORBIT_3Q_HI", "Three-quarter high", "Elevated three-quarter orbit over midbody."),
-        ("orbit-broadside.png", "ORBIT_BROAD", "Broadside", "Port/starboard profile — full 69 m LOA read."),
-        ("orbit-low-pass.png", "ORBIT_LOW", "Low pass", "Low grazing orbit emphasizing sheer and ramp."),
-        ("orbit-stern-quarter.png", "ORBIT_STERN_Q", "Stern quarter", "Aft quarter — hold door, coaming, ramp geometry."),
-        ("orbit-stern-on.png", "ORBIT_STERN_ON", "Stern on", "Aft elevation on centerline."),
-        ("orbit-top-down.png", "ORBIT_TOP", "Top down", "Plan-like orbit — beam and parallel midbody."),
         ("orbit-cutaway-long.png", "ORBIT_CUT_LONG", "Longitudinal cutaway", "Partial cutaway along centerline — decks, frames, passages (visual CI)."),
-        ("orbit-cutaway-beam.png", "ORBIT_CUT_BEAM", "Beam cutaway", "Athwart cut — corridor and hold vertical extent."),
-        ("orbit-ramp-close.png", "ORBIT_RAMP", "Ramp close", "Aft ramp and sill detail for CAL-MFG coaming parts."),
-        ("plan-deck-m1.png", "PLAN_M1", "Deck −1 (M1)", "Lower deck plan — ENG, HOLD, catwalk hatches."),
         ("plan-deck-0.png", "PLAN_0", "Deck 0", "Main deck — bridge, crew, corridors (3 m CORR_W)."),
-        ("plan-deck-p1.png", "PLAN_P1", "Deck +1 (P1)", "Passenger deck band and upper spine."),
         ("layer-cutaway-structure.png", "LAYER_STRUCT", "Structure cutaway", "S-STRUCT + passage voids — CAL-MFG-002 frame webs."),
         ("layer-structure-wire.png", "LAYER_WIRE", "Structure wire", "Frame wire read without solid skin."),
         ("layer-cutaway-fitout.png", "LAYER_FIT", "Fitout cutaway", "Partitions and outfit boxes on structure."),
         ("interior-solid-bridge.png", "INT_BRIDGE", "Bridge DK0", "Captain, pilots, watch seats — solid interior (visual CI)."),
-        ("interior-solid-engineering.png", "INT_ENG", "Engineering", "ENG atrium outfit and tanks."),
         ("interior-cutaway-portCorridor.png", "INT_CORR", "Port corridor cutaway", "CORR_P vertical slice — hatch frames."),
-        ("interior-solid-cargoVoid.png", "INT_HOLD", "Cargo void", "HOLD volume and C40 stack context."),
     ];
 
     public static string EmitMfgAngles(string canvasPath, string? exportsDirectory = null, bool runHeadless = false)
@@ -45,7 +34,7 @@ internal static class CalypsoRenderCanvasEmitter
             generatedUtc,
             componentName: "CalypsoMfgAngles",
             title: "Calypso manufacturing angles (CAL-MFG-002)",
-            subtitle: "21 headless orbit / plan / layer / interior renders · 2560×1440 Silk export",
+            subtitle: "Curated headless orbit / plan / layer / interior renders · Silk export",
             figures: MfgAnglesFigures,
             grouped: false);
     }

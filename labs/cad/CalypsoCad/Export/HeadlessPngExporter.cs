@@ -1,14 +1,29 @@
-using CalypsoCad.Rendering;
 using CalypsoCad.Host;
+using CalypsoCad.Rendering;
 using Novolis.Silk;
+
 namespace CalypsoCad.Export;
 
 /// <summary>
-/// Headless Silk PNG export via hidden GLFW window + framebuffer readback.
-/// Writes stable <c>{kind}.png</c> names (overwrite) and purges legacy <c>*-headless-*</c> dumps.
+/// Curated headless Silk PNGs only — visual-gate set + a few orbit references.
+/// Cabin tours / catwalks / orbit angle spam are not committed; use interactive host or --build-steps.
 /// </summary>
 internal static class HeadlessPngExporter
 {
+    /// <summary>Files written under docs/renders and expected by verify-calypso-visual-gate.</summary>
+    public static readonly string[] CuratedExports =
+    [
+        "plan-deck-0.png",
+        "orbit-bow-quarter.png",
+        "orbit-three-quarter-high.png",
+        "orbit-cutaway-long.png",
+        "layer-cutaway-structure.png",
+        "layer-structure-wire.png",
+        "layer-cutaway-fitout.png",
+        "interior-solid-bridge.png",
+        "interior-cutaway-portCorridor.png",
+    ];
+
     public static IReadOnlyList<string> ExportViews(
         CalypsoSession session,
         CalypsoRenderer renderer,
@@ -19,7 +34,7 @@ internal static class HeadlessPngExporter
         _ = generatedRoot;
         var exportsDir = CalypsoProjectPaths.RendersExportsDirectory;
         Directory.CreateDirectory(exportsDir);
-        PurgeLegacyNamed(exportsDir);
+        PurgeNonCurated(exportsDir);
 
         var previousSelected = session.SelectedSpaceId;
         var previousView = session.ViewMode;
@@ -28,53 +43,47 @@ internal static class HeadlessPngExporter
         var previousLayers = session.VisualLayers;
 
         var jobs = new List<(string Path, Action Prepare)>();
-
         void Add(string kind, Action prepare) =>
             jobs.Add((Path.Combine(exportsDir, $"{kind}.png"), prepare));
 
-        session.VisualLayers = CalypsoVisualLayers.Dk001Plan;
-        foreach (var (deck, kind) in new (int?, string)[] { (-1, "plan-deck-m1"), (0, "plan-deck-0"), (1, "plan-deck-p1") })
+        Add("plan-deck-0", () =>
         {
-            var d = deck;
-            var k = kind;
-            Add(k, () =>
-            {
-                session.VisualLayers = CalypsoVisualLayers.Dk001Plan;
-                session.ViewMode = CalypsoViewMode.Plan;
-                session.DeckFilter = d;
-                session.WireMeshMode = CalypsoWireMeshMode.None;
-                session.StatusText = $"headless:{k}";
-            });
-        }
+            session.VisualLayers = CalypsoVisualLayers.Dk001Plan;
+            session.ViewMode = CalypsoViewMode.Plan;
+            session.DeckFilter = 0;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            session.StatusText = "headless:plan-deck-0";
+        });
 
-        foreach (var (preset, kind, wire) in new (string, string, CalypsoWireMeshMode)[]
-                 {
-                     ("bow-quarter", "orbit-bow-quarter", CalypsoWireMeshMode.None),
-                     ("three-quarter-high", "orbit-three-quarter-high", CalypsoWireMeshMode.None),
-                     ("broadside", "orbit-broadside", CalypsoWireMeshMode.None),
-                     ("stern-quarter", "orbit-stern-quarter", CalypsoWireMeshMode.None),
-                     ("bow-on", "orbit-bow-on", CalypsoWireMeshMode.None),
-                     ("stern-on", "orbit-stern-on", CalypsoWireMeshMode.None),
-                     ("ramp-close", "orbit-ramp-close", CalypsoWireMeshMode.None),
-                     ("top-down", "orbit-top-down", CalypsoWireMeshMode.None),
-                     ("low-pass", "orbit-low-pass", CalypsoWireMeshMode.None),
-                     ("cutaway-long", "orbit-cutaway-long", CalypsoWireMeshMode.CutawayPartial),
-                     ("cutaway-beam", "orbit-cutaway-beam", CalypsoWireMeshMode.CutawayPartial),
-                 })
+        Add("orbit-bow-quarter", () =>
         {
-            var p = preset;
-            var k = kind;
-            var w = wire;
-            Add(k, () =>
-            {
-                session.VisualLayers = previousLayers;
-                session.ViewMode = CalypsoViewMode.Orbit;
-                session.DeckFilter = null;
-                session.WireMeshMode = w;
-                renderer.ApplyOrbitPreset(p);
-                session.StatusText = $"headless:{k}";
-            });
-        }
+            session.VisualLayers = previousLayers;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.DeckFilter = null;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            renderer.ApplyOrbitPreset("bow-quarter");
+            session.StatusText = "headless:orbit-bow-quarter";
+        });
+
+        Add("orbit-three-quarter-high", () =>
+        {
+            session.VisualLayers = previousLayers;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.DeckFilter = null;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            renderer.ApplyOrbitPreset("three-quarter-high");
+            session.StatusText = "headless:orbit-three-quarter-high";
+        });
+
+        Add("orbit-cutaway-long", () =>
+        {
+            session.VisualLayers = previousLayers;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.DeckFilter = null;
+            session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
+            renderer.ApplyOrbitPreset("cutaway-long");
+            session.StatusText = "headless:orbit-cutaway-long";
+        });
 
         Add("layer-cutaway-structure", () =>
         {
@@ -104,98 +113,39 @@ internal static class HeadlessPngExporter
             session.StatusText = "headless:layer-cutaway-fitout";
         });
 
-        Add("layer-interior-structure", () =>
+        Add("interior-solid-bridge", () =>
         {
-            session.VisualLayers = CalypsoVisualLayers.InteriorStructureNoHull;
-            session.ViewMode = CalypsoViewMode.Orbit;
-            session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
-            renderer.ApplyOrbitPreset("three-quarter-high");
-            renderer.ZoomOrbit(1.5f);
-            session.StatusText = "headless:layer-interior-structure";
+            var space = session.Spaces.FirstOrDefault(s =>
+                string.Equals(s.Name, "BRIDGE", StringComparison.OrdinalIgnoreCase) && s.Deck == 0)
+                        ?? session.Spaces.FirstOrDefault(s =>
+                            string.Equals(s.Name, "BRIDGE", StringComparison.OrdinalIgnoreCase));
+            if (space is null)
+                return;
+            session.ViewMode = CalypsoViewMode.Interior;
+            session.SelectedSpaceId = space.Id;
+            session.DeckFilter = space.Deck;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            session.VisualLayers = CalypsoVisualLayers.DefaultInterior;
+            session.StatusText = "headless:interior:bridge:solid";
+            renderer.SyncInteriorFromSelection();
         });
 
-        var tourNames = new[]
+        Add("interior-cutaway-portCorridor", () =>
         {
-            ("BRIDGE", "bridge"),
-            ("CROSSING", "crossing"),
-            ("CREW_1", "cabin1"),
-            ("CREW_2", "cabin2"),
-            ("CREW_3", "cabin3"),
-            ("GALLEY", "galley"),
-            ("INFIRMARY", "infirmary"),
-            ("STAIRS_P", "stairs"),
-            ("ENG", "engineering"),
-            ("HOLD", "cargoVoid"),
-            ("LOUNGE", "lounge"),
-            ("AIRLOCK_A_port", "airlockPort"),
-            ("AIRLOCK_A_stbd", "airlockStbd"),
-            ("CORR_P", "portCorridor"),
-            ("CORR_S", "stbdCorridor"),
-            ("PAX_1", "pax1"),
-        };
-
-        foreach (var (spaceName, label) in tourNames)
-        {
-            var name = spaceName;
-            var lab = label;
-            var variants = label is "bridge" or "cargoVoid" or "engineering" or "portCorridor"
-                ? new[]
-                {
-                    (CalypsoWireMeshMode.None, "solid"),
-                    (CalypsoWireMeshMode.CutawayPartial, "cutaway"),
-                }
-                : new[] { (CalypsoWireMeshMode.None, "solid") };
-
-            foreach (var (wireMode, variantKind) in variants)
-            {
-                var wm = wireMode;
-                var vk = variantKind;
-                Add($"interior-{vk}-{lab}", () =>
-                {
-                    var space = session.Spaces.FirstOrDefault(s =>
-                        string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase)
-                        && (name != "CROSSING" || s.Deck == 0)
-                        && (name != "BRIDGE" || s.Deck == 0)
-                        && (name != "STAIRS_P" || s.Deck == 0)
-                        && (name != "CORR_P" || s.Deck == 0)
-                        && (name != "CORR_S" || s.Deck == 0)
-                        && (name is not ("CREW_1" or "CREW_2" or "CREW_3") || s.Deck == 0)
-                        && (name is not "PAX_1" || s.Deck == 1));
-                    space ??= session.Spaces.FirstOrDefault(s =>
-                        string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase));
-                    if (space is null)
-                        return;
-
-                    session.ViewMode = CalypsoViewMode.Interior;
-                    session.SelectedSpaceId = space.Id;
-                    session.SelectedHookId = null;
-                    session.DeckFilter = space.Deck;
-                    session.WireMeshMode = wm;
-                    session.VisualLayers = CalypsoVisualLayers.DefaultInterior;
-                    session.StatusText = $"headless:interior:{lab}:{vk}";
-                    renderer.SyncInteriorFromSelection();
-                });
-            }
-        }
-
-        foreach (var (preset, kind) in new (string, string)[]
-                 {
-                     ("catwalk-containers", "catwalk-containers"),
-                     ("catwalk-containers-quarter", "catwalk-containers-quarter"),
-                     ("catwalk-span", "catwalk-span"),
-                     ("catwalk-passage-port", "catwalk-passage-port"),
-                     ("catwalk-passage-stbd", "catwalk-passage-stbd"),
-                 })
-        {
-            var p = preset;
-            var k = kind;
-            Add(k, () =>
-            {
-                session.VisualLayers = previousLayers;
-                renderer.ApplyInteriorPreset(p);
-                session.StatusText = $"headless:{k}";
-            });
-        }
+            var space = session.Spaces.FirstOrDefault(s =>
+                string.Equals(s.Name, "CORR_P", StringComparison.OrdinalIgnoreCase) && s.Deck == 0)
+                        ?? session.Spaces.FirstOrDefault(s =>
+                            string.Equals(s.Name, "CORR_P", StringComparison.OrdinalIgnoreCase));
+            if (space is null)
+                return;
+            session.ViewMode = CalypsoViewMode.Interior;
+            session.SelectedSpaceId = space.Id;
+            session.DeckFilter = space.Deck;
+            session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
+            session.VisualLayers = CalypsoVisualLayers.DefaultInterior;
+            session.StatusText = "headless:interior:portCorridor:cutaway";
+            renderer.SyncInteriorFromSelection();
+        });
 
         try
         {
@@ -229,17 +179,40 @@ internal static class HeadlessPngExporter
         _ = generatedRoot;
         var exportsDir = CalypsoProjectPaths.RendersExportsDirectory;
         Directory.CreateDirectory(exportsDir);
-        var file = ApplyDumpPose(session, renderer, kind, preset, compartment);
-        var path = Path.Combine(exportsDir, $"{file}.png");
-        var saved = SilkHeadlessCapture.CaptureSequence(
-            width,
-            height,
-            [(path, () => { })],
-            frame => renderer.DrawFrame(frame, 0f));
-        return saved.Count == 0 ? null : saved[0];
+        // Agent dump API — does not expand the curated commit set.
+        var previousSelected = session.SelectedSpaceId;
+        var previousView = session.ViewMode;
+        var previousWire = session.WireMeshMode;
+        var previousDeck = session.DeckFilter;
+        var previousLayers = session.VisualLayers;
+        try
+        {
+            var file = ApplyDumpPose(session, renderer, kind, preset, compartment);
+            var path = Path.Combine(exportsDir, $"{file}.png");
+            var saved = SilkHeadlessCapture.CaptureSequence(
+                width,
+                height,
+                [(path, () => { })],
+                frame => renderer.DrawFrame(frame, 0f));
+            return saved.Count == 0 ? null : saved[0];
+        }
+        finally
+        {
+            session.SelectedSpaceId = previousSelected;
+            session.ViewMode = previousView;
+            session.WireMeshMode = previousWire;
+            session.DeckFilter = previousDeck;
+            session.VisualLayers = previousLayers;
+            renderer.SyncInteriorFromSelection();
+        }
     }
 
-    private static string ApplyDumpPose(CalypsoSession session, CalypsoRenderer renderer, string kind, string? preset, string? compartment)
+    private static string ApplyDumpPose(
+        CalypsoSession session,
+        CalypsoRenderer renderer,
+        string kind,
+        string? preset,
+        string? compartment)
     {
         switch (kind.ToLowerInvariant())
         {
@@ -283,14 +256,14 @@ internal static class HeadlessPngExporter
         }
     }
 
-    private static void PurgeLegacyNamed(string exportsDir)
+    private static void PurgeNonCurated(string exportsDir)
     {
-        if (!Directory.Exists(exportsDir))
-            return;
-        foreach (var file in Directory.EnumerateFiles(exportsDir, "*-headless-*.png"))
+        var keep = new HashSet<string>(CuratedExports, StringComparer.OrdinalIgnoreCase);
+        foreach (var path in Directory.EnumerateFiles(exportsDir, "*.png"))
         {
-            try { File.Delete(file); }
-            catch { /* best-effort */ }
+            var name = Path.GetFileName(path);
+            if (!keep.Contains(name))
+                File.Delete(path);
         }
     }
 }

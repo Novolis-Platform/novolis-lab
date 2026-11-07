@@ -263,20 +263,47 @@ internal static class CalypsoAcceptance
             // Last bay to stern may be a short remnant; all others must match lock bayM.
             if (i == frameZs.Count - 1 && dz < bay * 0.55f)
                 continue;
+            // Open HOLD cargo cell omits webs — one large gap across the hold is expected.
+            if (dz > bay * 1.5f
+                && frameZs[i - 1] <= 49.5f
+                && frameZs[i] >= 66f)
+                continue;
             if (MathF.Abs(dz - bay) > 0.2f)
                 uniform = false;
         }
 
+        // Open HOLD has no transverse webs — bay spacing only checked on framed stations.
         Add(
-            $"uniform frame bay {bay:0.#} m (full LOA)",
+            $"uniform frame bay {bay:0.#} m (outside open HOLD)",
             uniform,
             $"frames={frameZs.Count} bay={bay:0.#}");
+        static float? FrameStationZ(string? name)
+        {
+            if (name is null || !name.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase))
+                return null;
+            var tail = name["frame-F".Length..];
+            var num = tail.Split('-', StringSplitOptions.RemoveEmptyEntries)[0];
+            return float.TryParse(num, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var z)
+                ? z
+                : null;
+        }
+
+        var holdWebs = doc.Entities.Count(e =>
+            e.Name is not null
+            && e.Name.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase)
+            && FrameStationZ(e.Name) is float hz
+            && hz > 49.3f
+            && hz < 67.5f);
+        Add("no transverse webs in open HOLD cell", holdWebs == 0, $"holdWebSolids={holdWebs}");
         Add(
             "outfit LOUNGE-bar",
             doc.Entities.Any(e => string.Equals(e.Name, "outfit-LOUNGE-bar", StringComparison.OrdinalIgnoreCase)));
         Add(
             "outfit HOLD-gantry",
             doc.Entities.Any(e => string.Equals(e.Name, "outfit-HOLD-gantry", StringComparison.OrdinalIgnoreCase)));
+        var c40Count = doc.Entities.Count(e =>
+            e.Name?.StartsWith("C40-c", StringComparison.OrdinalIgnoreCase) == true);
+        Add("HOLD C40 stack 5×3 (15)", c40Count == 15, $"c40={c40Count}");
         Add(
             "airlock leaves both sides",
             doc.Entities.Any(e => string.Equals(e.Name, "outfit-AIRLOCK_A_port-leaf", StringComparison.OrdinalIgnoreCase))

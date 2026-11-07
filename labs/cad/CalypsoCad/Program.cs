@@ -5,6 +5,7 @@ using Novolis.Cad.Primitives;
 using CalypsoCad.Host;
 using CalypsoCad.Rendering;
 using CalypsoCad.Export;
+using CalypsoCad.Shell;
 using Novolis.Agent.Surface;
 
 namespace CalypsoCad;
@@ -17,11 +18,15 @@ internal static class Program
         var generateOnly = args.Any(a => string.Equals(a, "--generate-only", StringComparison.OrdinalIgnoreCase));
         var headless = args.Any(a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase));
         var walkthrough = args.Any(a => string.Equals(a, "--walkthrough", StringComparison.OrdinalIgnoreCase));
+        var constructionOrbit = args.Any(a =>
+            string.Equals(a, "--construction-orbit", StringComparison.OrdinalIgnoreCase));
         var jsonOnly = args.Any(a => string.Equals(a, "--json-only", StringComparison.OrdinalIgnoreCase));
         var acceptance = args.Any(a => string.Equals(a, "--acceptance", StringComparison.OrdinalIgnoreCase));
         var blueprints = args.Any(a => string.Equals(a, "--blueprints", StringComparison.OrdinalIgnoreCase));
         var blueprintDetails = args.Any(a => string.Equals(a, "--blueprint-details", StringComparison.OrdinalIgnoreCase));
         var structureAudit = args.Any(a => string.Equals(a, "--structure-audit", StringComparison.OrdinalIgnoreCase));
+        var explorer = args.Any(a => string.Equals(a, "--explorer", StringComparison.OrdinalIgnoreCase));
+        var silkOnly = args.Any(a => string.Equals(a, "--silk", StringComparison.OrdinalIgnoreCase));
         var mcp = args.Any(a => string.Equals(a, "--mcp", StringComparison.OrdinalIgnoreCase));
         var stdio = args.Any(a => string.Equals(a, "--stdio", StringComparison.OrdinalIgnoreCase));
 
@@ -124,6 +129,12 @@ internal static class Program
             return;
         }
 
+        if (constructionOrbit)
+        {
+            Environment.ExitCode = RunConstructionOrbit();
+            return;
+        }
+
         if (generateOnly || headless || walkthrough)
         {
             Environment.ExitCode = RunHeadless(
@@ -137,7 +148,11 @@ internal static class Program
         var renderer = new CalypsoRenderer(session);
         renderer.Fit();
         renderer.SyncInteriorFromSelection();
-        CalypsoSilkHost.Run(session, renderer);
+        // Human default: Avalonia chrome + Silk 3D. CI/agents: --silk for GLFW-only.
+        if (silkOnly && !explorer)
+            CalypsoSilkHost.Run(session, renderer);
+        else
+            CalypsoExplorerHost.Run(session, renderer);
     }
 
     private static int RunStructureAudit()
@@ -168,10 +183,13 @@ internal static class Program
     {
         try
         {
-            CalypsoCad.Blueprints.InternalsBlueprintEmitter.Emit();
+            var cadPath = Path.Combine(CalypsoLockGenerator.DefaultOutputDirectory, "calypso.cadjson");
+            if (!File.Exists(cadPath))
+                CalypsoLockGenerator.Generate();
+            CalypsoCad.Blueprints.InternalsBlueprintEmitter.Emit(cadJsonPath: cadPath);
             CalypsoCad.Blueprints.ManufacturerSheetEmitter.Emit();
             if (emitDetails)
-                CalypsoCad.Blueprints.StructureDetailBlueprintEmitter.Emit();
+                CalypsoCad.Blueprints.StructureDetailBlueprintEmitter.Emit(cadJsonPath: cadPath);
             return 0;
         }
         catch (Exception ex)
@@ -314,6 +332,33 @@ internal static class Program
             }
 
             return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            return 1;
+        }
+    }
+
+    private static int RunConstructionOrbit()
+    {
+        try
+        {
+            var dir = CalypsoLockGenerator.Generate();
+            Console.WriteLine($"Wrote Calypso CAD companions to:{Environment.NewLine}{dir}");
+            var session = new CalypsoSession();
+            session.RegenerateAndLoad();
+            var renderer = new CalypsoRenderer(session);
+            renderer.Fit();
+            renderer.SyncInteriorFromSelection();
+            var outputs = HeadlessConstructionOrbitExporter.Export(session, renderer);
+            Console.WriteLine($"Construction orbit exports ({outputs.Count}) → {CalypsoProjectPaths.ConstructionOrbitDirectory}");
+            foreach (var path in outputs.Where(p =>
+                         p.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)
+                         || p.Contains("key-", StringComparison.OrdinalIgnoreCase)
+                         || p.EndsWith("manifest.json", StringComparison.OrdinalIgnoreCase)))
+                Console.WriteLine($"  {path}");
+            return outputs.Any(p => p.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) ? 0 : 2;
         }
         catch (Exception ex)
         {

@@ -33,7 +33,8 @@ internal static class InternalsLockCabinPatch
     public const double ZMedAft = 41.0;
     public const double DoorPass = 1.0;
     public const double DoorHPass = 2.1;
-    public const double Dk0 = 4.0;
+    /// <summary>Must match lock decks.d0 (finished floor = DK0 plate top; room centred on OAH/2).</summary>
+    public const double Dk0 = 4.4;
     public const double Dk1 = 8.0;
     public const double RoomH = 3.2;
 

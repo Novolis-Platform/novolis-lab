@@ -4,26 +4,35 @@ using Novolis.Physics.Ballistics;
 
 namespace ArtillerySimulator;
 
-/// <summary>Simplified 155 mm towed gun preset (M777-class, educational constants only).</summary>
+/// <summary>
+/// Educational 155 mm / 52-caliber self-propelled howitzer preset (K9 Thunder-class).
+/// Turret traverse is continuous; constants are open-source approximations only.
+/// </summary>
 internal sealed class GunModel
 {
-  public const float BarrelLength = 5.2f;
+  /// <summary>155 mm × 52 calibers ≈ 8.06 m tube.</summary>
+  public const float BarrelLength = 8.06f;
+
   public const float MuzzleRadius = 0.0775f;
 
-  /// <summary>Educational M777 quadrant: about −43 to +1275 mil.</summary>
-  public const float MinElevationDegrees = -2.4f;
+  /// <summary>Educational K9 quadrant: roughly −45 to +1244 mil.</summary>
+  public const float MinElevationDegrees = -2.5f;
 
-  public const float MaxElevationDegrees = 71.7f;
+  public const float MaxElevationDegrees = 70f;
 
-  /// <summary>±400 mil on the trails. The piece does not slew like a turret.</summary>
-  public const float MaxTraverseDegrees = 22.5f;
+  /// <summary>Full turret (±180°) — not trailed carriage stops.</summary>
+  public const float MaxTraverseDegrees = 180f;
+
+  public const bool ContinuousTraverse = true;
 
   public float ElevationDegrees { get; private set; } = 45f;
 
-  /// <summary>World bearing. Azimuth 0 fires east (+X). The trails only cover ±<see cref="MaxTraverseDegrees"/> around <see cref="CenterAzimuthDegrees"/>.</summary>
+  /// <summary>World bearing. Azimuth 0 fires east (+X). Turret covers ±<see cref="MaxTraverseDegrees"/> around hull <see cref="CenterAzimuthDegrees"/>.</summary>
   public float AzimuthDegrees { get; private set; }
 
+  /// <summary>Hull / preferred-sector center (opening lay).</summary>
   public float CenterAzimuthDegrees { get; private set; }
+
   public int ChargeIndex { get; private set; } = 1;
 
   public float ElevationMils => ElevationDegrees * 6400f / 360f;
@@ -34,7 +43,8 @@ internal sealed class GunModel
 
   public float DeflectionMils => DeflectionDegrees * 6400f / 360f;
 
-  public bool AtTraverseStop => MathF.Abs(DeflectionDegrees) >= MaxTraverseDegrees - 0.05f;
+  public bool AtTraverseStop =>
+      !ContinuousTraverse && MathF.Abs(Wrap180(DeflectionDegrees)) >= MaxTraverseDegrees - 0.05f;
 
   public float MuzzleSpeedMps => SimulationUnits.ChargeSpeedsMps[ChargeIndex];
 
@@ -57,7 +67,7 @@ internal sealed class GunModel
 
   public void NudgeAzimuth(float delta)
   {
-    var deflection = Math.Clamp(DeflectionDegrees + delta, -MaxTraverseDegrees, MaxTraverseDegrees);
+    var deflection = Math.Clamp(Wrap180(DeflectionDegrees + delta), -MaxTraverseDegrees, MaxTraverseDegrees);
     AzimuthDegrees = CenterAzimuthDegrees + deflection;
   }
 
@@ -90,29 +100,34 @@ internal sealed class GunModel
   {
     var dir = BarrelDirection();
     var muzzle = MuzzlePosition(gunPivot);
-    var carriage = Color.FromArgb(255, 78, 86, 64);
+    var hullPaint = Color.FromArgb(255, 62, 78, 58);
+    var turretPaint = Color.FromArgb(255, 88, 102, 72);
     var tube = Color.FromArgb(255, 186, 176, 154);
     var copper = Color.FromArgb(255, 210, 132, 72);
-    var right = Lateral(dir);
-    var horizontal = Vector3.Normalize(new Vector3(dir.X, 0f, dir.Z));
-    var trunnion = gunPivot + new Vector3(0f, 0.95f, 0f);
-    var axle = gunPivot - new Vector3(0f, 0.85f, 0f);
 
-    DrawBundle(wires, trunnion, muzzle, dir, 0.09f, tube);
-    wires.AxisRing(muzzle, dir, 0.16f, copper);
-    wires.AxisRing(trunnion, dir, 0.12f, carriage);
+    var hullForward = DirectionOf(0f, CenterAzimuthDegrees);
+    var hullRight = Lateral(hullForward);
+    var tubeRight = Lateral(dir);
+    var deck = gunPivot + new Vector3(0f, 0.55f, 0f);
+    var turret = deck + new Vector3(0f, 0.85f, 0f);
+    var trunnion = turret + hullForward * 0.35f + new Vector3(0f, 0.35f, 0f);
 
-    var trailEnd = gunPivot - horizontal * 3.6f - new Vector3(0f, 0.55f, 0f);
-    DrawBundle(wires, axle + right * 0.35f, trailEnd + right * 0.7f, horizontal, 0.05f, carriage);
-    DrawBundle(wires, axle - right * 0.35f, trailEnd - right * 0.7f, horizontal, 0.05f, carriage);
-    wires.AxisRing(axle + right * 1.15f, right, 0.72f, carriage);
-    wires.AxisRing(axle - right * 1.15f, right, 0.72f, carriage);
+    // Tracked hull (wire box aligned to hull heading).
+    DrawBox(wires, deck, hullForward, hullRight, 3.6f, 1.55f, 1.05f, hullPaint);
+    // Side skirts / track lines.
+    wires.Line(deck - hullRight * 1.7f - hullForward * 3.2f, deck - hullRight * 1.7f + hullForward * 3.2f, hullPaint);
+    wires.Line(deck + hullRight * 1.7f - hullForward * 3.2f, deck + hullRight * 1.7f + hullForward * 3.2f, hullPaint);
 
-    var shield = trunnion + horizontal * 0.45f;
-    wires.Line(shield + right * 0.85f + Vector3.UnitY * 0.55f, shield - right * 0.85f + Vector3.UnitY * 0.55f, copper);
-    wires.Line(shield + right * 0.85f - Vector3.UnitY * 0.15f, shield - right * 0.85f - Vector3.UnitY * 0.15f, carriage);
-    wires.Line(shield + right * 0.85f + Vector3.UnitY * 0.55f, shield + right * 0.85f - Vector3.UnitY * 0.15f, carriage);
-    wires.Line(shield - right * 0.85f + Vector3.UnitY * 0.55f, shield - right * 0.85f - Vector3.UnitY * 0.15f, carriage);
+    // Turret + bustle.
+    DrawBox(wires, turret, hullForward, hullRight, 1.9f, 1.35f, 0.75f, turretPaint);
+    DrawBox(wires, turret - hullForward * 1.5f, hullForward, hullRight, 1.1f, 1.15f, 0.55f, turretPaint);
+    wires.AxisRing(turret, Vector3.UnitY, 1.05f, turretPaint);
+
+    // L/52 tube from trunnion.
+    DrawBundle(wires, trunnion, muzzle, dir, 0.095f, tube);
+    wires.AxisRing(muzzle, dir, 0.17f, copper);
+    wires.AxisRing(trunnion, dir, 0.14f, turretPaint);
+    wires.Line(trunnion + tubeRight * 0.55f, trunnion - tubeRight * 0.55f, turretPaint);
 
     // Vertical fort marker so the piece is visible from altitude.
     wires.Line(gunPivot, gunPivot + Vector3.UnitY * 18f, copper);
@@ -123,10 +138,55 @@ internal sealed class GunModel
       wires.WireSphere(muzzle, 2.4f, copper);
   }
 
+  private static float Wrap180(float degrees)
+  {
+    while (degrees > 180f)
+      degrees -= 360f;
+    while (degrees < -180f)
+      degrees += 360f;
+    return degrees;
+  }
+
   private static Vector3 Lateral(Vector3 dir)
   {
     var right = Vector3.Cross(dir, Vector3.UnitY);
     return right.LengthSquared() < 1e-6f ? Vector3.UnitZ : Vector3.Normalize(right);
+  }
+
+  private static void DrawBox(
+      SilkWireBatch wires,
+      Vector3 center,
+      Vector3 forward,
+      Vector3 right,
+      float halfLength,
+      float halfWidth,
+      float halfHeight,
+      Color color)
+  {
+    var up = Vector3.UnitY;
+    var f = forward * halfLength;
+    var r = right * halfWidth;
+    var u = up * halfHeight;
+    var c000 = center - f - r - u;
+    var c001 = center - f - r + u;
+    var c010 = center - f + r - u;
+    var c011 = center - f + r + u;
+    var c100 = center + f - r - u;
+    var c101 = center + f - r + u;
+    var c110 = center + f + r - u;
+    var c111 = center + f + r + u;
+    wires.Line(c000, c100, color);
+    wires.Line(c010, c110, color);
+    wires.Line(c001, c101, color);
+    wires.Line(c011, c111, color);
+    wires.Line(c000, c010, color);
+    wires.Line(c100, c110, color);
+    wires.Line(c001, c011, color);
+    wires.Line(c101, c111, color);
+    wires.Line(c000, c001, color);
+    wires.Line(c010, c011, color);
+    wires.Line(c100, c101, color);
+    wires.Line(c110, c111, color);
   }
 
   private static void DrawBundle(SilkWireBatch wires, Vector3 from, Vector3 to, Vector3 axis, float radius, Color color)
