@@ -35,8 +35,11 @@ internal static class ShipObjectExporter
         StlBinaryWriter.Write(stl, merged, "calypso");
         written.Add(stl);
 
-        TryAssimp(Path.Combine(outDir, "calypso.fbx"), named, written);
         TryAssimp(Path.Combine(outDir, "calypso.glb"), named, written);
+        // FBX export is optional — many Assimp native builds omit the FBX writer (SDK license).
+        TryAssimp(Path.Combine(outDir, "calypso.fbx"), named, written);
+        if (!written.Any(p => p.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase)))
+            TryAssimp(Path.Combine(outDir, "calypso.dae"), named, written);
 
         var manifest = Path.Combine(outDir, "manifest.json");
         File.WriteAllText(

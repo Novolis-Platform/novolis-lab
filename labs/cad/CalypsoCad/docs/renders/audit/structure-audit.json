@@ -1,5 +1,5 @@
 {
-  "generatedUtc": "2026-11-07T23:36:12.0192200Z",
+  "generatedUtc": "2026-11-07T23:40:51.0743246Z",
   "loa": 69,
   "spine": "mid athwart (X=0) \u00D7 mid height (SectionAt.mid) \u00D7 stem\u2192stern",
   "tolX": 0.05,
@@ -28,7 +28,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-BOW-COLLISION-deckseat-d4,4",
+      "id": "bh-BOW-COLLISION-deckseat-d4.4",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 4.35,
@@ -91,7 +91,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-CREW-AFT-deckseat-d0,5",
+      "id": "bh-CREW-AFT-deckseat-d0.5",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 0.45,
@@ -112,7 +112,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-CREW-AFT-deckseat-d4,4",
+      "id": "bh-CREW-AFT-deckseat-d4.4",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 4.35,
@@ -175,7 +175,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-CROSS-AFT-deckseat-d0,5",
+      "id": "bh-CROSS-AFT-deckseat-d0.5",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 0.45,
@@ -196,7 +196,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-CROSS-AFT-deckseat-d4,4",
+      "id": "bh-CROSS-AFT-deckseat-d4.4",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 4.35,
@@ -259,7 +259,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-CROSS-FORE-deckseat-d0,5",
+      "id": "bh-CROSS-FORE-deckseat-d0.5",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 0.45,
@@ -280,7 +280,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-CROSS-FORE-deckseat-d4,4",
+      "id": "bh-CROSS-FORE-deckseat-d4.4",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 4.35,
@@ -343,7 +343,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-ENG-AFT-deckseat-d0,5",
+      "id": "bh-ENG-AFT-deckseat-d0.5",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 0.45,
@@ -364,7 +364,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-ENG-AFT-deckseat-d4,4",
+      "id": "bh-ENG-AFT-deckseat-d4.4",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 4.35,
@@ -427,7 +427,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-ENG-FORE-deckseat-d0,5",
+      "id": "bh-ENG-FORE-deckseat-d0.5",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 0.45,
@@ -448,7 +448,7 @@
       "tolUp": 0.15
     },
     {
-      "id": "bh-ENG-FORE-deckseat-d4,4",
+      "id": "bh-ENG-FORE-deckseat-d4.4",
       "cellCount": 1,
       "centroidX": 0,
       "centroidY": 4.35,
