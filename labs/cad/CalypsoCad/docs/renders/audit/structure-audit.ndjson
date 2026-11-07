@@ -1,0 +1,8 @@
+{"gate":"bh-spine-x","id":"bh-AIRLOCK-CROSS","pass":true,"measured":0,"tol":0.05,"skill":"calypso-structure-verify"}
+{"gate":"bh-spine-up","id":"bh-AIRLOCK-CROSS","pass":true,"measured":0,"tol":0.15,"skill":"calypso-structure-verify"}
+{"gate":"bh-spine-x","id":"bh-BOW-COLLISION","pass":true,"measured":0,"tol":0.05,"skill":"calypso-structure-verify"}
+{"gate":"bh-spine-up","id":"bh-BOW-COLLISION","pass":true,"measured":0,"tol":0.15,"skill":"calypso-structure-verify"}
+{"gate":"bh-spine-x","id":"bh-ENG-AFT","pass":true,"measured":0.001,"tol":0.05,"skill":"calypso-structure-verify"}
+{"gate":"bh-spine-up","id":"bh-ENG-AFT","pass":true,"measured":0.017,"tol":0.15,"skill":"calypso-structure-verify"}
+{"gate":"bh-spine-x","id":"bh-ENG-FORE","pass":true,"measured":0,"tol":0.05,"skill":"calypso-structure-verify"}
+{"gate":"bh-spine-up","id":"bh-ENG-FORE","pass":true,"measured":0.007,"tol":0.15,"skill":"calypso-structure-verify"}

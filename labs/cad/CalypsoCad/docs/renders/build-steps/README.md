@@ -1,5 +1,9 @@
 # Calypso structure build steps
 
+**Optional human glance only — not the acceptance gate.**
+
+Acceptance = `docs/renders/audit/structure-audit.json` + `verify-calypso-bh-spine` + `docs/internals/` blueprints (including `details/index.html`). See skill `calypso-structure-verify`.
+
 Camera: three-quarter-high ×1.5 · 39 slides (structure → passageways → airlocks → hatches)
 
 1. `00-longitudinals.png` — Girders / coaming / ramp (+146)

@@ -4,6 +4,19 @@ Lab host that generates the Calypso lock companions from `docs/internals/CAL-INT
 
 Ship Designer Lab (`d:\novolis\novolis-lab\labs\cad\ShipDesignerLab`) imports the generated `.cadjson`. This host stays generate / validate / dump.
 
+## Source layout
+
+| Folder | Role |
+|--------|------|
+| `Generation/` | Lock → CAD emit, BH/frames, acceptance, fab orchestration (Calypso-specific) |
+| `Blueprints/` | ISO HTML + structure detail sheets |
+| `Host/` | Session, Silk window, view/layer modes, project paths |
+| `Rendering/` | Calypso Silk renderer + exterior draw rules |
+| `Export/` | Headless PNG / build-steps / structure audit |
+| `Agent/` | `calypso.*` agent surface |
+
+Shared CAD/fab/Silk primitives live in libraries: `Novolis.Cad.Primitives` (sidecars + `CadJson` + bundle IO), `Novolis.Ship.Structure` (DXF / nest / unfold), `Novolis.Silk` (`SilkCadWorld`, headless capture, `RgbaPng`).
+
 ## Canon lock
 
 | Spec | Value |
@@ -53,11 +66,17 @@ Generator `outfit-*` boxes are authoritative; the renderer skips duplicate compa
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --generate-only --json-only
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --structure-audit
+dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-bh-spine.cs
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --acceptance
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --blueprints
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --headless
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --mcp
+# optional human glance (not structure acceptance):
+# --build-steps
 ```
+
+**Structure acceptance** = audit JSON + `verify-calypso-bh-spine` + blueprints/`docs/internals/details/` — not Silk FPS. SoT freeze: `docs/internals/sot-table.json`.
 
 On startup, companions land in `%LocalAppData%\Novolis\CalypsoCad\generated\`.
 

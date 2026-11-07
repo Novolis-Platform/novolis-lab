@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using CalypsoCad.Models;
 using Novolis.Cad.Primitives;
 using Novolis.Ship.Primitives;
 using Novolis.Ship.Structure;
@@ -34,12 +33,12 @@ internal static class CalypsoDnvReviewEmitter
 
         if (runHeadlessExports)
         {
-            var session = new Services.CalypsoSession();
+            var session = new CalypsoCad.Host.CalypsoSession();
             session.RegenerateAndLoad();
-            var renderer = new Services.CalypsoRenderer(session);
+            var renderer = new CalypsoCad.Rendering.CalypsoRenderer(session);
             renderer.Fit();
             renderer.SyncInteriorFromSelection();
-            Services.HeadlessPngExporter.ExportViews(session, renderer, generated);
+            CalypsoCad.Export.HeadlessPngExporter.ExportViews(session, renderer, generated);
         }
 
         var cadPath = Path.Combine(generated, "calypso.cadjson");

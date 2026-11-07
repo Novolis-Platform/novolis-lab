@@ -1,7 +1,6 @@
 using System.Numerics;
 using System.Text.Json;
 using CalypsoCad.Generation;
-using CalypsoCad.Models;
 using Novolis.Cad.Primitives;
 using Novolis.Ship.Primitives;
 using Novolis.Ship.Structure;

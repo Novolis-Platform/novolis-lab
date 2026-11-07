@@ -1,6 +1,5 @@
-using CalypsoCad.Generation.Fabrication;
-using Novolis.Cad.Primitives;
 using Novolis.Ship.Structure;
+using Novolis.Cad.Primitives;
 
 namespace CalypsoCad.Generation;
 

@@ -1,28 +1,34 @@
 # ArtillerySimulator
 
-Silk-only Kristiansand artillery lab (single executable). Mission loop, NDH terrain, PDF roads, defense scenario.
+Silk-only Kristiansand artillery lab (single executable). Vertical-slice layout: **Host** composes **Features** over the **Kristiansand** geographic kernel.
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true
+```
+
+Headless timing:
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --profile 180
 ```
 
 ## Layout
 
 | Folder | Role |
 | --- | --- |
-| `Game/` | Host loop (`ArtillerySimulatorGame`) |
-| `Game/Hud/` | On-screen wire HUD + stick font |
-| `Game/Gun/` | Howitzer model, crew drill, units |
-| `Game/Mission/` | Defense scenario, NATO symbols |
-| `Game/World/` | Terrain heightfield, atmosphere, FPS |
-| `Game/Map/` | Kristiansand georef, masks, roads, elevation |
-| `Game/Camera/` | Orbit / freecam |
-| `Game/Agent/` | Live agent surface |
-| `Game/Render/` | Silk wire batch helper |
+| `Host/` | Composition root (`ArtilleryApp`), frame profiler |
+| `Features/Battery/` | Howitzer, crew drill, charge units |
+| `Features/Defense/` | Mission loop, columns, opening fire plan, draw, reports |
+| `Features/Presentation/` | Camera, HUD, silk wires / NATO symbols |
+| `Features/Agent/` | Live agent surface |
+| `Kristiansand/Geodesy/` | Georef, fort, NDH elevation sampler |
+| `Kristiansand/Terrain/` | Heightfield world, land/sea, atmosphere |
+| `Kristiansand/Roads/` | Primary road graph + PDF road draping |
+| `Kristiansand/Cartography/` | Optional OSM leftovers (agent map entities) |
 | `map/` | Norgeskart + NDH layer assets |
 | `scripts/` | Map rebuild file-based apps (`MapPipeline.Support`) |
 
-Shared georef math lives in `Novolis.Math.Geometry.MapRasterBasis`. Sea-connected flood-fill for map scripts lives in `scripts/MapPipeline.Support` (`WaterSeaConnected`). Geographic map packages are **not** `Novolis.Mapping` (that is DTO mapping) — further cartography helpers should graduate to a dedicated geo package when reused outside this lab.
+Shared georef math: `Novolis.Math.Geometry.MapRasterBasis`. Sea flood-fill for scripts: `scripts/MapPipeline.Support`. Do not use `Novolis.Mapping` for geography (that package is DTO mapping).
 
 ## Map rebuild
 

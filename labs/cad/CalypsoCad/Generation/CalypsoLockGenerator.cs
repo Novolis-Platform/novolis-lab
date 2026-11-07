@@ -2,9 +2,10 @@ using System.Globalization;
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using CalypsoCad.Models;
-using CalypsoCad.Services;
 using Novolis.Cad.Primitives;
+using CalypsoCad.Host;
+using CalypsoCad.Rendering;
+using CalypsoCad.Export;
 using Novolis.Ship.Primitives;
 using Novolis.Ship.Structure;
 
@@ -103,7 +104,7 @@ internal static class CalypsoLockGenerator
         var cad = BuildCad(stamp, lockDoc);
         if (preservedExterior is { Count: > 0 })
             cad.Entities.AddRange(preservedExterior);
-        CadDocumentStore.WriteAll(dir, layers, shapes, cad);
+        CadDocumentBundle.Write(dir, layers, shapes, cad, "calypso");
         return dir;
     }
 
@@ -113,7 +114,7 @@ internal static class CalypsoLockGenerator
     /// </summary>
     private static bool IsHandAuthoredExterior(CadEntity entity)
     {
-        if (!CalypsoCad.Services.CalypsoExterior.IsPreservedExterior(entity))
+        if (!CalypsoCad.Rendering.CalypsoExterior.IsPreservedExterior(entity))
             return false;
         var name = entity.Name ?? "";
         if (name.Contains("nacelle", StringComparison.OrdinalIgnoreCase)
@@ -246,7 +247,7 @@ internal static class CalypsoLockGenerator
         ],
     };
 
-    private static CadShape Shape(Guid id, string name, float[] color, string preset, float roughness, float metalness) =>
+    private static CadCatalogShape Shape(Guid id, string name, float[] color, string preset, float roughness, float metalness) =>
         new()
         {
             Id = id,

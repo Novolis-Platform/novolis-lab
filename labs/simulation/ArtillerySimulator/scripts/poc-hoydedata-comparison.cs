@@ -61,7 +61,10 @@ using var waterSrc = SKBitmap.Decode(waterMaskPath)
     ?? throw new FileNotFoundException(waterMaskPath);
 var water = ResampleAlphaMask(waterSrc, dw, dh);
 
-using var samferdsel = DecodePngBytes(samferdselPng, dw, dh);
+using var samferdselRaw = DecodePngBytes(samferdselPng, dw, dh);
+// WMS dashes/pink are cartographic — do NOT morph-fix. Draw contiguous NVDB centerlines instead.
+// Tunnels are still car links in NVDB geometry → solid primary (surface drape).
+using var nvdbRoads = await FetchNvdbCarRoadsRasterAsync(http, west, south, east, north, dw, dh);
 using var labRoads = LoadScaled(labRoadsPath, dw, dh);
 
 using var dtmBare = MakeHeatBitmap(dtm, water, dw, dh, waterAsBlue: true, label: "Fetched NHM_DTM (meters only)");
@@ -74,11 +77,13 @@ SavePng(Path.Combine(outDir, "02-fetched-dom.png"), domBare);
 SavePng(Path.Combine(outDir, "03-fetched-topobathy.png"), bathyBare);
 SavePng(Path.Combine(outDir, "04-dom-minus-dtm.png"), nDsmBare);
 
-using var dtmWithRoads = WithRoads(dtmBare, samferdsel, "FETCHED DTM + LaserInnsyn Samferdsel (wms.kartdata)");
-using var domWithRoads = WithRoads(domBare, samferdsel, "FETCHED DOM + LaserInnsyn Samferdsel (wms.kartdata)");
+using var dtmWithRoads = WithRoads(dtmBare, nvdbRoads, "FETCHED DTM + NVDB (red=E/R/S/F, gray=K/P)");
+using var domWithRoads = WithRoads(domBare, nvdbRoads, "FETCHED DOM + NVDB (red=E/R/S/F, gray=K/P)");
 SavePng(Path.Combine(outDir, "01b-fetched-dtm-plus-roads.png"), dtmWithRoads);
 SavePng(Path.Combine(outDir, "02b-fetched-dom-plus-roads.png"), domWithRoads);
-SavePng(Path.Combine(outDir, "05-fetched-samferdsel-only.png"), samferdsel);
+SavePng(Path.Combine(outDir, "05-fetched-samferdsel-only.png"), samferdselRaw);
+SavePng(Path.Combine(outDir, "05b-samferdsel-normalized.png"), nvdbRoads);
+SavePng(Path.Combine(outDir, "05c-nvdb-car-roads.png"), nvdbRoads);
 
 using var current = LoadScaled(currentElevPath, dw, dh);
 using var panelCurrent = ComposeCurrent(current, water, labRoads, dw, dh);
@@ -86,10 +91,10 @@ SavePng(Path.Combine(outDir, "00-current-lab-stack.png"), panelCurrent);
 
 using var sheet = BuildComparisonSheet(
     ("CURRENT lab roads.png", panelCurrent),
-    ("FETCHED DTM + WMS Samferdsel", dtmWithRoads),
-    ("FETCHED DOM + WMS Samferdsel", domWithRoads),
-    ("TOPOBATHY (no roads)", bathyBare),
-    ("DOM − DTM (no roads)", nDsmBare));
+    ("WMS raw Samferdsel", LabelBitmap(samferdselRaw, "WMS raw (style only)")),
+    ("NVDB hierarchy", LabelBitmap(nvdbRoads, "NVDB: red=Europavei/Riksvei/Stamvei/Fylkesvei · gray=Kommunevei/øvrig")),
+    ("FETCHED DTM + NVDB", dtmWithRoads),
+    ("FETCHED DOM + NVDB", domWithRoads));
 SavePng(Path.Combine(outDir, "COMPARE-sheet.png"), sheet);
 
 WriteReadme(outDir, west, south, east, north, fetchW, fetchH, dtm, water, dw, dh);
@@ -155,6 +160,223 @@ static SKBitmap DecodePngBytes(byte[] png, int expectW, int expectH)
         return decoded.Copy();
     return decoded.Resize(new SKImageInfo(expectW, expectH), new SKSamplingOptions(SKFilterMode.Nearest))
         ?? throw new InvalidDataException("Samferdsel PNG resize failed");
+}
+
+/// <summary>
+/// Contiguous car roads from NVDB vegnett, split by vegsystem.vegkategori:
+/// main (red) = E Europavei, R Riksvei, S Stamvei, F Fylkesvei;
+/// local-local (gray) = K Kommunevei + P privat / remaining.
+/// </summary>
+static async Task<SKBitmap> FetchNvdbCarRoadsRasterAsync(
+    HttpClient http,
+    double west,
+    double south,
+    double east,
+    double north,
+    int width,
+    int height)
+{
+    Console.WriteLine("GET NVDB vegnett segmentert (trafikantgruppe=K, hierarchy E/R/S/F vs K/P)…");
+
+    var localWkts = new List<string>(24_000);
+    var mainWkts = new List<string>(8_000);
+    string? start = null;
+    var pages = 0;
+    var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+    while (true)
+    {
+        var url =
+            "https://nvdbapiles.atlas.vegvesen.no/vegnett/api/v4/veglenkesekvenser/segmentert" +
+            string.Create(CultureInfo.InvariantCulture,
+                $"?kartutsnitt={west},{south},{east},{north}&srid=4326&antall=1000&trafikantgruppe=K");
+        if (start is not null)
+            url += "&start=" + Uri.EscapeDataString(start);
+
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.TryAddWithoutValidation("Accept", "application/vnd.vegvesen.nvdb-v3-rev2+json");
+        req.Headers.TryAddWithoutValidation("X-Client", "Novolis-ArtillerySimulator-POC");
+        using var resp = await http.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+        await using var stream = await resp.Content.ReadAsStreamAsync();
+        using var doc = await JsonDocument.ParseAsync(stream);
+        var root = doc.RootElement;
+        if (!root.TryGetProperty("objekter", out var objekter))
+            break;
+
+        foreach (var obj in objekter.EnumerateArray())
+        {
+            if (!obj.TryGetProperty("geometri", out var geom)
+                || !geom.TryGetProperty("wkt", out var wktEl))
+                continue;
+            var wkt = wktEl.GetString();
+            if (string.IsNullOrEmpty(wkt))
+                continue;
+
+            var kategori = ReadVegkategori(obj);
+            counts.TryGetValue(kategori, out var n);
+            counts[kategori] = n + 1;
+
+            if (IsMainVegkategori(kategori))
+                mainWkts.Add(wkt);
+            else
+                localWkts.Add(wkt);
+        }
+
+        pages++;
+        start = null;
+        if (root.TryGetProperty("metadata", out var meta)
+            && meta.TryGetProperty("neste", out var neste)
+            && neste.ValueKind == JsonValueKind.Object
+            && neste.TryGetProperty("start", out var startEl)
+            && startEl.ValueKind == JsonValueKind.String)
+        {
+            start = startEl.GetString();
+        }
+
+        if (string.IsNullOrEmpty(start) || objekter.GetArrayLength() == 0)
+            break;
+
+        if (pages % 5 == 0)
+            Console.WriteLine($"  … main={mainWkts.Count:N0} local={localWkts.Count:N0} ({pages} pages)");
+    }
+
+    var bmp = new SKBitmap(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    using var canvas = new SKCanvas(bmp);
+    canvas.Clear(SKColors.Transparent);
+
+    var invW = 1.0 / Math.Max(1e-12, east - west);
+    var invH = 1.0 / Math.Max(1e-12, north - south);
+
+    // Local-local under main so E18/E39/FV/RV stay readable.
+    using (var localPaint = new SKPaint
+    {
+        Color = new SKColor(168, 168, 168, 210),
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke,
+        StrokeWidth = 1.15f,
+        StrokeCap = SKStrokeCap.Round,
+        StrokeJoin = SKStrokeJoin.Round,
+    })
+    {
+        foreach (var wkt in localWkts)
+            TryDrawLineStringZ(canvas, localPaint, wkt, west, south, north, width, height, invW, invH);
+    }
+
+    using (var mainPaint = new SKPaint
+    {
+        Color = new SKColor(210, 35, 42, 255),
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke,
+        StrokeWidth = 2.6f,
+        StrokeCap = SKStrokeCap.Round,
+        StrokeJoin = SKStrokeJoin.Round,
+    })
+    {
+        foreach (var wkt in mainWkts)
+            TryDrawLineStringZ(canvas, mainPaint, wkt, west, south, north, width, height, invW, invH);
+    }
+
+    Console.WriteLine(
+        $"  main(E/R/S/F)={mainWkts.Count:N0} local(K/P/…)={localWkts.Count:N0} pages={pages}");
+    foreach (var kv in counts.OrderByDescending(static x => x.Value))
+        Console.WriteLine($"    vegkategori {kv.Key}: {kv.Value:N0}");
+    return bmp;
+}
+
+/// <summary>E Europavei, R Riksvei, S Stamvei, F Fylkesvei — critical main roads.</summary>
+static bool IsMainVegkategori(string kategori) =>
+    kategori is "E" or "R" or "S" or "F";
+
+static string ReadVegkategori(JsonElement obj)
+{
+    if (obj.TryGetProperty("vegsystemreferanse", out var vsr)
+        && vsr.TryGetProperty("vegsystem", out var vs)
+        && vs.TryGetProperty("vegkategori", out var kat)
+        && kat.ValueKind == JsonValueKind.String)
+    {
+        var s = kat.GetString();
+        if (!string.IsNullOrEmpty(s))
+            return s;
+    }
+
+    return "?";
+}
+
+/// <summary>
+/// NVDB srid=4326 LINESTRING Z is lat lon z (observed).
+/// </summary>
+static bool TryDrawLineStringZ(
+    SKCanvas canvas,
+    SKPaint paint,
+    string wkt,
+    double west,
+    double south,
+    double north,
+    int width,
+    int height,
+    double invW,
+    double invH)
+{
+    const string prefix = "LINESTRING Z (";
+    var idx = wkt.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+    if (idx < 0)
+    {
+        // Some payloads omit the Z token.
+        idx = wkt.IndexOf("LINESTRING (", StringComparison.OrdinalIgnoreCase);
+        if (idx < 0)
+            return false;
+        idx += "LINESTRING (".Length;
+    }
+    else
+    {
+        idx += prefix.Length;
+    }
+
+    var end = wkt.LastIndexOf(')');
+    if (end <= idx)
+        return false;
+
+    var body = wkt.AsSpan(idx, end - idx);
+    using var path = new SKPath();
+    var moved = false;
+    foreach (var part in body.ToString().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+    {
+        var bits = part.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (bits.Length < 2)
+            continue;
+        if (!double.TryParse(bits[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var lat))
+            continue;
+        if (!double.TryParse(bits[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var lon))
+            continue;
+
+        var px = (float)((lon - west) * invW * (width - 1));
+        var py = (float)((north - lat) * invH * (height - 1));
+        if (!moved)
+        {
+            path.MoveTo(px, py);
+            moved = true;
+        }
+        else
+        {
+            path.LineTo(px, py);
+        }
+    }
+
+    if (!moved || path.PointCount < 2)
+        return false;
+
+    canvas.DrawPath(path, paint);
+    return true;
+}
+
+static SKBitmap LabelBitmap(SKBitmap src, string label)
+{
+    var bmp = new SKBitmap(src.Width, src.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    using var canvas = new SKCanvas(bmp);
+    canvas.Clear(SKColors.Black);
+    canvas.DrawBitmap(src, 0, 0, new SKSamplingOptions(SKFilterMode.Nearest));
+    DrawLabel(canvas, bmp.Width, label);
+    return bmp;
 }
 
 static byte[] ResampleAlphaMask(SKBitmap src, int w, int h)
@@ -386,9 +608,11 @@ static void WriteReadme(
 
         ## Important
         Hoydedata NHM ImageServers are **meters only**. LaserInnsyn’s **Samferdsel**
-        checkbox is a separate Geonorge WMS (`wms.kartdata`: `kd_veger`, `kd_jernbane`,
-        `kd_ferger`) — fetched live into `poc-samferdsel-wms.png` and overlaid on DTM/DOM.
-        Panel 1 still shows the old lab `roads.png` (Norgeskart PDF) for contrast.
+        checkbox is Geonorge WMS `wms.kartdata` — a **styled raster** (dashes / pink tunnels
+        are cartography, not topology). Contiguous roads come from **NVDB vegnett**
+        (`trafikantgruppe=K`) centerlines, colored by `vegsystem.vegkategori`:
+        **red** = E Europavei / R Riksvei / S Stamvei / F Fylkesvei (critical);
+        **gray** = K Kommunevei + P privat / remaining (local-local, design only).
 
         ## Files
         | File | Meaning |
@@ -396,12 +620,13 @@ static void WriteReadme(
         | `COMPARE-sheet.png` | Side-by-side panels |
         | `00-current-lab-stack.png` | Current elevation + water-mask + lab `roads.png` |
         | `01-fetched-dtm-land.png` | Live `NHM_DTM_25833` (meters only) |
-        | `01b-fetched-dtm-plus-roads.png` | DTM + live WMS Samferdsel |
+        | `01b-fetched-dtm-plus-roads.png` | DTM + NVDB car centerlines |
         | `02-fetched-dom.png` | Live `NHM_DOM_25833` (meters only) |
-        | `02b-fetched-dom-plus-roads.png` | DOM + live WMS Samferdsel |
+        | `02b-fetched-dom-plus-roads.png` | DOM + NVDB car centerlines |
         | `03-fetched-topobathy.png` | Live `NHM_DTM_TOPOBATHY_25833` |
         | `04-dom-minus-dtm.png` | Surface above bare ground |
-        | `05-fetched-samferdsel-only.png` | Live WMS overlay alone |
+        | `05-fetched-samferdsel-only.png` | Raw WMS (style only — do not morph) |
+        | `05b-samferdsel-normalized.png` / `05c-nvdb-car-roads.png` | NVDB solid car roads |
         | `poc-samferdsel-wms.png` | Raw WMS GetMap PNG |
         | `poc-nhm-*.tif` | Raw float32 GeoTIFF exports |
 

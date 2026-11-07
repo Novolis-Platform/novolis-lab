@@ -1,7 +1,10 @@
+using CalypsoCad.Blueprints;
 using CalypsoCad.Agent;
 using CalypsoCad.Generation;
-using CalypsoCad.Models;
-using CalypsoCad.Services;
+using Novolis.Cad.Primitives;
+using CalypsoCad.Host;
+using CalypsoCad.Rendering;
+using CalypsoCad.Export;
 using Novolis.Agent.Surface;
 
 namespace CalypsoCad;
@@ -165,10 +168,10 @@ internal static class Program
     {
         try
         {
-            CalypsoCad.Generation.Blueprints.InternalsBlueprintEmitter.Emit();
-            CalypsoCad.Generation.Blueprints.ManufacturerSheetEmitter.Emit();
+            CalypsoCad.Blueprints.InternalsBlueprintEmitter.Emit();
+            CalypsoCad.Blueprints.ManufacturerSheetEmitter.Emit();
             if (emitDetails)
-                CalypsoCad.Generation.Blueprints.StructureDetailBlueprintEmitter.Emit();
+                CalypsoCad.Blueprints.StructureDetailBlueprintEmitter.Emit();
             return 0;
         }
         catch (Exception ex)
@@ -322,7 +325,7 @@ internal static class Program
     /// <summary>Generate CAD companions and optionally export plan/orbit/interior PNGs or a walkthrough via Silk.</summary>
     private static int RunHeadless(bool exportPng, bool walkthrough)
     {
-        var dir = CalypsoRevGGenerator.Generate();
+        var dir = CalypsoLockGenerator.Generate();
         Console.WriteLine($"Wrote Calypso Rev H (lock LOA 69) CAD companions to:{Environment.NewLine}{dir}");
 
         if (!exportPng && !walkthrough)

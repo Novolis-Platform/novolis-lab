@@ -1,7 +1,6 @@
-using CalypsoCad.Generation.Fabrication;
+using Novolis.Ship.Structure;
 using Novolis.Cad.Primitives;
 using Novolis.Math.Geometry;
-using Novolis.Ship.Structure;
 
 namespace CalypsoCad.Generation;
 
@@ -221,10 +220,7 @@ internal static class FrameWebPlateBuilder
         bool skipShellDoor = false)
     {
         _ = web;
-        // Bow: one full-height band so taper cannot drop upper decks and leave a low-only remnant.
-        var bands = bowAligned
-            ? new List<(float, float)> { (upMin, upMax) }
-            : BuildElevationBands(upMin, upMax, decks);
+        var bands = BuildElevationBands(upMin, upMax, decks);
         if (bands.Count == 0)
             bands.Add((upMin, upMax));
 
@@ -236,15 +232,12 @@ internal static class FrameWebPlateBuilder
             if (hu < 0.12f)
                 continue;
 
-            // Evaluate beam at section mid for bow so crown taper does not zero the plate.
-            var beamUp = bowAligned
-                ? CalypsoLockGenerator.HalfBeamInsidePublic(zStem, uMid, inset)
-                : MathF.Min(
-                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u0, inset),
-                    MathF.Min(
-                        CalypsoLockGenerator.HalfBeamInsidePublic(zStem, uMid, inset),
-                        CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u1, inset)));
-            var halfY = beamUp - 0.12f;
+            var halfY = MathF.Min(
+                CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u0, inset),
+                MathF.Min(
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, uMid, inset),
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u1, inset)));
+            halfY -= 0.12f;
             if (halfY < 0.2f)
                 continue;
 
