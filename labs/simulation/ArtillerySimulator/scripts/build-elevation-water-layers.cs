@@ -4,6 +4,7 @@
 #:property Nullable=enable
 #:property ManagePackageVersionsCentrally=false
 #:package SkiaSharp@4.153.1
+#:project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\MapPipeline.Support\MapPipeline.Support.csproj
 
 using SkiaSharp;
 
@@ -38,8 +39,9 @@ var water = File.ReadAllBytes(waterBinPath);
 if (water.Length != w * h)
     throw new InvalidDataException($"water-mask.bin length {water.Length} != {w}*{h}");
 
-var sea = MarkSeaConnected(water, w, h);
-var heights = ApplySeaFlatten(rawHeights, water, sea);
+var sea = ArtillerySimulator.MapPipeline.WaterSeaConnected.Mark(water, w, h);
+var heights = (short[])rawHeights.Clone();
+ArtillerySimulator.MapPipeline.WaterSeaConnected.FlattenSeaHeights(heights, water, sea);
 File.WriteAllBytes(seaBinPath, sea);
 
 short landMin = short.MaxValue, landMax = short.MinValue;
@@ -118,59 +120,6 @@ Console.WriteLine($"inland water        {inlandCount} cells keep NDH {inlandMin}
 Console.WriteLine($"water-heightmap.png sea flat + inland blue heightmap");
 Console.WriteLine($"water-combined.png  mask∩height (stripped {stripped} heightmap-only)");
 Console.WriteLine($"heightfield-1025.bin mesh {meshGrid}×{meshGrid} (sea flattened)");
-
-/// <summary>4-connected flood fill from border water → open sea / fjords connected to ocean.</summary>
-static byte[] MarkSeaConnected(byte[] water, int w, int h)
-{
-    var sea = new byte[w * h];
-    var queue = new Queue<int>();
-
-    void TryEnqueue(int i)
-    {
-        if (water[i] == 0 || sea[i] != 0)
-            return;
-        sea[i] = 1;
-        queue.Enqueue(i);
-    }
-
-    for (var x = 0; x < w; x++)
-    {
-        TryEnqueue(x);
-        TryEnqueue((h - 1) * w + x);
-    }
-
-    for (var y = 0; y < h; y++)
-    {
-        TryEnqueue(y * w);
-        TryEnqueue(y * w + (w - 1));
-    }
-
-    while (queue.Count > 0)
-    {
-        var i = queue.Dequeue();
-        var x = i % w;
-        var y = i / w;
-        if (x > 0) TryEnqueue(i - 1);
-        if (x + 1 < w) TryEnqueue(i + 1);
-        if (y > 0) TryEnqueue(i - w);
-        if (y + 1 < h) TryEnqueue(i + w);
-    }
-
-    return sea;
-}
-
-/// <summary>Sea-connected water → 0 m; inland mask-water keeps NDH; land unchanged.</summary>
-static short[] ApplySeaFlatten(short[] raw, byte[] water, byte[] sea)
-{
-    var heights = (short[])raw.Clone();
-    for (var i = 0; i < heights.Length; i++)
-    {
-        if (water[i] != 0 && sea[i] != 0)
-            heights[i] = 0;
-    }
-
-    return heights;
-}
 
 static (int W, int H, short[] Heights) ReadInt16Grid(string path)
 {

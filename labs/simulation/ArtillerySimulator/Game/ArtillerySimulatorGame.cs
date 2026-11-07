@@ -220,7 +220,8 @@ internal sealed class ArtillerySimulatorGame
         _fps.Update(frame.DeltaSeconds);
         var predicted = PredictedImpact();
         var predictedRange = HorizontalRange(_terrain.GunBaseline, predicted);
-        frame.SetTitle(SimulationHud.TitleLine(
+        SimulationHud.Draw(
+            frame,
             _gun,
             _crew.OrderedElevation,
             _crew.OrderedAzimuth,
@@ -232,7 +233,7 @@ internal sealed class ArtillerySimulatorGame
             predictedRange,
             PaceLabel(),
             _mission?.HudLine(_flatTerrain),
-            _crew.Ready(_gun) ? null : _crew.Phrase(_gun)));
+            _crew.Ready(_gun) ? null : _crew.Phrase(_gun));
     }
 
     private void RebuildAimPreview()

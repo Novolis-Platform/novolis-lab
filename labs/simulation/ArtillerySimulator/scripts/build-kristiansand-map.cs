@@ -217,17 +217,9 @@ static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
         minH = maxH = 0;
 
     // Open sea / fjords connected to the map border → 0 m. Inland lakes/ponds keep NDH.
-    var sea = MarkSeaConnected(water, w, h);
+    var sea = ArtillerySimulator.MapPipeline.WaterSeaConnected.Mark(water, w, h);
     File.WriteAllBytes(Path.Combine(layers.State.Input.LayersDir, "sea-connected.bin"), sea);
-    var seaCount = 0;
-    for (var i = 0; i < heights.Length; i++)
-    {
-        if (water[i] == 0 || sea[i] == 0)
-            continue;
-        heights[i] = 0;
-        seaCount++;
-    }
-
+    var seaCount = ArtillerySimulator.MapPipeline.WaterSeaConnected.FlattenSeaHeights(heights, water, sea);
     Console.WriteLine($"sea-connected: {seaCount} water cells flattened to 0 m");
 
     WriteLandElevationPng(layers.ElevationPath, heights, water, w, h, minH, maxH);
@@ -527,46 +519,6 @@ static void WriteWaterElevationBin(string path, short[] heights, byte[] water, i
     writer.Write(h);
     for (var i = 0; i < heights.Length; i++)
         writer.Write(water[i] != 0 ? heights[i] : (short)-32768);
-}
-
-/// <summary>4-connected flood fill from border water → open sea / fjords connected to ocean.</summary>
-static byte[] MarkSeaConnected(byte[] water, int w, int h)
-{
-    var sea = new byte[w * h];
-    var queue = new Queue<int>();
-
-    void TryEnqueue(int i)
-    {
-        if (water[i] == 0 || sea[i] != 0)
-            return;
-        sea[i] = 1;
-        queue.Enqueue(i);
-    }
-
-    for (var x = 0; x < w; x++)
-    {
-        TryEnqueue(x);
-        TryEnqueue((h - 1) * w + x);
-    }
-
-    for (var y = 0; y < h; y++)
-    {
-        TryEnqueue(y * w);
-        TryEnqueue(y * w + (w - 1));
-    }
-
-    while (queue.Count > 0)
-    {
-        var i = queue.Dequeue();
-        var x = i % w;
-        var y = i / w;
-        if (x > 0) TryEnqueue(i - 1);
-        if (x + 1 < w) TryEnqueue(i + 1);
-        if (y > 0) TryEnqueue(i - w);
-        if (y + 1 < h) TryEnqueue(i + w);
-    }
-
-    return sea;
 }
 
 static MapDataBundle CompositeLayers(MapDataBundle data)

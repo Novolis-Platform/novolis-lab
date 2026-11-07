@@ -92,7 +92,7 @@ Remove a recorded checkout with `scripts/Remove-LabLibrary.ps1`. Create a new ex
 | `TypedSolutionIntelligence` | `labs/workspaces/TypedSolutionIntelligence` | Workspaces.DotNet catalog → generated typed project/namespace/type façade |
 | `TinyExprBindings` | `labs/codegen/TinyExprBindings` | CodeGen.Bindings: typed C ABI manifest → LibraryImport + façade |
 | `XFighter` | `labs/raylib/XFighter` | Raylib, Audio (Core, Effects, Playback, Voice) |
-| `ArtillerySimulator` | `labs/simulation/ArtillerySimulator` | Raylib, Physics.Ballistics, Physics.Collision, Simulation |
+| `ArtillerySimulator` | `labs/simulation/ArtillerySimulator` | Silk, Physics.Ballistics, Physics.Collision, Simulation |
 | `BouncingBall` | `labs/simulation/BouncingBall` | Raylib, Math.Arrays, Simulation, Physics.Collision |
 | `DoomLite3D` | `labs/simulation/DoomLite3D` | Raylib, Math, Simulation (World, View, Kinematics) |
 | `RagdollPlay` | `labs/simulation/RagdollPlay` | Raylib, Simulation, Physics.Joints, Physics.Collision |
