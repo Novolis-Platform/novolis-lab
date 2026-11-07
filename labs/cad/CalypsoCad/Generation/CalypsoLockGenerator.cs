@@ -107,7 +107,7 @@ internal static class CalypsoLockGenerator
     /// </summary>
     private static bool IsHandAuthoredExterior(CadEntity entity)
     {
-        if (!Novolis.Avalonia.Cad.Ship.Services.CadShipExterior.IsPreservedExterior(entity))
+        if (!CalypsoCad.Services.CalypsoExterior.IsPreservedExterior(entity))
             return false;
         var name = entity.Name ?? "";
         if (name.Contains("nacelle", StringComparison.OrdinalIgnoreCase)

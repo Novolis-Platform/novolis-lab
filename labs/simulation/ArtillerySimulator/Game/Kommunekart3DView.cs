@@ -4,11 +4,15 @@ using System.Text.Json.Serialization;
 
 namespace ArtillerySimulator.Game;
 
-/// <summary>Startup camera matched to a shared Kommunekart 3D link (lat/lon/head/pitch/height).</summary>
+/// <summary>
+/// Startup camera matched to a Kommunekart 3D share link.
+/// URL: x=lat, y=lon, z=ellipsoidal eye height; head/pitch/roll = Cesium camera HPR (degrees).
+/// SPA: <c>Cartesian3.fromDegrees(y, x, z)</c>.
+/// </summary>
 internal static class Kommunekart3DView
 {
     public const string DefaultUrl =
-        "https://3d.kommunekart.com/?x=58.038077082078786&y=8.00709090969718&z=18111.017634206884&head=356.5381777796763&pitch=-58.52425910026143&roll=0.006390997054148519";
+        "https://3d.kommunekart.com/?x=58.1467205326313&y=7.956351060738769&z=717.6761064074427&head=96.78343556922412&pitch=-20.987984196512883&roll=0.0007120414865100719";
 
     public static void ApplyStartupCamera(ArtilleryCameras camera, TerrainWorld terrain)
     {
@@ -19,11 +23,11 @@ internal static class Kommunekart3DView
     public static KommunekartViewState BuiltIn() =>
         new(
             DefaultUrl,
-            58.038077082078786,
-            8.00709090969718,
-            18111.017634206884,
-            356.5381777796763,
-            -58.52425910026143);
+            58.1467205326313,
+            7.956351060738769,
+            717.6761064074427,
+            96.78343556922412,
+            -20.987984196512883);
 
     static KommunekartViewState? Load()
     {

@@ -1,18 +1,13 @@
-using Avalonia;
 using CalypsoCad.Agent;
 using CalypsoCad.Generation;
 using CalypsoCad.Models;
 using CalypsoCad.Services;
 using Novolis.Agent.Surface;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace CalypsoCad;
 
 internal static class Program
 {
-    internal static IHost ApplicationHost { get; private set; } = null!;
-
     [STAThread]
     public static void Main(string[] args)
     {
@@ -120,34 +115,18 @@ internal static class Program
 
         if (generateOnly || headless || walkthrough)
         {
-            // --generate-only: companions only (PNG skipped unless also --headless)
-            // --headless: still PNG tour
-            // --walkthrough: PNG frame sequence + ffmpeg MP4/GIF when available
             Environment.ExitCode = RunHeadless(
                 exportPng: headless && !jsonOnly,
                 walkthrough: walkthrough);
             return;
         }
 
-        ApplicationHost = Host.CreateDefaultBuilder(args)
-            .ConfigureServices(services =>
-            {
-                services.AddSingleton<CalypsoSession>();
-                services.AddSingleton<CalypsoRenderer>();
-                services.AddTransient<MainWindow>();
-            })
-            .Build();
-
-        ApplicationHost.Start();
-
-        try
-        {
-            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-        }
-        finally
-        {
-            ApplicationHost.StopAsync().GetAwaiter().GetResult();
-        }
+        var session = new CalypsoSession();
+        session.RegenerateAndLoad();
+        var renderer = new CalypsoRenderer(session);
+        renderer.Fit();
+        renderer.SyncInteriorFromSelection();
+        CalypsoSilkHost.Run(session, renderer);
     }
 
     private static int RunBlueprints()
@@ -229,7 +208,6 @@ internal static class Program
             "regenerate preserves exterior",
             after.Entities.Any(e => string.Equals(e.Name, "ext-acceptance-hull", StringComparison.OrdinalIgnoreCase)));
 
-        // Strip the acceptance probe so the user's generated ship is not left with a bow blob.
         after.Entities.RemoveAll(e =>
             string.Equals(e.Name, "ext-acceptance-hull", StringComparison.OrdinalIgnoreCase));
         File.WriteAllText(cadPath, System.Text.Json.JsonSerializer.Serialize(after, CadJson.Options));
@@ -307,7 +285,7 @@ internal static class Program
         }
     }
 
-    /// <summary>Generate CAD companions and optionally export plan/orbit/interior PNGs or a walkthrough via hidden Raylib.</summary>
+    /// <summary>Generate CAD companions and optionally export plan/orbit/interior PNGs or a walkthrough via Silk.</summary>
     private static int RunHeadless(bool exportPng, bool walkthrough)
     {
         var dir = CalypsoRevGGenerator.Generate();
@@ -332,11 +310,11 @@ internal static class Program
                 saved.AddRange(stills);
                 if (stills.Count == 0)
                 {
-                    Console.Error.WriteLine("Headless PNG export produced no frames (Raylib/GPU may be unavailable).");
+                    Console.Error.WriteLine("Headless PNG export produced no frames (Silk/GPU may be unavailable).");
                     return 2;
                 }
 
-                Console.WriteLine($"Headless Raylib PNG exports ({stills.Count}):");
+                Console.WriteLine($"Headless Silk PNG exports ({stills.Count}):");
                 foreach (var path in stills)
                     Console.WriteLine($"  {path}");
             }
@@ -347,7 +325,7 @@ internal static class Program
                 saved.AddRange(wt);
                 if (wt.Count == 0)
                 {
-                    Console.Error.WriteLine("Walkthrough export produced no frames (Raylib/GPU may be unavailable).");
+                    Console.Error.WriteLine("Walkthrough export produced no frames (Silk/GPU may be unavailable).");
                     return 2;
                 }
 
@@ -365,10 +343,6 @@ internal static class Program
         }
     }
 
-    /// <summary>
-    /// Serves the Calypso CAD profile on stdio. WinExe still receives the redirected
-    /// standard handles when an MCP client spawns the process.
-    /// </summary>
     private static async Task<int> RunAgent(bool mcp)
     {
         var host = new CalypsoCadAgentHost();
@@ -384,10 +358,4 @@ internal static class Program
         await stdio.RunUntilEofAsync(CancellationToken.None).ConfigureAwait(false);
         return 0;
     }
-
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace();
 }

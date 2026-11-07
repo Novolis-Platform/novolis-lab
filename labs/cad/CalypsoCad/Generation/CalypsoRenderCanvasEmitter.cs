@@ -43,7 +43,7 @@ internal static class CalypsoRenderCanvasEmitter
             generatedUtc,
             componentName: "CalypsoMfgAngles",
             title: "Calypso manufacturing angles (CAL-MFG-002)",
-            subtitle: "21 headless orbit / plan / layer / interior renders · 2560×1440 Raylib export",
+            subtitle: "21 headless orbit / plan / layer / interior renders · 2560×1440 Silk export",
             figures: MfgAnglesFigures,
             grouped: false);
     }

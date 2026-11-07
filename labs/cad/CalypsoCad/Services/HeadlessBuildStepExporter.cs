@@ -1,15 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using Novolis.Avalonia.Cad.Ship.Services;
 using Novolis.Cad.Primitives;
-using Novolis.Raylib.Audio;
-using Novolis.Raylib.Debug;
-using Novolis.Raylib.Interact;
-using Novolis.Raylib.Logging;
-using Novolis.Raylib.Rendering;
-using Novolis.Raylib.Timing;
-using Novolis.Raylib.Windowing;
 
 namespace CalypsoCad.Services;
 
@@ -22,18 +14,28 @@ internal static class HeadlessBuildStepExporter
 {
     internal readonly record struct Step(string Id, string Title, string FileName, int EntityCount);
 
-    private static readonly CalypsoVisualLayers StructureWire =
-        CalypsoVisualLayers.StructureOnlyCutaway | CalypsoVisualLayers.Openings;
+    /// <summary>Hull step only — OML silhouette.</summary>
+    private static readonly CalypsoVisualLayers HullOnly = CalypsoVisualLayers.HullShell;
 
-    /// <summary>Airtight passages / hold / hatches — no OML (corridor seal is partition walls).</summary>
+    /// <summary>Frames / BH / girders — no OML; passageway cutouts must read in the webs.</summary>
+    private static readonly CalypsoVisualLayers StructureWire = CalypsoVisualLayers.StructureNoHull;
+
+    /// <summary>
+    /// Shirt-sleeves / HOLD / airlocks: partitions + prior structure underlay.
+    /// OML stays off so the renderer draws the hull as a wire guide.
+    /// </summary>
     private static readonly CalypsoVisualLayers InteriorFitout =
-        CalypsoVisualLayers.InteriorStructureNoHull;
+        CalypsoVisualLayers.Structure
+        | CalypsoVisualLayers.Partitions
+        | CalypsoVisualLayers.SpaceFinish
+        | CalypsoVisualLayers.Openings
+        | CalypsoVisualLayers.PassagewayCutouts;
 
     public static IReadOnlyList<string> Export(
         CalypsoSession session,
         CalypsoRenderer renderer,
-        int width = 2560,
-        int height = 1440)
+        int width = 3840,
+        int height = 2160)
     {
         var outDir = CalypsoProjectPaths.BuildStepsDirectory;
         Directory.CreateDirectory(outDir);
@@ -43,85 +45,76 @@ internal static class HeadlessBuildStepExporter
         }
 
         var steps = BuildSteps(session.Document);
-        RaylibDebug.Start();
-        Logger.SetTraceLogLevel(TraceLogLevel.Warning);
-        AudioDevice.Init();
+        var previousLayers = session.VisualLayers;
+        var previousView = session.ViewMode;
+        var previousWire = session.WireMeshMode;
+        var previousReveal = session.RevealEntityIds;
+        var previousStatus = session.StatusText;
+        var previousDeck = session.DeckFilter;
+
+        // Full LOA in frame: midships target, pull back (no ×1.5 crop that lost the bow).
+        renderer.SetOrbitPose(new System.Numerics.Vector3(0f, 5.5f, 0f), 135f, 0.95f, 0.48f);
+
+        var cumulative = new HashSet<Guid>();
+        var manifest = new List<Step>();
+        var jobs = new List<(string Path, Action Prepare)>(steps.Count);
+
+        for (var i = 0; i < steps.Count; i++)
+        {
+            var step = steps[i];
+            var entityIds = step.EntityIds.ToArray();
+            var fileName = $"{i:D2}-{Sanitize(step.Id)}.png";
+            var path = Path.Combine(outDir, fileName);
+            var stepIndex = i;
+            var isComplete = string.Equals(step.Id, "complete", StringComparison.Ordinal)
+                || string.Equals(step.Id, "dk001-plan", StringComparison.Ordinal);
+
+            jobs.Add((path, () =>
+            {
+                foreach (var id in entityIds)
+                    cumulative.Add(id);
+
+                session.VisualLayers = step.Layers;
+                session.ViewMode = step.View;
+                session.DeckFilter = step.DeckFilter;
+                session.WireMeshMode = step.View == CalypsoViewMode.Plan
+                    ? CalypsoWireMeshMode.None
+                    : step.Layers.HasFlag(CalypsoVisualLayers.Partitions)
+                        ? CalypsoWireMeshMode.CutawayPartial
+                        : CalypsoWireMeshMode.Wire;
+                session.RevealEntityIds = isComplete ? null : new HashSet<Guid>(cumulative);
+                session.StatusText = $"build-step:{stepIndex + 1}/{steps.Count} {step.Id}";
+            }));
+
+            foreach (var id in entityIds)
+                cumulative.Add(id);
+            manifest.Add(new Step(
+                step.Id,
+                step.Title,
+                fileName,
+                isComplete ? session.Document.Entities.Count : cumulative.Count));
+        }
+
+        cumulative.Clear();
+
         try
         {
-            Window.SetConfigFlags(WindowStateFlags.Hidden);
-            Window.Init(width, height, "CalypsoCad build-steps");
-            if (!Window.IsReady())
-                throw new InvalidOperationException("Raylib window failed to initialize (display/GLFW).");
-
-            try
-            {
-                Time.SetTargetFPS(60);
-                Window.SetExitKey((KeyboardKey)0);
-
-                var previousLayers = session.VisualLayers;
-                var previousView = session.ViewMode;
-                var previousWire = session.WireMeshMode;
-                var previousReveal = session.RevealEntityIds;
-                var previousStatus = session.StatusText;
-                var previousDeck = session.DeckFilter;
-
-                renderer.ApplyOrbitPreset("three-quarter-high");
-                renderer.ZoomOrbit(1.5f);
-
-                var saved = new List<string>();
-                var cumulative = new HashSet<Guid>();
-                var manifest = new List<Step>();
-
-                for (var i = 0; i < steps.Count; i++)
-                {
-                    var step = steps[i];
-                    foreach (var id in step.EntityIds)
-                        cumulative.Add(id);
-
-                    session.VisualLayers = step.Layers;
-                    session.ViewMode = step.View;
-                    session.DeckFilter = step.DeckFilter;
-                    // Structure-only: wire cage. Passage/hold: cutaway tubes. DK-001 plan: solid plan.
-                    session.WireMeshMode = step.View == CalypsoViewMode.Plan
-                        ? CalypsoWireMeshMode.None
-                        : step.Layers.HasFlag(CalypsoVisualLayers.Partitions)
-                            ? CalypsoWireMeshMode.CutawayPartial
-                            : CalypsoWireMeshMode.Wire;
-                    session.RevealEntityIds = string.Equals(step.Id, "complete", StringComparison.Ordinal)
-                        || string.Equals(step.Id, "dk001-plan", StringComparison.Ordinal)
-                        ? null
-                        : new HashSet<Guid>(cumulative);
-                    session.StatusText = $"build-step:{i + 1}/{steps.Count} {step.Id}";
-                    var fileName = $"{i:D2}-{Sanitize(step.Id)}.png";
-                    var path = Path.Combine(outDir, fileName);
-                    Capture(renderer, path);
-                    saved.Add(path);
-                    manifest.Add(new Step(
-                        step.Id,
-                        step.Title,
-                        fileName,
-                        session.RevealEntityIds?.Count ?? session.Document.Entities.Count));
-                }
-
-                WriteManifest(outDir, manifest);
-
-                session.VisualLayers = previousLayers;
-                session.ViewMode = previousView;
-                session.WireMeshMode = previousWire;
-                session.RevealEntityIds = previousReveal;
-                session.StatusText = previousStatus;
-                session.DeckFilter = previousDeck;
-                return saved;
-            }
-            finally
-            {
-                Window.Close();
-            }
+            var saved = SilkHeadlessCapture.CaptureSequence(
+                width,
+                height,
+                jobs,
+                frame => renderer.DrawFrame(frame, 0f));
+            WriteManifest(outDir, manifest);
+            return saved;
         }
         finally
         {
-            AudioDevice.Close();
-            RaylibDebug.Reset();
+            session.VisualLayers = previousLayers;
+            session.ViewMode = previousView;
+            session.WireMeshMode = previousWire;
+            session.RevealEntityIds = previousReveal;
+            session.StatusText = previousStatus;
+            session.DeckFilter = previousDeck;
         }
     }
 
@@ -137,10 +130,10 @@ internal static class HeadlessBuildStepExporter
     {
         var steps = new List<PlannedStep>();
         var exterior = doc.Entities
-            .Where(CadShipExterior.IsExteriorDrawable)
+            .Where(CalypsoExterior.IsExteriorDrawable)
             .Select(e => e.Id)
             .ToList();
-        steps.Add(new PlannedStep("hull", "OML / exterior shell", exterior, StructureWire));
+        steps.Add(new PlannedStep("hull", "OML / exterior shell", exterior, HullOnly));
 
         // —— Structure: bulkheads (massive plates) ——
         foreach (var g in GroupByKey(
@@ -385,31 +378,13 @@ internal static class HeadlessBuildStepExporter
         return 0f;
     }
 
-    private static void Capture(CalypsoRenderer renderer, string path)
-    {
-        byte[]? last = null;
-        for (var i = 0; i < 4; i++)
-        {
-            Window.PollInputEvents();
-            Graphics.BeginDrawing();
-            renderer.DrawFrame(Time.GetFrameTime(), Window.GetScreenWidth(), Window.GetScreenHeight());
-            Graphics.EndDrawing();
-            if (ScreenFramebufferCapture.TryExportFramebufferToPng(out var png) && png is { Length: > 0 })
-                last = png;
-        }
-
-        if (last is null)
-            throw new InvalidOperationException($"Failed to capture build-step PNG: {path}");
-        File.WriteAllBytes(path, last);
-    }
-
     private static void WriteManifest(string outDir, List<Step> steps)
     {
         var path = Path.Combine(outDir, "manifest.json");
         var payload = new
         {
             packageId = "CAL-MFG-002",
-            camera = "orbit three-quarter-high ×1.5 zoom; structure-wire then fitout+cutouts",
+            camera = "midships three-quarter @135m 3840x2160; OML wire guide; structure underlay on fitout",
             generatedUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
             stepCount = steps.Count,
             steps = steps.Select(s => new

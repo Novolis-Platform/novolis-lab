@@ -20,7 +20,16 @@ internal sealed class ArtilleryCameras
 
     public CameraMode Mode { get; private set; } = CameraMode.Orbit;
 
-    public void ToggleMode() => Use(Mode == CameraMode.Freecam ? CameraMode.Orbit : CameraMode.Freecam);
+    /// <summary>
+    /// When true, render with Cesium-matched look-at (no map X-flip) so Kommunekart head/pitch dumps keep N/S.
+    /// </summary>
+    public bool MatchKommunekartOrientation { get; private set; }
+
+    public void ToggleMode()
+    {
+        MatchKommunekartOrientation = false;
+        Use(Mode == CameraMode.Freecam ? CameraMode.Orbit : CameraMode.Freecam);
+    }
 
     public void Use(CameraMode mode)
     {
@@ -36,6 +45,7 @@ internal sealed class ArtilleryCameras
         _trackBattle = false;
         _lockMapOverview = true;
         _userOrbitHold = false;
+        MatchKommunekartOrientation = false;
         Mode = CameraMode.Orbit;
         var cx = eastMeters * 0.5f;
         var cz = northMeters * 0.5f;
@@ -53,25 +63,21 @@ internal sealed class ArtilleryCameras
 
     public void ShowKommunekartView(TerrainWorld terrain, Kommunekart3DView.KommunekartViewState view)
     {
+        _ = terrain;
         _trackBattle = false;
         _userOrbitHold = false;
-        Mode = CameraMode.Orbit;
-        _orbit.MinDistance = 80f;
-        _orbit.MaxDistance = 42_000f;
-        _orbit.FieldOfViewDegrees = 42f;
-        _orbit.SmoothRate = 8f;
-        _orbit.MinPitch = -0.05f;
+        _lockMapOverview = false;
+        // URL x/y/z is Cesium camera eye (fromDegrees(lon=y, lat=x, height=z)), not look-at.
+        // FreeLook yaw 0 = north / pitch 0 = horizon — same as Cesium heading/pitch signs.
+        MatchKommunekartOrientation = true;
+        Mode = CameraMode.Freecam;
 
         var xz = KristiansandHeightSampler.ToWorldMeters(view.Latitude, view.Longitude);
-        var ground = terrain.Field.SampleHeight(xz.X, xz.Y);
-        _orbit.SnapTarget(new Vector3(xz.X, ground + 90f, xz.Y));
-
-        var heightAboveGround = MathF.Max(400f, (float)view.CameraHeightMeters - ground);
-        _orbit.Distance = Math.Clamp(heightAboveGround, 2_500f, 38_000f);
-
-        var pitchDownDegrees = (float)Math.Clamp(-view.PitchDegrees, 22f, 72f);
-        _orbit.Pitch = pitchDownDegrees * (MathF.PI / 180f);
-        _orbit.Yaw = NorthFacingYaw;
+        var eyeY = (float)view.CameraHeightMeters - KristiansandGeoref.GeoidUndulationMeters;
+        _free.Position = new Vector3(xz.X, eyeY, xz.Y);
+        _free.Yaw = (float)(view.HeadDegrees * (Math.PI / 180.0));
+        _free.Pitch = (float)(view.PitchDegrees * (Math.PI / 180.0));
+        _free.FieldOfViewDegrees = 42f;
     }
 
     private const float NorthFacingYaw = MathF.PI;
@@ -80,6 +86,8 @@ internal sealed class ArtilleryCameras
     {
         _lockMapOverview = false;
         _userOrbitHold = false;
+        MatchKommunekartOrientation = false;
+        Mode = CameraMode.Orbit;
         var orbitTarget = gunPivot + new Vector3(0f, 2.2f, 0f);
         _orbit.MinDistance = 8f;
         _orbit.MaxDistance = 16_000f;
@@ -101,6 +109,8 @@ internal sealed class ArtilleryCameras
     {
         _lockMapOverview = false;
         _userOrbitHold = false;
+        MatchKommunekartOrientation = false;
+        Mode = CameraMode.Orbit;
         var mid = (gunPivot + downrange) * 0.5f;
         _battleFocus = new Vector3(mid.X, MathF.Max(gunPivot.Y, downrange.Y) + 60f, mid.Z);
         _trackBattle = true;
@@ -136,9 +146,10 @@ internal sealed class ArtilleryCameras
 
     private void UpdateFreecam(SilkFrame frame)
     {
-        // +mouseX: CreateMapView mirrors screen X; keep drag-right = look/pan right.
+        // Map X-flip (orbit) uses +mouseX; Cesium-matched freecam uses classic -mouseX.
+        var lookMx = MatchKommunekartOrientation ? -frame.MouseDeltaX : frame.MouseDeltaX;
         if (frame.IsMouseButtonDown(MouseButton.Right))
-            _free.AddLookDelta(frame.MouseDeltaX * MouseSensitivity, -frame.MouseDeltaY * MouseSensitivity);
+            _free.AddLookDelta(lookMx * MouseSensitivity, -frame.MouseDeltaY * MouseSensitivity);
 
         if (frame.IsMouseButtonDown(MouseButton.Middle)
             || (frame.IsMouseButtonDown(MouseButton.Left) && (frame.IsKeyDown(Key.ShiftLeft) || frame.IsKeyDown(Key.ShiftRight))))
@@ -147,7 +158,8 @@ internal sealed class ArtilleryCameras
             var right = Vector3.Normalize(Vector3.Cross(forward, Vector3.UnitY));
             var up = Vector3.UnitY;
             var scale = FreeMoveSpeed * 0.0025f;
-            _free.MoveAlongLook((right * frame.MouseDeltaX + up * frame.MouseDeltaY) * scale);
+            var panMx = MatchKommunekartOrientation ? -frame.MouseDeltaX : frame.MouseDeltaX;
+            _free.MoveAlongLook((right * panMx + up * frame.MouseDeltaY) * scale);
         }
 
         if (MathF.Abs(frame.ScrollDelta) > 0.001f)

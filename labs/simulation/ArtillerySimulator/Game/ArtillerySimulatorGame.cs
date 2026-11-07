@@ -122,7 +122,7 @@ internal sealed class ArtillerySimulatorGame
         _gun.NudgeAzimuth(_mission.OpeningAzimuthDegrees - _mission.TrailBearingDegrees);
         _crew.SeatOpening(_gun);
         _shot.Reset();
-        _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+        Kommunekart3DView.ApplyStartupCamera(_camera, _terrain);
         RebuildAimPreview();
         _surface = AgentSurface.AttachAll(
             _agent,
@@ -185,8 +185,10 @@ internal sealed class ArtillerySimulatorGame
         frame.Clear(Rgba32.Black);
         var cam = _camera.Build(frame.DeltaSeconds);
         var aspect = frame.Width / (float)Math.Max(1, frame.Height);
-        // RH look-at + Y-up Z-north would put east on screen-left; CreateMapView compensates.
-        var view = KristiansandGeoref.CreateMapView(cam.Position, cam.Target, cam.Up);
+        // Kommunekart dump: plain Cesium look-at (map X-flip would swap N/S when facing east).
+        var view = _camera.MatchKommunekartOrientation
+            ? KristiansandGeoref.CreateCesiumMatchedView(cam.Position, cam.Target, cam.Up)
+            : KristiansandGeoref.CreateMapView(cam.Position, cam.Target, cam.Up);
         var near = 2f;
         var far = MathF.Max(40_000f, Vector3.Distance(cam.Position, cam.Target) * 8f);
         var proj = Matrix4x4.CreatePerspectiveFieldOfView(
@@ -198,6 +200,8 @@ internal sealed class ArtillerySimulatorGame
 
         // Cached terrain wires (built once). Dynamic overlay rebuilt each frame.
         frame.DrawWorldLines(_terrain.CachedWires, mvp);
+        if (KristiansandKommunekartBuildings.IsAvailable)
+            frame.DrawWorldLines(KristiansandKommunekartBuildings.CachedWires, mvp);
 
         _wires.Clear();
         DrawSky(_wires);

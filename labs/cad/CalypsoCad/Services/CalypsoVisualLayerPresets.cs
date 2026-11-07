@@ -6,6 +6,7 @@ internal static class CalypsoVisualLayerPresets
     [
         (CalypsoVisualLayers.DefaultOrbit, "all"),
         (CalypsoVisualLayers.Dk001Plan, "DK-001 plan"),
+        (CalypsoVisualLayers.StructureNoHull, "structure no OML"),
         (CalypsoVisualLayers.InteriorStructureNoHull, "interiors no OML"),
         (CalypsoVisualLayers.StructureOnlyCutaway, "structure+cutouts"),
         (CalypsoVisualLayers.FitoutCutaway, "fitout+cutouts"),

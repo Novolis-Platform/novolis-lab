@@ -45,10 +45,18 @@ internal static class KristiansandGeoref
     public static float WorldToDataX(float worldXMeters, float eastMeters) =>
         WorldToDataU(worldXMeters, eastMeters) * eastMeters;
 
+    /// <summary>Approx EGM undulation (m) near Kristiansand — Cesium z is ellipsoidal, NDH is orthometric.</summary>
+    public const float GeoidUndulationMeters = 40.2f;
+
     /// <summary>
     /// Look-at view with map-conventional screen east/west (compensates RH Y-up Z-north).
-    /// After this, orbit/pan formulas that used <c>-mouseDeltaX</c> should use <c>+mouseDeltaX</c>.
+    /// Do <b>not</b> use this when matching a Kommunekart Cesium dump looking off-north —
+    /// the X flip swaps N/S on screen when facing east/west.
     /// </summary>
     public static Matrix4x4 CreateMapView(Vector3 eye, Vector3 target, Vector3 up) =>
         Matrix4x4.CreateLookAt(eye, target, up) * Matrix4x4.CreateScale(-1f, 1f, 1f);
+
+    /// <summary>Plain RH look-at — same basis as Cesium for Kommunekart head/pitch dumps.</summary>
+    public static Matrix4x4 CreateCesiumMatchedView(Vector3 eye, Vector3 target, Vector3 up) =>
+        Matrix4x4.CreateLookAt(eye, target, up);
 }

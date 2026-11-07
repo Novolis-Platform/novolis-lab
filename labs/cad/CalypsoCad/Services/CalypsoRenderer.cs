@@ -1,14 +1,11 @@
 using System.Drawing;
 using System.Numerics;
-using Novolis.Avalonia.Cad.Ship.Services;
-using Novolis.Avalonia.Raylib;
 using Novolis.Cad.Primitives;
-using Novolis.Raylib.Colors;
-using Novolis.Raylib.Rendering;
+using Novolis.Math.Geometry;
 using Novolis.Ship.Primitives;
 using Novolis.Ship.Topology;
+using Novolis.Silk;
 using Novolis.Simulation.View;
-using RayCamera = Novolis.Raylib.Rendering.Camera;
 
 namespace CalypsoCad.Services;
 
@@ -45,13 +42,11 @@ internal sealed class CalypsoRenderer
     private Dictionary<int, List<CadEntity>> _openingsByDeck = new();
     /// <summary>When set, interior draws an ensemble of spaces (e.g. DK0 catwalk + hold + corridors).</summary>
     private string? _interiorEnsemble;
+    private readonly SilkCadWorld _world = new();
 
     public CalypsoRenderer(CalypsoSession session) => _session = session;
 
     public OrbitCameraRig Orbit => _orbit;
-
-    public void Bind(RaylibHostControl host) =>
-        host.FrameRendering += (_, e) => DrawFrame(e.DeltaSeconds, e.ScreenWidth, e.ScreenHeight);
 
     public void Fit()
     {
@@ -530,29 +525,46 @@ internal sealed class CalypsoRenderer
         SanitizeInteriorCamera(_session.SelectedSpace);
     }
 
-    public void DrawFrame(float deltaSeconds, int screenWidth, int screenHeight)
+    public void DrawFrame(SilkFrame frame, float deltaSeconds)
     {
         _ = deltaSeconds;
-        _ = screenWidth;
-        _ = screenHeight;
-        Graphics.ClearBackground(Background);
+        var screenWidth = Math.Max(1, frame.Width);
+        var screenHeight = Math.Max(1, frame.Height);
+        var aspect = screenWidth / (float)screenHeight;
 
-        RayCamera camera;
+        Vector3 eye;
+        Vector3 target;
+        Vector3 up;
+        float fovDeg;
         if (_session.ViewMode == CalypsoViewMode.Plan)
         {
-            var eye = new Vector3(0f, 120f, 0.01f);
-            var target = new Vector3(0f, 0f, 0f);
-            camera = RayCamera.Perspective(eye, target, new Vector3(0, 0, -1), 35f);
+            eye = new Vector3(0f, 120f, 0.01f);
+            target = new Vector3(0f, 0f, 0f);
+            up = new Vector3(0, 0, -1);
+            fovDeg = 35f;
         }
         else if (_session.ViewMode == CalypsoViewMode.Interior)
         {
-            camera = RayCamera.Perspective(_interiorEye, _interiorTarget, Vector3.UnitY, InteriorFovDegrees());
+            eye = _interiorEye;
+            target = _interiorTarget;
+            up = Vector3.UnitY;
+            fovDeg = InteriorFovDegrees();
         }
         else
         {
-            var eye = _orbit.BuildEyePosition();
-            camera = RayCamera.Perspective(eye, _orbit.Target, Vector3.UnitY, _orbit.FieldOfViewDegrees);
+            eye = _orbit.BuildEyePosition();
+            target = _orbit.Target;
+            up = Vector3.UnitY;
+            fovDeg = _orbit.FieldOfViewDegrees;
         }
+
+        var view = Matrix4x4.CreateLookAt(eye, target, up);
+        var proj = Matrix4x4.CreatePerspectiveFieldOfView(
+            fovDeg * (MathF.PI / 180f), aspect, 0.2f, 800f);
+        var mvp = view * proj;
+
+        frame.Clear(SilkCadWorld.ToRgba(Background));
+        _world.Begin();
 
         _openingsByDeck = _session.Document.Entities
             .Where(e => e.Kind == "opening")
@@ -574,7 +586,6 @@ internal sealed class CalypsoRenderer
             }
         }
 
-        World.Begin(camera);
         if (_session.ViewMode != CalypsoViewMode.Interior)
             DrawGrid();
 
@@ -617,7 +628,7 @@ internal sealed class CalypsoRenderer
 
                 // Exterior solids/meshes already drawn above — skip duplicate in cutaway orbit.
                 if ((cutaway || _session.ViewMode == CalypsoViewMode.Orbit)
-                    && CadShipExterior.IsExteriorDrawable(entity))
+                    && CalypsoExterior.IsExteriorDrawable(entity))
                     continue;
 
                 switch (entity.Kind)
@@ -679,26 +690,43 @@ internal sealed class CalypsoRenderer
                     case "cylinder":
                     case "cone":
                     case "wedge":
-                    case "mesh":
                         if (cutaway)
-                            CadShipExterior.DrawOne(entity, frameCutPt, frameCutN);
+                            CalypsoExterior.DrawOne(_world, entity, frameCutPt, frameCutN);
                         else
-                            CadShipExterior.DrawOne(entity);
+                            CalypsoExterior.DrawOne(_world, entity);
+                        break;
+                    case "mesh":
+                        // OML/IML only — never on structure-no-hull or DK-001 plan.
+                        if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
+                            break;
+                        if (cutaway)
+                            CalypsoExterior.DrawOne(_world, entity, frameCutPt, frameCutN);
+                        else
+                            CalypsoExterior.DrawOne(_world, entity);
                         break;
                 }
             }
 
+            // Highlight shirt-sleeves cutouts in frame/BH webs (wire + cutaway structure reads).
             if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.PassagewayCutouts)
-                && cutaway
+                && (_session.WireMeshMode is CalypsoWireMeshMode.CutawayPartial or CalypsoWireMeshMode.Wire)
                 && (_session.ViewMode == CalypsoViewMode.Orbit
                     || _session.ViewMode == CalypsoViewMode.Interior))
                 DrawPassagewayCutoutHighlights();
         }
 
+        // Structure / fitout slides: OML edge cage as a guide when the solid shell is off.
+        if (_session.ViewMode == CalypsoViewMode.Orbit
+            && !_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
+            CalypsoExterior.DrawOmlWireGuide(_world, _session.Document);
+
+        if (_session.ViewMode == CalypsoViewMode.Plan)
+            DrawPlanBulkheadStations();
+
         if (_session.ViewMode == CalypsoViewMode.Interior && _session.SelectedHook is { Position: { } hp } && hp.Length >= 3)
             DrawHookMarker(SvgCoords.FromArray(hp));
 
-        World.End();
+        _world.Flush(frame, mvp);
 
         var spaceName = _session.SelectedSpace?.Name ?? "(none)";
         var hookTag = _session.SelectedHook?.Tag ?? "(no-hook)";
@@ -706,16 +734,11 @@ internal sealed class CalypsoRenderer
         var cutHint = _session.WireMeshMode == CalypsoWireMeshMode.CutawayPartial
             ? $" | cut={(_session.CutPlaneLongitudinal ? "long" : "beam")}@{_session.CutPlaneOffset:0.0}m"
             : "";
-        Graphics.DrawText(
-            $"{_session.ViewMode} | {wire}{cutHint} | deck={(_session.DeckFilter?.ToString() ?? "all")} | space={spaceName} | hook={hookTag}",
-            8, 8, 14, Hud);
-        Graphics.DrawText(_session.StatusText, 8, 28, 12, Hud);
-        Graphics.DrawText(
-            "P plan  O orbit  I interior  G layers  W wire  C cutaway  S solid  [ ] slide cut  L/B cut axis  1/2/3 decks  0 all  F fit  E export",
-            8, 48, 12, Hud);
+        frame.SetTitle(
+            $"Calypso CAD — {_session.ViewMode} | {wire}{cutHint} | {_session.StatusText} | {spaceName}/{hookTag}");
     }
 
-    private static void DrawGrid()
+    private void DrawGrid()
     {
         const float extent = 40f;
         const float step = 2f;
@@ -723,8 +746,8 @@ internal sealed class CalypsoRenderer
         {
             var major = Math.Abs(o) < 0.01f || Math.Abs(o % 10f) < 0.01f;
             var c = major ? GridMajor : GridMinor;
-            World.DrawLine(new Vector3(-extent, 0.01f, o), new Vector3(extent, 0.01f, o), c);
-            World.DrawLine(new Vector3(o, 0.01f, -extent), new Vector3(o, 0.01f, extent), c);
+            _world.DrawLine(new Vector3(-extent, 0.01f, o), new Vector3(extent, 0.01f, o), c);
+            _world.DrawLine(new Vector3(o, 0.01f, -extent), new Vector3(o, 0.01f, extent), c);
         }
     }
 
@@ -733,9 +756,9 @@ internal sealed class CalypsoRenderer
         if (_session.RevealEntityIds is null)
         {
             if (cutaway)
-                CadShipExterior.Draw(_session.Document, frameCutPt, frameCutN);
+                CalypsoExterior.Draw(_world, _session.Document, frameCutPt, frameCutN);
             else
-                CadShipExterior.Draw(_session.Document);
+                CalypsoExterior.Draw(_world, _session.Document);
             return;
         }
 
@@ -743,12 +766,12 @@ internal sealed class CalypsoRenderer
         {
             if (!_session.RevealEntityIds.Contains(entity.Id))
                 continue;
-            if (!CadShipExterior.IsExteriorDrawable(entity))
+            if (!CalypsoExterior.IsExteriorDrawable(entity))
                 continue;
             if (cutaway)
-                CadShipExterior.DrawOne(entity, frameCutPt, frameCutN);
+                CalypsoExterior.DrawOne(_world, entity, frameCutPt, frameCutN);
             else
-                CadShipExterior.DrawOne(entity);
+                CalypsoExterior.DrawOne(_world, entity);
         }
     }
 
@@ -808,9 +831,9 @@ internal sealed class CalypsoRenderer
                 if (cutaway && CulledByCutPlane(mid, cutPt, cutN))
                     continue;
                 var edge = interior ? Bulkhead : floorMat.color;
-                World.DrawLine(a + new Vector3(0, 0.04f, 0), b + new Vector3(0, 0.04f, 0), edge);
+                _world.DrawLine(a + new Vector3(0, 0.04f, 0), b + new Vector3(0, 0.04f, 0), edge);
                 if (interior && selected)
-                    World.DrawLine(a + new Vector3(0, h, 0), b + new Vector3(0, h, 0), Bulkhead);
+                    _world.DrawLine(a + new Vector3(0, h, 0), b + new Vector3(0, h, 0), Bulkhead);
             }
         }
 
@@ -863,14 +886,13 @@ internal sealed class CalypsoRenderer
         }
 
         skipFinish:
-        // Orbit cutaway: sealed passageway tubes from space rings (DK-001 CORR/CROSS/ACCESS) —
-        // shirt-sleeves path is partition walls, not OML; do not cull tube walls by the cut plane.
+        // Orbit cutaway: shirt-sleeves passageway as a HOLLOW tube (walls only).
+        // Cut-plane cull opens the near face so it reads as a corridor, not a solid gray bar.
+        // Seal is the partition walls — never OML. No ceiling slab (that made CORR look like a brick).
         if (!interior && cutaway && showSpacePartitions && IsAirtightPassage(space))
         {
             var tubeH = Math.Min(h, 3.2f);
-            DrawPerimeterBulkheads(ring, tubeH, openings, cutaway: false, default, default);
-            if (showFinish)
-                DrawCeilingAndLightStrip(center, size, tubeH, cutaway: false, default, default);
+            DrawPerimeterBulkheads(ring, tubeH, openings, cutaway: true, cutPt, cutN);
         }
 
         if (interior && showSpacePartitions)
@@ -1041,11 +1063,11 @@ internal sealed class CalypsoRenderer
         if (name.Contains("Catwalk", StringComparison.OrdinalIgnoreCase))
         {
             // Walking plate + handrails so DK0 catwalk POVs read as a balcony over the hold.
-            World.DrawCube(new Vector3(center.X, min.Y + 0.06f, center.Z), Math.Max(0.5f, size.X * 0.98f), 0.1f, Math.Max(0.5f, size.Z * 0.98f), steel);
-            World.DrawCube(new Vector3(min.X + 0.12f, min.Y + 0.55f, center.Z), 0.06f, 1.0f, Math.Max(0.4f, size.Z * 0.9f), steel);
-            World.DrawCube(new Vector3(max.X - 0.12f, min.Y + 0.55f, center.Z), 0.06f, 1.0f, Math.Max(0.4f, size.Z * 0.9f), steel);
-            World.DrawLine(new Vector3(min.X + 0.12f, min.Y + 1.05f, min.Z + 0.2f), new Vector3(min.X + 0.12f, min.Y + 1.05f, max.Z - 0.2f), AccentLight);
-            World.DrawLine(new Vector3(max.X - 0.12f, min.Y + 1.05f, min.Z + 0.2f), new Vector3(max.X - 0.12f, min.Y + 1.05f, max.Z - 0.2f), AccentLight);
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.06f, center.Z), Math.Max(0.5f, size.X * 0.98f), 0.1f, Math.Max(0.5f, size.Z * 0.98f), steel);
+            _world.DrawCube(new Vector3(min.X + 0.12f, min.Y + 0.55f, center.Z), 0.06f, 1.0f, Math.Max(0.4f, size.Z * 0.9f), steel);
+            _world.DrawCube(new Vector3(max.X - 0.12f, min.Y + 0.55f, center.Z), 0.06f, 1.0f, Math.Max(0.4f, size.Z * 0.9f), steel);
+            _world.DrawLine(new Vector3(min.X + 0.12f, min.Y + 1.05f, min.Z + 0.2f), new Vector3(min.X + 0.12f, min.Y + 1.05f, max.Z - 0.2f), AccentLight);
+            _world.DrawLine(new Vector3(max.X - 0.12f, min.Y + 1.05f, min.Z + 0.2f), new Vector3(max.X - 0.12f, min.Y + 1.05f, max.Z - 0.2f), AccentLight);
             return;
         }
 
@@ -1056,92 +1078,92 @@ internal sealed class CalypsoRenderer
             var viewY = min.Y + h * 0.58f;
             var glass = Color.FromArgb(255, 18, 28, 40);
             var frame = ShadeColor(Steel, 0.4f, 0.5f, new Vector3(0, 0, -1), LightDir);
-            World.DrawCube(new Vector3(center.X, viewY, max.Z - 0.08f), viewW, viewH, 0.12f, glass);
+            _world.DrawCube(new Vector3(center.X, viewY, max.Z - 0.08f), viewW, viewH, 0.12f, glass);
             // Heavy mullions (3) — not a cage / floating HUD bar
-            World.DrawCube(new Vector3(center.X, viewY + viewH * 0.5f, max.Z - 0.04f), viewW + 0.2f, 0.14f, 0.16f, frame);
-            World.DrawCube(new Vector3(center.X, viewY - viewH * 0.5f, max.Z - 0.04f), viewW + 0.2f, 0.14f, 0.16f, frame);
-            World.DrawCube(new Vector3(center.X - viewW * 0.33f, viewY, max.Z - 0.05f), 0.16f, viewH, 0.16f, frame);
-            World.DrawCube(new Vector3(center.X + viewW * 0.33f, viewY, max.Z - 0.05f), 0.16f, viewH, 0.16f, frame);
-            World.DrawCube(new Vector3(center.X, viewY, max.Z - 0.05f), 0.16f, viewH, 0.16f, frame);
+            _world.DrawCube(new Vector3(center.X, viewY + viewH * 0.5f, max.Z - 0.04f), viewW + 0.2f, 0.14f, 0.16f, frame);
+            _world.DrawCube(new Vector3(center.X, viewY - viewH * 0.5f, max.Z - 0.04f), viewW + 0.2f, 0.14f, 0.16f, frame);
+            _world.DrawCube(new Vector3(center.X - viewW * 0.33f, viewY, max.Z - 0.05f), 0.16f, viewH, 0.16f, frame);
+            _world.DrawCube(new Vector3(center.X + viewW * 0.33f, viewY, max.Z - 0.05f), 0.16f, viewH, 0.16f, frame);
+            _world.DrawCube(new Vector3(center.X, viewY, max.Z - 0.05f), 0.16f, viewH, 0.16f, frame);
 
             var consoleZ0 = min.Z + size.Z * 0.28f;
             var consoleZ1 = min.Z + size.Z * 0.62f;
             foreach (var x in new[] { min.X + 0.55f, max.X - 0.55f })
             {
-                World.DrawCube(new Vector3(x, min.Y + 0.55f, (consoleZ0 + consoleZ1) * 0.5f), 0.7f, 1.0f, Math.Abs(consoleZ1 - consoleZ0), console);
-                World.DrawCube(new Vector3(x, min.Y + 1.08f, (consoleZ0 + consoleZ1) * 0.5f), 0.55f, 0.08f, Math.Abs(consoleZ1 - consoleZ0) * 0.85f, glow);
+                _world.DrawCube(new Vector3(x, min.Y + 0.55f, (consoleZ0 + consoleZ1) * 0.5f), 0.7f, 1.0f, Math.Abs(consoleZ1 - consoleZ0), console);
+                _world.DrawCube(new Vector3(x, min.Y + 1.08f, (consoleZ0 + consoleZ1) * 0.5f), 0.55f, 0.08f, Math.Abs(consoleZ1 - consoleZ0) * 0.85f, glow);
                 // Pilot seat
-                World.DrawCube(new Vector3(x + (x < center.X ? 0.55f : -0.55f), min.Y + 0.35f, (consoleZ0 + consoleZ1) * 0.5f), 0.4f, 0.45f, 0.4f, steel);
-                World.DrawCube(new Vector3(x + (x < center.X ? 0.55f : -0.55f), min.Y + 0.62f, (consoleZ0 + consoleZ1) * 0.5f), 0.38f, 0.08f, 0.38f, woodish);
+                _world.DrawCube(new Vector3(x + (x < center.X ? 0.55f : -0.55f), min.Y + 0.35f, (consoleZ0 + consoleZ1) * 0.5f), 0.4f, 0.45f, 0.4f, steel);
+                _world.DrawCube(new Vector3(x + (x < center.X ? 0.55f : -0.55f), min.Y + 0.62f, (consoleZ0 + consoleZ1) * 0.5f), 0.38f, 0.08f, 0.38f, woodish);
             }
 
-            World.DrawCube(new Vector3(center.X, min.Y + 0.5f, center.Z + size.Z * 0.08f), 1.5f, 0.95f, 1.0f, console);
-            World.DrawCube(new Vector3(center.X, min.Y + 1.02f, center.Z + size.Z * 0.08f), 1.15f, 0.06f, 0.65f, glow);
-            World.DrawCube(new Vector3(center.X - 0.35f, min.Y + 1.12f, center.Z + size.Z * 0.08f), 0.12f, 0.08f, 0.2f, AccentCyan);
-            World.DrawCube(new Vector3(center.X + 0.35f, min.Y + 1.12f, center.Z + size.Z * 0.08f), 0.12f, 0.08f, 0.2f, AccentLight);
-            World.DrawCube(new Vector3(center.X, min.Y + 0.35f, center.Z - 0.35f), 0.45f, 0.5f, 0.45f, steel);
-            World.DrawCube(new Vector3(center.X, min.Y + 0.35f, center.Z - 0.45f), 0.42f, 0.35f, 0.12f, woodish);
-            World.DrawCube(new Vector3(center.X, min.Y + 0.04f, center.Z), Math.Min(1.0f, size.X * 0.22f), 0.04f, size.Z * 0.65f,
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.5f, center.Z + size.Z * 0.08f), 1.5f, 0.95f, 1.0f, console);
+            _world.DrawCube(new Vector3(center.X, min.Y + 1.02f, center.Z + size.Z * 0.08f), 1.15f, 0.06f, 0.65f, glow);
+            _world.DrawCube(new Vector3(center.X - 0.35f, min.Y + 1.12f, center.Z + size.Z * 0.08f), 0.12f, 0.08f, 0.2f, AccentCyan);
+            _world.DrawCube(new Vector3(center.X + 0.35f, min.Y + 1.12f, center.Z + size.Z * 0.08f), 0.12f, 0.08f, 0.2f, AccentLight);
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.35f, center.Z - 0.35f), 0.45f, 0.5f, 0.45f, steel);
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.35f, center.Z - 0.45f), 0.42f, 0.35f, 0.12f, woodish);
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.04f, center.Z), Math.Min(1.0f, size.X * 0.22f), 0.04f, size.Z * 0.65f,
                 ShadeColor(Color.FromArgb(255, 90, 94, 100), 0.6f, 0.15f, Vector3.UnitY, LightDir));
             // Aft bulkhead display — keep clear of ceiling so tour cameras don't clip a wedge.
-            World.DrawCube(new Vector3(center.X, min.Y + 1.15f, min.Z + 0.2f), Math.Min(3.2f, size.X * 0.35f), 0.7f, 0.08f, woodish);
+            _world.DrawCube(new Vector3(center.X, min.Y + 1.15f, min.Z + 0.2f), Math.Min(3.2f, size.X * 0.35f), 0.7f, 0.08f, woodish);
             return;
         }
 
         if (name.Contains("Galley", StringComparison.OrdinalIgnoreCase))
         {
             var runZ = Math.Max(1.6f, size.Z * 0.75f);
-            World.DrawCube(new Vector3(min.X + 0.55f, min.Y + 0.5f, center.Z), 0.65f, 0.95f, runZ, console);
-            World.DrawCube(new Vector3(min.X + 0.55f, min.Y + 1.0f, center.Z), 0.55f, 0.06f, runZ * 0.95f, steel);
+            _world.DrawCube(new Vector3(min.X + 0.55f, min.Y + 0.5f, center.Z), 0.65f, 0.95f, runZ, console);
+            _world.DrawCube(new Vector3(min.X + 0.55f, min.Y + 1.0f, center.Z), 0.55f, 0.06f, runZ * 0.95f, steel);
             // Appliances sit proud of the counter face so they read in tour cameras
-            World.DrawCube(new Vector3(min.X + 0.95f, min.Y + 0.7f, center.Z - runZ * 0.28f), 0.45f, 0.55f, 0.5f, appliance);
-            World.DrawCube(new Vector3(min.X + 0.95f, min.Y + 0.7f, center.Z), 0.45f, 0.55f, 0.5f, Color.FromArgb(255, 70, 90, 110));
-            World.DrawCube(new Vector3(min.X + 0.95f, min.Y + 0.65f, center.Z + runZ * 0.28f), 0.4f, 0.4f, 0.4f, steel);
-            World.DrawCube(new Vector3(min.X + 0.95f, min.Y + 0.9f, center.Z + runZ * 0.28f), 0.28f, 0.08f, 0.28f, AccentCyan);
-            World.DrawCube(new Vector3(max.X - 0.45f, min.Y + 0.9f, min.Z + 0.35f), 0.08f, 1.4f, 0.08f, AccentLight);
+            _world.DrawCube(new Vector3(min.X + 0.95f, min.Y + 0.7f, center.Z - runZ * 0.28f), 0.45f, 0.55f, 0.5f, appliance);
+            _world.DrawCube(new Vector3(min.X + 0.95f, min.Y + 0.7f, center.Z), 0.45f, 0.55f, 0.5f, Color.FromArgb(255, 70, 90, 110));
+            _world.DrawCube(new Vector3(min.X + 0.95f, min.Y + 0.65f, center.Z + runZ * 0.28f), 0.4f, 0.4f, 0.4f, steel);
+            _world.DrawCube(new Vector3(min.X + 0.95f, min.Y + 0.9f, center.Z + runZ * 0.28f), 0.28f, 0.08f, 0.28f, AccentCyan);
+            _world.DrawCube(new Vector3(max.X - 0.45f, min.Y + 0.9f, min.Z + 0.35f), 0.08f, 1.4f, 0.08f, AccentLight);
             return;
         }
 
         if (name.Contains("Infirmary", StringComparison.OrdinalIgnoreCase))
         {
-            World.DrawCube(new Vector3(center.X, min.Y + 0.45f, center.Z), Math.Min(2.2f, size.X * 0.7f), 0.55f, Math.Min(1.0f, size.Z * 0.55f), Color.FromArgb(255, 200, 205, 210));
-            World.DrawCube(new Vector3(center.X, min.Y + 0.75f, center.Z), Math.Min(2.0f, size.X * 0.65f), 0.06f, Math.Min(0.9f, size.Z * 0.5f), Color.FromArgb(255, 230, 235, 240));
-            World.DrawCube(new Vector3(max.X - 0.45f, min.Y + 0.85f, center.Z), 0.55f, 1.5f, 0.55f, console);
-            World.DrawCube(new Vector3(max.X - 0.45f, min.Y + 1.4f, center.Z), 0.35f, 0.08f, 0.35f, glow);
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.45f, center.Z), Math.Min(2.2f, size.X * 0.7f), 0.55f, Math.Min(1.0f, size.Z * 0.55f), Color.FromArgb(255, 200, 205, 210));
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.75f, center.Z), Math.Min(2.0f, size.X * 0.65f), 0.06f, Math.Min(0.9f, size.Z * 0.5f), Color.FromArgb(255, 230, 235, 240));
+            _world.DrawCube(new Vector3(max.X - 0.45f, min.Y + 0.85f, center.Z), 0.55f, 1.5f, 0.55f, console);
+            _world.DrawCube(new Vector3(max.X - 0.45f, min.Y + 1.4f, center.Z), 0.35f, 0.08f, 0.35f, glow);
             return;
         }
 
         if (name.Contains("Cabin", StringComparison.OrdinalIgnoreCase) || name.StartsWith("Berth", StringComparison.OrdinalIgnoreCase))
         {
             var bunkLen = Math.Max(1.5f, size.Z * 0.58f);
-            World.DrawCube(new Vector3(min.X + 0.55f, min.Y + 0.35f, center.Z), 0.95f, 0.35f, bunkLen, console);
-            World.DrawCube(new Vector3(min.X + 0.55f, min.Y + 1.15f, center.Z), 0.95f, 0.35f, bunkLen, console);
-            World.DrawCube(new Vector3(min.X + 0.55f, min.Y + 0.12f, center.Z), 0.9f, 0.18f, bunkLen * 0.9f, steel);
-            World.DrawCube(new Vector3(max.X - 0.35f, min.Y + 1.0f, min.Z + 0.4f), 0.45f, 1.9f, 0.5f, steel);
-            World.DrawCube(new Vector3(max.X - 0.4f, min.Y + 0.9f, max.Z - 0.45f), 0.55f, 1.7f, 0.55f, Color.FromArgb(255, 70, 78, 88));
-            World.DrawCube(new Vector3(max.X - 0.55f, min.Y + 0.4f, center.Z), 0.7f, 0.08f, 0.45f, woodish);
-            World.DrawCube(new Vector3(max.X - 0.55f, min.Y + 0.22f, center.Z), 0.08f, 0.35f, 0.08f, steel);
-            World.DrawCube(new Vector3(max.X - 0.85f, min.Y + 0.28f, center.Z), 0.35f, 0.08f, 0.35f, console);
-            World.DrawCube(new Vector3(min.X + 0.2f, min.Y + h - 0.35f, center.Z), 0.25f, 0.2f, 0.45f, appliance);
-            World.DrawCube(new Vector3(min.X + 0.15f, min.Y + 1.0f, min.Z + 0.35f), 0.08f, 0.12f, 0.12f, glow);
+            _world.DrawCube(new Vector3(min.X + 0.55f, min.Y + 0.35f, center.Z), 0.95f, 0.35f, bunkLen, console);
+            _world.DrawCube(new Vector3(min.X + 0.55f, min.Y + 1.15f, center.Z), 0.95f, 0.35f, bunkLen, console);
+            _world.DrawCube(new Vector3(min.X + 0.55f, min.Y + 0.12f, center.Z), 0.9f, 0.18f, bunkLen * 0.9f, steel);
+            _world.DrawCube(new Vector3(max.X - 0.35f, min.Y + 1.0f, min.Z + 0.4f), 0.45f, 1.9f, 0.5f, steel);
+            _world.DrawCube(new Vector3(max.X - 0.4f, min.Y + 0.9f, max.Z - 0.45f), 0.55f, 1.7f, 0.55f, Color.FromArgb(255, 70, 78, 88));
+            _world.DrawCube(new Vector3(max.X - 0.55f, min.Y + 0.4f, center.Z), 0.7f, 0.08f, 0.45f, woodish);
+            _world.DrawCube(new Vector3(max.X - 0.55f, min.Y + 0.22f, center.Z), 0.08f, 0.35f, 0.08f, steel);
+            _world.DrawCube(new Vector3(max.X - 0.85f, min.Y + 0.28f, center.Z), 0.35f, 0.08f, 0.35f, console);
+            _world.DrawCube(new Vector3(min.X + 0.2f, min.Y + h - 0.35f, center.Z), 0.25f, 0.2f, 0.45f, appliance);
+            _world.DrawCube(new Vector3(min.X + 0.15f, min.Y + 1.0f, min.Z + 0.35f), 0.08f, 0.12f, 0.12f, glow);
             for (var i = 0; i < 4; i++)
             {
                 var z = center.Z - bunkLen * 0.35f + i * (bunkLen * 0.22f);
-                World.DrawLine(new Vector3(min.X + 0.15f, min.Y + 0.55f, z), new Vector3(min.X + 1.0f, min.Y + 0.55f, z), AccentLight);
-                World.DrawLine(new Vector3(min.X + 0.15f, min.Y + 1.35f, z), new Vector3(min.X + 1.0f, min.Y + 1.35f, z), AccentLight);
+                _world.DrawLine(new Vector3(min.X + 0.15f, min.Y + 0.55f, z), new Vector3(min.X + 1.0f, min.Y + 0.55f, z), AccentLight);
+                _world.DrawLine(new Vector3(min.X + 0.15f, min.Y + 1.35f, z), new Vector3(min.X + 1.0f, min.Y + 1.35f, z), AccentLight);
             }
             return;
         }
 
         if (name.Contains("Lounge", StringComparison.OrdinalIgnoreCase))
         {
-            World.DrawCube(new Vector3(center.X, min.Y + 0.55f, min.Z + 1.2f), Math.Min(4f, size.X * 0.55f), 1.0f, 0.7f, woodish);
-            World.DrawCube(new Vector3(center.X, min.Y + h - 0.25f, center.Z), Math.Min(6f, size.X * 0.7f), 0.08f, Math.Min(4f, size.Z * 0.5f), glow);
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.55f, min.Z + 1.2f), Math.Min(4f, size.X * 0.55f), 1.0f, 0.7f, woodish);
+            _world.DrawCube(new Vector3(center.X, min.Y + h - 0.25f, center.Z), Math.Min(6f, size.X * 0.7f), 0.08f, Math.Min(4f, size.Z * 0.5f), glow);
             for (var i = -1; i <= 1; i++)
             {
                 var x = center.X + i * 0.85f;
-                World.DrawCylinder(new Vector3(x, min.Y + 0.35f, min.Z + 1.85f), 0.18f, 0.18f, 0.45f, 8, console);
-                World.DrawCube(new Vector3(x, min.Y + 0.58f, min.Z + 1.85f), 0.35f, 0.06f, 0.35f, woodish);
+                _world.DrawCylinder(new Vector3(x, min.Y + 0.35f, min.Z + 1.85f), 0.18f, 0.18f, 0.45f, 8, console);
+                _world.DrawCube(new Vector3(x, min.Y + 0.58f, min.Z + 1.85f), 0.35f, 0.06f, 0.35f, woodish);
             }
             return;
         }
@@ -1156,28 +1178,28 @@ internal sealed class CalypsoRenderer
             for (var i = 0; i < 3; i++)
             {
                 var z = min.Z + size.Z * (0.25f + i * 0.25f);
-                World.DrawCube(new Vector3(min.X + 0.5f, min.Y + 1.0f, z), 0.6f, 1.8f, 0.7f, steel);
-                World.DrawCube(new Vector3(max.X - 0.5f, min.Y + 1.0f, z), 0.6f, 1.8f, 0.7f, steel);
-                World.DrawCube(new Vector3(min.X + 0.5f, min.Y + 1.6f, z), 0.35f, 0.08f, 0.35f, glow);
+                _world.DrawCube(new Vector3(min.X + 0.5f, min.Y + 1.0f, z), 0.6f, 1.8f, 0.7f, steel);
+                _world.DrawCube(new Vector3(max.X - 0.5f, min.Y + 1.0f, z), 0.6f, 1.8f, 0.7f, steel);
+                _world.DrawCube(new Vector3(min.X + 0.5f, min.Y + 1.6f, z), 0.35f, 0.08f, 0.35f, glow);
             }
-            World.DrawCylinder(new Vector3(center.X - size.X * 0.15f, min.Y + 0.9f, center.Z), 0.45f, 0.45f, 1.6f, 12, appliance);
-            World.DrawCylinder(new Vector3(center.X + size.X * 0.15f, min.Y + 0.9f, center.Z), 0.45f, 0.45f, 1.6f, 12, appliance);
-            World.DrawCube(new Vector3(center.X, min.Y + h - 0.4f, center.Z), Math.Max(0.8f, size.X * 0.5f), 0.1f, 0.1f, steel);
-            World.DrawCube(new Vector3(center.X, min.Y + h - 0.55f, center.Z), 0.1f, 0.1f, Math.Max(0.8f, size.Z * 0.4f), steel);
+            _world.DrawCylinder(new Vector3(center.X - size.X * 0.15f, min.Y + 0.9f, center.Z), 0.45f, 0.45f, 1.6f, 12, appliance);
+            _world.DrawCylinder(new Vector3(center.X + size.X * 0.15f, min.Y + 0.9f, center.Z), 0.45f, 0.45f, 1.6f, 12, appliance);
+            _world.DrawCube(new Vector3(center.X, min.Y + h - 0.4f, center.Z), Math.Max(0.8f, size.X * 0.5f), 0.1f, 0.1f, steel);
+            _world.DrawCube(new Vector3(center.X, min.Y + h - 0.55f, center.Z), 0.1f, 0.1f, Math.Max(0.8f, size.Z * 0.4f), steel);
             return;
         }
 
         if (name.Contains("Airlock", StringComparison.OrdinalIgnoreCase))
         {
-            World.DrawCube(new Vector3(center.X, min.Y + 0.35f, center.Z), Math.Min(1.4f, size.X * 0.7f), 0.45f, 0.45f, console);
+            _world.DrawCube(new Vector3(center.X, min.Y + 0.35f, center.Z), Math.Min(1.4f, size.X * 0.7f), 0.45f, 0.45f, console);
             foreach (var (dx, dz) in new[] { (-0.35f, -0.35f), (0.35f, -0.35f), (-0.35f, 0.35f), (0.35f, 0.35f) })
             {
-                World.DrawCube(new Vector3(center.X + dx * size.X * 0.35f, min.Y + 1.2f, center.Z + dz * size.Z * 0.35f), 0.07f, 1.5f, 0.07f, steel);
-                World.DrawSphere(new Vector3(center.X + dx * size.X * 0.35f, min.Y + 1.85f, center.Z + dz * size.Z * 0.35f), 0.06f, AccentLight);
+                _world.DrawCube(new Vector3(center.X + dx * size.X * 0.35f, min.Y + 1.2f, center.Z + dz * size.Z * 0.35f), 0.07f, 1.5f, 0.07f, steel);
+                _world.DrawSphere(new Vector3(center.X + dx * size.X * 0.35f, min.Y + 1.85f, center.Z + dz * size.Z * 0.35f), 0.06f, AccentLight);
             }
             var hatch = ShadeColor(Steel, 0.4f, 0.55f, Vector3.UnitZ, LightDir);
-            World.DrawCube(new Vector3(center.X, min.Y + 1.1f, min.Z + 0.12f), Math.Max(0.8f, size.X * 0.85f), 2.0f, 0.1f, hatch);
-            World.DrawCube(new Vector3(center.X, min.Y + 1.1f, max.Z - 0.12f), Math.Max(0.8f, size.X * 0.85f), 2.0f, 0.1f, hatch);
+            _world.DrawCube(new Vector3(center.X, min.Y + 1.1f, min.Z + 0.12f), Math.Max(0.8f, size.X * 0.85f), 2.0f, 0.1f, hatch);
+            _world.DrawCube(new Vector3(center.X, min.Y + 1.1f, max.Z - 0.12f), Math.Max(0.8f, size.X * 0.85f), 2.0f, 0.1f, hatch);
             return;
         }
 
@@ -1190,24 +1212,24 @@ internal sealed class CalypsoRenderer
             var alongZ = size.Z >= size.X;
             // Overhead raceway flush into ceiling slab (avoid a second floating beam layer).
             if (alongZ)
-                World.DrawCube(new Vector3(center.X, min.Y + h - 0.16f, center.Z), 0.22f, 0.08f, span * 0.85f, glow);
+                _world.DrawCube(new Vector3(center.X, min.Y + h - 0.16f, center.Z), 0.22f, 0.08f, span * 0.85f, glow);
             else
-                World.DrawCube(new Vector3(center.X, min.Y + h - 0.16f, center.Z), span * 0.85f, 0.08f, 0.22f, glow);
+                _world.DrawCube(new Vector3(center.X, min.Y + h - 0.16f, center.Z), span * 0.85f, 0.08f, 0.22f, glow);
             // Deck centerline (muted)
             if (alongZ)
-                World.DrawCube(new Vector3(center.X, min.Y + 0.05f, center.Z), 0.2f, 0.03f, span, ShadeColor(AccentLight, 0.55f, 0.15f, Vector3.UnitY, LightDir));
+                _world.DrawCube(new Vector3(center.X, min.Y + 0.05f, center.Z), 0.2f, 0.03f, span, ShadeColor(AccentLight, 0.55f, 0.15f, Vector3.UnitY, LightDir));
             else
-                World.DrawCube(new Vector3(center.X, min.Y + 0.05f, center.Z), span, 0.03f, 0.2f, ShadeColor(AccentLight, 0.55f, 0.15f, Vector3.UnitY, LightDir));
+                _world.DrawCube(new Vector3(center.X, min.Y + 0.05f, center.Z), span, 0.03f, 0.2f, ShadeColor(AccentLight, 0.55f, 0.15f, Vector3.UnitY, LightDir));
             return;
         }
 
         if (name.Contains("Stairs", StringComparison.OrdinalIgnoreCase))
         {
             for (var i = 0; i < 6; i++)
-                World.DrawCube(new Vector3(center.X, min.Y + 0.15f + i * 0.28f, min.Z + 0.4f + i * 0.35f), Math.Max(0.8f, size.X * 0.6f), 0.1f, 0.35f, steel);
+                _world.DrawCube(new Vector3(center.X, min.Y + 0.15f + i * 0.28f, min.Z + 0.4f + i * 0.35f), Math.Max(0.8f, size.X * 0.6f), 0.1f, 0.35f, steel);
             var railX = center.X + size.X * 0.35f;
-            World.DrawLine(new Vector3(railX, min.Y + 0.9f, min.Z + 0.3f), new Vector3(railX, min.Y + 2.4f, max.Z - 0.3f), AccentLight);
-            World.DrawLine(new Vector3(center.X - size.X * 0.35f, min.Y + 0.9f, min.Z + 0.3f), new Vector3(center.X - size.X * 0.35f, min.Y + 2.4f, max.Z - 0.3f), AccentLight);
+            _world.DrawLine(new Vector3(railX, min.Y + 0.9f, min.Z + 0.3f), new Vector3(railX, min.Y + 2.4f, max.Z - 0.3f), AccentLight);
+            _world.DrawLine(new Vector3(center.X - size.X * 0.35f, min.Y + 0.9f, min.Z + 0.3f), new Vector3(center.X - size.X * 0.35f, min.Y + 2.4f, max.Z - 0.3f), AccentLight);
             return;
         }
 
@@ -1216,17 +1238,17 @@ internal sealed class CalypsoRenderer
             var car = center + new Vector3(0, h * 0.4f, 0);
             var carSx = Math.Max(0.8f, size.X * 0.7f);
             var carSz = Math.Max(0.8f, size.Z * 0.7f);
-            World.DrawCube(car, carSx, h * 0.75f, carSz, console);
-            World.DrawCube(car + new Vector3(0, 0, carSz * 0.5f), carSx * 0.7f, h * 0.55f, 0.06f, steel);
-            World.DrawCube(car + new Vector3(-carSx * 0.32f, 0, carSz * 0.5f), 0.06f, h * 0.55f, 0.08f, AccentLight);
-            World.DrawCube(car + new Vector3(carSx * 0.32f, 0, carSz * 0.5f), 0.06f, h * 0.55f, 0.08f, AccentLight);
+            _world.DrawCube(car, carSx, h * 0.75f, carSz, console);
+            _world.DrawCube(car + new Vector3(0, 0, carSz * 0.5f), carSx * 0.7f, h * 0.55f, 0.06f, steel);
+            _world.DrawCube(car + new Vector3(-carSx * 0.32f, 0, carSz * 0.5f), 0.06f, h * 0.55f, 0.08f, AccentLight);
+            _world.DrawCube(car + new Vector3(carSx * 0.32f, 0, carSz * 0.5f), 0.06f, h * 0.55f, 0.08f, AccentLight);
             return;
         }
 
         if (name.Contains("Cargo", StringComparison.OrdinalIgnoreCase) && space.Flags?.Hollow != true)
         {
             for (var z = min.Z + 1.5f; z < max.Z - 1f; z += 3f)
-                World.DrawCube(new Vector3(center.X, min.Y + 0.12f, z), Math.Max(0.5f, size.X * 0.7f), 0.08f, 0.25f, steel);
+                _world.DrawCube(new Vector3(center.X, min.Y + 0.12f, z), Math.Max(0.5f, size.X * 0.7f), 0.08f, 0.25f, steel);
         }
     }
 
@@ -1236,13 +1258,10 @@ internal sealed class CalypsoRenderer
         if (box.Points is not { Count: >= 2 })
             return;
 
-        // DK-001 plan: red = bulkheads (shirt-sleeves passage cut out of the plate).
+        // Plan: skip dense bh-* voxel soup — full-beam red lines come from DrawPlanBulkheadStations.
         if (_session.ViewMode == CalypsoViewMode.Plan
             && box.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true)
-        {
-            DrawPlanBulkheadBox(box);
             return;
-        }
 
         if (IsStructureBox(box) && !_session.VisualLayers.HasFlag(CalypsoVisualLayers.Structure))
             return;
@@ -1289,10 +1308,10 @@ internal sealed class CalypsoRenderer
         var sy = Math.Abs(he.Y) * 2f;
         var sz = Math.Abs(he.Z) * 2f;
         var body = ShadeColor(color, isC40 ? 0.55f : 0.4f, isC40 ? 0.25f : 0.65f, Vector3.UnitY, LightDir);
-        World.DrawCube(c, sx, sy, sz, body);
+        _world.DrawCube(c, sx, sy, sz, body);
         var wireMode = _session.WireMeshMode == CalypsoWireMeshMode.Wire;
         if (wireMode)
-            World.DrawCubeWiresV(c, new Vector3(sx, sy, sz), Bulkhead);
+            _world.DrawCubeWiresV(c, new Vector3(sx, sy, sz), Bulkhead);
 
         if (isC40)
         {
@@ -1313,15 +1332,15 @@ internal sealed class CalypsoRenderer
         // End-cap disks + panel seams (nacelles / exterior propulsor boxes).
         var cap = ShadeColor(Steel, 0.4f, 0.55f, Vector3.UnitZ, LightDir);
         var r = Math.Min(sx, sy) * 0.42f;
-        World.DrawCylinder(c + new Vector3(0, 0, sz * 0.52f), r, r * 0.85f, 0.22f, 12, cap);
-        World.DrawCylinder(c + new Vector3(0, 0, -sz * 0.52f), r * 0.85f, r, 0.22f, 12, cap);
-        World.DrawCube(c + new Vector3(0, 0, sz * 0.5f), sx * 0.95f, sy * 0.95f, 0.08f, cap);
-        World.DrawCube(c + new Vector3(0, 0, -sz * 0.5f), sx * 0.95f, sy * 0.95f, 0.08f, cap);
+        _world.DrawCylinder(c + new Vector3(0, 0, sz * 0.52f), r, r * 0.85f, 0.22f, 12, cap);
+        _world.DrawCylinder(c + new Vector3(0, 0, -sz * 0.52f), r * 0.85f, r, 0.22f, 12, cap);
+        _world.DrawCube(c + new Vector3(0, 0, sz * 0.5f), sx * 0.95f, sy * 0.95f, 0.08f, cap);
+        _world.DrawCube(c + new Vector3(0, 0, -sz * 0.5f), sx * 0.95f, sy * 0.95f, 0.08f, cap);
         for (var i = -1; i <= 1; i++)
         {
             var y = c.Y + i * sy * 0.28f;
-            World.DrawLine(new Vector3(c.X - sx * 0.45f, y, c.Z - sz * 0.48f), new Vector3(c.X - sx * 0.45f, y, c.Z + sz * 0.48f), Bulkhead);
-            World.DrawLine(new Vector3(c.X + sx * 0.45f, y, c.Z - sz * 0.48f), new Vector3(c.X + sx * 0.45f, y, c.Z + sz * 0.48f), Bulkhead);
+            _world.DrawLine(new Vector3(c.X - sx * 0.45f, y, c.Z - sz * 0.48f), new Vector3(c.X - sx * 0.45f, y, c.Z + sz * 0.48f), Bulkhead);
+            _world.DrawLine(new Vector3(c.X + sx * 0.45f, y, c.Z - sz * 0.48f), new Vector3(c.X + sx * 0.45f, y, c.Z + sz * 0.48f), Bulkhead);
         }
     }
 
@@ -1337,21 +1356,21 @@ internal sealed class CalypsoRenderer
         for (var i = -1; i <= 1; i++)
         {
             var zOff = i * (sz * 0.28f);
-            World.DrawCube(c + new Vector3(-sx * 0.54f, 0, zOff), 0.12f, sy * 0.78f, 0.1f, rib);
-            World.DrawCube(c + new Vector3(sx * 0.54f, 0, zOff), 0.12f, sy * 0.78f, 0.1f, rib);
+            _world.DrawCube(c + new Vector3(-sx * 0.54f, 0, zOff), 0.12f, sy * 0.78f, 0.1f, rib);
+            _world.DrawCube(c + new Vector3(sx * 0.54f, 0, zOff), 0.12f, sy * 0.78f, 0.1f, rib);
         }
-        World.DrawCube(c + new Vector3(0, 0, -sz * 0.54f), sx * 0.72f, sy * 0.78f, 0.14f, door);
-        World.DrawCube(c + new Vector3(0, 0, -sz * 0.56f), 0.1f, sy * 0.7f, 0.1f, steel);
+        _world.DrawCube(c + new Vector3(0, 0, -sz * 0.54f), sx * 0.72f, sy * 0.78f, 0.14f, door);
+        _world.DrawCube(c + new Vector3(0, 0, -sz * 0.56f), 0.1f, sy * 0.7f, 0.1f, steel);
     }
 
-    private static void DrawPolygonFloor(Vector3[] ring, Vector3 min, Vector3 max, float y, Color color, float tile)
+    private void DrawPolygonFloor(Vector3[] ring, Vector3 min, Vector3 max, float y, Color color, float tile)
     {
         var sizeX = Math.Max(0.2f, max.X - min.X);
         var sizeZ = Math.Max(0.2f, max.Z - min.Z);
         // Small compartments: single AABB slab (grid sampling underfills).
         if (sizeX < 2.2f || sizeZ < 2.2f)
         {
-            World.DrawCube(new Vector3((min.X + max.X) * 0.5f, y, (min.Z + max.Z) * 0.5f), sizeX, 0.05f, sizeZ, color);
+            _world.DrawCube(new Vector3((min.X + max.X) * 0.5f, y, (min.Z + max.Z) * 0.5f), sizeX, 0.05f, sizeZ, color);
             return;
         }
 
@@ -1361,12 +1380,12 @@ internal sealed class CalypsoRenderer
         {
             if (!PointInPolygonXZ(new Vector3(x, 0, z), ring))
                 continue;
-            World.DrawCube(new Vector3(x, y, z), tile * 0.95f, 0.05f, tile * 0.95f, color);
+            _world.DrawCube(new Vector3(x, y, z), tile * 0.95f, 0.05f, tile * 0.95f, color);
             drawn++;
         }
 
         if (drawn == 0)
-            World.DrawCube(new Vector3((min.X + max.X) * 0.5f, y, (min.Z + max.Z) * 0.5f), sizeX, 0.05f, sizeZ, color);
+            _world.DrawCube(new Vector3((min.X + max.X) * 0.5f, y, (min.Z + max.Z) * 0.5f), sizeX, 0.05f, sizeZ, color);
     }
 
     private static bool PointInPolygonXZ(Vector3 p, Vector3[] ring)
@@ -1390,43 +1409,44 @@ internal sealed class CalypsoRenderer
         Vector3[] ring, Vector3 min, Vector3 max, Vector3 center, Vector3 size, float h,
         bool cutaway, Vector3 cutPt, Vector3 cutN)
     {
-        _ = cutPt;
-        _ = cutN;
-        // Hold walls: always all four faces (open bay). Cut-plane cull made the stern read as a solid cube/slab.
+        // Hold: open cargo bay — deck always; near-side walls culled so the bay reads hollow (not a cube).
         var wallH = Math.Min(h, 9f);
         for (var i = 0; i < ring.Length; i++)
         {
             var a = ring[i];
             var b = ring[(i + 1) % ring.Length];
+            var mid = (a + b) * 0.5f;
+            if (cutaway && CulledByCutPlane(mid, cutPt, cutN))
+                continue;
             DrawInteriorWallPanel(a, b, wallH, ribs: false);
         }
 
         // Hold deck plate only — never fill the volume (cargo bay is a hole with walls, not a cube).
         var holdDeck = ShadeColor(Color.FromArgb(255, 52, 56, 62), 0.65f, 0.2f, Vector3.UnitY, LightDir);
-        World.DrawCube(new Vector3(center.X, min.Y + 0.04f, center.Z), Math.Max(1f, size.X * 0.98f), 0.1f, Math.Max(1f, size.Z * 0.98f), holdDeck);
+        _world.DrawCube(new Vector3(center.X, min.Y + 0.04f, center.Z), Math.Max(1f, size.X * 0.98f), 0.1f, Math.Max(1f, size.Z * 0.98f), holdDeck);
 
         var steel = ShadeColor(Steel, 0.5f, 0.4f, Vector3.UnitY, LightDir);
         var amber = ShadeColor(Color.FromArgb(255, 120, 100, 55), 0.55f, 0.25f, Vector3.UnitY, LightDir);
 
         // Overhead gantry ONLY above clear height of C40 stack (~7.8 m) — no beams through containers.
         var gantryY = min.Y + Math.Min(wallH * 0.92f, 8.4f);
-        World.DrawCube(new Vector3(center.X, gantryY, center.Z), Math.Max(2f, size.X * 0.85f), 0.14f, 0.14f, steel);
-        World.DrawCube(new Vector3(center.X, gantryY, center.Z), 0.14f, 0.14f, Math.Max(2f, size.Z * 0.85f), steel);
+        _world.DrawCube(new Vector3(center.X, gantryY, center.Z), Math.Max(2f, size.X * 0.85f), 0.14f, 0.14f, steel);
+        _world.DrawCube(new Vector3(center.X, gantryY, center.Z), 0.14f, 0.14f, Math.Max(2f, size.Z * 0.85f), steel);
 
         // Fore catwalk band (DK0 plate height) — clear of C40 aft stack.
         var catZ = max.Z - 1.2f;
         var catW = Math.Max(1f, size.X * 0.7f);
-        World.DrawCube(new Vector3(center.X, min.Y + 4.05f, catZ), catW, 0.1f, 2.2f, steel);
-        World.DrawCube(new Vector3(center.X - catW * 0.5f, min.Y + 4.55f, catZ), 0.06f, 0.9f, 2.0f, steel);
-        World.DrawCube(new Vector3(center.X + catW * 0.5f, min.Y + 4.55f, catZ), 0.06f, 0.9f, 2.0f, steel);
+        _world.DrawCube(new Vector3(center.X, min.Y + 4.05f, catZ), catW, 0.1f, 2.2f, steel);
+        _world.DrawCube(new Vector3(center.X - catW * 0.5f, min.Y + 4.55f, catZ), 0.06f, 0.9f, 2.0f, steel);
+        _world.DrawCube(new Vector3(center.X + catW * 0.5f, min.Y + 4.55f, catZ), 0.06f, 0.9f, 2.0f, steel);
 
         // Tie-downs only in the side aisles (not under the container footprint).
         if (!cutaway)
         {
             for (var z = min.Z + 1.5f; z < max.Z - 2.5f; z += 3.2f)
             {
-                World.DrawCube(new Vector3(min.X + 0.55f, min.Y + 0.1f, z), 0.3f, 0.1f, 0.3f, amber);
-                World.DrawCube(new Vector3(max.X - 0.55f, min.Y + 0.1f, z), 0.3f, 0.1f, 0.3f, amber);
+                _world.DrawCube(new Vector3(min.X + 0.55f, min.Y + 0.1f, z), 0.3f, 0.1f, 0.3f, amber);
+                _world.DrawCube(new Vector3(max.X - 0.55f, min.Y + 0.1f, z), 0.3f, 0.1f, 0.3f, amber);
             }
         }
 
@@ -1435,7 +1455,7 @@ internal sealed class CalypsoRenderer
         {
             for (var i = 0; i < 4; i++)
             {
-                World.DrawCube(
+                _world.DrawCube(
                     new Vector3(center.X, min.Y + 0.1f + i * 0.35f, min.Z + 0.6f + i * 0.55f),
                     Math.Max(2.5f, size.X * 0.35f),
                     0.12f,
@@ -1453,7 +1473,7 @@ internal sealed class CalypsoRenderer
 
         // Continuous ceiling slab that actually encloses the room (inset so it doesn't z-fight walls).
         var ceiling = ShadeColor(Color.FromArgb(255, 64, 68, 74), 0.8f, 0.08f, -Vector3.UnitY, LightDir);
-        World.DrawCube(ceilingCenter, Math.Max(0.4f, size.X - 0.08f), 0.18f, Math.Max(0.4f, size.Z - 0.08f), ceiling);
+        _world.DrawCube(ceilingCenter, Math.Max(0.4f, size.X - 0.08f), 0.18f, Math.Max(0.4f, size.Z - 0.08f), ceiling);
 
         var alongZ = size.Z >= size.X;
         var cove = ShadeColor(AccentCyan, 0.45f, 0.3f, -Vector3.UnitY, LightDir);
@@ -1464,13 +1484,13 @@ internal sealed class CalypsoRenderer
             for (var t = 0.22f; t <= 0.78f; t += 0.28f)
             {
                 var z = center.Z - size.Z * 0.5f + size.Z * t;
-                World.DrawCube(new Vector3(center.X, coveY, z), size.X * 0.52f, 0.05f, 0.2f, cove);
+                _world.DrawCube(new Vector3(center.X, coveY, z), size.X * 0.52f, 0.05f, 0.2f, cove);
             }
         }
         else if (alongZ)
-            World.DrawCube(new Vector3(center.X, coveY, center.Z), Math.Min(0.28f, size.X * 0.18f), 0.05f, size.Z * 0.75f, cove);
+            _world.DrawCube(new Vector3(center.X, coveY, center.Z), Math.Min(0.28f, size.X * 0.18f), 0.05f, size.Z * 0.75f, cove);
         else
-            World.DrawCube(new Vector3(center.X, coveY, center.Z), size.X * 0.75f, 0.05f, Math.Min(0.28f, size.Z * 0.18f), cove);
+            _world.DrawCube(new Vector3(center.X, coveY, center.Z), size.X * 0.75f, 0.05f, Math.Min(0.28f, size.Z * 0.18f), cove);
     }
 
     private void DrawDeckPanelGrid(Vector3 min, Vector3 max, float h)
@@ -1478,9 +1498,9 @@ internal sealed class CalypsoRenderer
         const float step = 1.2f;
         var line = Color.FromArgb(180, 70, 74, 78);
         for (var x = min.X; x <= max.X + 0.01f; x += step)
-            World.DrawLine(new Vector3(x, h, min.Z), new Vector3(x, h, max.Z), line);
+            _world.DrawLine(new Vector3(x, h, min.Z), new Vector3(x, h, max.Z), line);
         for (var z = min.Z; z <= max.Z + 0.01f; z += step)
-            World.DrawLine(new Vector3(min.X, h, z), new Vector3(max.X, h, z), line);
+            _world.DrawLine(new Vector3(min.X, h, z), new Vector3(max.X, h, z), line);
     }
 
     private void DrawPerimeterBulkheads(
@@ -1604,11 +1624,11 @@ internal sealed class CalypsoRenderer
         for (var d = 1.0f; d < len - 0.5f; d += spacing)
         {
             var p = a + dir * d - normal * 0.02f;
-            World.DrawCube(p + new Vector3(0, panelH * 0.5f, 0), 0.06f, panelH * 0.88f, 0.06f, steel);
+            _world.DrawCube(p + new Vector3(0, panelH * 0.5f, 0), 0.06f, panelH * 0.88f, 0.06f, steel);
         }
     }
 
-    private static void DrawWallRibs(Vector3 a, Vector3 b, float h, Color color)
+    private void DrawWallRibs(Vector3 a, Vector3 b, float h, Color color)
     {
         var dir = b - a;
         dir.Y = 0;
@@ -1620,7 +1640,7 @@ internal sealed class CalypsoRenderer
         for (var d = 0f; d <= len + 0.01f; d += spacing)
         {
             var p = a + dir * d;
-            World.DrawCube(p + new Vector3(0, h * 0.5f, 0), 0.07f, h, 0.07f, color);
+            _world.DrawCube(p + new Vector3(0, h * 0.5f, 0), 0.07f, h, 0.07f, color);
         }
     }
 
@@ -1628,14 +1648,14 @@ internal sealed class CalypsoRenderer
     {
         var jambH = Math.Min(h, 2.2f);
         var frame = ShadeColor(Steel, 0.4f, 0.45f, Vector3.UnitY, LightDir);
-        World.DrawCube(a + new Vector3(0, jambH * 0.5f, 0), 0.14f, jambH, 0.14f, frame);
-        World.DrawCube(b + new Vector3(0, jambH * 0.5f, 0), 0.14f, jambH, 0.14f, frame);
+        _world.DrawCube(a + new Vector3(0, jambH * 0.5f, 0), 0.14f, jambH, 0.14f, frame);
+        _world.DrawCube(b + new Vector3(0, jambH * 0.5f, 0), 0.14f, jambH, 0.14f, frame);
         var lintel = (a + b) * 0.5f + new Vector3(0, jambH, 0);
         var span = Vector3.Distance(new Vector3(a.X, 0, a.Z), new Vector3(b.X, 0, b.Z));
-        World.DrawCube(lintel, Math.Max(0.2f, span), 0.12f, 0.14f, frame);
+        _world.DrawCube(lintel, Math.Max(0.2f, span), 0.12f, 0.14f, frame);
     }
 
-    private static void DrawOpeningPlanSymbol(CadEntity opening)
+    private void DrawOpeningPlanSymbol(CadEntity opening)
     {
         if (opening.Footprint is not { Count: >= 3 } fp)
             return;
@@ -1649,8 +1669,8 @@ internal sealed class CalypsoRenderer
         var leaf = ShipCad.GetLeafState(opening) == ShipLeafState.Open
             ? Color.FromArgb(200, 72, 118, 88)
             : Color.FromArgb(200, 110, 92, 58);
-        World.DrawCube(c, sx * 1.02f, 0.05f, sz * 1.02f, gap);
-        World.DrawCube(c + new Vector3(0, 0.04f, 0), sx * 0.35f, 0.02f, sz * 0.12f, leaf);
+        _world.DrawCube(c, sx * 1.02f, 0.05f, sz * 1.02f, gap);
+        _world.DrawCube(c + new Vector3(0, 0.04f, 0), sx * 0.35f, 0.02f, sz * 0.12f, leaf);
     }
 
     private void DrawOpeningFrame(CadEntity opening)
@@ -1672,9 +1692,9 @@ internal sealed class CalypsoRenderer
         var sx = Math.Max(0.4f, size.X);
         var sz = Math.Max(0.2f, size.Z);
         if (_session.WireMeshMode == CalypsoWireMeshMode.Wire)
-            World.DrawCubeWiresV(c + new Vector3(0, h * 0.5f, 0), new Vector3(sx, h, sz), frame);
+            _world.DrawCubeWiresV(c + new Vector3(0, h * 0.5f, 0), new Vector3(sx, h, sz), frame);
         // Lintel flush to leaf top (steel — OpeningFrame amber reads as floating candy)
-        World.DrawCube(c + new Vector3(0, h * 0.95f, 0), sx * 1.02f, 0.1f, Math.Max(sx, sz) * 0.15f, frame);
+        _world.DrawCube(c + new Vector3(0, h * 0.95f, 0), sx * 1.02f, 0.1f, Math.Max(sx, sz) * 0.15f, frame);
 
         var kind = opening.OpeningType ?? "door";
         var tag = opening.Properties is not null &&
@@ -1698,7 +1718,7 @@ internal sealed class CalypsoRenderer
                 var y = min.Y + 0.08f + i * (h * 0.22f);
                 var z = max.Z - t * rampDepth;
                 var thick = Math.Max(0.35f, rampDepth / stepCount);
-                World.DrawCube(new Vector3(c.X, y, z), rampW, 0.14f, thick, amber);
+                _world.DrawCube(new Vector3(c.X, y, z), rampW, 0.14f, thick, amber);
             }
             return;
         }
@@ -1720,17 +1740,17 @@ internal sealed class CalypsoRenderer
         if (Math.Min(sx, sz) > 1.2f && Math.Max(sx, sz) > 2.5f)
             return;
         if (sx >= sz)
-            World.DrawCube(c + new Vector3(0, leafH * 0.5f, 0), face, leafH * 0.9f, leafDepth, leafColor);
+            _world.DrawCube(c + new Vector3(0, leafH * 0.5f, 0), face, leafH * 0.9f, leafDepth, leafColor);
         else
-            World.DrawCube(c + new Vector3(0, leafH * 0.5f, 0), leafDepth, leafH * 0.9f, face, leafColor);
-        World.DrawCube(c + new Vector3(0, leafH * 0.45f, 0) + (sx >= sz ? new Vector3(face * 0.28f, 0, 0) : new Vector3(0, 0, face * 0.28f)),
+            _world.DrawCube(c + new Vector3(0, leafH * 0.5f, 0), leafDepth, leafH * 0.9f, face, leafColor);
+        _world.DrawCube(c + new Vector3(0, leafH * 0.45f, 0) + (sx >= sz ? new Vector3(face * 0.28f, 0, 0) : new Vector3(0, 0, face * 0.28f)),
             0.04f, 0.12f, 0.05f, AccentCyan);
     }
 
-    private static void DrawHookMarker(Vector3 p)
+    private void DrawHookMarker(Vector3 p)
     {
-        World.DrawSphere(p + new Vector3(0, 1.2f, 0), 0.12f, AccentCyan);
-        World.DrawLine(p, p + new Vector3(0, 1.2f, 0), AccentCyan);
+        _world.DrawSphere(p + new Vector3(0, 1.2f, 0), 0.12f, AccentCyan);
+        _world.DrawLine(p, p + new Vector3(0, 1.2f, 0), AccentCyan);
     }
 
     private void DrawWall(CadEntity wall)
@@ -1745,6 +1765,8 @@ internal sealed class CalypsoRenderer
         // DK-001 plan: blue = shirt-sleeves passageway walls; red = transverse bulkheads/partitions.
         if (_session.ViewMode == CalypsoViewMode.Plan)
         {
+            if (wall.Name?.StartsWith("hull", StringComparison.OrdinalIgnoreCase) == true)
+                return;
             DrawPlanWallSegments(wall, segments);
             return;
         }
@@ -1795,8 +1817,8 @@ internal sealed class CalypsoRenderer
 
             if (wire && !airtightPartition)
             {
-                World.DrawLine(a + new Vector3(0, 0.04f, 0), b + new Vector3(0, 0.04f, 0), Bulkhead);
-                World.DrawLine(a + new Vector3(0, h, 0), b + new Vector3(0, h, 0), Bulkhead);
+                _world.DrawLine(a + new Vector3(0, 0.04f, 0), b + new Vector3(0, 0.04f, 0), Bulkhead);
+                _world.DrawLine(a + new Vector3(0, h, 0), b + new Vector3(0, h, 0), Bulkhead);
                 DrawWallRibs(a, b, h, Steel);
                 continue;
             }
@@ -1830,7 +1852,7 @@ internal sealed class CalypsoRenderer
         }
     }
 
-    private static void DrawHullSeamsAndRivets(Vector3 a, Vector3 b, float h, Vector3 outward)
+    private void DrawHullSeamsAndRivets(Vector3 a, Vector3 b, float h, Vector3 outward)
     {
         var dir = b - a;
         dir.Y = 0;
@@ -1841,40 +1863,40 @@ internal sealed class CalypsoRenderer
         var seam = Color.FromArgb(200, 90, 96, 104);
         var rivet = Color.FromArgb(255, 120, 126, 134);
         // Panel seam chords along baseline + mid height
-        World.DrawLine(a + outward * 0.12f, b + outward * 0.12f, seam);
-        World.DrawLine(a + new Vector3(0, h * 0.5f, 0) + outward * 0.12f, b + new Vector3(0, h * 0.5f, 0) + outward * 0.12f, seam);
-        World.DrawLine(a + new Vector3(0, h, 0) + outward * 0.12f, b + new Vector3(0, h, 0) + outward * 0.12f, seam);
+        _world.DrawLine(a + outward * 0.12f, b + outward * 0.12f, seam);
+        _world.DrawLine(a + new Vector3(0, h * 0.5f, 0) + outward * 0.12f, b + new Vector3(0, h * 0.5f, 0) + outward * 0.12f, seam);
+        _world.DrawLine(a + new Vector3(0, h, 0) + outward * 0.12f, b + new Vector3(0, h, 0) + outward * 0.12f, seam);
         // Sparse rivet dots every ~1.7 m
         const float spacing = 1.7f;
         for (var d = 0.35f; d < len - 0.2f; d += spacing)
         {
             var p = a + dir * d + outward * 0.15f;
-            World.DrawSphere(p + new Vector3(0, 0.25f, 0), 0.05f, rivet);
-            World.DrawSphere(p + new Vector3(0, h * 0.5f, 0), 0.05f, rivet);
-            World.DrawSphere(p + new Vector3(0, h - 0.25f, 0), 0.05f, rivet);
+            _world.DrawSphere(p + new Vector3(0, 0.25f, 0), 0.05f, rivet);
+            _world.DrawSphere(p + new Vector3(0, h * 0.5f, 0), 0.05f, rivet);
+            _world.DrawSphere(p + new Vector3(0, h - 0.25f, 0), 0.05f, rivet);
         }
     }
 
-    private static void DrawWallSlab(Vector3 center, Vector3 dir, float length, float height, float thickness, Color color)
+    private void DrawWallSlab(Vector3 center, Vector3 dir, float length, float height, float thickness, Color color)
     {
         if (MathF.Abs(dir.X) < 0.15f || MathF.Abs(dir.Z) < 0.15f)
         {
             var sx = MathF.Abs(dir.X) >= MathF.Abs(dir.Z) ? length : thickness;
             var sz = MathF.Abs(dir.Z) > MathF.Abs(dir.X) ? length : thickness;
-            World.DrawCube(center, sx, height, sz, color);
+            _world.DrawCube(center, sx, height, sz, color);
             return;
         }
 
         // Diagonal hull: continuous strip of thin posts + top/bottom chords (not a cube lattice).
         var a = center - dir * (length * 0.5f) - new Vector3(0, height * 0.5f, 0);
         var b = center + dir * (length * 0.5f) - new Vector3(0, height * 0.5f, 0);
-        World.DrawLine(a, b, color);
-        World.DrawLine(a + new Vector3(0, height, 0), b + new Vector3(0, height, 0), color);
+        _world.DrawLine(a, b, color);
+        _world.DrawLine(a + new Vector3(0, height, 0), b + new Vector3(0, height, 0), color);
         const float step = 0.7f;
         for (var t = 0f; t <= 1.001f; t += step / Math.Max(0.7f, length))
         {
             var p = Vector3.Lerp(a, b, t);
-            World.DrawCube(p + new Vector3(0, height * 0.5f, 0), thickness, height, thickness, color);
+            _world.DrawCube(p + new Vector3(0, height * 0.5f, 0), thickness, height, thickness, color);
         }
     }
 
@@ -1962,7 +1984,7 @@ internal sealed class CalypsoRenderer
             var b = o + along * halfSpan + new Vector3(0f, y - o.Y, 0f);
             a -= n * Vector3.Dot(a - o, n);
             b -= n * Vector3.Dot(b - o, n);
-            World.DrawLine(a, b, cue);
+            _world.DrawLine(a, b, cue);
         }
     }
 
@@ -2081,25 +2103,39 @@ internal sealed class CalypsoRenderer
                || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>Plan: red transverse bar for a structural bulkhead (passage already cut out of the plate).</summary>
-    private static void DrawPlanBulkheadBox(CadEntity box)
+    /// <summary>
+    /// Plan: one full-beam red line per structural BH station (passage cut out of the plate).
+    /// Dense bh-* remnant boxes are skipped — they read as noise, not the user's red legend.
+    /// </summary>
+    private void DrawPlanBulkheadStations()
     {
-        var c = SvgCoords.FromArray(box.Points![0]);
-        var he = SvgCoords.FromArray(box.Points[1]);
-        var sx = Math.Max(0.15f, Math.Abs(he.X) * 2f);
-        var sz = Math.Max(0.12f, Math.Abs(he.Z) * 2f);
-        // Prefer a thin athwart strip so the BH reads as the user's red lines.
-        if (sx >= sz * 1.5f)
-            World.DrawCube(new Vector3(c.X, 0.12f, c.Z), sx, 0.2f, Math.Max(0.18f, sz), PlanBulkheadRed);
-        else
-            World.DrawCube(new Vector3(c.X, 0.12f, c.Z), Math.Max(0.18f, sx), 0.2f, sz, PlanBulkheadRed);
+        if (_session.ViewMode != CalypsoViewMode.Plan)
+            return;
+
+        var stations = new SortedSet<float>();
+        foreach (var e in _session.Document.Entities)
+        {
+            if (e.Kind != "box" || e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) != true)
+                continue;
+            if (e.Points is not { Count: >= 2 })
+                continue;
+            var c = SvgCoords.FromArray(e.Points[0]);
+            stations.Add(MathF.Round(c.Z * 2f) / 2f); // 0.5 m bins
+        }
+
+        foreach (var z in stations)
+        {
+            // Full-beam red BH with a center gap cue for the shirt-sleeves cutout.
+            _world.DrawCube(new Vector3(-6.5f, 0.16f, z), 5.5f, 0.22f, 0.28f, PlanBulkheadRed);
+            _world.DrawCube(new Vector3(6.5f, 0.16f, z), 5.5f, 0.22f, 0.28f, PlanBulkheadRed);
+        }
     }
 
     /// <summary>
     /// Plan wall legend: blue = shirt-sleeves passageway; red = transverse bulkhead/partition
     /// (passage cut through); gray = longitudinal room lining.
     /// </summary>
-    private static void DrawPlanWallSegments(CadEntity wall, List<(Vector3 A, Vector3 B)> segments)
+    private void DrawPlanWallSegments(CadEntity wall, List<(Vector3 A, Vector3 B)> segments)
     {
         var nm = wall.Name ?? "";
         var passage = nm.StartsWith("w-CORR", StringComparison.OrdinalIgnoreCase)
@@ -2139,7 +2175,7 @@ internal sealed class CalypsoRenderer
 
             var sx = dx >= dz ? len : thick;
             var sz = dz > dx ? len : thick;
-            World.DrawCube(mid, sx, 0.18f, sz, color);
+            _world.DrawCube(mid, sx, 0.18f, sz, color);
         }
     }
 
@@ -2219,6 +2255,8 @@ internal sealed class CalypsoRenderer
                     ? layers.HasFlag(CalypsoVisualLayers.Outfit)
                     : layers.HasFlag(CalypsoVisualLayers.HullShell)
                       || layers.HasFlag(CalypsoVisualLayers.Outfit),
+            // OML / IML meshes only with HullShell — never leak onto DK-001 plan / structure-no-hull.
+            "mesh" => layers.HasFlag(CalypsoVisualLayers.HullShell),
             _ => true,
         };
     }
@@ -2237,7 +2275,7 @@ internal sealed class CalypsoRenderer
             c.Y = min.Y + Math.Max(0.08f, (max.Y - min.Y) * 0.5f);
             if (CulledByCutPlane(c, cutPt, cutN))
                 continue;
-            World.DrawCube(
+            _world.DrawCube(
                 c,
                 Math.Max(0.45f, max.X - min.X + 0.08f),
                 Math.Max(0.45f, max.Y - min.Y + 0.08f),
@@ -2265,7 +2303,7 @@ internal sealed class CalypsoRenderer
                 var len = Vector3.Distance(new Vector3(a.X, 0, a.Z), new Vector3(b.X, 0, b.Z));
                 if (len < 0.4f)
                     continue;
-                World.DrawCube(mid, Math.Max(0.35f, len * 0.92f), 0.04f, 0.35f, stripe);
+                _world.DrawCube(mid, Math.Max(0.35f, len * 0.92f), 0.04f, 0.35f, stripe);
             }
         }
     }
