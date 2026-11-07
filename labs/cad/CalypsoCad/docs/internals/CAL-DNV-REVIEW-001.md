@@ -12,7 +12,7 @@ Classification-style **third-party design review** bundle for the Calypso tramp 
 ## Generate
 
 ```powershell
-dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --dnv-review --headless
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --headless-export
 ```
 
 Outputs under `%LocalAppData%\Novolis\CalypsoCad\generated\`:

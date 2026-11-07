@@ -32,5 +32,17 @@
     <LibraryReference Include="Novolis.Simulation.View" />
     <LibraryReference Include="Novolis.Agent.Core" />
     <LibraryReference Include="Novolis.Agent.Surface" />
+    <LibraryReference Include="Novolis.Audio" />
+    <LibraryReference Include="Novolis.Audio.Abstractions" />
+    <LibraryReference Include="Novolis.Audio.Runtime" />
+    <LibraryReference Include="Novolis.Audio.Core" />
+    <LibraryReference Include="Novolis.Audio.Midi" />
+    <LibraryReference Include="Novolis.Audio.Voice" />
+    <LibraryReference Include="Novolis.Audio.Voice.Abstractions" />
+    <LibraryReference Include="Novolis.Audio.Voice.Profiles" />
+    <LibraryReference Include="Novolis.Audio.Voice.SherpaOnnx" />
+    <LibraryReference Include="Novolis.Audio.Effects" />
+    <LibraryReference Include="Novolis.Audio.Filters" />
+    <ProjectReference Include="..\..\shared\Novolis.Lab.Voice\Novolis.Lab.Voice.csproj" />
   </ItemGroup>
 </Project>

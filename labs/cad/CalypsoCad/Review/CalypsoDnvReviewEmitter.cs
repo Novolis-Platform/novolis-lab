@@ -185,11 +185,11 @@ internal static class CalypsoDnvReviewEmitter
                 sb.Append("<img src=\"").Append(E(rel)).Append("\" alt=\"").Append(E(title)).Append("\"/>");
             }
             else
-                sb.Append("<p class=\"fail\">Missing — run <code>--headless</code> or <code>--dnv-review --headless</code>.</p>");
+                sb.Append("<p class=\"fail\">Missing — run <code>--headless-export</code> or <code>--dnv-review</code>.</p>");
         }
 
         sb.Append("<h2>10 — Regeneration</h2><pre>");
-        sb.Append(E("dotnet run --project d:\\novolis\\novolis-lab\\labs\\cad\\CalypsoCad\\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --dnv-review --headless"));
+        sb.Append(E("dotnet run --project d:\\novolis\\novolis-lab\\labs\\cad\\CalypsoCad\\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --headless-export"));
         sb.Append("</pre></body></html>");
         return sb.ToString();
     }

@@ -67,7 +67,7 @@ internal static class CalypsoRenderCanvasEmitter
             generatedUtc,
             componentName: "CalypsoMfg002Renders",
             title: "CAL-MFG-002 — full headless render set",
-            subtitle: $"{figures.Count} PNGs embedded · post–frame-web-plate geometry · source: --headless",
+            subtitle: $"{figures.Count} PNGs embedded · post–frame-web-plate geometry · source: --headless-export",
             figures: figures,
             grouped: true);
     }
@@ -113,7 +113,7 @@ internal static class CalypsoRenderCanvasEmitter
         {
             var png = Path.Combine(exportsDirectory, fig.FileName);
             if (!File.Exists(png))
-                throw new FileNotFoundException($"Missing export for canvas: {png}. Run --headless first.", png);
+                throw new FileNotFoundException($"Missing export for canvas: {png}. Run --headless-export first.", png);
             var b64 = Convert.ToBase64String(File.ReadAllBytes(png));
             sb.AppendLine($"const {fig.Const} = \"data:image/png;base64,{b64}\";");
         }

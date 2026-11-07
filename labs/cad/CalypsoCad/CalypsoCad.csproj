@@ -17,6 +17,7 @@
     <LibraryReference Include="Novolis.Cad.SceneBridge" />
     <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.Math.Topology" />
+    <LibraryReference Include="Novolis.Modeling.Import.Assimp" />
     <LibraryReference Include="Novolis.Ship.Primitives" />
     <LibraryReference Include="Novolis.Ship.Topology" />
     <LibraryReference Include="Novolis.Ship.Validation" />

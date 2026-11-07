@@ -20,7 +20,9 @@ internal sealed class ArtilleryApp : IDisposable
     private static readonly Color TrailHot = BallisticArcColors.Flight;
     private static readonly Color TrailCool = Color.FromArgb(90, 180, 140, 70);
     private static readonly Color FlashColor = Color.FromArgb(255, 255, 214, 150);
-    private static readonly Color SunColor = Color.FromArgb(120, 255, 186, 110);
+    private static readonly Rgba32 SkyZenith = new(28, 58, 98, 255);
+    private static readonly Rgba32 SkyHorizon = new(210, 140, 90, 220);
+    private static readonly Rgba32 ClearSky = new(18, 28, 42, 255);
 
     private readonly TerrainWorld _terrain = new();
     private readonly BattleSession _session;
@@ -31,16 +33,20 @@ internal sealed class ArtilleryApp : IDisposable
     private readonly ArtilleryCameras _camera = new();
     private readonly AtmosphereModel _atmosphere = AtmosphereModel.CreateRegionalDefault();
     private readonly SilkWireBatch _wires = new();
+    private readonly WorldSolidBatch _solids = new();
+    private readonly ArtilleryParticles _particles = new();
     private readonly FireControlUi _ui = new();
     private readonly ShellOverlay _shell = new();
     private readonly ProfileOverlay _profileOverlay = new();
     private readonly FrameProfiler _liveProfiler = new(warmupFrames: 5);
     private readonly bool _skipShell;
     private readonly ArtilleryMenuFlow _menus = new();
+    private readonly ArtilleryAudioHub? _audio;
     private IGameLevel _level;
     private float _previewGunElev;
     private float _previewGunAz;
     private int _previewCharge = -1;
+    private float _fxTime;
 
     private readonly SmoothedFps _fps = new();
     private readonly CrewDrill _crew = new();
@@ -82,6 +88,7 @@ internal sealed class ArtilleryApp : IDisposable
         _shot = CreateRound();
         _rounds.Add(_shot);
         _agent = new ArtilleryLiveHost(this);
+        _audio = ArtilleryAudioHub.TryCreate(_session.Seed, enabled: !skipShell);
         if (!skipShell)
             _menus.ShowSplash();
     }
@@ -210,6 +217,8 @@ internal sealed class ArtilleryApp : IDisposable
         _shot.Begin(_gun.CreateProjectileState(muzzle, fireDir, delivery.MuzzleSpeedMps));
         _impactHandled.Remove(_shot);
         _muzzleFlash = 0.22f;
+        _particles.SpawnMuzzle(muzzle, fireDir);
+        _audio?.OnFire();
         _crew.BeginReload();
         // Stay on the gun; press F while any round is in flight for optional killcam.
         _camera.FollowProjectile = false;
@@ -476,6 +485,9 @@ internal sealed class ArtilleryApp : IDisposable
 
             _burstAge = 0f;
             _burstAt = BurstPoint(landed.Position);
+            var airburst = _gun.Spec.Warhead.IsAirburst;
+            _particles.SpawnBurst(_burstAt, airburst);
+            _audio?.OnImpact(airburst);
             _mission?.ResolveImpact(landed.Position);
         }
 
@@ -492,6 +504,14 @@ internal sealed class ArtilleryApp : IDisposable
 
         if (_muzzleFlash > 0f)
             _muzzleFlash = MathF.Max(0f, _muzzleFlash - wallSeconds);
+
+        _particles.Update(wallSeconds);
+        _fxTime += wallSeconds;
+        if (_menus.IsPlaying)
+        {
+            var hot = _mission is { IsTerminal: false };
+            _audio?.Update(wallSeconds, playing: true, missionHot: hot, _mission?.Outcome ?? MissionOutcome.Open);
+        }
 
         if (_aimDirty || TubePreviewStale())
             RebuildAimPreview();
@@ -564,6 +584,7 @@ internal sealed class ArtilleryApp : IDisposable
 
     public void Dispose()
     {
+        _audio?.Dispose();
         _shell.Dispose();
         _profileOverlay.Dispose();
         _ui.Dispose();
@@ -741,7 +762,7 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void Render(SilkFrame frame)
     {
-        frame.Clear(Rgba32.Black);
+        frame.Clear(ClearSky);
         var cam = _camera.Build(frame.DeltaSeconds);
         var aspect = frame.Width / (float)Math.Max(1, frame.Height);
         var view = _camera.MatchKommunekartOrientation
@@ -756,6 +777,10 @@ internal sealed class ArtilleryApp : IDisposable
             far);
         var mvp = view * proj;
 
+        _solids.Clear();
+        DrawAtmosphere(_solids, cam.Position);
+        frame.DrawWorldTriangles(_solids.Triangles, mvp);
+
         var prof = ActiveProfiler();
         if (prof is not null)
             prof.Time("draw.static", () => _terrain.DrawStatic(frame, mvp));
@@ -765,7 +790,7 @@ internal sealed class ArtilleryApp : IDisposable
         _wires.Clear();
         void BuildDynamic()
         {
-            DrawSky(_wires);
+            DrawSkyHaze(_wires, cam.Position);
             _terrain.DrawDynamic(_wires);
             _mission?.Draw(_wires);
             DrawMinRangeRing(_wires);
@@ -777,6 +802,7 @@ internal sealed class ArtilleryApp : IDisposable
                 loading: _crew.Loading);
             DrawMuzzleFlash(_wires);
             DrawShot(_wires);
+            _particles.Draw(_wires);
         }
 
         if (prof is not null)
@@ -788,6 +814,8 @@ internal sealed class ArtilleryApp : IDisposable
             prof.Time("draw.dynamic.upload", () => frame.DrawWorldLines(_wires.AsSpan(), mvp));
         else
             frame.DrawWorldLines(_wires.AsSpan(), mvp);
+
+        frame.DrawScreenGrade(_fxTime, intensity: 0.92f);
 
         _fps.Update(frame.DeltaSeconds);
         var predicted = PredictedImpact();
@@ -814,7 +842,9 @@ internal sealed class ArtilleryApp : IDisposable
                     : $"{_level.DisplayName.ToUpperInvariant()}  |  {_mission.HudLine()}",
                 FireBlockReason(),
                 SolutionUnsafe,
-                LaunchDetonation);
+                LaunchDetonation,
+                _audio?.RadioLine,
+                _audio?.RadioSpeaker);
         }
 
         if (ActiveProfiler() is { } hudProf)
@@ -832,8 +862,9 @@ internal sealed class ArtilleryApp : IDisposable
         var az = _crew.OrderedAzimuth;
         var speed = _gun.MuzzleSpeedMps;
         _orderedPreview = BuildPreview(elev, az, speed, windScale: 1f, coarse: false);
-        var tubeDiffers = MathF.Abs(_gun.ElevationDegrees - elev) > 0.05f
-            || MathF.Abs(_gun.AzimuthDegrees - az) > 0.05f;
+        // Only show a second tube arc when the lay is clearly off the order (avoid twin paths).
+        var tubeDiffers = MathF.Abs(_gun.ElevationDegrees - elev) > 1.25f
+            || MathF.Abs(_gun.AzimuthDegrees - az) > 1.25f;
         _tubePreview = tubeDiffers
             ? BuildPreview(_gun.ElevationDegrees, _gun.AzimuthDegrees, speed, windScale: 1f, coarse: false)
             : [];
@@ -1053,10 +1084,47 @@ internal sealed class ArtilleryApp : IDisposable
         return (preview.Count - 1) / 30f;
     }
 
-    private void DrawSky(SilkWireBatch wires)
+    private void DrawAtmosphere(WorldSolidBatch solids, Vector3 camera)
     {
-        var sun = new Vector3(_terrain.ExtentMeters * 0.55f, 6800f, _terrain.GunBaseline.Z - 4000f);
-        wires.WireSphere(sun, 900f, SunColor, segments: 12);
+        var center = new Vector3(camera.X, MathF.Min(camera.Y, _terrain.GunBaseline.Y + 40f), camera.Z);
+        solids.SkyDome(center, radius: 28_000f, SkyZenith, SkyHorizon, slices: 28, stacks: 10);
+    }
+
+    private void DrawSkyHaze(SilkWireBatch wires, Vector3 camera)
+    {
+        // Soft volumetric feel without a visible wireframe sun disc.
+        var light = new Vector3(
+            _terrain.ExtentMeters * 0.55f,
+            6800f,
+            _terrain.GunBaseline.Z - 4000f);
+        var toLight = Vector3.Normalize(light - camera);
+        var origin = camera + toLight * 2200f;
+        for (var i = 0; i < 10; i++)
+        {
+            var t = i / 9f;
+            var lateral = Vector3.Normalize(Vector3.Cross(toLight, Vector3.UnitY));
+            if (lateral.LengthSquared() < 1e-4f)
+                lateral = Vector3.UnitZ;
+            var offset = lateral * ((t - 0.5f) * 900f) + Vector3.UnitY * ((t - 0.5f) * 120f);
+            var a = origin + offset;
+            var b = a + toLight * (4800f + t * 2200f);
+            var alpha = (int)(28 + 22 * (1f - MathF.Abs(t - 0.5f) * 2f));
+            wires.Line(a, b, Color.FromArgb(alpha, 255, 200, 140));
+        }
+
+        // Horizon bloom rings
+        var gun = _terrain.GunBaseline;
+        for (var r = 2; r <= 5; r++)
+        {
+            var radius = r * 1800f;
+            var alpha = 18 + r * 4;
+            wires.Ring(
+                new Vector3(gun.X, gun.Y + 40f + r * 12f, gun.Z),
+                radius,
+                Color.FromArgb(alpha, 180, 150, 110),
+                segments: 40,
+                yLift: 0f);
+        }
     }
 
     private void DrawMuzzleFlash(SilkWireBatch wires)
@@ -1082,11 +1150,8 @@ internal sealed class ArtilleryApp : IDisposable
         var ordered = unsafeSol ? BallisticArcColors.OrderedUnsafe : BallisticArcColors.Ordered;
         var mpiColor = unsafeSol ? BallisticArcColors.MpiMarkUnsafe : BallisticArcColors.MpiMark;
 
-        // Keep the aimed solution visible while a round is in flight so the gunner can keep laying.
-        foreach (var arc in _dispersionPreviews)
-            DrawArc(wires, arc, prob, maxSegments: 90);
-
-        DrawProbabilityEnvelope(wires, unsafeSol);
+        // One aimed solution path only — PE is a ground footprint, not twin arcs.
+        DrawProbabilityFootprint(wires, unsafeSol);
 
         if (_tubePreview.Count >= 2)
             DrawArc(wires, _tubePreview, BallisticArcColors.Tube, maxSegments: 160);
@@ -1102,17 +1167,15 @@ internal sealed class ArtilleryApp : IDisposable
         }
     }
 
-    private void DrawProbabilityEnvelope(SilkWireBatch wires, bool unsafeSol)
+    private void DrawProbabilityFootprint(SilkWireBatch wires, bool unsafeSol)
     {
         if (_dispersionPreviews.Count < 2 || _orderedPreview.Count < 2)
             return;
 
-        var band = unsafeSol ? BallisticArcColors.ProbabilityUnsafe : BallisticArcColors.Probability;
         var footprint = unsafeSol
             ? BallisticArcColors.ProbabilityFootprintUnsafe
             : BallisticArcColors.ProbabilityFootprint;
 
-        // Connect impacts into a ground footprint ring (CEP-ish ellipse proxy).
         var impacts = new List<Vector3>(_dispersionPreviews.Count + 1);
         foreach (var arc in _dispersionPreviews)
             impacts.Add(arc[^1]);
@@ -1139,17 +1202,6 @@ internal sealed class ArtilleryApp : IDisposable
         radius = Math.Clamp(radius, 40f, 900f);
         var y = _terrain.Field.SampleHeight(cx, cz) + 2.5f;
         wires.Ring(new Vector3(cx, y, cz), radius, footprint, segments: 36, yLift: 0f);
-
-        // Pair left/right-ish samples into translucent loft bands along the arc.
-        for (var a = 0; a + 1 < _dispersionPreviews.Count; a += 2)
-        {
-            var left = _dispersionPreviews[a];
-            var right = _dispersionPreviews[a + 1];
-            var n = Math.Min(left.Count, right.Count);
-            var step = Math.Max(1, n / 48);
-            for (var i = 0; i < n; i += step)
-                wires.Line(left[i], right[i], band);
-        }
     }
 
     private static void DrawArc(SilkWireBatch wires, IReadOnlyList<Vector3> points, Color color, int maxSegments = 180)
@@ -1172,10 +1224,6 @@ internal sealed class ArtilleryApp : IDisposable
                 continue;
 
             var trail = round.Trail;
-            var spanNow = round.Phase == BallisticTrajectoryPhase.InFlight
-                ? HorizontalRange(_terrain.GunBaseline, round.CurrentPosition)
-                : round.Impact?.HorizontalRangeMeters ?? 0f;
-            var ribbon = Math.Clamp(spanNow * 0.0035f, 1.5f, 22f);
             for (var i = 1; i < trail.Count; i++)
             {
                 var heat = i / (float)trail.Count;
@@ -1184,9 +1232,7 @@ internal sealed class ArtilleryApp : IDisposable
                     (int)(TrailCool.R + (TrailHot.R - TrailCool.R) * heat),
                     (int)(TrailCool.G + (TrailHot.G - TrailCool.G) * heat),
                     (int)(TrailCool.B + (TrailHot.B - TrailCool.B) * heat));
-                var lift = Vector3.UnitY * (ribbon * heat);
                 wires.Line(trail[i - 1], trail[i], color);
-                wires.Line(trail[i - 1] + lift, trail[i] + lift, color);
             }
 
             if (round.Phase != BallisticTrajectoryPhase.InFlight)

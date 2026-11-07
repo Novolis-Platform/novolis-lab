@@ -1,0 +1,20 @@
+Third-party sound effects
+=========================
+
+impact-he.wav
+  Source: OpenGameArt — Explosion2.wav
+  License: Creative Commons Zero (CC0 1.0)
+  https://creativecommons.org/publicdomain/zero/1.0/
+
+impact-air.wav
+  Source: OpenGameArt — Explosion3.wav
+  License: Creative Commons Zero (CC0 1.0)
+  https://creativecommons.org/publicdomain/zero/1.0/
+
+beep.wav
+  Source: OpenGameArt — beep.wav
+  License: Creative Commons Zero (CC0 1.0)
+  https://creativecommons.org/publicdomain/zero/1.0/
+
+Procedural cues (muzzle.wav, breech.wav, radio-blip.wav, warning.wav)
+  Generated at first run by ArtillerySimulator (Novolis lab). No third-party sample content.

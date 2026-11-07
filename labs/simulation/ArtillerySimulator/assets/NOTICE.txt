@@ -33,3 +33,16 @@ ART ASSETS
 ----------
 Splash and icon art under assets/ are Novolis lab assets for K9 DOG.
 They are not official marks of any vehicle manufacturer.
+
+AUDIO
+-----
+Battle score "Odderøya Frontline" is an original Novolis MusicScore
+(MidiSynth bake) — a mid-2000s battlefield pastiche, not a licensed theme.
+
+SFX under assets/sfx/:
+  - impact-he.wav / impact-air.wav / beep.wav — OpenGameArt, CC0 1.0
+    (see assets/sfx/LICENSE.txt)
+  - muzzle / breech / radio-blip / warning — procedural Novolis cues
+
+Voice chatter uses Novolis.Audio.Voice (Sherpa ONNX + ATC radio delivery)
+when models are available; otherwise HUD radio text only.

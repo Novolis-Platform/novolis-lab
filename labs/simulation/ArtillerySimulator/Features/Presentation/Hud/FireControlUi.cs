@@ -128,7 +128,9 @@ internal sealed class FireControlUi : IDisposable
         string? defenseLine,
         string? fireBlockReason,
         bool solutionUnsafe,
-        bool launchDetonation)
+        bool launchDetonation,
+        string? radioLine = null,
+        string? radioSpeaker = null)
     {
         _width = frame.Width;
         _height = frame.Height;
@@ -161,7 +163,7 @@ internal sealed class FireControlUi : IDisposable
 
         var signature = string.Create(
             CultureInfo.InvariantCulture,
-            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{predictedRangeMeters:F0}|{predictedTofSeconds:F1}|{heroRange:F0}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{windSpeed:F1}|{windFrom:F0}|{tempC:F0}|{qnh:F0}|{rh:F0}|{predictedImpact.Y:F0}");
+            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{predictedRangeMeters:F0}|{predictedTofSeconds:F1}|{heroRange:F0}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{windSpeed:F1}|{windFrom:F0}|{tempC:F0}|{qnh:F0}|{rh:F0}|{predictedImpact.Y:F0}|{radioSpeaker}|{radioLine}");
         _rasterAge += frame.DeltaSeconds;
         var dirty = signature != _lastSignature || _rasterAge >= 0.12f;
         if (dirty)
@@ -187,6 +189,7 @@ internal sealed class FireControlUi : IDisposable
             DrawFireButton(canvas, canFire);
             DrawLegend(canvas, solutionUnsafe);
             DrawHelp(canvas);
+            DrawRadio(canvas, radioSpeaker, radioLine);
             CopyPixels();
         }
 
@@ -498,6 +501,21 @@ internal sealed class FireControlUi : IDisposable
         using var font = new SKFont(_typeface, size);
         var width = font.MeasureText(help);
         DrawText(canvas, help, Math.Max(12f, (_width - width) * 0.5f), _height - 12f * _scale, size, Dim);
+    }
+
+    private void DrawRadio(SKCanvas canvas, string? speaker, string? line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+            return;
+
+        var label = string.IsNullOrWhiteSpace(speaker) ? line : $"{speaker}: {line}";
+        var size = 15f * _scale;
+        using var font = new SKFont(_typeface, size);
+        var width = font.MeasureText(label);
+        var x = Math.Max(16f * _scale, (_width - width) * 0.5f);
+        var y = _height - 36f * _scale;
+        PanelBox(canvas, x - 10f * _scale, y - 18f * _scale, width + 20f * _scale, 28f * _scale);
+        DrawText(canvas, label, x, y, size, Accent);
     }
 
     private void PanelBox(SKCanvas canvas, float x, float y, float w, float h, bool hot = false)

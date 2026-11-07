@@ -164,9 +164,7 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
             var lane = _lanes[unit.Lane];
             var gap = GapAhead(unit, lane, out var wreckAhead);
 
-            if (incomingShell is Vector3 shell && ShellArriving(unit, shell))
-                unit.Scare = MathF.Max(unit.Scare, 2.4f);
-
+            // Suppression only from ResolveImpact (burst) — never from a shell still in flight.
             if (unit.Scare > 0f)
                 unit.Scare = MathF.Max(0f, unit.Scare - simSeconds);
 
@@ -649,16 +647,6 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
         while (_wrecks.Count > MaxTrackedWrecks)
             _wrecks.RemoveAt(0);
-    }
-
-    private bool ShellArriving(ColumnUnit unit, Vector3 shell)
-    {
-        var dx = shell.X - unit.X;
-        var dz = shell.Z - unit.Z;
-        if (dx * dx + dz * dz > 260f * 260f)
-            return false;
-
-        return shell.Y - Height(unit.X, unit.Z) < 160f;
     }
 
     private void Place(RouteLane lane, ref ColumnUnit unit)

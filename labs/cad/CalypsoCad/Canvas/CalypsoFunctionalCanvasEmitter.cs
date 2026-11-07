@@ -102,7 +102,7 @@ internal static class CalypsoFunctionalCanvasEmitter
         {
             var png = Path.Combine(exportsDirectory, fig.FileName);
             if (!File.Exists(png))
-                throw new FileNotFoundException($"Missing export for canvas: {png}. Run --headless first.", png);
+                throw new FileNotFoundException($"Missing export for canvas: {png}. Run --headless-export first.", png);
             var b64 = Convert.ToBase64String(File.ReadAllBytes(png));
             sb.AppendLine($"const {fig.Const} = \"data:image/png;base64,{b64}\";");
         }
