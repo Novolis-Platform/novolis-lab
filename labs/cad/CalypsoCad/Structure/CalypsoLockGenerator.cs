@@ -329,6 +329,7 @@ internal static class CalypsoLockGenerator
             entities.Add(iml);
 
         // Topology-first: primary skeleton + structural decks before any rooms/partitions/cargo.
+        StructurePlacementLog.Clear();
         var criticalJoints = AddStructure(entities, lockDoc, loa, beam, oah);
 
         var wallJobs = new List<(CadEntity Space, int Deck, float Up0, float Height)>();
@@ -2909,6 +2910,42 @@ internal static class CalypsoLockGenerator
             return;
         var center = LockToWorld(y, up, zStem, loa);
         entities.Add(MakeSolid(name, LayerHab, ShapeHab, center, new Vector3(hy, hu, hz), color, role));
+    }
+
+    internal static bool BoxFitsPublic(float y, float up, float zFromStem, float hy, float hu, float hz) =>
+        BoxFits(y, up, zFromStem, hy, hu, hz);
+
+    /// <summary>
+    /// Shrink athwart/fore-aft half-extents until the AABB sits inside the IML (fail-closed sizing).
+    /// </summary>
+    internal static bool TryFitBoxHalfExtents(
+        float y,
+        float up,
+        float zFromStem,
+        ref float halfY,
+        float halfUp,
+        ref float halfZ,
+        float minHalf = 0.012f)
+    {
+        var hy = MathF.Abs(halfY);
+        var hz = MathF.Abs(halfZ);
+        var hu = MathF.Abs(halfUp);
+        for (var n = 0; n < 20; n++)
+        {
+            if (hy < minHalf || hz < minHalf)
+                return false;
+            if (BoxFits(y, up, zFromStem, hy, hu, hz))
+            {
+                halfY = hy;
+                halfZ = hz;
+                return true;
+            }
+
+            hy *= 0.92f;
+            hz *= 0.96f;
+        }
+
+        return false;
     }
 
     private static bool BoxFits(float y, float up, float zFromStem, float hy, float hu, float hz)

@@ -52,6 +52,13 @@ internal static class Program
             return;
         }
 
+        var deckGeometry = args.Any(a => string.Equals(a, "--deck-geometry", StringComparison.OrdinalIgnoreCase));
+        if (deckGeometry)
+        {
+            Environment.ExitCode = RunDeckGeometry();
+            return;
+        }
+
         if (blueprints || blueprintDetails)
         {
             Environment.ExitCode = RunBlueprints(emitDetails: blueprints || blueprintDetails);
@@ -163,6 +170,59 @@ internal static class Program
             CalypsoSilkHost.Run(session, renderer);
         else
             CalypsoExplorerHost.Run(session, renderer);
+    }
+
+    /// <summary>Whole-ship deck footprints: regenerate → geometric validation → inspection PNGs.</summary>
+    private static int RunDeckGeometry()
+    {
+        Console.WriteLine("CalypsoCad whole-ship deck geometry");
+        var failures = 0;
+        void Check(string name, bool ok, string detail = "")
+        {
+            if (ok)
+            {
+                Console.WriteLine($"  OK  {name}");
+                return;
+            }
+
+            failures++;
+            Console.WriteLine($"  FAIL {name}{(string.IsNullOrEmpty(detail) ? "" : ": " + detail)}");
+        }
+
+        try
+        {
+            var session = new CalypsoSession();
+            session.RegenerateAndLoad();
+            Console.WriteLine($"Wrote CAD → {session.GeneratedDirectory}");
+
+            var report = DeckGeometryValidation.Evaluate(session.Document);
+            var reportPath = Path.Combine(CalypsoProjectPaths.DeckGeometryDirectory, "validation-report.md");
+            DeckGeometryValidation.WriteReportMarkdown(report, reportPath);
+            StructurePlacementLog.WriteMarkdown(
+                Path.Combine(CalypsoProjectPaths.DeckGeometryDirectory, "placement-failures.md"));
+            Console.WriteLine($"Validation report → {reportPath}");
+            foreach (var c in report.Checks)
+                Check(c.Name, c.Ok, c.Detail);
+
+            var renderer = new CalypsoRenderer(session);
+            renderer.Fit();
+            var stills = HeadlessDeckGeometryExporter.Export(session, renderer);
+            Console.WriteLine($"Deck PNGs ({stills.Count}) → {CalypsoProjectPaths.DeckGeometryDirectory}");
+            foreach (var path in stills)
+                Console.WriteLine($"  {path}");
+            Check("deck inspection PNGs written", stills.Count >= 3, $"count={stills.Count}");
+            Check("deck geometry gate", report.Ok);
+        }
+        catch (Exception ex)
+        {
+            Check("deck geometry pipeline", false, ex.Message);
+            Console.Error.WriteLine(ex);
+        }
+
+        Console.WriteLine(failures == 0
+            ? "CalypsoCad whole-ship deck geometry OK"
+            : $"CalypsoCad whole-ship deck geometry FAILED ({failures})");
+        return failures == 0 ? 0 : 1;
     }
 
     /// <summary>Two-bay midbody proof: generate → geometric validation → four diagnostic PNGs.</summary>
