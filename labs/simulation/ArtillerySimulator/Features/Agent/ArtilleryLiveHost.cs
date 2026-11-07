@@ -415,6 +415,9 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             ["peElevMils"] = gun.Spec.Errors.ElevationPeMils.ToString("F2", CultureInfo.InvariantCulture),
             ["peDeflMils"] = gun.Spec.Errors.DeflectionPeMils.ToString("F2", CultureInfo.InvariantCulture),
             ["peMvFrac"] = gun.Spec.Errors.MuzzleVelocityPeFraction.ToString("F4", CultureInfo.InvariantCulture),
+            ["heCaughtM"] = gun.Spec.Warhead.CaughtMeters.ToString("F0", CultureInfo.InvariantCulture),
+            ["hePinnedM"] = gun.Spec.Warhead.PinnedMeters.ToString("F0", CultureInfo.InvariantCulture),
+            ["heAirburstM"] = gun.Spec.Warhead.AirburstHeightMeters.ToString("F0", CultureInfo.InvariantCulture),
             ["seed"] = _game.Session.SeedHash,
         };
         if (_game.Delivery.LastFire is { } last)

@@ -299,7 +299,7 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
             // Near-miss: suppress to ~⅓ speed — never freeze the column.
             unit.Hold = 0f;
-            unit.Scare = MathF.Max(unit.Scare, 5f);
+            unit.Scare = MathF.Max(unit.Scare, _piece.Warhead.ScareSeconds);
             unit.Posture = "pinned";
             _units[i] = unit;
             LastPinned++;

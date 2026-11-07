@@ -262,9 +262,50 @@ internal sealed class ArtilleryApp : IDisposable
     {
         _shell.EnsureAssetsLoaded();
         frame.SetTitle(ProductIdentity.WindowTitle);
+        TrySetWindowIcon(frame);
         if (_skipShell)
             LoadWorldAndAttachAgent();
-        _ = frame;
+    }
+
+    private static void TrySetWindowIcon(SilkFrame frame)
+    {
+        foreach (var relative in new[] { "assets/k9-dog-icon.png", "assets/k9-dog-icon.jpg" })
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, relative);
+            if (!File.Exists(path))
+                continue;
+
+            try
+            {
+                using var bmp = SkiaSharp.SKBitmap.Decode(path);
+                if (bmp is null)
+                    continue;
+
+                // Silk wants tightly packed RGBA8; normalize from Skia pixels.
+                var w = bmp.Width;
+                var h = bmp.Height;
+                var bytes = new byte[checked(w * h * 4)];
+                for (var y = 0; y < h; y++)
+                {
+                    for (var x = 0; x < w; x++)
+                    {
+                        var c = bmp.GetPixel(x, y);
+                        var o = (y * w + x) * 4;
+                        bytes[o] = c.Red;
+                        bytes[o + 1] = c.Green;
+                        bytes[o + 2] = c.Blue;
+                        bytes[o + 3] = c.Alpha;
+                    }
+                }
+
+                frame.SetWindowIcon(w, h, bytes);
+                return;
+            }
+            catch
+            {
+                // Fall through — title bar keeps the platform default.
+            }
+        }
     }
 
     public void Update(SilkFrame frame)
@@ -434,7 +475,7 @@ internal sealed class ArtilleryApp : IDisposable
                 continue;
 
             _burstAge = 0f;
-            _burstAt = landed.Position;
+            _burstAt = BurstPoint(landed.Position);
             _mission?.ResolveImpact(landed.Position);
         }
 
@@ -1164,6 +1205,14 @@ internal sealed class ArtilleryApp : IDisposable
             DrawBurst(wires);
     }
 
+    private Vector3 BurstPoint(Vector3 impact)
+    {
+        var warhead = _gun.Spec.Warhead;
+        var ground = _terrain.Field.SampleHeight(impact.X, impact.Z);
+        var height = warhead.IsAirburst ? warhead.AirburstHeightMeters : MathF.Max(2f, impact.Y - ground);
+        return new Vector3(impact.X, ground + height, impact.Z);
+    }
+
     private void DrawBurst(SilkWireBatch wires)
     {
         var age = MathF.Min(_burstAge, 8f);
@@ -1172,11 +1221,13 @@ internal sealed class ArtilleryApp : IDisposable
         var color = Color.FromArgb(alpha, BallisticArcColors.Impact.R, BallisticArcColors.Impact.G, BallisticArcColors.Impact.B);
         var pale = Color.FromArgb(alpha / 2, BallisticArcColors.Impact.R, BallisticArcColors.Impact.G, BallisticArcColors.Impact.B);
         var column = 40f + age * 30f;
-        wires.Line(_burstAt, _burstAt + Vector3.UnitY * column, color);
-        wires.WireSphere(_burstAt + Vector3.UnitY * (10f + age * 4f), 18f + age * 6f, color, segments: 12);
+        var ground = new Vector3(_burstAt.X, _terrain.Field.SampleHeight(_burstAt.X, _burstAt.Z), _burstAt.Z);
+        wires.Line(ground, _burstAt + Vector3.UnitY * column, color);
+        wires.WireSphere(_burstAt, 22f + age * 8f, color, segments: 12);
+        wires.WireSphere(_burstAt, 10f + age * 3f, pale, segments: 10);
         var caught = _mission?.CaughtMeters ?? _gun.Spec.Warhead.CaughtMeters;
         var pinned = _mission?.PinnedMeters ?? _gun.Spec.Warhead.PinnedMeters;
-        wires.Ring(_burstAt, caught, color);
-        wires.Ring(_burstAt, pinned, pale);
+        wires.Ring(ground + Vector3.UnitY * 2f, caught, color);
+        wires.Ring(ground + Vector3.UnitY * 2f, pinned, pale);
     }
 }

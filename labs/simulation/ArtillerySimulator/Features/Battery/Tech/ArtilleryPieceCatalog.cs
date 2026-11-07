@@ -58,7 +58,12 @@ internal static class ArtilleryPieceCatalog
             metWindResidualPeFraction: 0.10f,
             envelopePeScale: 2.0f);
 
-        var warhead = new WarheadEffectSpec(caughtMeters: 200f, pinnedMeters: 340f);
+        // Educational airburst HE — larger soft-skin radii than the old ground-burst sandbox.
+        var warhead = new WarheadEffectSpec(
+            caughtMeters: 320f,
+            pinnedMeters: 520f,
+            airburstHeightMeters: 18f,
+            scareSeconds: 7.5f);
 
         // Ordered reduced / standard / max / low — same ordinals the UI and agent already use.
         IReadOnlyList<ChargeZoneSpec> charges =
