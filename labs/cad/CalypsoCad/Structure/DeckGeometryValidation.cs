@@ -167,19 +167,13 @@ internal static class DeckGeometryValidation
         var b = box.Points[1];
         if (a is null || b is null || a.Length < 3 || b.Length < 3)
             return false;
-        var x0 = (float)a[0];
-        var y0 = (float)a[1];
-        var z0 = (float)a[2];
-        var x1 = (float)b[0];
-        var y1 = (float)b[1];
-        var z1 = (float)b[2];
-        // CAD: X stbd, Y up, Z bow↔aft about midship.
-        cy = (x0 + x1) * 0.5f;
-        cup = (y0 + y1) * 0.5f;
-        cz = (z0 + z1) * 0.5f;
-        hy = MathF.Abs(x1 - x0) * 0.5f;
-        hu = MathF.Abs(y1 - y0) * 0.5f;
-        hz = MathF.Abs(z1 - z0) * 0.5f;
+        // MakeSolid: Points[0]=world center, Points[1]=half-extents.
+        cy = (float)a[0];
+        cup = (float)a[1];
+        cz = (float)a[2];
+        hy = MathF.Abs((float)b[0]);
+        hu = MathF.Abs((float)b[1]);
+        hz = MathF.Abs((float)b[2]);
         return true;
     }
 }

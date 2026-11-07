@@ -1,4 +1,3 @@
-using System.Numerics;
 using CalypsoCad.Session;
 using CalypsoCad.Viewport;
 using Novolis.Silk;
@@ -6,7 +5,8 @@ using Novolis.Silk;
 namespace CalypsoCad.Export;
 
 /// <summary>
-/// Whole-ship deck footprint inspection stills (fixed camera for before/after).
+/// Whole-ship deck LOD stills — faces / peri+girders / manufacturing cores (fixed camera).
+/// DeckFilter=0 so stacked DK−1/0/+1 grids do not read as one overlapping soup.
 /// </summary>
 internal static class HeadlessDeckGeometryExporter
 {
@@ -25,6 +25,7 @@ internal static class HeadlessDeckGeometryExporter
         var previousWire = session.WireMeshMode;
         var previousView = session.ViewMode;
         var previousOml = session.ShowOmlGuide;
+        var previousDeck = session.DeckFilter;
 
         var jobs = new List<(string Path, Action Prepare)>();
         void Add(string name, Action prepare) =>
@@ -34,7 +35,8 @@ internal static class HeadlessDeckGeometryExporter
         {
             session.ViewMode = CalypsoViewMode.Orbit;
             session.WireMeshMode = CalypsoWireMeshMode.None;
-            // Bow-quarter whole ship, 150% zoom — same language as critical-structure stills.
+            // Single deck elevation for coherent panel read (still full LOA).
+            session.DeckFilter = 0;
             renderer.ApplyOrbitPreset("bow-quarter");
             renderer.ZoomOrbit(1.5f);
         }
@@ -43,23 +45,24 @@ internal static class HeadlessDeckGeometryExporter
         {
             session.VisualLayers = CalypsoVisualLayers.DeckFaces;
             session.ShowOmlGuide = false;
-            session.StatusText = "deck:faces";
+            session.StatusText = "deck:faces-dk0";
             ShipCamera();
         });
 
-        Add("02-deck-cores", () =>
+        Add("02-deck-peri-girders", () =>
+        {
+            // Perimeters + primary longitudinal girders (not stringers/skin).
+            session.VisualLayers = CalypsoVisualLayers.DeckPerimeters | CalypsoVisualLayers.Longitudinals;
+            session.ShowOmlGuide = false;
+            session.StatusText = "deck:peri+girders-dk0";
+            ShipCamera();
+        });
+
+        Add("03-deck-cores-mfg", () =>
         {
             session.VisualLayers = CalypsoVisualLayers.DeckCores;
             session.ShowOmlGuide = false;
-            session.StatusText = "deck:cores";
-            ShipCamera();
-        });
-
-        Add("03-deck-transparent-hull", () =>
-        {
-            session.VisualLayers = CalypsoVisualLayers.DeckFaces;
-            session.ShowOmlGuide = true;
-            session.StatusText = "deck:faces+oml-guide";
+            session.StatusText = "deck:cores-mfg-dk0";
             ShipCamera();
         });
 
@@ -67,7 +70,7 @@ internal static class HeadlessDeckGeometryExporter
         {
             session.VisualLayers = CalypsoVisualLayers.StructureInspect;
             session.ShowOmlGuide = false;
-            session.StatusText = "deck:structure-inspect";
+            session.StatusText = "deck:structure-inspect-dk0";
             ShipCamera();
         });
 
@@ -85,6 +88,7 @@ internal static class HeadlessDeckGeometryExporter
             session.WireMeshMode = previousWire;
             session.ViewMode = previousView;
             session.ShowOmlGuide = previousOml;
+            session.DeckFilter = previousDeck;
         }
     }
 }

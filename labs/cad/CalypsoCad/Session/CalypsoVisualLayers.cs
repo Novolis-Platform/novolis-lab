@@ -26,8 +26,14 @@ internal enum CalypsoVisualLayers
     /// <summary>Deck face sheets only (opaque floors) — hide for structure inspection.</summary>
     DeckFaces = 1 << 14,
 
-    /// <summary>Cellular core webs / perimeter — inspection without opaque floors.</summary>
+    /// <summary>Full manufacturing cellular core webs (all ribs).</summary>
     DeckCores = 1 << 15,
+
+    /// <summary>Panel perimeter closures only.</summary>
+    DeckPerimeters = 1 << 16,
+
+    /// <summary>Representative core sample for structural inspection (subset of DeckCores).</summary>
+    DeckCoresSparse = 1 << 17,
 
     /// <summary>Interior partition walls.</summary>
     Partitions = 1 << 5,
@@ -65,24 +71,28 @@ internal enum CalypsoVisualLayers
     /// </summary>
     Ship = HullShell | Frames | Bulkheads | Longitudinals,
 
-    /// <summary>Deck-scoped content (plates, rooms, outfit, cargo, openings).</summary>
-    DeckScoped = DeckPlates | Partitions | Outfit | SpaceFinish | Openings | Cargo | PassagewayCutouts
-                 | Airlocks | Joinery,
+    /// <summary>Whole-ship deck read: faces + perimeters (not full manufacturing cores).</summary>
+    DeckShipRead = DeckFaces | DeckPerimeters,
 
-    /// <summary>Primary steel skeleton (ship steel + sandwich decks).</summary>
-    Structure = Ship | DeckPlates,
+    /// <summary>Deck-scoped content (plates, rooms, outfit, cargo, openings).</summary>
+    DeckScoped = DeckShipRead | DeckPlates | Partitions | Outfit | SpaceFinish | Openings | Cargo
+                 | PassagewayCutouts | Airlocks | Joinery,
+
+    /// <summary>Primary steel skeleton (ship steel + sandwich decks — ship-read LOD).</summary>
+    Structure = Ship | DeckShipRead,
 
     // PassagewayCutouts is opt-in — portals are already booleaned into webs/BHs.
-    DefaultOrbit = Ship | DeckPlates | Partitions | Outfit | Cargo | SpaceFinish | Openings
+    // Whole-ship default hides manufacturing cores (opt in via DeckCores).
+    DefaultOrbit = Ship | DeckShipRead | Partitions | Outfit | Cargo | SpaceFinish | Openings
                    | Airlocks | Joinery,
     DefaultInterior = Partitions | Outfit | Cargo | SpaceFinish | Openings,
     CorridorStructure = DefaultInterior | Structure,
-    StructureOnlyCutaway = Ship | DeckPlates,
+    StructureOnlyCutaway = Ship | DeckShipRead,
     FitoutCutaway = HullShell | Partitions | Outfit | Cargo | SpaceFinish | Openings,
     InteriorStructureNoHull = Structure | Partitions | Outfit | Cargo | SpaceFinish | Openings,
     Dk001Plan = Partitions | SpaceFinish | Openings | PassagewayCutouts,
     /// <summary>Ship steel without hull shell + decks.</summary>
-    StructureNoHull = Frames | Bulkheads | Longitudinals | DeckPlates | Openings,
+    StructureNoHull = Frames | Bulkheads | Longitudinals | DeckShipRead | Openings,
     /// <summary>Hide-hull skeleton test: open webs + BH + girders (no decks / outfit).</summary>
     ShipSkeleton = Frames | Bulkheads | Longitudinals,
     /// <summary>
@@ -94,18 +104,19 @@ internal enum CalypsoVisualLayers
     /// <summary>
     /// Critical structures only: pressure BHs + open frames + sandwich deck plates (+ seats).
     /// </summary>
-    CriticalStructure = Frames | Bulkheads | DeckPlates | Joinery,
+    CriticalStructure = Frames | Bulkheads | DeckShipRead | Joinery,
     /// <summary>
-    /// Structural inspection: frames + girders + deck cores + joinery — deck faces hidden.
+    /// Structural inspection: frames + girders + panel perimeters — faces/cores hidden.
+    /// Full manufacturing cores: <see cref="DeckCores"/>. Sparse sample: <see cref="DeckCoresSparse"/>.
     /// </summary>
-    StructureInspect = Frames | Longitudinals | DeckCores | Joinery,
-    /// <summary>Stage 2 — primary + cellular sandwich decks.</summary>
-    PrimaryPlusDecks = PrimaryStructure | DeckPlates,
+    StructureInspect = Frames | Longitudinals | DeckPerimeters | Joinery,
+    /// <summary>Stage 2 — primary + sandwich decks (ship-read LOD, not full cores).</summary>
+    PrimaryPlusDecks = PrimaryStructure | DeckShipRead,
     /// <summary>Stage 3 — pressure boundary (shell + BH + openings).</summary>
     PressureStructure = HullShell | Bulkheads | Openings,
     /// <summary>Stage 4 — full arrangement (alias of <see cref="DefaultOrbit"/>).</summary>
     CompleteArrangement = DefaultOrbit,
     /// <summary>Open HOLD read: ship steel + decks + containers.</summary>
-    HoldCargo = Frames | Bulkheads | Longitudinals | DeckPlates | Cargo | Openings,
+    HoldCargo = Frames | Bulkheads | Longitudinals | DeckShipRead | Cargo | Openings,
     All = Ship | DeckScoped,
 }

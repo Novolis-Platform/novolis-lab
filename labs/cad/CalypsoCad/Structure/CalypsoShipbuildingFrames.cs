@@ -644,7 +644,8 @@ internal static class CalypsoShipbuildingFrames
                 var segI = 0;
                 foreach (var (za, zb, zc, halfY) in segments)
                 {
-                    var halfLenZ = (zb - za) * 0.5f + web * 0.2f;
+                    // Abutting footprints only — do not inflate halfLenZ into the next panel.
+                    var halfLenZ = (zb - za) * 0.5f;
                     if (halfLenZ < 0.15f)
                         continue;
 
@@ -758,6 +759,28 @@ internal static class CalypsoShipbuildingFrames
 
         var (faceT, coreH, faceHalf, topCenter, botCenter, ribUp, ribHu, fitHalfY, fitHalfZ) = stack.Value;
 
+        // One shared footprint for faces, peri, and cores (no independent rib widths).
+        var fpHy = fitHalfY;
+        var fpHz = fitHalfZ;
+        if (!CalypsoLockGenerator.TryFitBoxHalfExtents(y, topCenter, zc, ref fpHy, faceHalf, ref fpHz))
+        {
+            StructurePlacementLog.Record(baseName + "-footprint", y, topCenter, zc, fitHalfY, faceHalf, fitHalfZ,
+                "shared footprint fit failed");
+            return;
+        }
+
+        var hyBot = fpHy;
+        var hzBot = fpHz;
+        if (!CalypsoLockGenerator.TryFitBoxHalfExtents(y, botCenter, zc, ref hyBot, faceHalf, ref hzBot))
+        {
+            StructurePlacementLog.Record(baseName + "-footprint-bot", y, botCenter, zc, fpHy, faceHalf, fpHz,
+                "shared footprint bot fit failed");
+            return;
+        }
+
+        fpHy = MathF.Min(fpHy, hyBot);
+        fpHz = MathF.Min(fpHz, hzBot);
+
         var stationJoins = new List<string> { $"{baseName}-rib", $"{baseName}-face-bot" };
         if (foreFrameAsm is not null) stationJoins.Add(foreFrameAsm);
         if (aftFrameAsm is not null) stationJoins.Add(aftFrameAsm);
@@ -767,18 +790,15 @@ internal static class CalypsoShipbuildingFrames
         {
             var before = entities.Count;
             var id = $"{baseName}-{suffix}";
-            var hy = fitHalfY;
-            var hz = fitHalfZ;
-            if (!CalypsoLockGenerator.TryFitBoxHalfExtents(y, up, zc, ref hy, faceHalf, ref hz)
-                || !CalypsoLockGenerator.TryAddStructureBar(
+            if (!CalypsoLockGenerator.TryAddStructureBar(
                     entities, loa, id,
-                    y, up, zc, hy, faceHalf, hz,
+                    y, up, zc, fpHy, faceHalf, fpHz,
                     meta: new StructuralSolidMeta(
                         StructuralRoles.StructuralDeck, assembly,
                         StationZ: zc, DeckUp: plateTop, Joins: joins),
                     minHalf: 0.012f))
             {
-                StructurePlacementLog.Record(id, y, up, zc, fitHalfY, faceHalf, fitHalfZ);
+                StructurePlacementLog.Record(id, y, up, zc, fpHy, faceHalf, fpHz);
                 return;
             }
 
@@ -788,64 +808,14 @@ internal static class CalypsoShipbuildingFrames
         Face("face-top", topCenter, stationJoins);
         Face("face-bot", botCenter, [$"{baseName}-rib", $"{baseName}-face-top", ..stationJoins.Skip(2)]);
 
-        // Orthogonal cellular webs inside the cavity (athwart + longitudinal).
         const float CellPitch = 1.15f;
         var ribT = MathF.Max(0.025f, faceT * 0.9f);
         var ribHalfT = ribT * 0.5f;
-        var y0 = y - fitHalfY * 0.92f;
-        var y1 = y + fitHalfY * 0.92f;
-        var z0 = zc - fitHalfZ * 0.92f;
-        var z1 = zc + fitHalfZ * 0.92f;
+        var periT = MathF.Max(0.03f, ribT);
         var ribJoins = new List<string> { $"{baseName}-face-top", $"{baseName}-face-bot" };
         if (foreFrameAsm is not null) ribJoins.Add(foreFrameAsm);
         if (aftFrameAsm is not null) ribJoins.Add(aftFrameAsm);
 
-        for (var yy = y0 + CellPitch * 0.5f; yy < y1 - 0.1f; yy += CellPitch)
-        {
-            var before = entities.Count;
-            var id = $"{baseName}-rib-long-y{yy:0.#}";
-            var hy = ribHalfT;
-            var hz = fitHalfZ * 0.9f;
-            if (!CalypsoLockGenerator.TryFitBoxHalfExtents(yy, ribUp, zc, ref hy, ribHu, ref hz)
-                || !CalypsoLockGenerator.TryAddStructureBar(
-                    entities, loa, id,
-                    yy, ribUp, zc, hy, ribHu, hz,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.StructuralDeck, assembly,
-                        StationZ: zc, DeckUp: plateTop, Joins: ribJoins),
-                    minHalf: 0.012f))
-            {
-                StructurePlacementLog.Record(id, yy, ribUp, zc, ribHalfT, ribHu, fitHalfZ * 0.9f);
-                continue;
-            }
-
-            TagDeckSurface(entities, before, "core");
-        }
-
-        for (var zz = z0 + CellPitch * 0.5f; zz < z1 - 0.1f; zz += CellPitch)
-        {
-            var before = entities.Count;
-            var id = $"{baseName}-rib-ath-z{zz:0.#}";
-            var hy = fitHalfY * 0.9f;
-            var hz = ribHalfT;
-            if (!CalypsoLockGenerator.TryFitBoxHalfExtents(y, ribUp, zz, ref hy, ribHu, ref hz)
-                || !CalypsoLockGenerator.TryAddStructureBar(
-                    entities, loa, id,
-                    y, ribUp, zz, hy, ribHu, hz,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.StructuralDeck, assembly,
-                        StationZ: zz, DeckUp: plateTop, Joins: ribJoins),
-                    minHalf: 0.012f))
-            {
-                StructurePlacementLog.Record(id, y, ribUp, zz, fitHalfY * 0.9f, ribHu, ribHalfT);
-                continue;
-            }
-
-            TagDeckSurface(entities, before, "core");
-        }
-
-        // Perimeter closure — fore/aft edges join the bounding frames (critical continuity).
-        var periT = MathF.Max(0.03f, ribT);
         var periSideJoins = ribJoins;
         var periAftJoins = new List<string>(ribJoins);
         if (foreFrameAsm is not null) periAftJoins.Add(foreFrameAsm);
@@ -860,11 +830,9 @@ internal static class CalypsoShipbuildingFrames
         void Peri(string name, float py, float pu, float pz, float phy, float phu, float phz, IReadOnlyList<string> joins)
         {
             var before = entities.Count;
-            var hy = phy;
-            var hz = phz;
-            if (!CalypsoLockGenerator.TryFitBoxHalfExtents(py, pu, pz, ref hy, phu, ref hz)
-                || !CalypsoLockGenerator.TryAddStructureBar(
-                    entities, loa, name, py, pu, pz, hy, phu, hz,
+            // No further athwart/long shrink — stay on the shared footprint.
+            if (!CalypsoLockGenerator.TryAddStructureBar(
+                    entities, loa, name, py, pu, pz, phy, phu, phz,
                     meta: new StructuralSolidMeta(StructuralRoles.StructuralDeck, assembly, StationZ: pz, DeckUp: plateTop, Joins: joins),
                     minHalf: 0.012f))
             {
@@ -872,13 +840,67 @@ internal static class CalypsoShipbuildingFrames
                 return;
             }
 
-            TagDeckSurface(entities, before, "core");
+            TagDeckSurface(entities, before, "peri");
         }
 
-        Peri($"{baseName}-peri-port", y - fitHalfY + periT * 0.5f, ribUp, zc, periT * 0.5f, ribHu, fitHalfZ * 0.95f, periSideJoins);
-        Peri($"{baseName}-peri-stbd", y + fitHalfY - periT * 0.5f, ribUp, zc, periT * 0.5f, ribHu, fitHalfZ * 0.95f, periSideJoins);
-        Peri($"{baseName}-peri-fore", y, ribUp, zc + fitHalfZ - periT * 0.5f, fitHalfY * 0.95f, ribHu, periT * 0.5f, periForeJoins);
-        Peri($"{baseName}-peri-aft", y, ribUp, zc - fitHalfZ + periT * 0.5f, fitHalfY * 0.95f, ribHu, periT * 0.5f, periAftJoins);
+        const float FrameSeat = 0.06f;
+        var periHz = MathF.Max(0.08f, fpHz - periT);
+        var periHy = MathF.Max(0.2f, fpHy - periT);
+        Peri($"{baseName}-peri-port", y - fpHy + periT * 0.5f, ribUp, zc, periT * 0.5f, ribHu, periHz, periSideJoins);
+        Peri($"{baseName}-peri-stbd", y + fpHy - periT * 0.5f, ribUp, zc, periT * 0.5f, ribHu, periHz, periSideJoins);
+        Peri($"{baseName}-peri-fore", y, ribUp, zc + fpHz - periT * 0.5f + FrameSeat * 0.5f,
+            periHy, ribHu, periT * 0.5f + FrameSeat * 0.5f, periForeJoins);
+        Peri($"{baseName}-peri-aft", y, ribUp, zc - fpHz + periT * 0.5f - FrameSeat * 0.5f,
+            periHy, ribHu, periT * 0.5f + FrameSeat * 0.5f, periAftJoins);
+
+        // Cores strictly inside peri — same footprint, inset by peri thickness.
+        var coreHalfY = MathF.Max(0.2f, fpHy - periT - 0.02f);
+        var coreHalfZ = MathF.Max(0.12f, fpHz - periT - 0.02f);
+        var y0 = y - coreHalfY;
+        var y1 = y + coreHalfY;
+        var z0 = zc - coreHalfZ;
+        var z1 = zc + coreHalfZ;
+        var ribI = 0;
+
+        for (var yy = y0 + CellPitch * 0.5f; yy < y1 - 0.05f; yy += CellPitch)
+        {
+            var before = entities.Count;
+            var id = $"{baseName}-rib-long-y{yy:0.#}";
+            if (!CalypsoLockGenerator.TryAddStructureBar(
+                    entities, loa, id,
+                    yy, ribUp, zc, ribHalfT, ribHu, coreHalfZ * 0.98f,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.StructuralDeck, assembly,
+                        StationZ: zc, DeckUp: plateTop, Joins: ribJoins),
+                    minHalf: 0.012f))
+            {
+                StructurePlacementLog.Record(id, yy, ribUp, zc, ribHalfT, ribHu, coreHalfZ);
+                continue;
+            }
+
+            TagDeckSurface(entities, before, "core", inspectSample: ribI % 3 == 0);
+            ribI++;
+        }
+
+        for (var zz = z0 + CellPitch * 0.5f; zz < z1 - 0.05f; zz += CellPitch)
+        {
+            var before = entities.Count;
+            var id = $"{baseName}-rib-ath-z{zz:0.#}";
+            if (!CalypsoLockGenerator.TryAddStructureBar(
+                    entities, loa, id,
+                    y, ribUp, zz, coreHalfY * 0.98f, ribHu, ribHalfT,
+                    meta: new StructuralSolidMeta(
+                        StructuralRoles.StructuralDeck, assembly,
+                        StationZ: zz, DeckUp: plateTop, Joins: ribJoins),
+                    minHalf: 0.012f))
+            {
+                StructurePlacementLog.Record(id, y, ribUp, zz, coreHalfY, ribHu, ribHalfT);
+                continue;
+            }
+
+            TagDeckSurface(entities, before, "core", inspectSample: ribI % 3 == 0);
+            ribI++;
+        }
     }
 
     /// <summary>
@@ -992,13 +1014,19 @@ internal static class CalypsoShipbuildingFrames
         return null;
     }
 
-    private static void TagDeckSurface(List<CadEntity> entities, int beforeCount, string surface)
+    private static void TagDeckSurface(
+        List<CadEntity> entities,
+        int beforeCount,
+        string surface,
+        bool inspectSample = false)
     {
         for (var i = beforeCount; i < entities.Count; i++)
         {
             var e = entities[i];
             e.Properties ??= new Dictionary<string, System.Text.Json.JsonElement>();
             e.Properties["deckSurface"] = System.Text.Json.JsonSerializer.SerializeToElement(surface);
+            if (inspectSample)
+                e.Properties["deckInspectSample"] = System.Text.Json.JsonSerializer.SerializeToElement(true);
         }
     }
 

@@ -93,8 +93,9 @@ internal static class HullDeckGeometry
         z0 < a1 - 0.02f && z1 > a0 + 0.02f;
 
     /// <summary>
-    /// Subdivide a longitudinal span into hull-local samples so bow taper is followed
-    /// (each sample uses its own half-beam — never the bay minimum).
+    /// One manufacturable panel footprint per cut span (frame/ENG/HOLD bounds).
+    /// AABB half-beam is the tightest station in the span (stays inside IML).
+    /// Only splits when athwart change is large — abutting panels, never overlapping.
     /// </summary>
     public static List<(float Z0, float Z1, float Zc, float HalfY)> HullConformingSegments(
         float z0,
@@ -103,13 +104,20 @@ internal static class HullDeckGeometry
         float web,
         float inset = DeckEdgeInset)
     {
+        _ = web;
         var span = z1 - z0;
         if (span < 0.35f)
             return [];
 
-        // ~1 m longitudinal samples so bow taper is stepped, not bay-min rectangle.
-        // AABB halfY uses the tightest station in the sample (stays inside IML).
-        var count = Math.Max(2, (int)MathF.Ceiling(span / 1.05f));
+        var hy0 = HalfBeamAtDeck(z0, plateTop, inset);
+        var hy1 = HalfBeamAtDeck(z1, plateTop, inset);
+        var hyc = HalfBeamAtDeck((z0 + z1) * 0.5f, plateTop, inset);
+        if (hy0 < 0.35f && hy1 < 0.35f && hyc < 0.35f)
+            return [];
+
+        // Split only for strong taper (≥1.2 m half-beam change over ≥3.2 m) — abut, no overlap.
+        var taper = MathF.Abs(hy0 - hy1);
+        var count = taper >= 1.2f && span >= 3.2f ? 2 : 1;
         var list = new List<(float, float, float, float)>(count);
         for (var i = 0; i < count; i++)
         {

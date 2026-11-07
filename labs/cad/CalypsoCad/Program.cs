@@ -195,6 +195,21 @@ internal static class Program
             session.RegenerateAndLoad();
             Console.WriteLine($"Wrote CAD → {session.GeneratedDirectory}");
 
+            var diag = DeckCadDiagnostics.Analyze(session.Document);
+            var diagPath = Path.Combine(CalypsoProjectPaths.DeckGeometryDirectory, "cad-diagnostics.md");
+            diag.WriteMarkdown(diagPath);
+            Console.WriteLine($"CAD diagnostics → {diagPath}");
+            foreach (var n in diag.Notes)
+                Console.WriteLine($"  · {n}");
+            Check("no coplanar face overlaps", diag.OverlappingFacePairs == 0,
+                $"pairs={diag.OverlappingFacePairs}");
+            Check("no duplicate sandwich names", diag.DuplicateNameCount == 0,
+                $"dups={diag.DuplicateNameCount}");
+            Check("ribs inside face footprints", diag.RibsPastPeriEstimate == 0,
+                $"pastPeri={diag.RibsPastPeriEstimate}");
+            Check("panel count sane (not 1m slices)", diag.ByDeck.Sum(d => d.FaceTops) <= 80,
+                $"faceTops={diag.ByDeck.Sum(d => d.FaceTops)}");
+
             var report = DeckGeometryValidation.Evaluate(session.Document);
             var reportPath = Path.Combine(CalypsoProjectPaths.DeckGeometryDirectory, "validation-report.md");
             DeckGeometryValidation.WriteReportMarkdown(report, reportPath);

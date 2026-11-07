@@ -2219,6 +2219,13 @@ internal sealed class CalypsoRenderer
                | CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.DeckPlates;
     }
 
+    private static bool DeckSandwichMatchesFilter(string name, int deckFilter)
+    {
+        var tag = deckFilter < 0 ? "dkm1" : $"dk{deckFilter}";
+        return name.Contains($"-{tag}-", StringComparison.OrdinalIgnoreCase)
+               || name.Contains($"-{tag}-corr", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static CalypsoVisualLayers DeckPlateFlags(CadEntity box)
     {
         var n = box.Name ?? "";
@@ -2227,14 +2234,26 @@ internal sealed class CalypsoRenderer
                       && s.ValueKind == System.Text.Json.JsonValueKind.String
             ? s.GetString()
             : null;
+        var inspectSample = box.Properties is not null
+                            && box.Properties.TryGetValue("deckInspectSample", out var sample)
+                            && sample.ValueKind is System.Text.Json.JsonValueKind.True;
         if (string.Equals(surface, "face", StringComparison.OrdinalIgnoreCase)
             || n.Contains("-face-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.DeckFaces | CalypsoVisualLayers.DeckPlates;
-        if (string.Equals(surface, "core", StringComparison.OrdinalIgnoreCase)
-            || n.Contains("-rib-", StringComparison.OrdinalIgnoreCase)
+        if (string.Equals(surface, "peri", StringComparison.OrdinalIgnoreCase)
             || n.Contains("-peri-", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.DeckCores | CalypsoVisualLayers.DeckPlates;
-        return CalypsoVisualLayers.DeckPlates | CalypsoVisualLayers.DeckFaces | CalypsoVisualLayers.DeckCores;
+            return CalypsoVisualLayers.DeckPerimeters | CalypsoVisualLayers.DeckPlates;
+        if (string.Equals(surface, "core", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-rib-", StringComparison.OrdinalIgnoreCase))
+        {
+            var flags = CalypsoVisualLayers.DeckCores | CalypsoVisualLayers.DeckPlates;
+            if (inspectSample)
+                flags |= CalypsoVisualLayers.DeckCoresSparse;
+            return flags;
+        }
+
+        return CalypsoVisualLayers.DeckPlates | CalypsoVisualLayers.DeckFaces
+               | CalypsoVisualLayers.DeckCores | CalypsoVisualLayers.DeckPerimeters;
     }
 
     /// <summary>
@@ -2279,6 +2298,19 @@ internal sealed class CalypsoRenderer
             if (layers == CalypsoVisualLayers.OuterSkeleton
                 || layers == CalypsoVisualLayers.OuterHull)
                 return IsOuterHullMember(n);
+            // Deck filter: sandwich panels are deck-scoped (dkm1 / dk0 / dk1).
+            if (_session.DeckFilter is { } deckFilter
+                && n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase)
+                && !DeckSandwichMatchesFilter(n, deckFilter))
+                return false;
+            // Peri+girder inspection: hide skin stringers/shell so primary girders stay readable.
+            if (layers.HasFlag(CalypsoVisualLayers.DeckPerimeters)
+                && layers.HasFlag(CalypsoVisualLayers.Longitudinals)
+                && !layers.HasFlag(CalypsoVisualLayers.Frames)
+                && (n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
+                    || n.StartsWith("shell-", StringComparison.OrdinalIgnoreCase)
+                    || n.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)))
+                return false;
             // Multi-bit box flags (Frames|OuterHull): any intersecting bit is enough.
             return (StructureFlagForBox(box) & layers) != 0;
         }
