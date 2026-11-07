@@ -8,4 +8,7 @@ internal static class StructuralRoles
     public const string LongitudinalGirder = "LongitudinalGirder";
     public const string StructuralDeck = "StructuralDeck";
     public const string ThrustStructure = "ThrustStructure";
+    public const string ShellPanel = "ShellPanel";
+    public const string ShellStiffener = "ShellStiffener";
+    public const string StructuralBracket = "StructuralBracket";
 }

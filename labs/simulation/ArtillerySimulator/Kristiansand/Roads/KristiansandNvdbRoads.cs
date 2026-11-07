@@ -7,14 +7,13 @@ namespace ArtillerySimulator;
 
 /// <summary>
 /// Drapes committed <c>map/layers/nvdb-roads.bin</c> onto the NDH mesh.
-/// Main = E/R/S/F (thick red); local-local = K/P/… (thin gray). Never reads PNG.
+/// Main = E/R/S/F (single dark-gray centerline); local K/P/… optional thin gray. Never reads PNG.
 /// </summary>
 internal static class KristiansandNvdbRoads
 {
-    private static readonly Color PrimaryColor = Color.FromArgb(255, 228, 72, 58);
-    private static readonly Color SecondaryColor = Color.FromArgb(220, 168, 168, 168);
+    private static readonly Color PrimaryColor = Color.FromArgb(255, 36, 36, 36);
+    private static readonly Color SecondaryColor = Color.FromArgb(220, 48, 48, 48);
     private const float LiftMeters = 3.2f;
-    private const float PrimaryWidthMeters = 9f;
     private const float DrapeMeters = 28f;
     private const float SecondaryDrapeMeters = 55f;
     /// <summary>Skip local K/P strokes in the runtime mesh — primary roads carry OPFOR + map intent.</summary>
@@ -38,7 +37,7 @@ internal static class KristiansandNvdbRoads
                 continue;
             var color = stroke.Primary ? PrimaryColor : SecondaryColor;
             var drape = stroke.Primary ? DrapeMeters : SecondaryDrapeMeters;
-            DrapePolyline(batch, heights, east, north, stroke.Points, color, stroke.Primary ? PrimaryWidthMeters : 0f, drape);
+            DrapePolyline(batch, heights, east, north, stroke.Points, color, drape);
         }
 
         return batch.AsSpan().ToArray();
@@ -161,7 +160,6 @@ internal static class KristiansandNvdbRoads
         float north,
         Vector2[] points,
         Color color,
-        float widthMeters,
         float drapeMeters)
     {
         if (points.Length < 2)
@@ -179,12 +177,7 @@ internal static class KristiansandNvdbRoads
 
             var samples = Math.Max(2, (int)MathF.Ceiling(len / drapeMeters) + 1);
             Vector3? prev = null;
-            Vector3? prevL = null;
-            Vector3? prevR = null;
             var inv = 1f / (samples - 1);
-            var forward = new Vector3(dx / len, 0f, dz / len);
-            var perp = new Vector3(-forward.Z, 0f, forward.X);
-            var half = widthMeters * 0.5f;
 
             for (var s = 0; s < samples; s++)
             {
@@ -194,19 +187,6 @@ internal static class KristiansandNvdbRoads
                 var p = Place(heights, east, north, x, z);
                 if (prev is { } p0)
                     wires.Line(p0, p, color);
-
-                if (widthMeters > 0.5f)
-                {
-                    var l = Place(heights, east, north, p.X + perp.X * half, p.Z + perp.Z * half);
-                    var r = Place(heights, east, north, p.X - perp.X * half, p.Z - perp.Z * half);
-                    if (prevL is { } pl)
-                        wires.Line(pl, l, color);
-                    if (prevR is { } pr)
-                        wires.Line(pr, r, color);
-                    prevL = l;
-                    prevR = r;
-                }
-
                 prev = p;
             }
         }

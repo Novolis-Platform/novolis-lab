@@ -106,6 +106,61 @@ internal static class CalypsoLockGenerator
     }
 
     /// <summary>
+    /// Piece-by-piece midbody bay only (F24–F28, optional adjacent F28–F32). No rooms/outfit.
+    /// Writes <c>calypso-structural-bay.cadjson</c> under the generated directory.
+    /// </summary>
+    public static string GenerateStructuralBay(bool includeAdjacentBay = false, string? outputDirectory = null)
+    {
+        var dir = outputDirectory ?? DefaultOutputDirectory;
+        Directory.CreateDirectory(dir);
+        var stamp = DateTime.UtcNow.ToString("o");
+        FrameWebPlateRegistry.Clear();
+        var lockDoc = LoadLock();
+        UseLoftStations(lockDoc);
+        var env = lockDoc.Envelope ?? throw new InvalidOperationException("Lock missing envelope");
+        var loa = (float)env.Loa;
+        var web = lockDoc.Frames?.WebM is > 0 ? (float)lockDoc.Frames.WebM : 0.15f;
+        var tPlate = lockDoc.Decks?.TPlate is > 0.02 ? (float)lockDoc.Decks.TPlate : 0.1f;
+        var deckUps = DeckStructureElevations(lockDoc);
+
+        var entities = new List<CadEntity>();
+        StructuralBayEmitter.Emit(
+            entities, loa, web, tPlate, deckUps,
+            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
+            includeAdjacentBay);
+
+        var layers = BuildLayers(stamp);
+        var shapes = BuildShapes(stamp);
+        var cad = new CadDocument
+        {
+            Name = includeAdjacentBay
+                ? "Calypso — structural bay F24–F32 (piece-by-piece)"
+                : "Calypso — structural bay F24–F28 (piece-by-piece)",
+            Generator = new CadGenerator { Name = "CalypsoCad.StructuralBay", Version = "2026.1.0" },
+            CreatedAt = stamp,
+            ModifiedAt = stamp,
+            LayersDocument = "calypso.cadlayers.json",
+            ShapesDocument = "calypso.cadshapejson",
+            Layers =
+            [
+                new() { Id = LayerHull, Name = "S-HULL", Color = [0.42f, 0.48f, 0.55f] },
+                new() { Id = LayerStruct, Name = "S-STRUCT", Color = [0.55f, 0.58f, 0.62f] },
+            ],
+            Entities = entities,
+            Camera = new CadCamera
+            {
+                Distance = 22f,
+                Target = [0f, 5.5f, loa * 0.5f - 26f],
+                Yaw = 0.95f,
+                Pitch = 0.42f,
+            },
+        };
+        StructuralBayEmitter.TagDocument(cad, includeAdjacentBay);
+        CadDocumentBundle.Write(dir, layers, shapes, cad, "calypso-structural-bay");
+        return dir;
+    }
+
+    /// <summary>
     /// Keep only hand-authored exterior (e.g. acceptance / Draft Studio saves).
     /// Generator-owned manufacturer OML/IML must be rebuilt each regenerate — otherwise an old blob sticks.
     /// </summary>
@@ -2349,6 +2404,24 @@ internal static class CalypsoLockGenerator
             var deckTag = segs.Length >= 3 ? segs[2] : "dk";
             return new StructuralSolidMeta(
                 StructuralRoles.StructuralDeck, $"deck-{deckTag}", StationZ: zFromStem, DeckUp: up);
+        }
+
+        if (name.StartsWith("shell-panel-", StringComparison.OrdinalIgnoreCase))
+        {
+            return new StructuralSolidMeta(StructuralRoles.ShellPanel, "bay-shell", StationZ: zFromStem, DeckUp: up);
+        }
+
+        if (name.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
+        {
+            return new StructuralSolidMeta(StructuralRoles.ShellStiffener, "bay-shell", StationZ: zFromStem, DeckUp: up);
+        }
+
+        if (name.Contains("-join-", StringComparison.OrdinalIgnoreCase))
+        {
+            var segs = name.Split('-');
+            var assembly = segs.Length >= 2 ? $"frame-{segs[1]}" : name;
+            return new StructuralSolidMeta(
+                StructuralRoles.StructuralBracket, assembly, StationZ: zFromStem, DeckUp: up);
         }
 
         if (name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)

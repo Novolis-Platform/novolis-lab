@@ -45,6 +45,18 @@ internal static class Program
             return;
         }
 
+        var structuralBay = args.Any(a => string.Equals(a, "--structural-bay", StringComparison.OrdinalIgnoreCase));
+        if (structuralBay)
+        {
+            var testIdx = Array.FindIndex(args, a =>
+                string.Equals(a, "--structural-bay-test", StringComparison.OrdinalIgnoreCase));
+            var tests = testIdx >= 0 && testIdx + 1 < args.Length && !args[testIdx + 1].StartsWith('-')
+                ? args[testIdx + 1]
+                : "all";
+            Environment.ExitCode = RunStructuralBay(tests);
+            return;
+        }
+
         if (blueprints || blueprintDetails)
         {
             Environment.ExitCode = RunBlueprints(emitDetails: blueprints || blueprintDetails);
@@ -200,6 +212,55 @@ internal static class Program
             Console.Error.WriteLine(ex);
             return 1;
         }
+    }
+
+    /// <summary>Piece-by-piece midbody bay generate + Tests A–E PNGs + bay acceptance.</summary>
+    private static int RunStructuralBay(string tests)
+    {
+        Console.WriteLine("CalypsoCad structural bay (piece-by-piece)");
+        var failures = 0;
+        void Check(string name, bool ok, string detail = "")
+        {
+            if (ok)
+            {
+                Console.WriteLine($"  OK  {name}");
+                return;
+            }
+
+            failures++;
+            Console.WriteLine($"  FAIL {name}{(string.IsNullOrEmpty(detail) ? "" : ": " + detail)}");
+        }
+
+        try
+        {
+            var includeAdjacent = string.Equals(tests, "all", StringComparison.OrdinalIgnoreCase)
+                                  || tests.Contains('E', StringComparison.OrdinalIgnoreCase)
+                                  || tests.Contains('e');
+            var session = new CalypsoSession();
+            session.RegenerateAndLoadStructuralBay(includeAdjacentBay: includeAdjacent);
+            Console.WriteLine($"Wrote bay CAD → {session.GeneratedDirectory}");
+
+            foreach (var check in CalypsoBayAcceptance.Evaluate(session.Document))
+                Check(check.Name, check.Ok, check.Detail);
+
+            var renderer = new CalypsoRenderer(session);
+            renderer.Fit();
+            var stills = HeadlessStructuralBayExporter.Export(session, renderer, tests);
+            Console.WriteLine($"Bay PNGs ({stills.Count}) → {CalypsoProjectPaths.StructuralBayDirectory}");
+            foreach (var path in stills)
+                Console.WriteLine($"  {path}");
+            Check("bay test PNGs written", stills.Count > 0, $"count={stills.Count}");
+        }
+        catch (Exception ex)
+        {
+            Check("structural bay pipeline", false, ex.Message);
+            Console.Error.WriteLine(ex);
+        }
+
+        Console.WriteLine(failures == 0
+            ? "CalypsoCad structural bay OK"
+            : $"CalypsoCad structural bay FAILED ({failures})");
+        return failures == 0 ? 0 : 1;
     }
 
     /// <summary>Seed generate → inject exterior → regenerate → assert exterior preserved + lock metrics.</summary>

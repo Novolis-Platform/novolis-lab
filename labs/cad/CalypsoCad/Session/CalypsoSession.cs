@@ -104,6 +104,19 @@ internal sealed class CalypsoSession
         StatusText = $"Generated → {GeneratedDirectory}";
     }
 
+    /// <summary>Generate and load the piece-by-piece structural bay CAD (not the full ship).</summary>
+    public void RegenerateAndLoadStructuralBay(bool includeAdjacentBay = false)
+    {
+        GeneratedDirectory = CalypsoLockGenerator.GenerateStructuralBay(includeAdjacentBay);
+        (LayersCatalog, Shapes, Document) = CadDocumentBundle.Read(GeneratedDirectory, "calypso-structural-bay");
+        ShapeById = Shapes.Shapes.ToDictionary(s => s.Id);
+        SelectedSpaceId = null;
+        RevealEntityIds = null;
+        VisualLayers = CalypsoVisualLayers.HullShell | CalypsoVisualLayers.PrimaryPlusDecks;
+        ShowOmlGuide = false;
+        StatusText = $"Structural bay → {GeneratedDirectory}";
+    }
+
     public Color ResolveShapeColor(Guid? shapeId, Color fallback)
     {
         return ResolveShapeMaterial(shapeId, fallback).color;

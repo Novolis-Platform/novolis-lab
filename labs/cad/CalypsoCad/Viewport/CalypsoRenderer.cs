@@ -1339,6 +1339,26 @@ internal sealed class CalypsoRenderer
 
         var body = ShadeColor(color, isC40 ? 0.55f : 0.4f, isC40 ? 0.25f : (isBh ? 0.75f : 0.65f), Vector3.UnitY, LightDir);
         var wireMode = _session.WireMeshMode == CalypsoWireMeshMode.Wire;
+        // Oriented structural members (polygonal ring edges): rotate around world +Z (bow).
+        var hasOrient = box.Properties is not null
+                        && box.Properties.TryGetValue("orientZ", out var orientEl)
+                        && orientEl.ValueKind == System.Text.Json.JsonValueKind.Number;
+        if (hasOrient)
+        {
+            var angle = (float)orientEl.GetDouble();
+            var rot = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, angle);
+            // Local half-extents: X along edge, Y flange, Z web depth (from Points[1]).
+            var localHalf = new Vector3(MathF.Abs(he.X), MathF.Abs(he.Y), MathF.Abs(he.Z));
+            if (wireMode && !isBh)
+            {
+                _world.DrawOrientedBoxWires(c, localHalf, rot, Bulkhead);
+                return;
+            }
+
+            _world.DrawOrientedBox(c, localHalf, rot, body);
+            return;
+        }
+
         // Wire orbit: frames/girders are edges only — solid fill made bow webs look like a second hull.
         // Pressure BH stay solid plates so ENG faces still read.
         if (wireMode && !isBh)
@@ -2141,7 +2161,9 @@ internal sealed class CalypsoRenderer
                || n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
-               || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase);
+               || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("shell-panel-", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase);
     }
 
     private static CalypsoVisualLayers StructureFlagForBox(CadEntity box)
@@ -2152,18 +2174,26 @@ internal sealed class CalypsoRenderer
             && roleEl.ValueKind == System.Text.Json.JsonValueKind.String)
         {
             var role = roleEl.GetString() ?? "";
-            if (string.Equals(role, "TransverseFrame", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(role, "TransverseFrame", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(role, "StructuralBracket", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Frames;
             if (string.Equals(role, "PressureBulkhead", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Bulkheads;
             if (string.Equals(role, "StructuralDeck", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.DeckPlates;
             if (string.Equals(role, "LongitudinalGirder", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase))
+                || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(role, "ShellStiffener", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Longitudinals;
+            if (string.Equals(role, "ShellPanel", StringComparison.OrdinalIgnoreCase))
+                return CalypsoVisualLayers.HullShell;
         }
 
         var n = box.Name ?? "";
+        if (n.StartsWith("shell-panel-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.HullShell;
+        if (n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.Longitudinals;
         if (n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Frames;
         if (n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
