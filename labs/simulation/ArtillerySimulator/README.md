@@ -4,28 +4,43 @@ Educational Silk artillery sandbox (single executable). **K9 DOG** is a cheeky l
 
 Levels are pluggable (`GameLevelCatalog` / `IGameLevel`). Shipped: **Defense of Kristiansand** (`kristiansand.defense`).
 
+## Run
+
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -- --help
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -- --list-levels
-dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -- --level kristiansand.defense
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -- --level kristiansand.defense --seed 42
 ```
 
 Splash → ←/→ pick level → load → play. **Esc / P** pause, **L** licenses. Full text: `assets/NOTICE.txt`.
 
-Optional: `--seed <int>` for reproducible PE / convoy RNG (also shown as `SeedHash` on agent snapshots).
+`--seed` makes PE sampling and convoy RNG reproducible (`SeedHash` on agent snapshots).
 
-If MSBuild dies with `MSB4166` (child node exited prematurely), clear the sticky servers and retry:
+If MSBuild dies with `MSB4166`, clear sticky servers and retry:
 
 ```powershell
 dotnet build-server shutdown
-dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true
 ```
 
-Headless agent (skips splash):
+## Headless agent
 
 ```powershell
-dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --headless
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --headless --seed 42
 ```
+
+- Fire returns immediately; impact arrives as `artillery.impact` (correlation id preserved).
+- Snapshot fields: `outcome`, `seed`, `piece`, live met, PE residuals.
+
+## Runtime notes
+
+| Concern | Behavior |
+| --- | --- |
+| Sim clock | `FixedStepClock` @ 120 Hz — independent of render FPS |
+| Session | `BattleSession` owns seed + piece + `DeliverySampler` |
+| Mission end | `MissionOutcome` (Open/Held/ObjectiveLost/Fratricide); auto-pause; fire blocked |
+| Map payload | Runtime bins only in output (~heightfield, NVDB, water masks) |
+| Agent | Aim/charge/fire while rounds are airborne; finite numeric validation |
 
 ## Disclaimer (short)
 
@@ -35,17 +50,17 @@ Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force,
 
 | Folder | Role |
 | --- | --- |
-| `Host/` | Composition root (`ArtilleryApp`), frame profiler |
-| `Features/Battery/` | Howitzer, crew drill, expandable mil-tech specs |
+| `Host/` | `ArtilleryApp`, `BattleSession`, `FixedStepClock`, profiler |
+| `Features/Battery/` | Howitzer, crew drill, mil-tech specs |
 | `Features/Product/` | Title, legal copy, shell phases |
 | `Features/Levels/` | `IGameLevel`, catalog, Kristiansand level |
-| `Features/Defense/` | Mission loop, columns, opening fire plan |
+| `Features/Defense/` | Mission loop, outcomes, columns, opening fire plan |
 | `Features/Presentation/` | Camera, HUD, splash/pause overlays |
 | `Features/Agent/` | Live agent surface |
 | `Kristiansand/` | Geodesy, terrain, roads, atmosphere |
 | `assets/` | Splash, icons, NOTICE.txt |
-| `map/` | Norgeskart + NDH layer assets |
-| `scripts/` | Map rebuild + icon bake |
+| `map/` | Runtime layers + pipeline sources (see `map/README.md`) |
+| `scripts/` | Map rebuild + icon bake + agent play |
 
 ## Icons
 

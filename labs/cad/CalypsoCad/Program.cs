@@ -18,20 +18,15 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        var generateOnly = args.Any(a => string.Equals(a, "--generate-only", StringComparison.OrdinalIgnoreCase));
-        var headless = args.Any(a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase));
-        var walkthrough = args.Any(a => string.Equals(a, "--walkthrough", StringComparison.OrdinalIgnoreCase));
-        var constructionOrbit = args.Any(a =>
-            string.Equals(a, "--construction-orbit", StringComparison.OrdinalIgnoreCase));
-        var jsonOnly = args.Any(a => string.Equals(a, "--json-only", StringComparison.OrdinalIgnoreCase));
-        var acceptance = args.Any(a => string.Equals(a, "--acceptance", StringComparison.OrdinalIgnoreCase));
-        var blueprints = args.Any(a => string.Equals(a, "--blueprints", StringComparison.OrdinalIgnoreCase));
-        var blueprintDetails = args.Any(a => string.Equals(a, "--blueprint-details", StringComparison.OrdinalIgnoreCase));
-        var structureAudit = args.Any(a => string.Equals(a, "--structure-audit", StringComparison.OrdinalIgnoreCase));
-        var explorer = args.Any(a => string.Equals(a, "--explorer", StringComparison.OrdinalIgnoreCase));
-        var silkOnly = args.Any(a => string.Equals(a, "--silk", StringComparison.OrdinalIgnoreCase));
-        var mcp = args.Any(a => string.Equals(a, "--mcp", StringComparison.OrdinalIgnoreCase));
-        var stdio = args.Any(a => string.Equals(a, "--stdio", StringComparison.OrdinalIgnoreCase));
+        // Two product modes:
+        //   GUI      — no CLI work flags (optional --explorer / --silk)
+        //   Headless — --headless runs the full export suite (stills, video, blueprints, descriptors)
+        // Focused CLI flags remain for iteration without opening the GUI.
+        var headless = HasFlag(args, "--headless");
+        var explorer = HasFlag(args, "--explorer");
+        var silkOnly = HasFlag(args, "--silk");
+        var mcp = HasFlag(args, "--mcp");
+        var stdio = HasFlag(args, "--stdio");
 
         if (mcp || stdio)
         {
@@ -39,47 +34,49 @@ internal static class Program
             return;
         }
 
-        if (structureAudit)
+        if (headless)
+        {
+            Environment.ExitCode = RunFullHeadlessSuite(args);
+            return;
+        }
+
+        if (HasFlag(args, "--structure-audit"))
         {
             Environment.ExitCode = RunStructureAudit();
             return;
         }
 
-        var structuralBay = args.Any(a => string.Equals(a, "--structural-bay", StringComparison.OrdinalIgnoreCase));
-        if (structuralBay)
+        if (HasFlag(args, "--structural-bay"))
         {
             Environment.ExitCode = RunStructuralBay();
             return;
         }
 
-        var deckGeometry = args.Any(a => string.Equals(a, "--deck-geometry", StringComparison.OrdinalIgnoreCase));
-        if (deckGeometry)
+        if (HasFlag(args, "--deck-geometry"))
         {
             Environment.ExitCode = RunDeckGeometry();
             return;
         }
 
-        var hullFirst = args.Any(a => string.Equals(a, "--hull-first", StringComparison.OrdinalIgnoreCase));
-        if (hullFirst)
+        if (HasFlag(args, "--hull-first"))
         {
             Environment.ExitCode = RunHullFirst();
             return;
         }
 
-        if (blueprints || blueprintDetails)
+        if (HasFlag(args, "--blueprints") || HasFlag(args, "--blueprint-details"))
         {
-            Environment.ExitCode = RunBlueprints(emitDetails: blueprints || blueprintDetails);
+            Environment.ExitCode = RunBlueprints(emitDetails: true);
             return;
         }
 
-        if (acceptance)
+        if (HasFlag(args, "--acceptance"))
         {
             Environment.ExitCode = RunAcceptance();
             return;
         }
 
-        var fabRelease = args.Any(a => string.Equals(a, "--fab-release", StringComparison.OrdinalIgnoreCase));
-        if (fabRelease)
+        if (HasFlag(args, "--fab-release"))
         {
             try
             {
@@ -96,13 +93,11 @@ internal static class Program
             return;
         }
 
-        var dnvReview = args.Any(a => string.Equals(a, "--dnv-review", StringComparison.OrdinalIgnoreCase));
-        if (dnvReview)
+        if (HasFlag(args, "--dnv-review"))
         {
-            var withHeadless = args.Any(a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase));
             try
             {
-                var html = CalypsoDnvReviewEmitter.Emit(runHeadlessExports: withHeadless);
+                var html = CalypsoDnvReviewEmitter.Emit(runHeadlessExports: false);
                 Console.WriteLine($"Wrote DNV-style design review package:{Environment.NewLine}{html}");
                 Environment.ExitCode = 0;
             }
@@ -129,21 +124,20 @@ internal static class Program
             return;
         }
 
-        var withHeadlessCanvas = args.Any(a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase));
-        if (TryEmitRenderCanvas(args, "--emit-mfg-angles-canvas", "calypso-mfg-angles.canvas.tsx", withHeadlessCanvas,
+        if (TryEmitRenderCanvas(args, "--emit-mfg-angles-canvas", "calypso-mfg-angles.canvas.tsx", runHeadless: false,
                 CalypsoRenderCanvasEmitter.EmitMfgAngles))
             return;
-        if (TryEmitRenderCanvas(args, "--emit-mfg-002-renders-canvas", "calypso-mfg-002-renders.canvas.tsx", withHeadlessCanvas,
+        if (TryEmitRenderCanvas(args, "--emit-mfg-002-renders-canvas", "calypso-mfg-002-renders.canvas.tsx", runHeadless: false,
                 CalypsoRenderCanvasEmitter.EmitMfg002FullRenders))
             return;
 
-        var buildSteps = args.Any(a => string.Equals(a, "--build-steps", StringComparison.OrdinalIgnoreCase));
+        var buildSteps = HasFlag(args, "--build-steps");
         var emitBuildDeckIdx = Array.FindIndex(args, a =>
             string.Equals(a, "--emit-build-steps-canvas", StringComparison.OrdinalIgnoreCase));
         if (buildSteps || emitBuildDeckIdx >= 0)
         {
             Environment.ExitCode = RunBuildSteps(
-                exportPng: buildSteps || withHeadlessCanvas,
+                exportPng: buildSteps,
                 emitCanvas: emitBuildDeckIdx >= 0,
                 canvasPath: emitBuildDeckIdx >= 0 && emitBuildDeckIdx + 1 < args.Length && !args[emitBuildDeckIdx + 1].StartsWith('-')
                     ? args[emitBuildDeckIdx + 1]
@@ -153,30 +147,108 @@ internal static class Program
             return;
         }
 
-        if (constructionOrbit)
+        if (HasFlag(args, "--construction-orbit"))
         {
             Environment.ExitCode = RunConstructionOrbit();
             return;
         }
 
-        if (generateOnly || headless || walkthrough)
+        if (HasFlag(args, "--walkthrough"))
         {
-            Environment.ExitCode = RunHeadless(
-                exportPng: headless && !jsonOnly,
-                walkthrough: walkthrough);
+            Environment.ExitCode = RunHeadless(exportPng: false, walkthrough: true);
             return;
         }
 
+        if (HasFlag(args, "--generate-only"))
+        {
+            Environment.ExitCode = RunHeadless(exportPng: false, walkthrough: false);
+            return;
+        }
+
+        // GUI mode — Avalonia chrome + Silk 3D (or --silk for GLFW-only).
         var session = new CalypsoSession();
         session.RegenerateAndLoad();
         var renderer = new CalypsoRenderer(session);
         renderer.Fit();
         renderer.SyncInteriorFromSelection();
-        // Human default: Avalonia chrome + Silk 3D. CI/agents: --silk for GLFW-only.
         if (silkOnly && !explorer)
             CalypsoSilkHost.Run(session, renderer);
         else
             CalypsoExplorerHost.Run(session, renderer);
+    }
+
+    private static bool HasFlag(string[] args, string flag) =>
+        args.Any(a => string.Equals(a, flag, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// CLI-only product mode: regenerate CAD, then emit blueprints, descriptors, 8K stills, and native videos.
+    /// </summary>
+    private static int RunFullHeadlessSuite(string[] args)
+    {
+        Console.WriteLine("CalypsoCad headless suite (CLI) — stills @8K, video @4K native Silk");
+        var jsonOnly = HasFlag(args, "--json-only");
+        var failures = 0;
+
+        void Step(string name, Func<int> run)
+        {
+            Console.WriteLine($"── {name}");
+            try
+            {
+                var code = run();
+                if (code != 0)
+                {
+                    failures++;
+                    Console.WriteLine($"  FAIL {name} (exit {code})");
+                }
+                else
+                {
+                    Console.WriteLine($"  OK  {name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                failures++;
+                Console.WriteLine($"  FAIL {name}: {ex.Message}");
+                Console.Error.WriteLine(ex);
+            }
+        }
+
+        Step("generate CAD companions", () =>
+        {
+            var dir = CalypsoLockGenerator.Generate();
+            Console.WriteLine($"  → {dir}");
+            return File.Exists(Path.Combine(dir, "calypso.cadjson")) ? 0 : 2;
+        });
+
+        if (jsonOnly)
+            return failures == 0 ? 0 : 1;
+
+        Step("blueprints + manufacturer sheets", () => RunBlueprints(emitDetails: true));
+        Step("fabrication release (CAL-MFG-002)", () =>
+        {
+            var html = CalypsoFabReleaseEmitter.Emit();
+            Console.WriteLine($"  → {html}");
+            return 0;
+        });
+        Step("structure audit descriptors", () => RunStructureAudit());
+        Step("DNV design-review package", () =>
+        {
+            var html = CalypsoDnvReviewEmitter.Emit(runHeadlessExports: false);
+            Console.WriteLine($"  → {html}");
+            return 0;
+        });
+        Step("hull-first Views A–D", () => RunHullFirst());
+        Step("curated 8K stills", () => RunHeadless(exportPng: true, walkthrough: false));
+        Step("construction-orbit 4K video", () => RunConstructionOrbit());
+        Step("walkthrough 4K video", () => RunHeadless(exportPng: false, walkthrough: true));
+
+        if (HasFlag(args, "--build-steps"))
+            Step("build-step stills", () => RunBuildSteps(exportPng: true, emitCanvas: false, canvasPath: ""));
+
+        Console.WriteLine(failures == 0
+            ? "CalypsoCad headless suite OK"
+            : $"CalypsoCad headless suite FAILED ({failures} step(s))");
+        return failures == 0 ? 0 : 1;
     }
 
     /// <summary>Hull-first: regenerate → transverse skeleton validation → Views A–D.</summary>

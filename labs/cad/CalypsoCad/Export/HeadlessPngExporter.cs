@@ -1,6 +1,7 @@
 using CalypsoCad.Session;
 using CalypsoCad.Viewport;
 using Novolis.Silk;
+using Novolis.Silk.Capture;
 
 namespace CalypsoCad.Export;
 
@@ -28,8 +29,8 @@ internal static class HeadlessPngExporter
         CalypsoSession session,
         CalypsoRenderer renderer,
         string generatedRoot,
-        int width = 3840,
-        int height = 2160)
+        int width = SilkCaptureSize.UltraWidth,
+        int height = SilkCaptureSize.UltraHeight)
     {
         _ = generatedRoot;
         var exportsDir = CalypsoProjectPaths.RendersExportsDirectory;

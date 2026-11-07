@@ -49,14 +49,24 @@ Do not put generic CAD types here — extend `Novolis.Cad.Primitives` / `Novolis
 
 ## Run
 
+Two product modes:
+
+| Mode | Invocation | Does |
+|------|------------|------|
+| **GUI** | no CLI work flags (optional `--explorer` / `--silk`) | Avalonia chrome + Silk 3D |
+| **Headless** | `--headless` | Full CLI export suite — no window |
+
+`--headless` regenerates CAD, then emits blueprints, fab/DNV descriptors, structure audit, hull-first Views A–D, curated **8K** stills, construction-orbit **4K** native Silk video, and walkthrough **4K** video. Requires `ffmpeg` on PATH for video. Focused flags (`--construction-orbit`, `--blueprints`, …) remain for iteration without the full suite.
+
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --explorer
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --headless
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --generate-only --json-only
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --acceptance
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --fab-release
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --blueprints
-dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --headless
+dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --construction-orbit
 ```
 
 Holistic fab / visual gates:

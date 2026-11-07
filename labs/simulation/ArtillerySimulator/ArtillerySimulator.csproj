@@ -8,9 +8,6 @@
     <ApplicationIcon>assets\k9-dog-icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="ArtillerySimulator.Tests" />
-  </ItemGroup>
-  <ItemGroup>
     <!-- Runtime map assets only — pipeline TIFFs / diagnose / POC stay in the source tree. -->
     <None Include="map\layers\heightfield-1025.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\heightfield-1025.bin" />
     <None Include="map\layers\nvdb-roads.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\nvdb-roads.bin" />

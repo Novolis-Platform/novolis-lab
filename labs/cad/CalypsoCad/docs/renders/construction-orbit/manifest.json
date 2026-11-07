@@ -1,10 +1,11 @@
 {
-  "generatedUtc": "2026-11-07T22:38:34.7012985Z",
+  "generatedUtc": "2026-11-07T22:46:06.5112574Z",
   "width": 3840,
   "height": 2160,
   "fps": 24,
   "frameCount": 240,
-  "framebuffer": "3840x1581",
+  "framebuffer": "3840x2160",
+  "encoder": "Novolis.Silk.Capture.RgbaVideoEncoder",
   "streamed": true,
   "framesOnDisk": false,
   "oml": "edge-guide-only",

@@ -2,6 +2,7 @@ using System.Numerics;
 using CalypsoCad.Session;
 using CalypsoCad.Viewport;
 using Novolis.Silk;
+using Novolis.Silk.Capture;
 
 namespace CalypsoCad.Export;
 
@@ -13,8 +14,8 @@ internal static class HeadlessHullFirstExporter
     public static IReadOnlyList<string> Export(
         CalypsoSession session,
         CalypsoRenderer renderer,
-        int width = 3840,
-        int height = 2160)
+        int width = SilkCaptureSize.UltraWidth,
+        int height = SilkCaptureSize.UltraHeight)
     {
         var outDir = Path.Combine(CalypsoProjectPaths.RendersDirectory, "hull-first");
         Directory.CreateDirectory(outDir);

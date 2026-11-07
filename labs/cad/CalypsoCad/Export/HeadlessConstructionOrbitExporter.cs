@@ -1,23 +1,22 @@
-using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using CalypsoCad.Session;
 using CalypsoCad.Viewport;
-using Novolis.Math.Geometry;
 using Novolis.Silk;
+using Novolis.Silk.Capture;
 
 namespace CalypsoCad.Export;
 
 /// <summary>
-/// Fast lazy 4K 24fps orbit of the <b>one</b> ship model through visual layer stages.
-/// OML is edge-guide only (never solid). Frames stream raw into ffmpeg — nothing kept on disk.
+/// Fast 4K 24fps orbit of the one ship model through visual layer stages.
+/// Uses Silk native video (exact offscreen FBO → H.264); no PNG frame dumps.
+/// OML is edge-guide only (never solid).
 /// </summary>
 internal static class HeadlessConstructionOrbitExporter
 {
-    public const int Width = 3840;
-    public const int Height = 2160;
+    public const int Width = SilkCaptureSize.UhdWidth;
+    public const int Height = SilkCaptureSize.UhdHeight;
     public const int Fps = 24;
 
     /// <summary>~10 s total (5 stages × 48 frames). Full model every frame — layer flags only.</summary>
@@ -30,7 +29,6 @@ internal static class HeadlessConstructionOrbitExporter
         var outDir = CalypsoProjectPaths.ConstructionOrbitDirectory;
         Directory.CreateDirectory(outDir);
 
-        // Never keep a frames/ dump from a prior run.
         var staleFrames = Path.Combine(outDir, "frames");
         if (Directory.Exists(staleFrames))
             Directory.Delete(staleFrames, recursive: true);
@@ -52,7 +50,6 @@ internal static class HeadlessConstructionOrbitExporter
         var previousCutOff = session.CutPlaneOffset;
         var previousOml = session.ShowOmlGuide;
 
-        // Full document always — progressive RevealEntityIds made frames look like separate models.
         session.RevealEntityIds = null;
         session.ShowOmlGuide = true;
         session.ViewMode = CalypsoViewMode.Orbit;
@@ -80,7 +77,7 @@ internal static class HeadlessConstructionOrbitExporter
                 var localF = f;
                 prepares.Add(() =>
                 {
-                    session.VisualLayers = stage.Layers; // no HullShell — OML guide only
+                    session.VisualLayers = stage.Layers;
                     session.WireMeshMode = stage.Wire;
                     session.ShowOmlGuide = true;
                     session.RevealEntityIds = null;
@@ -96,80 +93,43 @@ internal static class HeadlessConstructionOrbitExporter
             }
         }
 
-        var ffmpeg = FindFfmpeg()
-            ?? throw new InvalidOperationException("ffmpeg not found on PATH — required for construction-orbit.");
-
-        // Capture size may not be 4K (Silk FB quirk); pad/scale in the filter graph.
-        var psi = new ProcessStartInfo
-        {
-            FileName = ffmpeg,
-            Arguments =
-                $"-y -f rawvideo -pix_fmt rgba -video_size {{W}}x{{H}} -framerate {Fps} -i pipe:0 " +
-                $"-vf \"scale={Width}:{Height}:force_original_aspect_ratio=decrease," +
-                $"pad={Width}:{Height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1\" " +
-                $"-c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p -movflags +faststart \"{mp4}\"",
-            UseShellExecute = false,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-        };
-
         Console.WriteLine(
-            $"Construction orbit (stream): {stages.Count} layer stages × {FramesPerStage} = {totalFrames} → {mp4}");
+            $"Construction orbit (Silk native video): {stages.Count} stages × {FramesPerStage} = {totalFrames} @ {Width}x{Height} → {mp4}");
 
-        string? fbSize = null;
-        Process? proc = null;
         var outputs = new List<string>();
         try
         {
-            var written = SilkHeadlessCapture.CaptureSequence(
-                Width,
-                Height,
+            var result = SilkHeadlessCapture.CaptureVideo(
+                new VideoEncodeOptions
+                {
+                    OutputPath = mp4,
+                    Width = Width,
+                    Height = Height,
+                    Fps = Fps,
+                    Crf = 18,
+                    Preset = "medium",
+                },
                 prepares,
                 frame => renderer.DrawFrame(frame, 0f),
-                (pixels, w, h, index) =>
+                onFrame: (pixels, w, h, index) =>
                 {
-                    if (proc is null)
-                    {
-                        fbSize = $"{w}x{h}";
-                        psi.Arguments = psi.Arguments.Replace("{W}x{H}", fbSize, StringComparison.Ordinal);
-                        proc = Process.Start(psi)
-                               ?? throw new InvalidOperationException("Failed to start ffmpeg");
-                        _ = DrainAsync(proc.StandardError);
-                    }
-
-                    WriteRawFrame(proc.StandardInput.BaseStream, pixels, w, h);
-
                     if (keyFrameIndices.Contains(index))
                     {
                         var keyPath = Path.Combine(keyDir, $"key-{index:D4}.png");
-                        File.WriteAllBytes(keyPath, Novolis.Silk.Capture.RgbaPng.Encode(pixels, w, h));
+                        File.WriteAllBytes(keyPath, RgbaPng.Encode(pixels, w, h));
                         keyPaths[index] = keyPath;
                     }
 
                     if ((index + 1) % 48 == 0 || index + 1 == totalFrames)
-                        Console.WriteLine($"  streamed {index + 1}/{totalFrames}");
+                        Console.WriteLine($"  encoded {index + 1}/{totalFrames}");
 
                     return true;
                 },
                 warmFramesPerStep: 0);
 
-            if (proc is null)
-                throw new InvalidOperationException("No frames captured.");
-
-            proc.StandardInput.Close();
-            if (!proc.WaitForExit(10 * 60 * 1000))
-            {
-                try { proc.Kill(entireProcessTree: true); } catch { /* ignore */ }
-                throw new InvalidOperationException("ffmpeg encode timed out.");
-            }
-
-            if (proc.ExitCode != 0 || !File.Exists(mp4) || new FileInfo(mp4).Length == 0)
-                throw new InvalidOperationException($"ffmpeg exit {proc.ExitCode} — MP4 missing/empty.");
-
-            outputs.Add(mp4);
-            Console.WriteLine($"Wrote construction orbit MP4: {mp4} ({written} frames, fb={fbSize})");
+            outputs.Add(result.OutputPath);
+            Console.WriteLine(
+                $"Wrote construction orbit MP4: {result.OutputPath} ({result.FrameCount} frames, exact {result.Width}x{result.Height})");
 
             PublishKey(keyPaths, 0, outDir, "key-01-structure.png", outputs);
             PublishKey(keyPaths, FramesPerStage, outDir, "key-02-passage.png", outputs);
@@ -181,11 +141,12 @@ internal static class HeadlessConstructionOrbitExporter
                 JsonSerializer.Serialize(new
                 {
                     generatedUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
-                    width = Width,
-                    height = Height,
-                    fps = Fps,
-                    frameCount = written,
-                    framebuffer = fbSize,
+                    width = result.Width,
+                    height = result.Height,
+                    fps = result.Fps,
+                    frameCount = result.FrameCount,
+                    framebuffer = $"{result.Width}x{result.Height}",
+                    encoder = "Novolis.Silk.Capture.RgbaVideoEncoder",
                     streamed = true,
                     framesOnDisk = false,
                     oml = "edge-guide-only",
@@ -204,7 +165,6 @@ internal static class HeadlessConstructionOrbitExporter
         }
         finally
         {
-            try { proc?.Dispose(); } catch { /* ignore */ }
             try
             {
                 if (Directory.Exists(keyDir))
@@ -235,20 +195,6 @@ internal static class HeadlessConstructionOrbitExporter
         outputs.Add(dest);
     }
 
-    private static void WriteRawFrame(Stream stdin, Rgba32[] pixels, int w, int h)
-    {
-        var expected = checked(w * h);
-        if (pixels.Length < expected)
-            throw new InvalidOperationException($"RGBA length {pixels.Length} < {expected}");
-        stdin.Write(MemoryMarshal.AsBytes(pixels.AsSpan(0, expected)));
-    }
-
-    private static async Task DrainAsync(StreamReader reader)
-    {
-        try { await reader.ReadToEndAsync().ConfigureAwait(false); }
-        catch { /* ignore */ }
-    }
-
     private static void ApplyLazyOrbit(CalypsoRenderer renderer, float t)
     {
         var yaw = 0.55f + t * (MathF.PI * 2.15f);
@@ -260,7 +206,6 @@ internal static class HeadlessConstructionOrbitExporter
     private sealed record LayerStage(
         string Id, string Title, CalypsoVisualLayers Layers, CalypsoWireMeshMode Wire);
 
-    /// <summary>Full ship every stage — only which draw groups are on. Never HullShell.</summary>
     private static List<LayerStage> BuildLayerStages() =>
     [
         new("structure", "Structure · frames / BH / girders",
@@ -278,30 +223,4 @@ internal static class HeadlessConstructionOrbitExporter
             | CalypsoVisualLayers.SpaceFinish,
             CalypsoWireMeshMode.CutawayPartial),
     ];
-
-    private static string? FindFfmpeg()
-    {
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = OperatingSystem.IsWindows() ? "where" : "which",
-                Arguments = "ffmpeg",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
-            using var p = Process.Start(psi);
-            if (p is null)
-                return null;
-            var line = p.StandardOutput.ReadLine();
-            p.WaitForExit(5000);
-            return string.IsNullOrWhiteSpace(line) ? null : line.Trim().Trim('"');
-        }
-        catch
-        {
-            return null;
-        }
-    }
 }

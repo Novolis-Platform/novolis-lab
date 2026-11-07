@@ -13,8 +13,8 @@ internal static class HeadlessStructuralBayExporter
     public static IReadOnlyList<string> Export(
         CalypsoSession session,
         CalypsoRenderer renderer,
-        int width = 3840,
-        int height = 2160)
+        int width = Novolis.Silk.Capture.SilkCaptureSize.UltraWidth,
+        int height = Novolis.Silk.Capture.SilkCaptureSize.UltraHeight)
     {
         var outDir = CalypsoProjectPaths.StructuralBayDirectory;
         Directory.CreateDirectory(outDir);
