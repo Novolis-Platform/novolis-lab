@@ -24,21 +24,28 @@ internal sealed class ArtilleryApp : IDisposable
     private static readonly Color SunColor = Color.FromArgb(120, 255, 186, 110);
 
     private readonly TerrainWorld _terrain = new();
-    private readonly GunModel _gun;
-    private readonly DeliverySampler _delivery;
+    private GunModel _gun = null!;
+    private DeliverySampler _delivery = null!;
     private readonly List<BallisticTrajectoryRunner> _rounds = [];
-    private BallisticTrajectoryRunner _shot;
-    private readonly ProjectileBallisticSimulation _ballistics;
+    private BallisticTrajectoryRunner _shot = null!;
+    private ProjectileBallisticSimulation _ballistics = null!;
     private readonly ArtilleryCameras _camera = new();
     private readonly AtmosphereModel _atmosphere = AtmosphereModel.CreateRegionalDefault();
     private readonly SilkWireBatch _wires = new();
     private readonly FireControlUi _ui = new();
+    private readonly ShellOverlay _shell = new();
     private readonly ProfileOverlay _profileOverlay = new();
     private readonly FrameProfiler _liveProfiler = new(warmupFrames: 5);
+    private readonly bool _skipShell;
+    private IGameLevel _level;
 
     private readonly SmoothedFps _fps = new();
     private readonly CrewDrill _crew = new();
-    private KristiansandDefenseMission? _mission;
+    private IDefenseMission? _mission;
+    private ShellPhase _phase = ShellPhase.Splash;
+    private string _loadingStatus = "Loading map…";
+    private bool _worldReady;
+    private ShellPhase _phaseBeforeLegal = ShellPhase.Paused;
     private IReadOnlyList<Vector3> _orderedPreview = [];
     private IReadOnlyList<Vector3> _tubePreview = [];
     private readonly List<IReadOnlyList<Vector3>> _dispersionPreviews = [];
@@ -58,15 +65,44 @@ internal sealed class ArtilleryApp : IDisposable
     private string _profileFlash = "";
     private float _profileFlashAge = -1f;
 
-    public ArtilleryApp(IArtilleryPieceSpec? piece = null)
+    public ArtilleryApp(IGameLevel? level = null, IArtilleryPieceSpec? piece = null, bool skipShell = false)
     {
-        _gun = new GunModel(piece);
-        _delivery = new DeliverySampler(_gun.Spec.Errors);
-        _ballistics = new ProjectileBallisticSimulation(_gun.Spec.Projectile, DragCoefficientLaw.BoatTail);
+        _skipShell = skipShell;
+        _level = level ?? GameLevelCatalog.Default;
+        if (!_level.IsPlayable)
+            _level = GameLevelCatalog.Default;
+        BindPiece(piece ?? _level.ResolvePiece());
         _shot = CreateRound();
         _rounds.Add(_shot);
         _agent = new ArtilleryLiveHost(this);
+        _phase = skipShell ? ShellPhase.Loading : ShellPhase.Splash;
     }
+
+    private void BindPiece(IArtilleryPieceSpec piece)
+    {
+        _gun = new GunModel(piece);
+        _delivery = new DeliverySampler(piece.Errors);
+        _ballistics = new ProjectileBallisticSimulation(piece.Projectile, DragCoefficientLaw.BoatTail);
+    }
+
+    private void SelectLevel(int delta)
+    {
+        var next = GameLevelCatalog.NextPlayable(_level, delta);
+        if (string.Equals(next.Id, _level.Id, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _level = next;
+        BindPiece(_level.ResolvePiece());
+        foreach (var round in _rounds)
+            round.Reset();
+        _impactHandled.Clear();
+        if (_rounds.Count > 0)
+            _shot = _rounds[0];
+    }
+
+    internal bool IsPaused => _phase is ShellPhase.Paused or ShellPhase.Legal;
+    internal ShellPhase Phase => _phase;
+    internal IGameLevel Level => _level;
 
     private BallisticTrajectoryRunner CreateRound() =>
         new(new BallisticTrajectoryRunnerOptions
@@ -94,7 +130,7 @@ internal sealed class ArtilleryApp : IDisposable
     internal AtmosphereModel Atmosphere => _atmosphere;
     internal CameraMode CameraMode => CameraMode.Orbit;
     internal string PaceText => "realtime";
-    internal KristiansandDefenseMission? Mission => _mission;
+    internal IDefenseMission? Mission => _mission;
     internal float PredictedRangeMeters => HorizontalRange(_terrain.GunBaseline, PredictedImpact());
     internal CrewDrill Crew => _crew;
 
@@ -202,36 +238,43 @@ internal sealed class ArtilleryApp : IDisposable
 
     public void Initialize(SilkFrame frame)
     {
-        _terrain.Rebuild();
-        _mission = new KristiansandDefenseMission(_terrain);
-        _terrain.PlaceGun(_mission.GunX, _mission.GunZ);
-        _gun.LayCenter(_mission.TrailBearingDegrees);
-        _gun.SetCharge(_mission.OpeningChargeIndex);
-        _gun.SetElevation(_mission.OpeningElevationDegrees);
-        _gun.NudgeAzimuth(_mission.OpeningAzimuthDegrees - _mission.TrailBearingDegrees);
-        _crew.SeatOpening(_gun);
-        foreach (var round in _rounds)
-            round.Reset();
-        _impactHandled.Clear();
-        _shot = _rounds[0];
-        _layHoldSeconds = 0f;
-        _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
-        RebuildAimPreview();
-        var def = AgentSurfaceDefinition.From<IArtillerySurface>();
-        _surface = AgentSurface.AttachAll(
-            _agent,
-            def,
-            new AgentAttachOptions { EnableStdio = false, EnableMcpStdio = false });
-        if (_surface?.Http is { } http)
-            Console.WriteLine($"Agent surface ready: {http.BaseUrl}  (MCP tools at /agent/mcp/tools)");
-        else
-            Console.WriteLine($"Agent surface attach incomplete — expected HTTP :{def.DefaultHttpPort}");
+        _shell.EnsureAssetsLoaded();
+        frame.SetTitle(ProductIdentity.WindowTitle);
+        if (_skipShell)
+            LoadWorldAndAttachAgent();
         _ = frame;
     }
 
     public void Update(SilkFrame frame)
     {
+        HandleShellKeys(frame);
         HandleProfileHotkeys(frame);
+
+        if (_phase is ShellPhase.Splash
+            || (_phase is ShellPhase.Legal && !_worldReady))
+        {
+            frame.Clear(Rgba32.Black);
+            var status = _phase is ShellPhase.Splash
+                ? ProductLegal.SplashControls
+                : ProductLegal.LegalCloseHint;
+            _shell.Draw(frame, _phase, status, _level);
+            return;
+        }
+
+        if (_phase is ShellPhase.Loading)
+        {
+            frame.Clear(Rgba32.Black);
+            _shell.Draw(frame, _phase, _loadingStatus, _level);
+            if (!_worldReady)
+            {
+                _loadingStatus = $"Building {_level.DisplayName}…";
+                LoadWorldAndAttachAgent();
+                _loadingStatus = "Ready";
+                _phase = ShellPhase.Playing;
+            }
+
+            return;
+        }
 
         var active = ActiveProfiler();
         active?.BeginFrame();
@@ -261,12 +304,121 @@ internal sealed class ArtilleryApp : IDisposable
             Render(frame);
         }
 
+        if (_phase is ShellPhase.Paused or ShellPhase.Legal)
+            _shell.Draw(frame, _phase, "", _level);
+
         if (_profileFlashAge >= 0f)
             _profileFlashAge += frame.DeltaSeconds;
     }
 
+    private void LoadWorldAndAttachAgent()
+    {
+        if (_worldReady)
+            return;
+
+        _loadingStatus = $"Building {_level.DisplayName}…";
+        _level.RebuildMap(_terrain);
+        _loadingStatus = $"Seating {_gun.Spec.ShortName} battery…";
+        _mission = _level.StartMission(_terrain);
+        _terrain.PlaceGun(_mission.GunX, _mission.GunZ);
+        _gun.LayCenter(_mission.TrailBearingDegrees);
+        _gun.SetCharge(_mission.OpeningChargeIndex);
+        _gun.SetElevation(_mission.OpeningElevationDegrees);
+        _gun.NudgeAzimuth(_mission.OpeningAzimuthDegrees - _mission.TrailBearingDegrees);
+        _crew.SeatOpening(_gun);
+        foreach (var round in _rounds)
+            round.Reset();
+        _impactHandled.Clear();
+        _shot = _rounds[0];
+        _layHoldSeconds = 0f;
+        _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+        RebuildAimPreview();
+        var def = AgentSurfaceDefinition.From<IArtillerySurface>();
+        _surface = AgentSurface.AttachAll(
+            _agent,
+            def,
+            new AgentAttachOptions { EnableStdio = false, EnableMcpStdio = false });
+        if (_surface?.Http is { } http)
+            Console.WriteLine($"Agent surface ready: {http.BaseUrl}  (MCP tools at /agent/mcp/tools)");
+        else
+            Console.WriteLine($"Agent surface attach incomplete — expected HTTP :{def.DefaultHttpPort}");
+        Console.WriteLine(ProductLegal.Tagline);
+        _worldReady = true;
+    }
+
+    private void HandleShellKeys(SilkFrame frame)
+    {
+        if (_phase is ShellPhase.Splash)
+        {
+            if (frame.IsKeyPressed(Key.Left) || frame.IsKeyPressed(Key.A))
+            {
+                SelectLevel(-1);
+                return;
+            }
+
+            if (frame.IsKeyPressed(Key.Right) || frame.IsKeyPressed(Key.D))
+            {
+                SelectLevel(+1);
+                return;
+            }
+
+            if (frame.IsKeyPressed(Key.L))
+            {
+                _phaseBeforeLegal = ShellPhase.Splash;
+                _phase = ShellPhase.Legal;
+                return;
+            }
+
+            if (frame.IsKeyPressed(Key.Enter) || frame.IsKeyPressed(Key.Space))
+                _phase = ShellPhase.Loading;
+
+            return;
+        }
+
+        if (_phase is ShellPhase.Legal && !_worldReady)
+        {
+            if (frame.IsKeyPressed(Key.Escape)
+                || frame.IsKeyPressed(Key.L)
+                || frame.IsKeyPressed(Key.Enter))
+                _phase = ShellPhase.Splash;
+            return;
+        }
+
+        if (!_worldReady)
+            return;
+
+        if (frame.IsKeyPressed(Key.L))
+        {
+            if (_phase is ShellPhase.Legal)
+                _phase = _phaseBeforeLegal;
+            else
+            {
+                _phaseBeforeLegal = _phase;
+                _phase = ShellPhase.Legal;
+            }
+
+            return;
+        }
+
+        if (frame.IsKeyPressed(Key.Escape) || frame.IsKeyPressed(Key.P))
+        {
+            _phase = _phase switch
+            {
+                ShellPhase.Playing => ShellPhase.Paused,
+                ShellPhase.Paused => ShellPhase.Playing,
+                ShellPhase.Legal => _phaseBeforeLegal,
+                _ => _phase,
+            };
+            return;
+        }
+
+        if (_phase is ShellPhase.Paused && frame.IsKeyPressed(Key.Enter))
+            _phase = ShellPhase.Playing;
+    }
+
     public void Dispose()
     {
+        _shell.Dispose();
         _profileOverlay.Dispose();
         _ui.Dispose();
         _terrain.Dispose();
@@ -410,6 +562,16 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void Simulate(SilkFrame frame)
     {
+        if (!_worldReady)
+            return;
+
+        // Paused / legal: freeze battle clock, met, crew, and shells; keep camera readable.
+        if (IsPaused)
+        {
+            HandleInput(frame, battleSeconds: 0f);
+            return;
+        }
+
         // Realtime battle clock — aim/crew/shell stay correct even when FPS dips.
         var battleSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
         // Coastal met feeds the same BallisticEnvironment used by previews and live rounds.
@@ -543,7 +705,9 @@ internal sealed class ArtilleryApp : IDisposable
                 predictedRange,
                 tof,
                 predicted,
-                _mission?.HudLine(),
+                _mission is null
+                    ? $"{_level.DisplayName} — {_level.SiteName}"
+                    : $"{_level.DisplayName.ToUpperInvariant()}  |  {_mission.HudLine()}",
                 FireBlockReason(),
                 SolutionUnsafe,
                 LaunchDetonation);
@@ -656,6 +820,9 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void HandleInput(SilkFrame frame, float battleSeconds)
     {
+        if (IsPaused)
+            return;
+
         var actions = _ui.HandleMouse(frame);
         if (actions.ChargeIndex is { } charge)
         {
@@ -941,7 +1108,9 @@ internal sealed class ArtilleryApp : IDisposable
         var column = 40f + age * 30f;
         wires.Line(_burstAt, _burstAt + Vector3.UnitY * column, color);
         wires.WireSphere(_burstAt + Vector3.UnitY * (10f + age * 4f), 18f + age * 6f, color, segments: 12);
-        wires.Ring(_burstAt, KristiansandDefenseMission.CaughtMeters, color);
-        wires.Ring(_burstAt, KristiansandDefenseMission.PinnedMeters, pale);
+        var caught = _mission?.CaughtMeters ?? _gun.Spec.Warhead.CaughtMeters;
+        var pinned = _mission?.PinnedMeters ?? _gun.Spec.Warhead.PinnedMeters;
+        wires.Ring(_burstAt, caught, color);
+        wires.Ring(_burstAt, pinned, pale);
     }
 }

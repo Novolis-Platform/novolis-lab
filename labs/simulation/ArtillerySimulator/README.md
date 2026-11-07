@@ -1,10 +1,16 @@
-# ArtillerySimulator
+# K9 DOG — Howitzer defence simulation game
 
-Silk-only Kristiansand artillery lab (single executable). Vertical-slice layout: **Host** composes **Features** over the **Kristiansand** geographic kernel.
+Educational Silk artillery sandbox (single executable). **K9 DOG** is a cheeky lab name for a fictional 155 mm L52-class piece — not a manufacturer product, not an official training system.
+
+Levels are pluggable (`GameLevelCatalog` / `IGameLevel`). Shipped: **Defense of Kristiansand** (`kristiansand.defense`).
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -- --list-levels
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -- --level kristiansand.defense
 ```
+
+Splash → ←/→ pick level → load → play. **Esc / P** pause, **L** licenses. Full text: `assets/NOTICE.txt`.
 
 If MSBuild dies with `MSB4166` (child node exited prematurely), clear the sticky servers and retry:
 
@@ -13,35 +19,36 @@ dotnet build-server shutdown
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true
 ```
 
-Headless timing:
+Headless agent (skips splash):
 
 ```powershell
-dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --profile 180
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --headless
 ```
+
+## Disclaimer (short)
+
+Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force, or government. Ballistic PE / MV / met / warhead radii are open approximations — not firing tables. Kristiansand geography is a fictional defense-exercise map. See `assets/NOTICE.txt`.
 
 ## Layout
 
 | Folder | Role |
 | --- | --- |
 | `Host/` | Composition root (`ArtilleryApp`), frame profiler |
-| `Features/Battery/` | Howitzer, crew drill, charge units |
-| `Features/Defense/` | Mission loop, columns, opening fire plan, draw, reports |
-| `Features/Presentation/` | Camera, HUD, silk wires / NATO symbols |
+| `Features/Battery/` | Howitzer, crew drill, expandable mil-tech specs |
+| `Features/Product/` | Title, legal copy, shell phases |
+| `Features/Levels/` | `IGameLevel`, catalog, Kristiansand level |
+| `Features/Defense/` | Mission loop, columns, opening fire plan |
+| `Features/Presentation/` | Camera, HUD, splash/pause overlays |
 | `Features/Agent/` | Live agent surface |
-| `Kristiansand/Geodesy/` | Georef, fort, NDH elevation sampler |
-| `Kristiansand/Terrain/` | Heightfield world, land/sea, atmosphere |
-| `Kristiansand/Roads/` | Primary road graph + PDF road draping |
-| `Kristiansand/Cartography/` | Optional OSM leftovers (agent map entities) |
+| `Kristiansand/` | Geodesy, terrain, roads, atmosphere |
+| `assets/` | Splash, icons, NOTICE.txt |
 | `map/` | Norgeskart + NDH layer assets |
-| `scripts/` | Map rebuild file-based apps (`MapPipeline.Support`) |
+| `scripts/` | Map rebuild + icon bake |
 
-Shared georef math: `Novolis.Math.Geometry.MapRasterBasis`. Sea flood-fill for scripts: `scripts/MapPipeline.Support`. Do not use `Novolis.Mapping` for geography (that package is DTO mapping).
-
-## Map rebuild
+## Icons
 
 ```powershell
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\build-kristiansand-map.cs -p:NovolisUseProjectReferences=true
-dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\build-elevation-water-layers.cs
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\bake-k9-dog-icons.cs
 ```
 
-Controls: right-drag orbit, middle-drag or Shift+left pan, wheel zoom, `G` gun, `R` fort snap, `V`/`O` map overview, `M` Kommunekart harbor view, `C` free/follow, `Q`/`E` traverse, `W`/`S` elevate (follow cam), Space fire, `1`–`4` charge, `,`/`.` pace.
+Controls: right-drag orbit, middle-drag or Shift+left pan, wheel zoom, `WASD` lay, Space fire, `1`–`4` charge, `F` shell cam, `Esc`/`P` pause, `L` licenses.

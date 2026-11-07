@@ -2,9 +2,14 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>ArtillerySimulator</RootNamespace>
+    <AssemblyTitle>K9 DOG</AssemblyTitle>
+    <Product>K9 DOG — Howitzer defence simulation game</Product>
+    <Description>Educational artillery sandbox. Fiction. Not affiliated with any manufacturer or armed force.</Description>
+    <ApplicationIcon>assets\k9-dog-icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <None Include="map\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="map" />
+    <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="assets" />
     <!-- File-based map pipeline apps; not part of the game compile. -->
     <Compile Remove="scripts\**\*" />
     <None Include="scripts\**\*" />

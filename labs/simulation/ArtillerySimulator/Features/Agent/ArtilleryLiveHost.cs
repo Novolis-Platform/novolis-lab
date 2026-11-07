@@ -65,10 +65,10 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 Sequence = ++_sequence,
                 ProtocolVersion = "1.0",
                 AppId = "artillery-simulator",
-                AppTitle = "Artillery Simulator",
+                AppTitle = ProductIdentity.Title,
                 ProcessId = Environment.ProcessId,
                 SurfaceId = "artillery",
-                Description = "The Defense of Kristiansand. Protect downtown defenders from staggered columns. Order the lay and fire when the crew has the breech closed.",
+                Description = $"{ProductIdentity.Title}: {ProductIdentity.Subtitle}. Level: {_game.Level.DisplayName}. Educational sandbox — {ProductLegal.Tagline}",
                 HttpPort = 18770,
                 TcpPort = 18771,
                 Capabilities =
@@ -181,6 +181,9 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
 
         if (action is not { Enabled: true })
             return Reject(command, "unavailable", action?.DisabledReason ?? "Unknown action.");
+
+        if (_game.IsPaused && command.ActionId is "artillery.aim" or "artillery.charge" or "artillery.fire")
+            return Reject(command, "paused", "Battle clock paused — resume in the window (Esc) before commanding the gun.");
 
         switch (command.ActionId)
         {
@@ -346,6 +349,9 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             ["rh"] = (_game.Atmosphere.RelativeHumidity * 100.0).ToString("F0", CultureInfo.InvariantCulture),
             ["qnh"] = (_game.Atmosphere.ReferencePressurePa / 100.0).ToString("F0", CultureInfo.InvariantCulture),
             ["metAge"] = _game.Atmosphere.BattleAgeSeconds.ToString("F0", CultureInfo.InvariantCulture),
+            ["level"] = _game.Level.Id,
+            ["levelName"] = _game.Level.DisplayName,
+            ["levelSite"] = _game.Level.SiteName,
             ["piece"] = gun.Spec.Id,
             ["pieceName"] = gun.Spec.ShortName,
             ["peElevMils"] = gun.Spec.Errors.ElevationPeMils.ToString("F2", CultureInfo.InvariantCulture),
@@ -388,7 +394,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             Sequence = ++_sequence,
             HubId = GunResource,
             HubName = "155 mm gun",
-            DocumentName = "The Defense of Kristiansand",
+            DocumentName = $"{ProductIdentity.Title} — {ProductIdentity.Subtitle}",
             SeedHash = "42",
             PauseReason = shot.Phase.ToString(),
             StateRevision = _revision,

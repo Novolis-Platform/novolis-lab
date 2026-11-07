@@ -12,13 +12,13 @@ internal static class ArtilleryPieceCatalog
 
     static ArtilleryPieceCatalog()
     {
-        Register(CreateK9ThunderEducational());
+        Register(CreateK9DogEducational());
     }
 
-    /// <summary>Default Kristiansand battery piece.</summary>
-    public static IArtilleryPieceSpec Default => Require("k9.thunder.educational");
+    /// <summary>Default Kristiansand lab piece (K9 DOG — cheeky educational name).</summary>
+    public static IArtilleryPieceSpec Default => Require(ProductIdentity.PieceSpecId);
 
-    public static IArtilleryPieceSpec K9ThunderEducational => Default;
+    public static IArtilleryPieceSpec K9DogEducational => Default;
 
     public static IArtilleryPieceSpec Require(string id) =>
         ById.TryGetValue(id, out var spec)
@@ -38,11 +38,11 @@ internal static class ArtilleryPieceCatalog
     }
 
     /// <summary>
-    /// K9 Thunder-class educational 155 mm / L52 SP howitzer.
-    /// Charge MV and PE budget are open-source approximations for the Kristiansand lab —
-    /// expand by registering another id (e.g. trailed M777 educational) rather than editing callers.
+    /// K9 DOG — cheeky educational 155 mm / L52 SP howitzer sandbox piece.
+    /// Not a manufacturer product. Charge MV and PE are open approximations for the lab —
+    /// expand by registering another id rather than editing callers.
     /// </summary>
-    public static IArtilleryPieceSpec CreateK9ThunderEducational()
+    public static IArtilleryPieceSpec CreateK9DogEducational()
     {
         var caliber = 0.155f;
         var projectile = new ProjectileProfile(
@@ -70,9 +70,9 @@ internal static class ArtilleryPieceCatalog
         ];
 
         return new ArtilleryPieceSpec(
-            id: "k9.thunder.educational",
-            displayName: "K9 Thunder (educational 155 mm L52)",
-            shortName: "K9",
+            id: ProductIdentity.PieceSpecId,
+            displayName: ProductIdentity.PieceDisplayName,
+            shortName: ProductIdentity.ShortPieceName,
             caliberMeters: caliber,
             barrelLengthMeters: caliber * 52f,
             muzzleRadiusMeters: caliber * 0.5f,

@@ -6,14 +6,14 @@ namespace ArtillerySimulator;
 
 /// <summary>
 /// Customer brief — Defense of Kristiansand: OPFOR advances on the city; garrison at
-/// Kvadraturen cannot hold alone; one K9 on the Odderøya heritage site must break the columns.
+/// Kvadraturen cannot hold alone; one K9 DOG sandbox piece on Odderøya must break the columns.
 /// Downtown (~1.2 km) is inside HE min range; the battery engages approaches on the primary-road
 /// spawn ring (1.25× HE min). Burst distances are a game rule, not a weapon table.
 /// </summary>
-internal sealed class KristiansandDefenseMission
+internal sealed class KristiansandDefenseMission : IDefenseMission
 {
-    public static float CaughtMeters => ArtilleryPieceCatalog.Default.Warhead.CaughtMeters;
-    public static float PinnedMeters => ArtilleryPieceCatalog.Default.Warhead.PinnedMeters;
+    public float CaughtMeters => ArtilleryPieceCatalog.Default.Warhead.CaughtMeters;
+    public float PinnedMeters => ArtilleryPieceCatalog.Default.Warhead.PinnedMeters;
     public const float ObjectiveRadiusMeters = 180f;
     /// <summary>
     /// Wheeled column on primary roads (~45 km/h). Soft margin keeps spawn/place inside the cutout.

@@ -1,0 +1,35 @@
+K9 DOG — Howitzer defence simulation game
+=========================================
+
+Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force, or government.
+
+DISCLAIMER
+----------
+"K9 DOG" is a cheeky lab name for a fictional educational 155 mm L52-class howitzer.
+It is not a manufacturer product and not an official training or certification system.
+
+Ballistic probable-error budgets, muzzle velocities, coastal met clocks, and warhead
+effect radii are open educational approximations for gameplay and agent labs — not
+firing tables, not METAR products, and not classified or controlled technical data.
+
+LEVELS
+------
+Maps/scenarios are pluggable (GameLevelCatalog / IGameLevel).
+Shipped level: Defense of Kristiansand (kristiansand.defense) on Odderøya.
+Scenarios are fictional defense exercises, not targeting instruction.
+
+MAP / GEO DATA
+--------------
+Height and road layers may derive from public Kartverket (e.g. NHM DTM) and NVDB
+vegnett extracts. Follow those providers' license and attribution requirements when
+redistributing map binaries or rebuild scripts.
+
+THIRD-PARTY SOFTWARE
+--------------------
+This product links .NET, Silk.NET, SkiaSharp, and Novolis platform libraries under
+their respective licenses (typically MIT, Apache-2.0, or Novolis package terms).
+
+ART ASSETS
+----------
+Splash and icon art under assets/ are Novolis lab assets for K9 DOG.
+They are not official marks of any vehicle manufacturer.

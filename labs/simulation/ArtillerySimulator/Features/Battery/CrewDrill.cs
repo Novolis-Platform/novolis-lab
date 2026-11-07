@@ -3,7 +3,7 @@ using System.Globalization;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Educational K9 autoloader + powered turret drill on the battle clock.
+/// Educational K9 DOG autoloader + powered turret drill on the battle clock.
 /// Autoloader rams while the turret lays; a repeat at the same data is mostly the load cycle.
 /// </summary>
 internal sealed class CrewDrill

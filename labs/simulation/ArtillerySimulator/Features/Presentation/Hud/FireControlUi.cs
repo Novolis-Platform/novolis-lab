@@ -192,7 +192,7 @@ internal sealed class FireControlUi : IDisposable
 
         frame.SetTitle(string.Create(
             CultureInfo.InvariantCulture,
-            $"Kristiansand {gun.Spec.ShortName}  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
+            $"{ProductIdentity.Title}  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
 
         frame.ClearDepth();
         frame.BlitOverlay(_pixels, _width, _height);
@@ -298,7 +298,7 @@ internal sealed class FireControlUi : IDisposable
             20f * _scale,
             Text);
 
-        var mission = string.IsNullOrEmpty(defenseLine) ? "DEFENSE OF KRISTIANSAND — ODDEROYA K9" : defenseLine;
+        var mission = string.IsNullOrEmpty(defenseLine) ? ProductIdentity.Subtitle.ToUpperInvariant() : defenseLine;
         DrawText(canvas, Truncate(mission, 72), 20 * _scale, 56 * _scale, 15f * _scale, Accent);
     }
 
@@ -493,7 +493,7 @@ internal sealed class FireControlUi : IDisposable
 
     private void DrawHelp(SKCanvas canvas)
     {
-        var help = "WASD LAY  SPACE FIRE  F SHELL CAM (IN FLIGHT)  F1 PROFILE  CTRL+C DUMP";
+        var help = "WASD LAY  SPACE FIRE  ESC/P PAUSE  L LICENSE  F SHELL CAM  F1 PROFILE";
         var size = 13f * _scale;
         using var font = new SKFont(_typeface, size);
         var width = font.MeasureText(help);
