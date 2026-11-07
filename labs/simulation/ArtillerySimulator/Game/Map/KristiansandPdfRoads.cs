@@ -1,5 +1,7 @@
 using System.Drawing;
 using System.Numerics;
+using Novolis.Math.Geometry;
+using Novolis.Physics.Abstractions;
 using SkiaSharp;
 
 namespace ArtillerySimulator.Game;
@@ -20,8 +22,28 @@ internal static class KristiansandPdfRoads
     private static RoadStroke[]? _strokes;
     private static bool _loadAttempted;
 
+    /// <summary>Build draped road wires once after the heightfield is ready (not per frame).</summary>
+    public static WorldLineVertex[] Build(IHeightSampler heights)
+    {
+        EnsureLoaded();
+        if (_strokes is null || _strokes.Length == 0)
+            return [];
+
+        var batch = new SilkWireBatch();
+        var east = KristiansandHeightSampler.EastMeters;
+        var north = KristiansandHeightSampler.NorthMeters;
+        foreach (var stroke in _strokes)
+        {
+            var color = stroke.Primary ? PrimaryColor : SecondaryColor;
+            DrapePolyline(batch, heights, east, north, stroke.Points, color, stroke.Primary ? PrimaryWidthMeters : 0f);
+        }
+
+        return batch.AsSpan().ToArray();
+    }
+
     public static void Draw(SilkWireBatch wires, TerrainWorld terrain)
     {
+        // Prefer TerrainWorld's cached GPU mesh; kept for table / debug overlays.
         EnsureLoaded();
         if (_strokes is null || _strokes.Length == 0)
             return;
@@ -29,14 +51,40 @@ internal static class KristiansandPdfRoads
         foreach (var stroke in _strokes)
         {
             var color = stroke.Primary ? PrimaryColor : SecondaryColor;
-            DrapePolyline(wires, terrain, stroke.Points, color, stroke.Primary ? PrimaryWidthMeters : 0f);
+            DrapePolyline(
+                wires,
+                new HeightAdapter(terrain),
+                terrain.EastMeters,
+                terrain.NorthMeters,
+                stroke.Points,
+                color,
+                stroke.Primary ? PrimaryWidthMeters : 0f);
         }
+    }
+
+    /// <summary>Primary (Norgeskart red) road segments as world XZ pairs — for column routing.</summary>
+    public static IReadOnlyList<(Vector2 A, Vector2 B)> PrimarySegments()
+    {
+        EnsureLoaded();
+        if (_strokes is null || _strokes.Length == 0)
+            return [];
+
+        var list = new List<(Vector2, Vector2)>(_strokes.Length);
+        foreach (var stroke in _strokes)
+        {
+            if (!stroke.Primary || stroke.Points.Length < 2)
+                continue;
+            list.Add((stroke.Points[0], stroke.Points[1]));
+        }
+
+        return list;
     }
 
     public static void Reset()
     {
         _strokes = null;
         _loadAttempted = false;
+        PrimaryRoadNetwork.Reset();
     }
 
     private static void EnsureLoaded()
@@ -159,7 +207,9 @@ internal static class KristiansandPdfRoads
 
     private static void DrapePolyline(
         SilkWireBatch wires,
-        TerrainWorld terrain,
+        IHeightSampler heights,
+        float east,
+        float north,
         Vector2[] points,
         Color color,
         float widthMeters)
@@ -191,7 +241,7 @@ internal static class KristiansandPdfRoads
                 var t = s * inv;
                 var x = a2.X + dx * t;
                 var z = a2.Y + dz * t;
-                var p = Place(terrain, x, z);
+                var p = Place(heights, east, north, x, z);
                 if (prev is { } p0)
                     wires.Line(p0, p, color);
 
@@ -200,8 +250,8 @@ internal static class KristiansandPdfRoads
                     var l = p + perp * half;
                     var r = p - perp * half;
                     // Keep sides on terrain too.
-                    l = Place(terrain, l.X, l.Z);
-                    r = Place(terrain, r.X, r.Z);
+                    l = Place(heights, east, north, l.X, l.Z);
+                    r = Place(heights, east, north, r.X, r.Z);
                     if (prevL is { } pl)
                         wires.Line(pl, l, color);
                     if (prevR is { } pr)
@@ -215,11 +265,11 @@ internal static class KristiansandPdfRoads
         }
     }
 
-    private static Vector3 Place(TerrainWorld terrain, float x, float z)
+    private static Vector3 Place(IHeightSampler heights, float east, float north, float x, float z)
     {
-        x = Math.Clamp(x, 0f, terrain.EastMeters);
-        z = Math.Clamp(z, 0f, terrain.NorthMeters);
-        return new Vector3(x, terrain.Field.SampleHeight(x, z) + LiftMeters, z);
+        x = Math.Clamp(x, 0f, east);
+        z = Math.Clamp(z, 0f, north);
+        return new Vector3(x, heights.SampleHeight(x, z) + LiftMeters, z);
     }
 
     private static RoadKind Classify(SKColor c)
@@ -254,4 +304,9 @@ internal static class KristiansandPdfRoads
     }
 
     private readonly record struct RoadStroke(bool Primary, Vector2[] Points);
+
+    private sealed class HeightAdapter(TerrainWorld terrain) : IHeightSampler
+    {
+        public float SampleHeight(float x, float z) => terrain.Field.SampleHeight(x, z);
+    }
 }

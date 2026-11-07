@@ -8,8 +8,31 @@ internal static class NatoSymbolDraw
     public static void HostileMechanized(SilkWireBatch wires, Vector3 at, float yawDegrees, float size, Color stroke, bool wreck)
     {
         var scale = wreck ? 0.55f : 1f;
-        DrawDiamond(wires, at, yawDegrees, size * scale, stroke);
-        DrawTracks(wires, at, yawDegrees, size * 0.35f * scale, stroke);
+        var s = size * scale;
+        // Tall mast so hostiles read against dense terrain wires from orbit distance.
+        var mast = wreck ? s * 0.9f : s * 2.4f;
+        wires.Line(at, at + Vector3.UnitY * mast, stroke);
+        var head = at + Vector3.UnitY * (mast * 0.72f);
+        DrawDiamond(wires, head, yawDegrees, s * 1.15f, stroke);
+        DrawDiamond(wires, at + Vector3.UnitY * (s * 0.08f), yawDegrees, s * 0.85f, stroke);
+        DrawTracks(wires, at + Vector3.UnitY * (s * 0.08f), yawDegrees, s * 0.42f, stroke);
+        if (!wreck)
+        {
+            DrawRing(wires, at + Vector3.UnitY * 1.5f, s * 0.95f, stroke, segments: 16);
+            DrawRing(wires, at + Vector3.UnitY * 1.5f, s * 1.35f, stroke, segments: 16);
+        }
+    }
+
+    private static void DrawRing(SilkWireBatch wires, Vector3 center, float radius, Color color, int segments)
+    {
+        var previous = center + new Vector3(radius, 0f, 0f);
+        for (var i = 1; i <= segments; i++)
+        {
+            var angle = i / (float)segments * MathF.Tau;
+            var next = center + new Vector3(MathF.Cos(angle) * radius, 0f, MathF.Sin(angle) * radius);
+            wires.Line(previous, next, color);
+            previous = next;
+        }
     }
 
     public static void FriendlyInfantry(SilkWireBatch wires, Vector3 at, float yawDegrees, float size, Color stroke)

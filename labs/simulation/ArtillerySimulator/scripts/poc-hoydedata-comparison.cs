@@ -36,17 +36,20 @@ Console.WriteLine("(no game heightfield / elevation.bin writes)");
 
 var waterMaskPath = Path.Combine(layersDir, "water-mask.png");
 var currentElevPath = Path.Combine(layersDir, "elevation.png");
-var roadsPath = Path.Combine(layersDir, "roads.png");
+var labRoadsPath = Path.Combine(layersDir, "roads.png");
 
 using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(8) };
 
 var dtmTiff = await FetchAsync(http, "NHM_DTM_25833", west, south, east, north, fetchW, fetchH);
 var domTiff = await FetchAsync(http, "NHM_DOM_25833", west, south, east, north, fetchW, fetchH);
 var bathyTiff = await FetchAsync(http, "NHM_DTM_TOPOBATHY_25833", west, south, east, north, fetchW, fetchH);
+// LaserInnsyn "Samferdsel" = Geonorge kartdata WMS (kd_veger + jernbane + ferger), not NHM.
+var samferdselPng = await FetchSamferdselWmsAsync(http, west, south, east, north, fetchW, fetchH);
 
 await File.WriteAllBytesAsync(Path.Combine(outDir, "poc-nhm-dtm.tif"), dtmTiff);
 await File.WriteAllBytesAsync(Path.Combine(outDir, "poc-nhm-dom.tif"), domTiff);
 await File.WriteAllBytesAsync(Path.Combine(outDir, "poc-nhm-topobathy.tif"), bathyTiff);
+await File.WriteAllBytesAsync(Path.Combine(outDir, "poc-samferdsel-wms.png"), samferdselPng);
 
 var dtm = DecodeTiledFloatTiff(dtmTiff, out var dw, out var dh);
 var dom = DecodeTiledFloatTiff(domTiff, out var domW, out var domH);
@@ -58,23 +61,35 @@ using var waterSrc = SKBitmap.Decode(waterMaskPath)
     ?? throw new FileNotFoundException(waterMaskPath);
 var water = ResampleAlphaMask(waterSrc, dw, dh);
 
-WriteHeatPng(Path.Combine(outDir, "01-fetched-dtm-land.png"), dtm, water, dw, dh, waterAsBlue: true, label: "Fetched NHM_DTM (land heat + mask water)");
-WriteHeatPng(Path.Combine(outDir, "02-fetched-dom.png"), dom, water, dw, dh, waterAsBlue: true, label: "Fetched NHM_DOM (surface)");
-WriteHeatPng(Path.Combine(outDir, "03-fetched-topobathy.png"), bathy, water, dw, dh, waterAsBlue: false, label: "Fetched NHM_DTM_TOPOBATHY (incl. depth)");
-WriteDiffPng(Path.Combine(outDir, "04-dom-minus-dtm.png"), dom, dtm, water, dw, dh);
+using var samferdsel = DecodePngBytes(samferdselPng, dw, dh);
+using var labRoads = LoadScaled(labRoadsPath, dw, dh);
+
+using var dtmBare = MakeHeatBitmap(dtm, water, dw, dh, waterAsBlue: true, label: "Fetched NHM_DTM (meters only)");
+using var domBare = MakeHeatBitmap(dom, water, dw, dh, waterAsBlue: true, label: "Fetched NHM_DOM (meters only)");
+using var bathyBare = MakeHeatBitmap(bathy, water, dw, dh, waterAsBlue: false, label: "Fetched TOPOBATHY (meters only)");
+using var nDsmBare = MakeDiffBitmap(dom, dtm, water, dw, dh);
+
+SavePng(Path.Combine(outDir, "01-fetched-dtm-land.png"), dtmBare);
+SavePng(Path.Combine(outDir, "02-fetched-dom.png"), domBare);
+SavePng(Path.Combine(outDir, "03-fetched-topobathy.png"), bathyBare);
+SavePng(Path.Combine(outDir, "04-dom-minus-dtm.png"), nDsmBare);
+
+using var dtmWithRoads = WithRoads(dtmBare, samferdsel, "FETCHED DTM + LaserInnsyn Samferdsel (wms.kartdata)");
+using var domWithRoads = WithRoads(domBare, samferdsel, "FETCHED DOM + LaserInnsyn Samferdsel (wms.kartdata)");
+SavePng(Path.Combine(outDir, "01b-fetched-dtm-plus-roads.png"), dtmWithRoads);
+SavePng(Path.Combine(outDir, "02b-fetched-dom-plus-roads.png"), domWithRoads);
+SavePng(Path.Combine(outDir, "05-fetched-samferdsel-only.png"), samferdsel);
 
 using var current = LoadScaled(currentElevPath, dw, dh);
-using var roads = LoadScaled(roadsPath, dw, dh);
-using var panelCurrent = ComposeCurrent(current, water, roads, dw, dh);
+using var panelCurrent = ComposeCurrent(current, water, labRoads, dw, dh);
 SavePng(Path.Combine(outDir, "00-current-lab-stack.png"), panelCurrent);
 
-using var panelDtm = SKBitmap.Decode(Path.Combine(outDir, "01-fetched-dtm-land.png"))!;
 using var sheet = BuildComparisonSheet(
-    ("CURRENT lab", panelCurrent),
-    ("FETCHED DTM", panelDtm),
-    ("FETCHED DOM", SKBitmap.Decode(Path.Combine(outDir, "02-fetched-dom.png"))!),
-    ("TOPOBATHY", SKBitmap.Decode(Path.Combine(outDir, "03-fetched-topobathy.png"))!),
-    ("DOM − DTM", SKBitmap.Decode(Path.Combine(outDir, "04-dom-minus-dtm.png"))!));
+    ("CURRENT lab roads.png", panelCurrent),
+    ("FETCHED DTM + WMS Samferdsel", dtmWithRoads),
+    ("FETCHED DOM + WMS Samferdsel", domWithRoads),
+    ("TOPOBATHY (no roads)", bathyBare),
+    ("DOM − DTM (no roads)", nDsmBare));
 SavePng(Path.Combine(outDir, "COMPARE-sheet.png"), sheet);
 
 WriteReadme(outDir, west, south, east, north, fetchW, fetchH, dtm, water, dw, dh);
@@ -102,6 +117,44 @@ static async Task<byte[]> FetchAsync(
         throw new InvalidDataException($"{service}: not little-endian TIFF ({bytes.Length} bytes)");
     Console.WriteLine($"  {bytes.Length:N0} bytes");
     return bytes;
+}
+
+/// <summary>
+/// Same source LaserInnsyn2 uses for the "Samferdsel" checkbox:
+/// geonorge.layers → wms.kartdata sublayers kd_veger, kd_jernbane, kd_ferger.
+/// </summary>
+static async Task<byte[]> FetchSamferdselWmsAsync(
+    HttpClient http,
+    double west,
+    double south,
+    double east,
+    double north,
+    int width,
+    int height)
+{
+    // WMS 1.3.0 axis order for EPSG:4326 is lat,lon → south,west,north,east.
+    var bbox = string.Create(CultureInfo.InvariantCulture, $"{south},{west},{north},{east}");
+    var url =
+        "https://wms.geonorge.no/skwms1/wms.kartdata" +
+        "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap" +
+        "&LAYERS=kd_veger,kd_jernbane,kd_ferger&STYLES=,," +
+        $"&CRS=EPSG:4326&BBOX={bbox}&WIDTH={width}&HEIGHT={height}" +
+        "&FORMAT=image/png&TRANSPARENT=TRUE";
+    Console.WriteLine("GET LaserInnsyn Samferdsel (wms.kartdata kd_veger/jernbane/ferger)…");
+    var bytes = await http.GetByteArrayAsync(url);
+    if (bytes.Length < 8 || bytes[0] != 0x89 || bytes[1] != (byte)'P')
+        throw new InvalidDataException($"Samferdsel WMS: not PNG ({bytes.Length} bytes)");
+    Console.WriteLine($"  {bytes.Length:N0} bytes");
+    return bytes;
+}
+
+static SKBitmap DecodePngBytes(byte[] png, int expectW, int expectH)
+{
+    using var decoded = SKBitmap.Decode(png) ?? throw new InvalidDataException("Samferdsel PNG decode failed");
+    if (decoded.Width == expectW && decoded.Height == expectH)
+        return decoded.Copy();
+    return decoded.Resize(new SKImageInfo(expectW, expectH), new SKSamplingOptions(SKFilterMode.Nearest))
+        ?? throw new InvalidDataException("Samferdsel PNG resize failed");
 }
 
 static byte[] ResampleAlphaMask(SKBitmap src, int w, int h)
@@ -148,7 +201,7 @@ static SKBitmap ComposeCurrent(SKBitmap elev, byte[] water, SKBitmap roads, int 
     return bmp;
 }
 
-static void WriteHeatPng(string path, float[] grid, byte[] water, int w, int h, bool waterAsBlue, string label)
+static SKBitmap MakeHeatBitmap(float[] grid, byte[] water, int w, int h, bool waterAsBlue, string label)
 {
     float min = float.MaxValue, max = float.MinValue;
     for (var i = 0; i < grid.Length; i++)
@@ -169,7 +222,7 @@ static void WriteHeatPng(string path, float[] grid, byte[] water, int w, int h, 
     }
 
     var span = Math.Max(1f, max - min);
-    using var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
     for (var y = 0; y < h; y++)
     {
         for (var x = 0; x < w; x++)
@@ -195,12 +248,12 @@ static void WriteHeatPng(string path, float[] grid, byte[] water, int w, int h, 
 
     using (var canvas = new SKCanvas(bmp))
         DrawLabel(canvas, w, $"{label}  [{min:F0}–{max:F0} m]");
-    SavePng(path, bmp);
+    return bmp;
 }
 
-static void WriteDiffPng(string path, float[] dom, float[] dtm, byte[] water, int w, int h)
+static SKBitmap MakeDiffBitmap(float[] dom, float[] dtm, byte[] water, int w, int h)
 {
-    using var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
     for (var y = 0; y < h; y++)
     {
         for (var x = 0; x < w; x++)
@@ -221,7 +274,6 @@ static void WriteDiffPng(string path, float[] dom, float[] dtm, byte[] water, in
             }
 
             var d = Math.Clamp(a - b, 0f, 40f) / 40f;
-            // Magenta = canopy/buildings above bare ground.
             var r = (byte)Math.Clamp(40 + d * 200, 0, 255);
             var g = (byte)Math.Clamp(20 + d * 40, 0, 255);
             var bl = (byte)Math.Clamp(60 + d * 160, 0, 255);
@@ -231,7 +283,18 @@ static void WriteDiffPng(string path, float[] dom, float[] dtm, byte[] water, in
 
     using (var canvas = new SKCanvas(bmp))
         DrawLabel(canvas, w, "DOM − DTM (surface above bare ground, 0–40 m)");
-    SavePng(path, bmp);
+    return bmp;
+}
+
+/// <summary>Composite transparent road overlay (lab PDF or live LaserInnsyn WMS).</summary>
+static SKBitmap WithRoads(SKBitmap baseMap, SKBitmap roads, string label)
+{
+    var bmp = new SKBitmap(baseMap.Width, baseMap.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    using var canvas = new SKCanvas(bmp);
+    canvas.DrawBitmap(baseMap, 0, 0, new SKSamplingOptions(SKFilterMode.Nearest));
+    canvas.DrawBitmap(roads, 0, 0, new SKSamplingOptions(SKFilterMode.Nearest));
+    DrawLabel(canvas, bmp.Width, label);
+    return bmp;
 }
 
 static SKColor Heat(float t)
@@ -321,15 +384,25 @@ static void WriteReadme(
         ## Fetched DTM land stats
         samples={landN}, range={landMin:F1}–{landMax:F1} m (mask water excluded)
 
+        ## Important
+        Hoydedata NHM ImageServers are **meters only**. LaserInnsyn’s **Samferdsel**
+        checkbox is a separate Geonorge WMS (`wms.kartdata`: `kd_veger`, `kd_jernbane`,
+        `kd_ferger`) — fetched live into `poc-samferdsel-wms.png` and overlaid on DTM/DOM.
+        Panel 1 still shows the old lab `roads.png` (Norgeskart PDF) for contrast.
+
         ## Files
         | File | Meaning |
         | --- | --- |
         | `COMPARE-sheet.png` | Side-by-side panels |
-        | `00-current-lab-stack.png` | Current elevation + water-mask + roads |
-        | `01-fetched-dtm-land.png` | Live `NHM_DTM_25833` |
-        | `02-fetched-dom.png` | Live `NHM_DOM_25833` |
+        | `00-current-lab-stack.png` | Current elevation + water-mask + lab `roads.png` |
+        | `01-fetched-dtm-land.png` | Live `NHM_DTM_25833` (meters only) |
+        | `01b-fetched-dtm-plus-roads.png` | DTM + live WMS Samferdsel |
+        | `02-fetched-dom.png` | Live `NHM_DOM_25833` (meters only) |
+        | `02b-fetched-dom-plus-roads.png` | DOM + live WMS Samferdsel |
         | `03-fetched-topobathy.png` | Live `NHM_DTM_TOPOBATHY_25833` |
         | `04-dom-minus-dtm.png` | Surface above bare ground |
+        | `05-fetched-samferdsel-only.png` | Live WMS overlay alone |
+        | `poc-samferdsel-wms.png` | Raw WMS GetMap PNG |
         | `poc-nhm-*.tif` | Raw float32 GeoTIFF exports |
 
         ## Rebuild

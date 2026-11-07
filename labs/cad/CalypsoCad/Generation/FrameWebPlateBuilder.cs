@@ -85,10 +85,10 @@ internal static class FrameWebPlateBuilder
 
         var fabPartId = FabPartId(partId, fabPrefix);
 
-        // Step 1 — full steel plate on IML octagon, forced onto the ship spine (y = 0).
+        // Step 1 — full steel plate on IML octagon, forced onto the ship spine (X=0, Up=mid).
         var ringRaw = CalypsoShipbuildingFrames.InnerOctagonRing(zStem, inset);
-        var (rawCy, _) = ringRaw.GetSectionCenter();
-        var ring = ringRaw.Select(v => (Y: v.Y - rawCy, Up: v.Up)).ToArray();
+        var (rawCy, rawCu) = ringRaw.GetSectionCenter();
+        var ring = ringRaw.Select(v => (Y: v.Y - rawCy, Up: v.Up - (rawCu - mid))).ToArray();
         const float sectionY = 0f;
 
         var gaps = NormalizeGaps(athwartGaps, zStem, inset, bowAligned);
@@ -221,7 +221,10 @@ internal static class FrameWebPlateBuilder
         bool skipShellDoor = false)
     {
         _ = web;
-        var bands = BuildElevationBands(upMin, upMax, decks);
+        // Bow: one full-height band so taper cannot drop upper decks and leave a low-only remnant.
+        var bands = bowAligned
+            ? new List<(float, float)> { (upMin, upMax) }
+            : BuildElevationBands(upMin, upMax, decks);
         if (bands.Count == 0)
             bands.Add((upMin, upMax));
 
@@ -233,12 +236,15 @@ internal static class FrameWebPlateBuilder
             if (hu < 0.12f)
                 continue;
 
-            var halfY = MathF.Min(
-                CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u0, inset),
-                MathF.Min(
-                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, uMid, inset),
-                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u1, inset)));
-            halfY -= 0.12f;
+            // Evaluate beam at section mid for bow so crown taper does not zero the plate.
+            var beamUp = bowAligned
+                ? CalypsoLockGenerator.HalfBeamInsidePublic(zStem, uMid, inset)
+                : MathF.Min(
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u0, inset),
+                    MathF.Min(
+                        CalypsoLockGenerator.HalfBeamInsidePublic(zStem, uMid, inset),
+                        CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u1, inset)));
+            var halfY = beamUp - 0.12f;
             if (halfY < 0.2f)
                 continue;
 

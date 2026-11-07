@@ -38,6 +38,12 @@ internal static class CalypsoLockGenerator
 
     private static (float Z, float Beam, float H)[] ActiveStations = ForeStations;
 
+    /// <summary>
+    /// Vertical spine = OAH mid (lock envelope). Loft halfHeight tapers the section about this
+    /// mid — never mid=height/2 from keel (that sinks bow BH toward the keel).
+    /// </summary>
+    private static float ActiveOahMid = 6f;
+
     private static readonly Guid ShapeHullExt = Guid.Parse("e0000000-0000-4000-8000-000000000001");
     private static readonly Guid ShapeHullInt = Guid.Parse("e0000000-0000-4000-8000-000000000002");
     private static readonly Guid ShapeCorridor = Guid.Parse("e0000000-0000-4000-8000-000000000003");
@@ -957,7 +963,8 @@ internal static class CalypsoLockGenerator
         var height = MathF.Max(0.2f, HullHeightAt(z));
         halfB = beam * 0.5f;
         halfH = height * 0.5f;
-        mid = height * 0.5f;
+        // Spine pierce: loft verts are authored about OAH/2; halfH only shrinks the envelope.
+        mid = ActiveOahMid;
         cx = MathF.Min(SectionChamfer * (beam / 20f), halfB * 0.45f);
         cy = MathF.Min(SectionChamfer * (height / 12f), halfH * 0.45f);
     }
@@ -1778,6 +1785,9 @@ internal static class CalypsoLockGenerator
 
     private static void UseLoftStations(CalypsoLockDocument lockDoc)
     {
+        var oah = lockDoc.Envelope?.Oah is > 1 ? (float)lockDoc.Envelope.Oah : 12f;
+        ActiveOahMid = oah * 0.5f;
+
         var stations = lockDoc.HullLoft?.Stations;
         if (stations is not { Count: >= 2 })
         {

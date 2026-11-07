@@ -19,6 +19,9 @@ internal static class SimulationHud
 
     private static readonly SilkWireBatch Overlay = new();
 
+    /// <summary>Line segments submitted by the last <see cref="Draw"/> call (for profiling).</summary>
+    public static int LastOverlayLineCount { get; private set; }
+
     public static void Draw(
         SilkFrame frame,
         GunModel gun,
@@ -134,6 +137,7 @@ internal static class SimulationHud
 
         // Pixel ortho: origin top-left, Y down. Near depth so overlay wins the depth buffer.
         var ortho = Matrix4x4.CreateOrthographicOffCenter(0f, w, h, 0f, -1f, 1f);
+        LastOverlayLineCount = Overlay.AsSpan().Length / 2;
         frame.DrawWorldLines(Overlay.AsSpan(), ortho);
     }
 

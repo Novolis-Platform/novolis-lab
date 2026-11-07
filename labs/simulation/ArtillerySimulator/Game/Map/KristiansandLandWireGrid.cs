@@ -11,26 +11,34 @@ internal static class KristiansandLandWireGrid
     private static readonly Rgba32 LandNorth = new(88, 132, 68);
     private static readonly Rgba32 Water = new(48, 110, 210);
 
-    /// <summary>Build once after mesh rebuild — never call KindAt per frame.</summary>
-    public static WorldLineVertex[] Build(ReadOnlySpan<Vector3> vertices, int cellsX, int cellsZ)
+    /// <summary>
+    /// Build once after mesh rebuild — never call KindAt per frame.
+    /// <paramref name="cellStride"/> &gt; 1 skips intermediate grid lines (LOD for line count).
+    /// </summary>
+    public static WorldLineVertex[] Build(ReadOnlySpan<Vector3> vertices, int cellsX, int cellsZ, int cellStride = 2)
     {
+        cellStride = Math.Max(1, cellStride);
         var stride = cellsX + 1;
-        var list = new List<WorldLineVertex>(cellsX * stride * 4);
-        for (var z = 0; z <= cellsZ; z++)
+        var list = new List<WorldLineVertex>(cellsX / cellStride * (cellsZ / cellStride) * 8);
+        for (var z = 0; z <= cellsZ; z += cellStride)
         {
-            for (var x = 0; x < cellsX; x++)
+            for (var x = 0; x < cellsX; x += cellStride)
             {
+                var x1 = Math.Min(x + cellStride, cellsX);
                 var i0 = z * stride + x;
-                Add(list, vertices[i0], vertices[i0 + 1], eastWest: true);
+                var i1 = z * stride + x1;
+                Add(list, vertices[i0], vertices[i1], eastWest: true);
             }
         }
 
-        for (var x = 0; x <= cellsX; x++)
+        for (var x = 0; x <= cellsX; x += cellStride)
         {
-            for (var z = 0; z < cellsZ; z++)
+            for (var z = 0; z < cellsZ; z += cellStride)
             {
+                var z1 = Math.Min(z + cellStride, cellsZ);
                 var i0 = z * stride + x;
-                Add(list, vertices[i0], vertices[i0 + stride], eastWest: false);
+                var i1 = z1 * stride + x;
+                Add(list, vertices[i0], vertices[i1], eastWest: false);
             }
         }
 

@@ -179,14 +179,16 @@ internal sealed class KristiansandDefenseMission
             if (unit.Passing && gap > 160f)
                 unit.Passing = false;
 
+            // Stay on the carriageway — primary roads only, small lateral weave.
             var desiredOffset = 0f;
             if (unit.Passing)
-                desiredOffset = (unit.Id & 1) == 0 ? 52f : -52f;
+                desiredOffset = (unit.Id & 1) == 0 ? 5.5f : -5.5f;
             else if (unit.Scare > 0f)
-                desiredOffset = (unit.Id & 1) == 0 ? -40f : 40f;
+                desiredOffset = (unit.Id & 1) == 0 ? -4f : 4f;
 
-            var step = 36f * simSeconds;
+            var step = 8f * simSeconds;
             unit.Offset += Math.Clamp(desiredOffset - unit.Offset, -step, step);
+            unit.Offset = Math.Clamp(unit.Offset, -6.5f, 6.5f);
 
             if (speed > 0f)
             {
@@ -315,34 +317,49 @@ internal sealed class KristiansandDefenseMission
         wires.Line(mark, mark + Vector3.UnitY * 120f, copper);
         DrawRing(wires, mark + Vector3.UnitY * 2f, ObjectiveRadiusMeters, copper);
 
-        var route = Color.FromArgb(170, 196, 140, 84);
-        var hostile = Color.FromArgb(255, 196, 72, 52);
-        var wreck = Color.FromArgb(150, 110, 112, 104);
-        var friendly = Color.FromArgb(255, 72, 168, 96);
-        Vector3? previous = null;
-        var previousLane = -1;
+        var route = Color.FromArgb(200, 255, 120, 48);
+        var hostile = Color.FromArgb(255, 255, 48, 32);
+        var hostileHot = Color.FromArgb(255, 255, 210, 64);
+        var wreck = Color.FromArgb(180, 130, 120, 110);
+        var friendly = Color.FromArgb(255, 72, 210, 120);
         foreach (var unit in _units)
         {
             var y = ObjectiveHeight(unit.X, unit.Z);
-            var at = new Vector3(unit.X, y + 2f, unit.Z);
-            if (previous is { } from && previousLane == unit.Lane)
-                wires.Line(from + Vector3.UnitY * 3f, at + Vector3.UnitY * 3f, route);
-
-            previousLane = unit.Lane;
+            var lift = unit.Alive ? 4.5f : 2f;
+            var at = new Vector3(unit.X, y + lift, unit.Z);
             var lane = _lanes[unit.Lane];
             var yaw = LaneYaw(lane, unit.Arc);
-            var color = unit.Alive ? hostile : wreck;
-            NatoSymbolDraw.HostileMechanized(wires, at, yaw, 14f, color, wreck: !unit.Alive);
-            previous = at;
+            var color = unit.Alive
+                ? (unit.Posture is "holding" or "pinned" ? hostileHot : hostile)
+                : wreck;
+            NatoSymbolDraw.HostileMechanized(wires, at, yaw, 42f, color, wreck: !unit.Alive);
         }
+
+        // Draw the active primary-road approaches so columns read as road-bound.
+        foreach (var lane in _lanes)
+            DrawLaneRibbon(wires, lane, route);
 
         foreach (var defender in _defenders)
         {
             if (!defender.Alive)
                 continue;
 
-            var at = new Vector3(defender.X, ObjectiveHeight(defender.X, defender.Z) + 2f, defender.Z);
-            NatoSymbolDraw.FriendlyInfantry(wires, at, defender.YawDegrees, 12f, friendly);
+            var at = new Vector3(defender.X, ObjectiveHeight(defender.X, defender.Z) + 3f, defender.Z);
+            NatoSymbolDraw.FriendlyInfantry(wires, at, defender.YawDegrees, 22f, friendly);
+        }
+    }
+
+    private void DrawLaneRibbon(SilkWireBatch wires, RouteLane lane, Color color)
+    {
+        const float step = 80f;
+        Vector3? previous = null;
+        for (var arc = 0f; arc <= lane.Line.Length; arc += step)
+        {
+            var p = lane.Line.At(Math.Min(arc, lane.Line.Length));
+            var at = new Vector3(p.X, ObjectiveHeight(p.X, p.Y) + 2.5f, p.Y);
+            if (previous is { } from)
+                wires.Line(from, at, color);
+            previous = at;
         }
     }
 
@@ -548,18 +565,47 @@ internal sealed class KristiansandDefenseMission
 
     private void SpawnWave(string roadToken)
     {
-        // Synthetic avenues toward Kvadraturen (OSM roads are wrong georef).
         var east = KristiansandHeightSampler.EastMeters;
         var north = KristiansandHeightSampler.NorthMeters;
-        var bearing = roadToken switch
-        {
-            "Strai" => 200f,
-            "Hellemyr" => 240f,
-            "Søm" => 110f,
-            "Vågsbygd" or "Vagsbygd" => 260f,
-            _ => 180f + (_approaches.Count * 37f) % 160f,
-        };
+        var bearing = ApproachBearing(roadToken);
+        if (TrySpawnPrimaryRoadColumn(bearing, roadToken))
+            return;
+
+        // Fallback only if primary-road graph failed to load.
         SpawnBearingColumn(east, north, bearing, roadToken);
+    }
+
+    private static float ApproachBearing(string roadToken) => roadToken switch
+    {
+        "Strai" => 200f,
+        "Hellemyr" => 240f,
+        "Søm" => 110f,
+        "Møvik" or "Movik" => 255f,
+        "Vågsbygd" or "Vagsbygd" => 260f,
+        _ => 180f,
+    };
+
+    private bool TrySpawnPrimaryRoadColumn(float approachBearingDegrees, string name)
+    {
+        var goal = new Vector2(Objective.X, Objective.Z);
+        var line = PrimaryRoadNetwork.RouteToward(goal, approachBearingDegrees, name);
+        if (line is null)
+            return false;
+
+        // Crossing is the end nearest downtown; columns advance toward decreasing distance to goal.
+        var end = line.Points[^1];
+        var start = line.Points[0];
+        var endDist = Vector2.Distance(end, goal);
+        var startDist = Vector2.Distance(start, goal);
+        var crossingArc = endDist <= startDist ? line.Length - 40f : 40f;
+        var away = endDist <= startDist ? -1 : 1;
+        var lead = Math.Clamp(line.Length * 0.28f, 1_200f, 3_500f);
+        var before = _units.Count;
+        AddColumn(line, crossingArc, away, ColumnCount, lead);
+        var spawned = _units.Count > before;
+        if (spawned)
+            Console.WriteLine($"[ArtillerySimulator] primary road column '{name}'  {line.Length / 1000f:F1} km  {line.Points.Length} nodes");
+        return spawned;
     }
 
     private void PlaceDefenders()
@@ -638,9 +684,12 @@ internal sealed class KristiansandDefenseMission
     {
         var east = KristiansandHeightSampler.EastMeters;
         var north = KristiansandHeightSampler.NorthMeters;
-        SpawnBearingColumn(east, north, 215f, "Strai");
-        SpawnBearingColumn(east, north, 255f, "Vågsbygd");
-        SpawnBearingColumn(east, north, 125f, "Søm");
+        if (!TrySpawnPrimaryRoadColumn(215f, "Strai"))
+            SpawnBearingColumn(east, north, 215f, "Strai");
+        if (!TrySpawnPrimaryRoadColumn(255f, "Vågsbygd"))
+            SpawnBearingColumn(east, north, 255f, "Vågsbygd");
+        if (!TrySpawnPrimaryRoadColumn(125f, "Søm"))
+            SpawnBearingColumn(east, north, 125f, "Søm");
     }
 
     private void SpawnBearingColumn(float east, float north, float approachBearingDegrees, string name)

@@ -7,7 +7,7 @@ using Novolis.Silk;
 
 namespace ArtillerySimulator.Game;
 
-internal sealed class ArtillerySimulatorGame
+internal sealed class ArtillerySimulatorGame : IDisposable
 {
     private static readonly int[] PaceSteps = [2, 6, 16, 48];
     private const float MilsPerDegree = 6400f / 360f;
@@ -44,16 +44,30 @@ internal sealed class ArtillerySimulatorGame
     private bool _flatTerrain;
     private KristiansandDefenseMission? _mission;
     private IReadOnlyList<Vector3> _aimPreview = [];
+    private bool _aimDirty = true;
     private float _muzzleFlash;
     private float _burstAge = -1f;
     private Vector3 _burstAt;
     private readonly ArtilleryLiveHost _agent;
     private AgentSurface? _surface;
+    private FrameProfiler? _profiler;
+    private int _profileFramesRemaining = -1;
+    private string? _profileJsonPath;
 
     public ArtillerySimulatorGame()
     {
         _agent = new ArtilleryLiveHost(this);
     }
+
+    /// <summary>When set, runs headless for N frames then closes and prints a timing report.</summary>
+    public void EnableProfile(int frames, string? jsonPath = null)
+    {
+        _profiler = new FrameProfiler(warmupFrames: Math.Min(20, Math.Max(0, frames / 6)));
+        _profileFramesRemaining = Math.Max(1, frames);
+        _profileJsonPath = jsonPath;
+    }
+
+    public FrameProfiler? Profiler => _profiler;
 
     internal GunModel Gun => _gun;
     internal TerrainWorld Terrain => _terrain;
@@ -81,7 +95,10 @@ internal sealed class ArtillerySimulatorGame
     internal void SetDrag(bool enabled)
     {
         if (_gun.DragEnabled != enabled)
+        {
             _gun.ToggleDrag();
+            _aimDirty = true;
+        }
     }
 
     internal void SetPace(int index) => _paceIndex = Math.Clamp(index, 0, PaceSteps.Length - 1);
@@ -134,8 +151,50 @@ internal sealed class ArtillerySimulatorGame
 
     public void Update(SilkFrame frame)
     {
-        _agent.RunFrame(() => Simulate(frame));
-        Render(frame);
+        _profiler?.BeginFrame();
+        if (_profiler is not null)
+        {
+            _profiler.Time("simulate", () => _agent.RunFrame(() => Simulate(frame)));
+            _profiler.Time("render", () => Render(frame));
+            _profiler.SetGeometry(
+                _terrain.TerrainLineCount,
+                _terrain.RoadLineCount,
+                _wires.AsSpan().Length / 2,
+                SimulationHud.LastOverlayLineCount);
+            _profiler.EndFrame();
+            if (_profileFramesRemaining > 0)
+            {
+                _profileFramesRemaining--;
+                if (_profileFramesRemaining == 0)
+                {
+                    WriteProfileReport();
+                    frame.Close();
+                }
+            }
+        }
+        else
+        {
+            _agent.RunFrame(() => Simulate(frame));
+            Render(frame);
+        }
+    }
+
+    public void Dispose() => _terrain.Dispose();
+
+    private void WriteProfileReport()
+    {
+        if (_profiler is null)
+            return;
+        var text = _profiler.ToReport();
+        Console.WriteLine();
+        Console.WriteLine("=== ArtillerySimulator profile ===");
+        Console.WriteLine(text);
+        if (!string.IsNullOrWhiteSpace(_profileJsonPath))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_profileJsonPath))!);
+            File.WriteAllText(_profileJsonPath, _profiler.ToJson());
+            Console.WriteLine($"Wrote {_profileJsonPath}");
+        }
     }
 
     private void Simulate(SilkFrame frame)
@@ -172,7 +231,8 @@ internal sealed class ArtillerySimulatorGame
         if (_muzzleFlash > 0f)
             _muzzleFlash = MathF.Max(0f, _muzzleFlash - frame.DeltaSeconds);
 
-        if (_shot.Phase != BallisticTrajectoryPhase.InFlight)
+        // Rebuild only when aim/charge changed or the tube is still laying onto ordered values.
+        if (_aimDirty || !_crew.Ready(_gun))
             RebuildAimPreview();
 
         if (_mission is { } mission)
@@ -198,42 +258,63 @@ internal sealed class ArtillerySimulatorGame
             far);
         var mvp = view * proj;
 
-        // Cached terrain wires (built once). Dynamic overlay rebuilt each frame.
-        frame.DrawWorldLines(_terrain.CachedWires, mvp);
+        // Static terrain + roads live on the GPU after first upload.
+        if (_profiler is not null)
+            _profiler.Time("draw.static", () => _terrain.DrawStatic(frame, mvp));
+        else
+            _terrain.DrawStatic(frame, mvp);
 
         _wires.Clear();
-        DrawSky(_wires);
-        _terrain.DrawDynamic(_wires);
-        if (!_flatTerrain)
-            KristiansandMapFeatures.DrawLinework(_wires, _terrain);
-        _mission?.Draw(_wires);
-        DrawAimPreview(_wires);
-        _gun.Draw(
-            _wires,
-            _terrain.GunBaseline,
-            showPivotGlow: _shot.Phase != BallisticTrajectoryPhase.InFlight && _crew.Ready(_gun),
-            loading: _crew.Loading);
-        DrawMuzzleFlash(_wires);
-        DrawShot(_wires);
-        frame.DrawWorldLines(_wires.AsSpan(), mvp);
+        void BuildDynamic()
+        {
+            DrawSky(_wires);
+            _terrain.DrawDynamic(_wires);
+            _mission?.Draw(_wires);
+            DrawAimPreview(_wires);
+            _gun.Draw(
+                _wires,
+                _terrain.GunBaseline,
+                showPivotGlow: _shot.Phase != BallisticTrajectoryPhase.InFlight && _crew.Ready(_gun),
+                loading: _crew.Loading);
+            DrawMuzzleFlash(_wires);
+            DrawShot(_wires);
+        }
+
+        if (_profiler is not null)
+            _profiler.Time("draw.dynamic.build", BuildDynamic);
+        else
+            BuildDynamic();
+
+        if (_profiler is not null)
+            _profiler.Time("draw.dynamic.upload", () => frame.DrawWorldLines(_wires.AsSpan(), mvp));
+        else
+            frame.DrawWorldLines(_wires.AsSpan(), mvp);
 
         _fps.Update(frame.DeltaSeconds);
         var predicted = PredictedImpact();
         var predictedRange = HorizontalRange(_terrain.GunBaseline, predicted);
-        SimulationHud.Draw(
-            frame,
-            _gun,
-            _crew.OrderedElevation,
-            _crew.OrderedAzimuth,
-            _terrain,
-            _atmosphere,
-            _shot,
-            _camera,
-            _fps.Value,
-            predictedRange,
-            PaceLabel(),
-            _mission?.HudLine(_flatTerrain),
-            _crew.Ready(_gun) ? null : _crew.Phrase(_gun));
+        void DrawHud()
+        {
+            SimulationHud.Draw(
+                frame,
+                _gun,
+                _crew.OrderedElevation,
+                _crew.OrderedAzimuth,
+                _terrain,
+                _atmosphere,
+                _shot,
+                _camera,
+                _fps.Value,
+                predictedRange,
+                PaceLabel(),
+                _mission?.HudLine(_flatTerrain),
+                _crew.Ready(_gun) ? null : _crew.Phrase(_gun));
+        }
+
+        if (_profiler is not null)
+            _profiler.Time("draw.hud", DrawHud);
+        else
+            DrawHud();
     }
 
     private void RebuildAimPreview()
@@ -252,6 +333,7 @@ internal sealed class ArtillerySimulatorGame
             dtSeconds: 1.0 / 60.0,
             maxTimeSeconds: 90.0,
             maxPoints: 6_000);
+        _aimDirty = false;
     }
 
     private void HandleInput(SilkFrame frame, float battleSeconds)
@@ -263,15 +345,29 @@ internal sealed class ArtillerySimulatorGame
         if (_camera.Mode != CameraMode.Freecam)
         {
             if (frame.IsKeyDown(Key.W))
+            {
                 _crew.NudgeOrder(_gun, elevate, 0f);
+                _aimDirty = true;
+            }
+
             if (frame.IsKeyDown(Key.S))
+            {
                 _crew.NudgeOrder(_gun, -elevate, 0f);
+                _aimDirty = true;
+            }
         }
 
         if (frame.IsKeyDown(Key.Q))
+        {
             _crew.NudgeOrder(_gun, 0f, -traverse);
+            _aimDirty = true;
+        }
+
         if (frame.IsKeyDown(Key.E))
+        {
             _crew.NudgeOrder(_gun, 0f, traverse);
+            _aimDirty = true;
+        }
 
         // Left-drag lays the piece; Shift+Left is orbit pan (see ArtilleryCameras).
         if (frame.IsMouseButtonDown(MouseButton.Left)
@@ -283,19 +379,38 @@ internal sealed class ArtillerySimulatorGame
             var azimuth = Math.Clamp(frame.MouseDeltaX * degreesPerPixel, -traverse, traverse);
             var elevation = Math.Clamp(-frame.MouseDeltaY * degreesPerPixel, -elevate, elevate);
             _crew.NudgeOrder(_gun, elevation, azimuth);
+            _aimDirty = true;
         }
 
         if (frame.IsKeyPressed(Key.Number1))
+        {
             _crew.OrderCharge(_gun, 0);
+            _aimDirty = true;
+        }
+
         if (frame.IsKeyPressed(Key.Number2))
+        {
             _crew.OrderCharge(_gun, 1);
+            _aimDirty = true;
+        }
+
         if (frame.IsKeyPressed(Key.Number3))
+        {
             _crew.OrderCharge(_gun, 2);
+            _aimDirty = true;
+        }
+
         if (frame.IsKeyPressed(Key.Number4))
+        {
             _crew.OrderCharge(_gun, 3);
+            _aimDirty = true;
+        }
 
         if (frame.IsKeyPressed(Key.D) && _camera.Mode != CameraMode.Freecam)
+        {
             _gun.ToggleDrag();
+            _aimDirty = true;
+        }
 
         if (frame.IsKeyPressed(Key.Comma) || frame.IsKeyPressed(Key.KeypadSubtract))
             _paceIndex = Math.Max(0, _paceIndex - 1);
@@ -332,6 +447,7 @@ internal sealed class ArtillerySimulatorGame
             _shot.Reset();
             _crew.SeatOpening(_gun);
             _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+            _aimDirty = true;
         }
 
         if (frame.IsKeyPressed(Key.Space) && TryFire() && _flatTerrain && !_gun.DragEnabled)

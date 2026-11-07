@@ -17,6 +17,8 @@ internal static class Program
         var jsonOnly = args.Any(a => string.Equals(a, "--json-only", StringComparison.OrdinalIgnoreCase));
         var acceptance = args.Any(a => string.Equals(a, "--acceptance", StringComparison.OrdinalIgnoreCase));
         var blueprints = args.Any(a => string.Equals(a, "--blueprints", StringComparison.OrdinalIgnoreCase));
+        var blueprintDetails = args.Any(a => string.Equals(a, "--blueprint-details", StringComparison.OrdinalIgnoreCase));
+        var structureAudit = args.Any(a => string.Equals(a, "--structure-audit", StringComparison.OrdinalIgnoreCase));
         var mcp = args.Any(a => string.Equals(a, "--mcp", StringComparison.OrdinalIgnoreCase));
         var stdio = args.Any(a => string.Equals(a, "--stdio", StringComparison.OrdinalIgnoreCase));
 
@@ -26,9 +28,15 @@ internal static class Program
             return;
         }
 
-        if (blueprints)
+        if (structureAudit)
         {
-            Environment.ExitCode = RunBlueprints();
+            Environment.ExitCode = RunStructureAudit();
+            return;
+        }
+
+        if (blueprints || blueprintDetails)
+        {
+            Environment.ExitCode = RunBlueprints(emitDetails: blueprints || blueprintDetails);
             return;
         }
 
@@ -129,12 +137,38 @@ internal static class Program
         CalypsoSilkHost.Run(session, renderer);
     }
 
-    private static int RunBlueprints()
+    private static int RunStructureAudit()
+    {
+        try
+        {
+            var cadPath = Path.Combine(CalypsoLockGenerator.DefaultOutputDirectory, "calypso.cadjson");
+            if (!File.Exists(cadPath))
+                CalypsoLockGenerator.Generate();
+            var doc = System.Text.Json.JsonSerializer.Deserialize<Novolis.Cad.Primitives.CadDocument>(
+                File.ReadAllText(cadPath), CadJson.Options)
+                ?? throw new InvalidOperationException("Failed to deserialize calypso.cadjson");
+            var (json, ndjson, failures) = StructureAuditExporter.Write(doc);
+            Console.WriteLine($"Wrote structure audit:{Environment.NewLine}{json}{Environment.NewLine}{ndjson}");
+            Console.WriteLine(failures == 0
+                ? "structure-audit: all bh-* groups pierce spine"
+                : $"structure-audit: {failures} group(s) off spine");
+            return failures == 0 ? 0 : 1;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            return 1;
+        }
+    }
+
+    private static int RunBlueprints(bool emitDetails = true)
     {
         try
         {
             CalypsoCad.Generation.Blueprints.InternalsBlueprintEmitter.Emit();
             CalypsoCad.Generation.Blueprints.ManufacturerSheetEmitter.Emit();
+            if (emitDetails)
+                CalypsoCad.Generation.Blueprints.StructureDetailBlueprintEmitter.Emit();
             return 0;
         }
         catch (Exception ex)

@@ -35,6 +35,7 @@ internal static partial class KristiansandMapFeatures
             KristiansandReferenceMap.TableYMeters + 0.45f,
             skipCoastline: true);
 
+    /// <summary>Roads are GPU-cached on <see cref="TerrainWorld"/>; kept for optional overlays.</summary>
     public static void DrawLinework(SilkWireBatch wires, TerrainWorld terrain) =>
         KristiansandPdfRoads.Draw(wires, terrain);
 

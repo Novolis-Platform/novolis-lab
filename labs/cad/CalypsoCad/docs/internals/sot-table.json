@@ -1,0 +1,40 @@
+{
+  "id": "calypso-sot-bh-stations",
+  "generatedUtc": "2026-11-07T00:00:00Z",
+  "loaM": 69,
+  "spine": "mid athwart (X=0) × mid height (OAH/2) × stem→stern",
+  "oahMidM": 6,
+  "sourceLock": "CAL-INT-GA-001.json",
+  "sourceBulkheads": "CalypsoBulkheads.BuildSchedule",
+  "faces": [
+    {
+      "face": "Bridge aft / bow collision",
+      "zFromStem": 13,
+      "compartmentEdges": ["BRIDGE z1", "ACCESS z0"],
+      "bhId": "BOW-COLLISION"
+    },
+    {
+      "face": "Airlock mid-CROSS",
+      "zFromStem": 21,
+      "compartmentEdges": ["(not a room edge — CROSS pressure transition)"],
+      "bhId": "AIRLOCK-CROSS"
+    },
+    {
+      "face": "ENG fore",
+      "zFromStem": 41,
+      "compartmentEdges": ["ENG z0", "GALLEY/INFIRM z1"],
+      "bhId": "ENG-FORE"
+    },
+    {
+      "face": "ENG aft",
+      "zFromStem": 49.25,
+      "compartmentEdges": ["ENG z1", "HOLD z0", "CORR z1", "catwalk fore"],
+      "bhId": "ENG-AFT"
+    }
+  ],
+  "notes": [
+    "Do not thrash z mid-loop — one SoT edit → one Pass B regen.",
+    "AIRLOCK-CROSS stays at z=21 (not 19/23).",
+    "Acceptance: structure-audit.json + verify-calypso-bh-spine + blueprints/details — not Silk FPS."
+  ]
+}
