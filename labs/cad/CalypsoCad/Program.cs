@@ -45,6 +45,13 @@ internal static class Program
             return;
         }
 
+        var structuralBay = args.Any(a => string.Equals(a, "--structural-bay", StringComparison.OrdinalIgnoreCase));
+        if (structuralBay)
+        {
+            Environment.ExitCode = RunStructuralBay();
+            return;
+        }
+
         if (blueprints || blueprintDetails)
         {
             Environment.ExitCode = RunBlueprints(emitDetails: blueprints || blueprintDetails);
@@ -156,6 +163,66 @@ internal static class Program
             CalypsoSilkHost.Run(session, renderer);
         else
             CalypsoExplorerHost.Run(session, renderer);
+    }
+
+    /// <summary>Two-bay midbody proof: generate → geometric validation → four diagnostic PNGs.</summary>
+    private static int RunStructuralBay()
+    {
+        Console.WriteLine("CalypsoCad two-bay structural proof (F24–F32)");
+        var failures = 0;
+        void Check(string name, bool ok, string detail = "")
+        {
+            if (ok)
+            {
+                Console.WriteLine($"  OK  {name}");
+                return;
+            }
+
+            failures++;
+            Console.WriteLine($"  FAIL {name}{(string.IsNullOrEmpty(detail) ? "" : ": " + detail)}");
+        }
+
+        try
+        {
+            var session = new CalypsoSession();
+            session.RegenerateAndLoadStructuralBay();
+            Console.WriteLine($"Wrote bay CAD → {session.GeneratedDirectory}");
+
+            var joints = StructuralAssemblyGraph.ReadJointsFromDocument(session.Document);
+            var loa = session.Document.Properties is not null
+                      && session.Document.Properties.TryGetValue("shipEnvelope", out var env)
+                      && env.ValueKind == System.Text.Json.JsonValueKind.Object
+                      && env.TryGetProperty("loa", out var loaEl)
+                ? (float)loaEl.GetDouble()
+                : 69f;
+            // Prefer lock LOA from entities camera / default.
+            loa = 69f;
+            var report = StructuralBayGeometry.Evaluate(session.Document, joints, loa);
+            var reportPath = Path.Combine(CalypsoProjectPaths.StructuralBayDirectory, "validation-report.md");
+            StructuralBayGeometry.WriteReportMarkdown(report, reportPath);
+            Console.WriteLine($"Validation report → {reportPath}");
+            foreach (var c in report.Checks)
+                Check(c.Name, c.Ok, c.Detail);
+
+            var renderer = new CalypsoRenderer(session);
+            renderer.Fit();
+            var stills = HeadlessStructuralBayExporter.Export(session, renderer);
+            Console.WriteLine($"Bay PNGs ({stills.Count}) → {CalypsoProjectPaths.StructuralBayDirectory}");
+            foreach (var path in stills)
+                Console.WriteLine($"  {path}");
+            Check("diagnostic PNGs written", stills.Count >= 4, $"count={stills.Count}");
+            Check("two-bay geometric gate", report.Ok);
+        }
+        catch (Exception ex)
+        {
+            Check("structural bay pipeline", false, ex.Message);
+            Console.Error.WriteLine(ex);
+        }
+
+        Console.WriteLine(failures == 0
+            ? "CalypsoCad two-bay structural proof OK"
+            : $"CalypsoCad two-bay structural proof FAILED ({failures})");
+        return failures == 0 ? 0 : 1;
     }
 
     private static int RunStructureAudit()

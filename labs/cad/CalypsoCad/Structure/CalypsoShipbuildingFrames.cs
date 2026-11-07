@@ -81,6 +81,22 @@ internal static class CalypsoShipbuildingFrames
         float inset)
         => EmitRingBars(entities, loa, frameId, zStem, web, halfDepthZ, inset, namePrefix: "ring");
 
+    /// <summary>
+    /// Perimeter ring on an exact IML inset (no extra web pad) — use so frame knuckles coincide
+    /// with outer-hull plating joins / knuckle stringers.
+    /// </summary>
+    public static void AddPerimeterRingAtInset(
+        List<CadEntity> entities,
+        float loa,
+        string frameId,
+        float zStem,
+        float web,
+        float halfDepthZ,
+        float exactInset)
+        => EmitRingBars(
+            entities, loa, frameId, zStem, web, halfDepthZ, exactInset,
+            namePrefix: "ring", exactInsetOnly: true);
+
     /// <summary>Continuous athwart stiffener on outer ring — inset INBOARD so flanges never sit outside IML.</summary>
     public static void AddFlangeStiffenerPublic(
         List<CadEntity> entities,
@@ -106,7 +122,8 @@ internal static class CalypsoShipbuildingFrames
         float web,
         float halfDepthZ,
         float inset,
-        string namePrefix)
+        string namePrefix,
+        bool exactInsetOnly = false)
     {
         // Oriented polygonal ring along IML (Shipbuilding 101) — not axis-aligned AABB stubs.
         // Pull inboard until the flange nests; never shorten the edge (continuity).
@@ -114,7 +131,8 @@ internal static class CalypsoShipbuildingFrames
         if (halfBCheck < 1.45f || halfHCheck < 1.45f)
             return;
 
-        var ring = InnerOctagonRing(zStem, inset + web * 1.05f + 0.18f);
+        var ringInset = exactInsetOnly ? inset : inset + web * 1.05f + 0.18f;
+        var ring = InnerOctagonRing(zStem, ringInset);
         var (cy0, cu0) = ring.GetSectionCenter();
         var flangeHalf = MathF.Max(0.05f, web * 0.34f);
         var asm = frameId.Contains('-')

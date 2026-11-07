@@ -106,6 +106,31 @@ internal static class CalypsoLockGenerator
     }
 
     /// <summary>
+    /// Two-bay midbody structural proof only (F24–F32). No rooms/outfit/BH walls.
+    /// Writes <c>calypso-structural-bay.cadjson</c>.
+    /// </summary>
+    public static string GenerateStructuralBay(string? outputDirectory = null)
+    {
+        var dir = outputDirectory ?? DefaultOutputDirectory;
+        Directory.CreateDirectory(dir);
+        FrameWebPlateRegistry.Clear();
+        var lockDoc = LoadLock();
+        UseLoftStations(lockDoc);
+        var env = lockDoc.Envelope ?? throw new InvalidOperationException("Lock missing envelope");
+        var loa = (float)env.Loa;
+        var web = lockDoc.Frames?.WebM is > 0 ? (float)lockDoc.Frames.WebM : 0.15f;
+        var tPlate = lockDoc.Decks?.TPlate is > 0.02 ? (float)lockDoc.Decks.TPlate : 0.1f;
+        var deckUp = lockDoc.Decks?.D0 is > 0 ? (float)lockDoc.Decks.D0 : 4.4f;
+
+        var stamp = DateTime.UtcNow.ToString("o");
+        var layers = BuildLayers(stamp);
+        var shapes = BuildShapes(stamp);
+        var (cad, _, _) = StructuralBayAssembly.Emit(loa, web, tPlate, deckUp);
+        CadDocumentBundle.Write(dir, layers, shapes, cad, "calypso-structural-bay");
+        return dir;
+    }
+
+    /// <summary>
     /// Keep only hand-authored exterior (e.g. acceptance / Draft Studio saves).
     /// Generator-owned manufacturer OML/IML must be rebuilt each regenerate — otherwise an old blob sticks.
     /// </summary>

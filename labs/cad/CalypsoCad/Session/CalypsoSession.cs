@@ -104,6 +104,19 @@ internal sealed class CalypsoSession
         StatusText = $"Generated → {GeneratedDirectory}";
     }
 
+    /// <summary>Generate and load the two-bay structural proof CAD (not the full ship).</summary>
+    public void RegenerateAndLoadStructuralBay()
+    {
+        GeneratedDirectory = CalypsoLockGenerator.GenerateStructuralBay();
+        (LayersCatalog, Shapes, Document) = CadDocumentBundle.Read(GeneratedDirectory, "calypso-structural-bay");
+        ShapeById = Shapes.Shapes.ToDictionary(s => s.Id);
+        SelectedSpaceId = null;
+        RevealEntityIds = null;
+        VisualLayers = CalypsoVisualLayers.StructureInspect;
+        ShowOmlGuide = false;
+        StatusText = $"Structural bay proof → {GeneratedDirectory}";
+    }
+
     public Color ResolveShapeColor(Guid? shapeId, Color fallback)
     {
         return ResolveShapeMaterial(shapeId, fallback).color;

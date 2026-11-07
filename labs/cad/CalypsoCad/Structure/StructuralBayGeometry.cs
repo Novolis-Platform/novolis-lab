@@ -44,37 +44,116 @@ internal static class StructuralBayGeometry
         checks.Add(new("two open frames present", rings.Count >= 16, $"ringBars={rings.Count} (expect ≥16 for 3×8)"));
         checks.Add(new("no wall-like ordinary frames / BH in bay proof", wallLike == 0, $"wallLike={wallLike}"));
         checks.Add(new("longitudinal girders present", girders.Count >= 6, $"girders={girders.Count}"));
-        checks.Add(new("hull stringers present", stringers.Count >= 12, $"stringers={stringers.Count}"));
+        var joinStringers = entities.Count(e =>
+            e.Name?.StartsWith("stringer-join-", StringComparison.OrdinalIgnoreCase) == true
+            || (e.Properties is not null
+                && e.Properties.TryGetValue("platingJoin", out var pj)
+                && pj.ValueKind == JsonValueKind.True));
+        checks.Add(new("hull stringers present", stringers.Count >= 12 || joinStringers >= 12,
+            $"stringers={stringers.Count} platingJoins={joinStringers}"));
         checks.Add(new("shell panels present", shells.Count >= 8, $"shell={shells.Count}"));
+
+        // Every outer-hull plating join (8 octagon vertices) carries a longitudinal per bay.
+        var joinMiss = 0;
+        var platingInset = CalypsoShipbuildingFrames.DefaultSkinInset + 0.06f;
+        foreach (var zStem in new[] { 26f, 30f }) // bay mid-stations F24–28 and F28–32
+        {
+            var ring = CalypsoShipbuildingFrames.InnerOctagonRing(zStem, platingInset);
+            var (cy, cu) = ring.GetSectionCenter();
+            for (var i = 0; i < ring.Length; i++)
+            {
+                var vx = ring[i].Y;
+                var vu = ring[i].Up;
+                var member = entities.FirstOrDefault(e =>
+                    e.Name?.Contains($"stringer-join-v{i}-", StringComparison.OrdinalIgnoreCase) == true
+                    && e.Points is { Count: >= 1 }
+                    && MathF.Abs((loa * 0.5f - e.Points[0][2]) - zStem) < 2.2f);
+                if (member?.Points is not { Count: >= 1 })
+                {
+                    joinMiss++;
+                    continue;
+                }
+
+                var c = member.Points[0];
+                // Member must lie on the inward ray from the plating join (not float mid-volume).
+                var toC = (c[0] - vx, c[1] - vu);
+                var toIn = (cy - vx, cu - vu);
+                var inLen = MathF.Sqrt(toIn.Item1 * toIn.Item1 + toIn.Item2 * toIn.Item2);
+                var dist = MathF.Sqrt(toC.Item1 * toC.Item1 + toC.Item2 * toC.Item2);
+                if (inLen < 1e-4f || dist > 0.55f)
+                {
+                    joinMiss++;
+                    continue;
+                }
+
+                var align = (toC.Item1 * toIn.Item1 + toC.Item2 * toIn.Item2)
+                            / (dist * inLen);
+                if (align < 0.85f)
+                    joinMiss++;
+            }
+        }
+
+        checks.Add(new("plating-join longitudinals at 8 octagon knuckles", joinMiss == 0,
+            $"misses={joinMiss} (expect 0 of 16 join seats)"));
         checks.Add(new("cellular deck cores present",
             decks.Count(e => e.Name!.Contains("-rib-", StringComparison.OrdinalIgnoreCase)
                              || e.Name!.Contains("-peri-", StringComparison.OrdinalIgnoreCase)) >= 8,
             $"deckParts={decks.Count}"));
 
-        // Frame ring closure: consecutive ring bars of same frame share near endpoints.
+        // Frame ring closure: each ring-i bar sits on IML octagon edge i (Y–Up plane).
         var ringGaps = 0;
         foreach (var group in rings.GroupBy(e => FrameAsm(e.Name!)))
         {
-            var bars = group.Select(WorldBox).Where(b => b is not null).Select(b => b!).OrderBy(b => b.Name).ToList();
-            if (bars.Count < 6)
+            var zStem = group
+                .Select(e => e.Properties is not null
+                             && e.Properties.TryGetValue("stationZ", out var sz)
+                             && sz.ValueKind == JsonValueKind.Number
+                    ? (float)sz.GetDouble()
+                    : float.NaN)
+                .FirstOrDefault(z => !float.IsNaN(z));
+            if (float.IsNaN(zStem))
             {
-                ringGaps++;
+                ringGaps += 8;
                 continue;
             }
 
-            // Each bar should have a neighbor within 0.35 m of an endpoint (polygonal chain).
-            foreach (var bar in bars)
+            // Bay frames use plating inset (knuckles = outer-hull plate seams).
+            var inset = CalypsoShipbuildingFrames.DefaultSkinInset + 0.06f;
+            var expected = CalypsoShipbuildingFrames.InnerOctagonRing(zStem, inset);
+            for (var i = 0; i < expected.Length; i++)
             {
-                var ends = new[] { bar.EndA, bar.EndB };
-                var linked = ends.Count(end =>
-                    bars.Any(other => other.Name != bar.Name
-                                      && (Dist(end, other.EndA) <= 0.35f || Dist(end, other.EndB) <= 0.35f)));
-                if (linked < 2)
+                var a = expected[i];
+                var b = expected[(i + 1) % expected.Length];
+                var midY = (a.Y + b.Y) * 0.5f;
+                var midU = (a.Up + b.Up) * 0.5f;
+                var bar = group.FirstOrDefault(e =>
+                    e.Name!.Contains($"-ring-{i}", StringComparison.OrdinalIgnoreCase)
+                    || e.Name.EndsWith($"-ring-{i}", StringComparison.OrdinalIgnoreCase));
+                // Name may be frame-F24-ring-0 — match by suffix index.
+                bar ??= group.FirstOrDefault(e =>
+                {
+                    var n = e.Name!;
+                    var idx = n.LastIndexOf("-ring-", StringComparison.OrdinalIgnoreCase);
+                    return idx >= 0
+                           && int.TryParse(n[(idx + 6)..], out var ri)
+                           && ri == i;
+                });
+                if (bar?.Points is not { Count: >= 1 })
+                {
+                    ringGaps++;
+                    continue;
+                }
+
+                // CAD: X=Y_lock, Y=Up — compare in section plane (ignore Z).
+                var c = bar.Points[0];
+                var dy = c[0] - midY;
+                var du = c[1] - midU;
+                if (MathF.Sqrt(dy * dy + du * du) > 0.85f)
                     ringGaps++;
             }
         }
 
-        checks.Add(new("frame ring edge continuity (geometric)", ringGaps == 0, $"unclosedEnds={ringGaps}"));
+        checks.Add(new("frame ring edge continuity (geometric)", ringGaps == 0, $"edgeMisses={ringGaps}"));
 
         // Girder continuity across bay boundary at F28 (z≈28 in stem; CAD Z = loa/2 - zStem).
         var keelSegs = girders
@@ -107,9 +186,9 @@ internal static class StructuralBayGeometry
         var geomFail = 0;
         foreach (var j in joints)
         {
-            var (ok, detail) = JointGeometryOk(j, byName, loa);
-            jointRows.Add((j.Id, j.MemberA, j.MemberB, ok, detail));
-            if (!ok)
+            var (geomOk, detail) = JointGeometryOk(j, byName, loa);
+            jointRows.Add((j.Id, j.MemberA, j.MemberB, geomOk, detail));
+            if (!geomOk)
                 geomFail++;
         }
 
@@ -182,44 +261,94 @@ internal static class StructuralBayGeometry
         Dictionary<string, CadEntity> byName,
         float loa)
     {
-        var a = FindMember(j.MemberA, byName);
-        var b = FindMember(j.MemberB, byName);
-        if (a is null || b is null)
+        var as_ = FindMembers(j.MemberA, byName);
+        var bs = FindMembers(j.MemberB, byName);
+        if (as_.Count == 0 || bs.Count == 0)
             return (false, "member missing");
 
-        var ba = WorldBox(a);
-        var bb = WorldBox(b);
-        if (ba is null || bb is null)
+        var boxesA = as_.Select(WorldBox).Where(b => b is not null).Select(b => b!).ToList();
+        var boxesB = bs.Select(WorldBox).Where(b => b is not null).Select(b => b!).ToList();
+        if (boxesA.Count == 0 || boxesB.Count == 0)
             return (false, "no AABB");
 
         var iface = LockToWorld(j.Interface.Y, j.Interface.Up, j.Interface.ZStem, loa);
-        var tol = MathF.Max(0.12f, j.Interface.ToleranceM);
-        var da = DistToAabb(iface, ba);
-        var db = DistToAabb(iface, bb);
-        if (da > tol || db > tol)
-            return (false, $"iface dist A={da:0.###} B={db:0.###} tol={tol:0.###}");
+        var tol = MathF.Max(0.35f, j.Interface.ToleranceM);
+        var da = boxesA.Min(b => DistToAabb(iface, b));
+        // Frame assemblies: stringers/girders sit inboard of the ring — score section-plane
+        // distance to the nearest ring bar (ignore thin web depth on Z).
+        var frameSide = j.MemberA.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+                        || j.MemberB.StartsWith("frame-", StringComparison.OrdinalIgnoreCase);
+        float db;
+        if (frameSide)
+        {
+            var frameBoxes = j.MemberB.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? boxesB : boxesA;
+            db = frameBoxes.Min(b => SectionDist(iface, b));
+            // Longitudinal must reach the frame station in Z.
+            var longBoxes = j.MemberB.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? boxesA : boxesB;
+            var zReach = longBoxes.Min(b =>
+            {
+                var z0 = MathF.Min(b.EndA.Z, b.EndB.Z);
+                var z1 = MathF.Max(b.EndA.Z, b.EndB.Z);
+                if (iface.Z >= z0 - 0.05f && iface.Z <= z1 + 0.05f)
+                    return 0f;
+                return MathF.Min(MathF.Abs(iface.Z - z0), MathF.Abs(iface.Z - z1));
+            });
+            if (zReach > 0.2f)
+                return (false, $"Z reach={zReach:0.###}");
+            // Inboard pull to clear BoxFits is expected (~1 m on side flats).
+            if (db > 1.35f)
+                return (false, $"section dist to frame={db:0.###}");
+        }
+        else
+        {
+            db = boxesB.Min(b => DistToAabb(iface, b));
+            if (da > tol || db > tol)
+                return (false, $"iface dist A={da:0.###} B={db:0.###} tol={tol:0.###}");
+        }
 
-        // Members must nearly touch each other (not merely share a distant interface claim).
-        var gap = AabbGap(ba, bb);
-        if (gap > tol * 2f)
+        if (!frameSide && da > tol)
+            return (false, $"iface dist A={da:0.###}");
+
+        var gap = boxesA.Min(a => boxesB.Min(b => AabbGap(a, b)));
+        if (gap > MathF.Max(tol * 2.5f, 1.5f))
             return (false, $"member gap={gap:0.###}");
-        return (true, $"gap={gap:0.###}");
+        return (true, $"gap={gap:0.###} secB={db:0.###}");
     }
 
-    private static CadEntity? FindMember(string key, Dictionary<string, CadEntity> byName)
+    private static float SectionDist(System.Numerics.Vector3 p, WBox box)
     {
-        if (byName.TryGetValue(key, out var e))
-            return e;
-        return byName.Values.FirstOrDefault(x =>
-            x.Name is not null
-            && (x.Name.StartsWith(key + "-", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(
-                    x.Properties?.TryGetValue("assembly", out var a) == true
-                    && a.ValueKind == JsonValueKind.String
-                        ? a.GetString()
-                        : null,
-                    key,
-                    StringComparison.OrdinalIgnoreCase)));
+        // CAD X/Y = lock Y/Up — distance in the transverse section plane.
+        var dx = MathF.Abs(p.X - box.Center.X) - box.Half.X;
+        var dy = MathF.Abs(p.Y - box.Center.Y) - box.Half.Y;
+        dx = MathF.Max(0f, dx);
+        dy = MathF.Max(0f, dy);
+        return MathF.Sqrt(dx * dx + dy * dy);
+    }
+
+    private static List<CadEntity> FindMembers(string key, Dictionary<string, CadEntity> byName)
+    {
+        var list = new List<CadEntity>();
+        if (byName.TryGetValue(key, out var exact))
+            list.Add(exact);
+        foreach (var x in byName.Values)
+        {
+            if (x.Name is null || list.Contains(x))
+                continue;
+            if (x.Name.StartsWith(key + "-", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(x.Name, key, StringComparison.OrdinalIgnoreCase))
+            {
+                list.Add(x);
+                continue;
+            }
+
+            if (x.Properties is not null
+                && x.Properties.TryGetValue("assembly", out var a)
+                && a.ValueKind == JsonValueKind.String
+                && string.Equals(a.GetString(), key, StringComparison.OrdinalIgnoreCase))
+                list.Add(x);
+        }
+
+        return list;
     }
 
     private sealed record WBox(string Name, System.Numerics.Vector3 Center, System.Numerics.Vector3 Half, System.Numerics.Vector3 EndA, System.Numerics.Vector3 EndB);

@@ -57,11 +57,6 @@ internal static class StructuralBayAssembly
             ModifiedAt = stamp,
             LayersDocument = "calypso.cadlayers.json",
             ShapesDocument = "calypso.cadshapejson",
-            Layers =
-            [
-                new() { Id = "S-HULL", Name = "S-HULL", Color = [0.42f, 0.48f, 0.55f] },
-                new() { Id = "S-STRUCT", Name = "S-STRUCT", Color = [0.55f, 0.58f, 0.62f] },
-            ],
             Entities = entities,
             Camera = new CadCamera
             {
@@ -95,12 +90,13 @@ internal static class StructuralBayAssembly
         float halfDepth,
         float deckUp)
     {
-        var inset = CalypsoShipbuildingFrames.DefaultSkinInset;
-        CalypsoShipbuildingFrames.AddPerimeterRingPublic(
-            entities, loa, frameId, zStem, web, halfDepth, inset);
+        // Same octagon as plating joins / shell facets — frame knuckles sit on hull plate seams.
+        var platingInset = CalypsoShipbuildingFrames.DefaultSkinInset + 0.06f;
+        CalypsoShipbuildingFrames.AddPerimeterRingAtInset(
+            entities, loa, frameId, zStem, web, halfDepth, platingInset);
 
         // Deck chord — exact span between port/stbd ring points at deck elevation (no shrink loop).
-        var ring = CalypsoShipbuildingFrames.InnerOctagonRing(zStem, inset + web * 1.05f + 0.18f);
+        var ring = CalypsoShipbuildingFrames.InnerOctagonRing(zStem, platingInset);
         var atDeck = ring
             .Where(p => MathF.Abs(p.Up - deckUp) < 1.8f)
             .OrderBy(p => p.Y)
@@ -150,42 +146,15 @@ internal static class StructuralBayAssembly
     {
         var zc = (z0 + z1) * 0.5f;
         var halfLenZ = (z1 - z0) * 0.5f + web * 0.45f;
-        var inset = CalypsoShipbuildingFrames.DefaultSkinInset + web * 1.05f + 0.18f;
-        var ring = CalypsoShipbuildingFrames.InnerOctagonRing(zc, inset);
+        // Same IML octagon as shell plating — vertices ARE the outer-hull plating joins (knuckles/chines).
+        var platingInset = CalypsoShipbuildingFrames.DefaultSkinInset + 0.06f;
+        var ring = CalypsoShipbuildingFrames.InnerOctagonRing(zc, platingInset);
         var (cy, cu) = ring.GetSectionCenter();
-        var stiffHy = MathF.Max(0.05f, web * 0.28f);
-        var stiffHu = MathF.Max(0.055f, web * 0.3f);
 
         for (var i = 0; i < ring.Length; i++)
-        {
-            var placed = false;
-            for (var pullStep = 0; pullStep < 10 && !placed; pullStep++)
-            {
-                var y = ring[i].Y;
-                var up = ring[i].Up;
-                var inwardY = cy - y;
-                var inwardU = cu - up;
-                var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
-                if (inwardLen > 1e-4f)
-                {
-                    var pull = MathF.Min(stiffHy * (1.2f + pullStep * 0.35f), inwardLen * 0.9f);
-                    y += inwardY / inwardLen * pull;
-                    up += inwardU / inwardLen * pull;
-                }
-
-                var name = $"stringer-v{i}-{bayTag}";
-                placed = CalypsoLockGenerator.TryAddStructureBar(
-                    entities, loa, name, y, up, zc, stiffHy, stiffHu, halfLenZ,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.LongitudinalGirder, "stringer-skin",
-                        StationZ: zc, DeckUp: up, Joins: [foreFrame, aftFrame]));
-                if (!placed)
-                    continue;
-
-                joints.Add(Fillet($"j-{name}-fore", name, foreFrame, y, up, z0, "stringer×frame"));
-                joints.Add(Fillet($"j-{name}-aft", name, aftFrame, y, up, z1, "stringer×frame"));
-            }
-        }
+            EmitPlatingJoinStringer(
+                entities, joints, loa, ring, i, cy, cu, zc, z0, z1, halfLenZ, web,
+                bayTag, foreFrame, aftFrame);
 
         // Deck girders — exact bay span with web overlap into frames.
         var webH = web * 0.35f;
@@ -228,6 +197,73 @@ internal static class StructuralBayAssembly
         }
     }
 
+    /// <summary>
+    /// Longitudinal at one outer-hull plating join (octagon vertex). Outer face of the
+    /// stiffener coincides with the plating seam — only the half-flange inset along the
+    /// inward normal. Prefer a smaller section over pulling the join into the cargo volume.
+    /// </summary>
+    private static void EmitPlatingJoinStringer(
+        List<CadEntity> entities,
+        List<StructuralJoint> joints,
+        float loa,
+        (float Y, float Up)[] ring,
+        int vertexIndex,
+        float cy,
+        float cu,
+        float zc,
+        float z0,
+        float z1,
+        float halfLenZ,
+        float web,
+        string bayTag,
+        string foreFrame,
+        string aftFrame)
+    {
+        var vx = ring[vertexIndex].Y;
+        var vu = ring[vertexIndex].Up;
+        var inwardY = cy - vx;
+        var inwardU = cu - vu;
+        var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
+        var ny = inwardLen > 1e-4f ? inwardY / inwardLen : 0f;
+        var nu = inwardLen > 1e-4f ? inwardU / inwardLen : 0f;
+
+        // Corner AABB needs ~√2 half-flange to stay inside both adjacent plate planes.
+        var stiffHy = MathF.Max(0.04f, web * 0.22f);
+        var stiffHu = MathF.Max(0.045f, web * 0.24f);
+        var name = $"stringer-join-v{vertexIndex}-{bayTag}";
+        for (var shrink = 0; shrink < 8; shrink++)
+        {
+            var hy = stiffHy * MathF.Pow(0.88f, shrink);
+            var hu = stiffHu * MathF.Pow(0.88f, shrink);
+            if (hy < 0.028f || hu < 0.028f)
+                break;
+            // Exact plating-join seat: center = vertex + inward * max(hy,hu) * √2.
+            var pull = MathF.Max(hy, hu) * 1.42f;
+            var y = vx + ny * pull;
+            var up = vu + nu * pull;
+            var before = entities.Count;
+            var placed = CalypsoLockGenerator.TryAddStructureBar(
+                entities, loa, name, y, up, zc, hy, hu, halfLenZ,
+                meta: new StructuralSolidMeta(
+                    StructuralRoles.LongitudinalGirder, "plating-join",
+                    StationZ: zc, DeckUp: up, Joins: [foreFrame, aftFrame]));
+            if (!placed)
+                continue;
+
+            for (var i = before; i < entities.Count; i++)
+            {
+                var e = entities[i];
+                e.Properties ??= new Dictionary<string, System.Text.Json.JsonElement>();
+                e.Properties["platingJoinVertex"] = System.Text.Json.JsonSerializer.SerializeToElement(vertexIndex);
+                e.Properties["platingJoin"] = System.Text.Json.JsonSerializer.SerializeToElement(true);
+            }
+
+            joints.Add(Fillet($"j-{name}-fore", name, foreFrame, y, up, z0, "plating-join×frame"));
+            joints.Add(Fillet($"j-{name}-aft", name, aftFrame, y, up, z1, "plating-join×frame"));
+            return;
+        }
+    }
+
     private static void EmitShellStrips(
         List<CadEntity> entities,
         List<StructuralJoint> joints,
@@ -241,6 +277,7 @@ internal static class StructuralBayAssembly
     {
         var zc = (z0 + z1) * 0.5f;
         var halfLenZ = (z1 - z0) * 0.5f + web * 0.2f;
+        // Plate facets between plating-join vertices (same ring as join stringers).
         var inset = CalypsoShipbuildingFrames.DefaultSkinInset + 0.06f;
         var ring = CalypsoShipbuildingFrames.InnerOctagonRing(zc, inset);
         var (cy, cu) = ring.GetSectionCenter();
