@@ -1,0 +1,12 @@
+{
+  "generatedUtc": "2026-11-07T23:41:37.5736676Z",
+  "partCount": 1087,
+  "vertexCount": 9460,
+  "triangleCount": 13496,
+  "files": [
+    "calypso.obj",
+    "calypso.stl",
+    "calypso.glb"
+  ],
+  "filter": "structure role \u002B hull/oml/iml meshes"
+}
