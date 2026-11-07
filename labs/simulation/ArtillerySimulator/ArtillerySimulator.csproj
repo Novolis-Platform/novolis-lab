@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="SkiaSharp" />
     <LibraryReference Include="Novolis.Silk" />
+    <LibraryReference Include="Novolis.Game.MenuFlows" />
     <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.Physics.Ballistics" />
     <LibraryReference Include="Novolis.Physics.Collision.Simple" />

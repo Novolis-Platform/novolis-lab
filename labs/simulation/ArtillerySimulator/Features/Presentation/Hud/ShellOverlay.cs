@@ -92,11 +92,13 @@ internal sealed class ShellOverlay : IDisposable
 
     private void DrawSplash(SKCanvas canvas, IGameLevel? level, string status)
     {
-        if (_splash is not null)
+        var hasArt = _splash is not null;
+        if (hasArt)
         {
-            var dest = FitContain(_splash.Width, _splash.Height, _width, _height);
+            var dest = FitContain(_splash!.Width, _splash.Height, _width, _height);
             canvas.DrawBitmap(_splash, dest, SKSamplingOptions.Default);
-            using var shade = new SKPaint { Color = new SKColor(0, 0, 0, 120) };
+            // Light shade so the level card / controls stay readable; title+subtitle live in the art.
+            using var shade = new SKPaint { Color = new SKColor(0, 0, 0, 70) };
             canvas.DrawRect(0, 0, _width, _height, shade);
         }
 
@@ -106,14 +108,18 @@ internal sealed class ShellOverlay : IDisposable
             canvas.DrawBitmap(_icon, new SKRect(28, 28, 28 + s, 28 + s), SKSamplingOptions.Default);
         }
 
-        DrawCentered(canvas, ProductIdentity.Title, _height * 0.30f, Math.Min(68f, _width / 14f), new SKColor(232, 214, 180));
-        DrawCentered(canvas, ProductIdentity.Subtitle, _height * 0.30f + 48f, Math.Min(24f, _width / 42f), new SKColor(180, 196, 170));
+        // Fallback typography only when splash art is missing.
+        if (!hasArt)
+        {
+            DrawCentered(canvas, ProductIdentity.Title, _height * 0.30f, Math.Min(68f, _width / 14f), new SKColor(232, 214, 180));
+            DrawCentered(canvas, ProductIdentity.Subtitle, _height * 0.30f + 48f, Math.Min(24f, _width / 42f), new SKColor(180, 196, 170));
+        }
 
         if (level is not null)
         {
             var index = GameLevelCatalog.PlayableIndex(level);
             var count = Math.Max(1, GameLevelCatalog.PlayableCount);
-            var cardTop = _height * 0.46f;
+            var cardTop = hasArt ? _height * 0.58f : _height * 0.46f;
             DrawLevelCard(
                 canvas,
                 level,
@@ -121,7 +127,7 @@ internal sealed class ShellOverlay : IDisposable
                 cardTop);
         }
 
-        DrawCentered(canvas, status, _height * 0.82f, 20f, new SKColor(210, 132, 72));
+        DrawCentered(canvas, status, _height * 0.86f, 20f, new SKColor(210, 132, 72));
         DrawCentered(canvas, ProductLegal.SplashFooter, _height - 32f, 13f, new SKColor(140, 148, 140));
     }
 

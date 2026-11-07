@@ -36,6 +36,7 @@ internal sealed class ArtilleryApp : IDisposable
     private readonly ProfileOverlay _profileOverlay = new();
     private readonly FrameProfiler _liveProfiler = new(warmupFrames: 5);
     private readonly bool _skipShell;
+    private readonly ArtilleryMenuFlow _menus = new();
     private IGameLevel _level;
     private float _previewGunElev;
     private float _previewGunAz;
@@ -44,10 +45,8 @@ internal sealed class ArtilleryApp : IDisposable
     private readonly SmoothedFps _fps = new();
     private readonly CrewDrill _crew = new();
     private IDefenseMission? _mission;
-    private ShellPhase _phase = ShellPhase.Splash;
     private string _loadingStatus = "Loading map…";
     private bool _worldReady;
-    private ShellPhase _phaseBeforeLegal = ShellPhase.Paused;
     private IReadOnlyList<Vector3> _orderedPreview = [];
     private IReadOnlyList<Vector3> _tubePreview = [];
     private readonly List<IReadOnlyList<Vector3>> _dispersionPreviews = [];
@@ -83,7 +82,8 @@ internal sealed class ArtilleryApp : IDisposable
         _shot = CreateRound();
         _rounds.Add(_shot);
         _agent = new ArtilleryLiveHost(this);
-        _phase = skipShell ? ShellPhase.Loading : ShellPhase.Splash;
+        if (!skipShell)
+            _menus.ShowSplash();
     }
 
     private void BindPiece(IArtilleryPieceSpec piece)
@@ -109,8 +109,8 @@ internal sealed class ArtilleryApp : IDisposable
             _shot = _rounds[0];
     }
 
-    internal bool IsPaused => _phase is ShellPhase.Paused or ShellPhase.Legal;
-    internal ShellPhase Phase => _phase;
+    internal bool IsPaused => _menus.IsPaused || _menus.IsLegal;
+    internal ShellPhase Phase => _menus.Phase;
     internal IGameLevel Level => _level;
     internal bool WorldReady => _worldReady;
     internal bool IsMissionTerminal => _mission?.IsTerminal == true;
@@ -272,27 +272,26 @@ internal sealed class ArtilleryApp : IDisposable
         HandleShellKeys(frame);
         HandleProfileHotkeys(frame);
 
-        if (_phase is ShellPhase.Splash
-            || (_phase is ShellPhase.Legal && !_worldReady))
+        if (_menus.IsSplash || (_menus.IsLegal && !_worldReady))
         {
             frame.Clear(Rgba32.Black);
-            var status = _phase is ShellPhase.Splash
+            var status = _menus.IsSplash
                 ? ProductLegal.SplashControls
                 : ProductLegal.LegalCloseHint;
-            _shell.Draw(frame, _phase, status, _level);
+            _shell.Draw(frame, _menus.Phase, status, _level);
             return;
         }
 
-        if (_phase is ShellPhase.Loading)
+        if (_menus.IsLoading)
         {
             frame.Clear(Rgba32.Black);
-            _shell.Draw(frame, _phase, _loadingStatus, _level);
+            _shell.Draw(frame, _menus.Phase, _loadingStatus, _level);
             if (!_worldReady)
             {
                 _loadingStatus = $"Building {_level.DisplayName}…";
                 LoadWorldAndAttachAgent();
                 _loadingStatus = "Ready";
-                _phase = ShellPhase.Playing;
+                _menus.ClearToPlaying();
             }
 
             return;
@@ -326,8 +325,8 @@ internal sealed class ArtilleryApp : IDisposable
             Render(frame);
         }
 
-        if (_phase is ShellPhase.Paused or ShellPhase.Legal)
-            _shell.Draw(frame, _phase, "", _level);
+        if (_menus.IsPaused || _menus.IsLegal)
+            _shell.Draw(frame, _menus.Phase, "", _level);
 
         if (_profileFlashAge >= 0f)
             _profileFlashAge += frame.DeltaSeconds;
@@ -364,7 +363,7 @@ internal sealed class ArtilleryApp : IDisposable
         _layHoldSeconds = 0f;
         _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         RebuildAimPreview();
-        _phase = ShellPhase.Playing;
+        _menus.ClearToPlaying();
         _worldReady = true;
 
         if (!attachAgent)
@@ -459,16 +458,16 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void MaybePauseOnMissionEnd()
     {
-        if (!IsMissionTerminal || _phase is not ShellPhase.Playing)
+        if (!IsMissionTerminal || !_menus.IsPlaying)
             return;
 
-        _phase = ShellPhase.Paused;
+        _menus.PushPause();
         Console.WriteLine(_mission?.Observation() ?? "Mission complete.");
     }
 
     private void HandleShellKeys(SilkFrame frame)
     {
-        if (_phase is ShellPhase.Splash)
+        if (_menus.IsSplash)
         {
             if (frame.IsKeyPressed(Key.Left) || frame.IsKeyPressed(Key.A))
             {
@@ -484,23 +483,22 @@ internal sealed class ArtilleryApp : IDisposable
 
             if (frame.IsKeyPressed(Key.L))
             {
-                _phaseBeforeLegal = ShellPhase.Splash;
-                _phase = ShellPhase.Legal;
+                _menus.PushLegal();
                 return;
             }
 
             if (frame.IsKeyPressed(Key.Enter) || frame.IsKeyPressed(Key.Space))
-                _phase = ShellPhase.Loading;
+                _menus.ShowLoading();
 
             return;
         }
 
-        if (_phase is ShellPhase.Legal && !_worldReady)
+        if (_menus.IsLegal && !_worldReady)
         {
             if (frame.IsKeyPressed(Key.Escape)
                 || frame.IsKeyPressed(Key.L)
                 || frame.IsKeyPressed(Key.Enter))
-                _phase = ShellPhase.Splash;
+                _menus.PopOverlay();
             return;
         }
 
@@ -509,31 +507,18 @@ internal sealed class ArtilleryApp : IDisposable
 
         if (frame.IsKeyPressed(Key.L))
         {
-            if (_phase is ShellPhase.Legal)
-                _phase = _phaseBeforeLegal;
-            else
-            {
-                _phaseBeforeLegal = _phase;
-                _phase = ShellPhase.Legal;
-            }
-
+            _menus.ToggleLegal();
             return;
         }
 
         if (frame.IsKeyPressed(Key.Escape) || frame.IsKeyPressed(Key.P))
         {
-            _phase = _phase switch
-            {
-                ShellPhase.Playing => ShellPhase.Paused,
-                ShellPhase.Paused => ShellPhase.Playing,
-                ShellPhase.Legal => _phaseBeforeLegal,
-                _ => _phase,
-            };
+            _menus.TogglePause();
             return;
         }
 
-        if (_phase is ShellPhase.Paused && frame.IsKeyPressed(Key.Enter))
-            _phase = ShellPhase.Playing;
+        if (_menus.IsPaused && frame.IsKeyPressed(Key.Enter))
+            _menus.PopOverlay();
     }
 
     public void Dispose()

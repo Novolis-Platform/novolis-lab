@@ -52,7 +52,7 @@ Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force,
 | --- | --- |
 | `Host/` | `ArtilleryApp`, `BattleSession`, `FixedStepClock`, profiler |
 | `Features/Battery/` | Howitzer, crew drill, mil-tech specs |
-| `Features/Product/` | Title, legal copy, shell phases |
+| `Features/Product/` | Title, legal copy, `Novolis.Game.MenuFlows` shell screens |
 | `Features/Levels/` | `IGameLevel`, catalog, Kristiansand level |
 | `Features/Defense/` | Mission loop, outcomes, columns, opening fire plan |
 | `Features/Presentation/` | Camera, HUD, splash/pause overlays |
