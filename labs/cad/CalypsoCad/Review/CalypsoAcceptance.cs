@@ -162,7 +162,12 @@ internal static class CalypsoAcceptance
         Add("aft ramp solid", doc.Entities.Any(e => string.Equals(e.Name, "ramp-aft", StringComparison.OrdinalIgnoreCase)));
         Add("aft door coaming", doc.Entities.Any(e => e.Name?.StartsWith("coaming-aft", StringComparison.OrdinalIgnoreCase) == true));
         var interiorHatches = ShipCad.Openings(doc)
-            .Where(o => o.Name is not null && !o.Name.StartsWith("D3-", StringComparison.OrdinalIgnoreCase)
+            .Where(o => o.Name is not null
+                        && !o.Name.StartsWith("D3-", StringComparison.OrdinalIgnoreCase)
+                        && !o.Name.StartsWith("PASS-", StringComparison.OrdinalIgnoreCase)
+                        && !o.Name.StartsWith("HOLD-", StringComparison.OrdinalIgnoreCase)
+                        && !o.Name.StartsWith("D1-", StringComparison.OrdinalIgnoreCase)
+                        && !o.Name.StartsWith("D2-", StringComparison.OrdinalIgnoreCase)
                         && !ShipCad.GetOpeningConnects(o).Any(c => string.Equals(c, "SPACE", StringComparison.OrdinalIgnoreCase)))
             .ToList();
         var onPartition = interiorHatches.Count(h =>
@@ -175,8 +180,18 @@ internal static class CalypsoAcceptance
         });
         Add("hatches on partition walls", interiorHatches.Count == 0 || onPartition >= interiorHatches.Count * 0.85f,
             $"onPartition={onPartition}/{interiorHatches.Count}");
-        Add("passageway hatch frames", doc.Entities.Count(e =>
-            e.Name?.StartsWith("outfit-hatch-jamb-", StringComparison.OrdinalIgnoreCase) == true) >= 12);
+        Add("passageway hatch frames (room doors)", doc.Entities.Count(e =>
+            e.Name?.StartsWith("outfit-hatch-jamb-", StringComparison.OrdinalIgnoreCase) == true) >= 8);
+        // One-model: openings are BH/frame plate cutouts — not a second portal-bar forest.
+        Add("no floating passage-portal bars",
+            doc.Entities.Count(e => e.Name?.Contains("-passage-portal-", StringComparison.OrdinalIgnoreCase) == true) == 0);
+        Add("passageway spaces without partition walls",
+            !doc.Entities.Any(e =>
+                string.Equals(e.Kind, "wall", StringComparison.OrdinalIgnoreCase)
+                && (e.Name?.StartsWith("w-ACCESS-", StringComparison.OrdinalIgnoreCase) == true
+                    || e.Name?.StartsWith("w-CROSSING-", StringComparison.OrdinalIgnoreCase) == true
+                    || e.Name?.StartsWith("w-CORR_P-", StringComparison.OrdinalIgnoreCase) == true
+                    || e.Name?.StartsWith("w-CORR_S-", StringComparison.OrdinalIgnoreCase) == true)));
         foreach (var id in new[] { "BRIDGE", "CREW_1", "GALLEY", "ENG", "HOLD" })
         {
             Add(
@@ -290,13 +305,25 @@ internal static class CalypsoAcceptance
                 : null;
         }
 
-        var holdWebs = doc.Entities.Count(e =>
+        // HOLD may have perimeter rings + floor chords; forbid wall-like cross-hold webs only.
+        var holdCrossWebs = doc.Entities.Count(e =>
             e.Name is not null
             && e.Name.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase)
             && FrameStationZ(e.Name) is float hz
             && hz > 49.3f
             && hz < 67.5f);
-        Add("no transverse webs in open HOLD cell", holdWebs == 0, $"holdWebSolids={holdWebs}");
+        Add("no wall-like webs across HOLD cargo void", holdCrossWebs == 0, $"holdWebSolids={holdCrossWebs}");
+        var holdPerimeter = doc.Entities.Count(e =>
+        {
+            var n = e.Name ?? "";
+            if (!n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
+                return false;
+            if (FrameStationZ(n) is not float hz || hz <= 49.3f || hz >= 67.5f)
+                return false;
+            return n.Contains("-ring-", StringComparison.OrdinalIgnoreCase)
+                   || n.Contains("-holdfloor", StringComparison.OrdinalIgnoreCase);
+        });
+        Add("HOLD perimeter frames present", holdPerimeter >= 8, $"holdPerimeterBars={holdPerimeter}");
         Add(
             "outfit LOUNGE-bar",
             doc.Entities.Any(e => string.Equals(e.Name, "outfit-LOUNGE-bar", StringComparison.OrdinalIgnoreCase)));
@@ -310,6 +337,13 @@ internal static class CalypsoAcceptance
             "airlock leaves both sides",
             doc.Entities.Any(e => string.Equals(e.Name, "outfit-AIRLOCK_A_port-leaf", StringComparison.OrdinalIgnoreCase))
             && doc.Entities.Any(e => string.Equals(e.Name, "outfit-AIRLOCK_A_stbd-leaf", StringComparison.OrdinalIgnoreCase)));
+        var airlockSpaces = ShipCad.Spaces(doc).Count(s =>
+            s.Name?.StartsWith("AIRLOCK_", StringComparison.OrdinalIgnoreCase) == true);
+        Add("airlock chambers present (A+B × port/stbd)", airlockSpaces >= 4, $"airlockSpaces={airlockSpaces}");
+        Add("passage interface hatches",
+            doc.Entities.Count(e => e.Name?.StartsWith("PASS-", StringComparison.OrdinalIgnoreCase) == true) >= 6);
+        Add("airlock triple to SPACE (D1/D2/D3 both sides)",
+            doc.Entities.Count(e => e.Name is "D1-P" or "D1-S" or "D2-P" or "D2-S" or "D3-P" or "D3-S") >= 6);
 
         var bulkheads = doc.Entities.Count(e =>
             e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true);
@@ -425,11 +459,11 @@ internal static class CalypsoAcceptance
         var sandwichFaces = entities.Count(e =>
             e.Name?.Contains("-face-top", StringComparison.OrdinalIgnoreCase) == true
             && e.Name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase));
-        var sandwichCores = entities.Count(e =>
-            e.Name?.Contains("-core", StringComparison.OrdinalIgnoreCase) == true
+        var sandwichRibs = entities.Count(e =>
+            e.Name?.Contains("-rib-", StringComparison.OrdinalIgnoreCase) == true
             && e.Name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase));
-        Add("cellular sandwich face+core solids", sandwichFaces >= 8 && sandwichCores >= 8,
-            $"faceTop={sandwichFaces} core={sandwichCores}");
+        Add("cellular sandwich face+ribs", sandwichFaces >= 8 && sandwichRibs >= 16,
+            $"faceTop={sandwichFaces} ribs={sandwichRibs}");
 
         var joinStubs = entities.Count(e =>
             e.Name?.Contains("-join-", StringComparison.OrdinalIgnoreCase) == true);

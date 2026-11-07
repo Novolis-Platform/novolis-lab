@@ -14,4 +14,10 @@ internal static class BallisticArcColors
     /// <summary>High-transparency sibling arcs + loft bands for the physics probability cone.</summary>
     public static readonly Color Probability = Color.FromArgb(48, 120, 220, 255);
     public static readonly Color ProbabilityFootprint = Color.FromArgb(70, 100, 200, 255);
+
+    /// <summary>Red-tinged aim when the shell cannot clear (terrain / HE min).</summary>
+    public static readonly Color OrderedUnsafe = Color.FromArgb(255, 255, 72, 58);
+    public static readonly Color ProbabilityUnsafe = Color.FromArgb(72, 255, 70, 55);
+    public static readonly Color ProbabilityFootprintUnsafe = Color.FromArgb(110, 230, 55, 45);
+    public static readonly Color MpiMarkUnsafe = Color.FromArgb(255, 255, 48, 40);
 }

@@ -23,6 +23,12 @@ internal static class SimulationUnits
   public const float MinEffectiveRangeMeters = 4_000f;
 
   /// <summary>
+  /// Predicted ground range below this is treated as “detonation at the piece”
+  /// (muzzle/terrain clearance failure), not a usable fire solution.
+  /// </summary>
+  public const float LaunchClearanceMeters = 400f;
+
+  /// <summary>
   /// Column spawn ring from the fort: ~2.25× HE minimum so the battery has time to observe,
   /// lay, and fire before the lead vehicle closes the HE floor.
   /// </summary>

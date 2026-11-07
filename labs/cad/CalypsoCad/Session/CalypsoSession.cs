@@ -105,9 +105,9 @@ internal sealed class CalypsoSession
     }
 
     /// <summary>Generate and load the piece-by-piece structural bay CAD (not the full ship).</summary>
-    public void RegenerateAndLoadStructuralBay(bool includeAdjacentBay = false)
+    public void RegenerateAndLoadStructuralBay(bool includeAdjacentBay = false, bool includeHoldBay = false)
     {
-        GeneratedDirectory = CalypsoLockGenerator.GenerateStructuralBay(includeAdjacentBay);
+        GeneratedDirectory = CalypsoLockGenerator.GenerateStructuralBay(includeAdjacentBay, includeHoldBay);
         (LayersCatalog, Shapes, Document) = CadDocumentBundle.Read(GeneratedDirectory, "calypso-structural-bay");
         ShapeById = Shapes.Shapes.ToDictionary(s => s.Id);
         SelectedSpaceId = null;

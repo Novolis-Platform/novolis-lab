@@ -85,6 +85,43 @@ internal static class HeadlessPngExporter
             session.StatusText = "headless:orbit-cutaway-long";
         });
 
+        Add("layer-primary-steel", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.PrimaryStructure;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            renderer.ApplyOrbitPreset("cutaway-long");
+            session.StatusText = "headless:layer-primary-steel";
+        });
+
+        Add("layer-primary-plus-decks", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.PrimaryPlusDecks;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            renderer.ApplyOrbitPreset("cutaway-long");
+            session.StatusText = "headless:layer-primary-plus-decks";
+        });
+
+        Add("layer-pressure-airlocks", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.PressureStructure | CalypsoVisualLayers.Airlocks;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
+            renderer.ApplyOrbitPreset("cutaway-long");
+            session.StatusText = "headless:layer-pressure-airlocks";
+        });
+
+        Add("layer-passageway-volumes", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.SpaceFinish
+                                   | CalypsoVisualLayers.PassagewayCutouts;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
+            renderer.ApplyOrbitPreset("cutaway-long");
+            session.StatusText = "headless:layer-passageway-volumes";
+        });
+
         Add("layer-cutaway-structure", () =>
         {
             session.VisualLayers = CalypsoVisualLayers.StructureOnlyCutaway;

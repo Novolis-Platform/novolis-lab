@@ -40,17 +40,29 @@ internal static class StructureDetailBlueprintEmitter
             index.Add((file, $"Bulkhead {id} @ z={zStem:0.##} m from stem — plan + section + profile"));
         }
 
-        var bayM = L.FrameBayM;
-        foreach (var bay in new[] { 0f, bayM * 5f, bayM * 10f, bayM * 15f })
+        var bayM = L.FrameBayM > 0.5f ? L.FrameBayM : 4f;
+        // Dense midbody + hold samples (passage portals live on F24–F48 CORR track).
+        var frameZs = new HashSet<float>();
+        foreach (var mult in new[] { 0, 3, 5, 6, 7, 8, 10, 12, 13, 14, 15 })
         {
-            if (bay > (float)L.Loa)
-                break;
-            var file = $"FRAME-z{bay.ToString("0", CultureInfo.InvariantCulture)}.html";
-            Write(outDir, file, BuildFrameSheet(L, bay, sandwiches));
-            index.Add((file, $"Transverse web station @ z={bay:0} m — section + plan tick"));
+            var z = bayM * mult;
+            if (z <= (float)L.Loa - 0.5f)
+                frameZs.Add(z);
         }
 
-        foreach (var space in new[] { "BRIDGE", "ENG", "HOLD", "CORR_P", "CORR_S", "CROSSING" })
+        foreach (var z in frameZs.OrderBy(z => z))
+        {
+            var file = $"FRAME-z{z.ToString("0", CultureInfo.InvariantCulture)}.html";
+            Write(outDir, file, BuildFrameSheet(L, z, sandwiches));
+            index.Add((file, $"Transverse web station @ z={z:0} m — section + plan tick"));
+        }
+
+        foreach (var space in new[]
+                 {
+                     "BRIDGE", "ENG", "HOLD", "CORR_P", "CORR_S", "CROSSING", "ACCESS",
+                     "GALLEY", "LOUNGE", "CREW_1", "CREW_3", "PAX_1", "INFIRMARY",
+                     "AIRLOCK_A_port", "AIRLOCK_B_stbd",
+                 })
         {
             var file = $"SPACE-{space}.html";
             Write(outDir, file, BuildSpaceSheet(L, space, sandwiches));

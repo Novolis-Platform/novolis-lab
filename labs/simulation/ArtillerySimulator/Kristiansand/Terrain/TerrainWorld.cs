@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Numerics;
 using Novolis.Math.Geometry;
 using Novolis.Physics.Abstractions;
@@ -15,15 +17,18 @@ internal sealed class TerrainWorld : IDisposable
     private static readonly Color BoundaryColor = Color.FromArgb(255, 200, 180, 90);
 
     /// <summary>
-    /// Fill mesh density (512 ≈ 47 m/cell on the long axis). Collision stays independent.
+    /// Fill mesh density (512 ≈ 47 m/cell on the long axis). Collision stays coarse for boot.
     /// </summary>
     public const int DisplayCells = 512;
+
+    /// <summary>~188 m/cell — enough for shell/terrain contact without a 500k-tri BVH at boot.</summary>
+    public const int CollisionCells = 128;
 
     private WorldExtentOptions _extentOptions = new()
     {
         ExtentMeters = KristiansandHeightSampler.EastMeters,
         ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
-        CollisionCells = 512,
+        CollisionCells = CollisionCells,
         DrawCells = DisplayCells,
     };
 
@@ -53,12 +58,13 @@ internal sealed class TerrainWorld : IDisposable
 
     public void Rebuild()
     {
+        var sw = Stopwatch.StartNew();
         InvalidateGpuMeshes();
         _extentOptions = new WorldExtentOptions
         {
             ExtentMeters = KristiansandHeightSampler.EastMeters,
             ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
-            CollisionCells = 512,
+            CollisionCells = CollisionCells,
             DrawCells = DisplayCells,
         };
 
@@ -69,8 +75,10 @@ internal sealed class TerrainWorld : IDisposable
         _collision = mesh.Collision;
         _drawVertices = mesh.DrawVertices;
         _drawCells = mesh.DrawCells;
+        var afterMesh = sw.ElapsedMilliseconds;
 
         _cachedFill = KristiansandLandFillMesh.Build(_drawVertices, _drawCells, _drawCells);
+        var afterFill = sw.ElapsedMilliseconds;
 
         KristiansandMapFeatures.ResetClipCache();
         KristiansandNvdbRoads.Reset();
@@ -80,6 +88,10 @@ internal sealed class TerrainWorld : IDisposable
             SimulationUnits.GunPivotX,
             _field.SampleHeight(SimulationUnits.GunPivotX, NorthMeters * 0.5f) + SimulationUnits.GunHeightOffset,
             NorthMeters * 0.5f);
+
+        Console.WriteLine(string.Create(
+            CultureInfo.InvariantCulture,
+            $"Terrain rebuild: mesh={afterMesh}ms fill={afterFill - afterMesh}ms roads={sw.ElapsedMilliseconds - afterFill}ms total={sw.ElapsedMilliseconds}ms (draw={DisplayCells} coll={CollisionCells} tris={TerrainTriangleCount} roadSeg={RoadLineCount})"));
     }
 
     public void PlaceGun(float x, float z)
@@ -96,7 +108,7 @@ internal sealed class TerrainWorld : IDisposable
         if (_fillMesh is not null)
             frame.DrawWorldSolidMesh(_fillMesh, viewProjection);
         if (_roadMesh is not null)
-            frame.DrawWorldLineMesh(_roadMesh, viewProjection);
+            frame.DrawWorldLineMesh(_roadMesh, viewProjection, depthTest: false);
     }
 
     public void DrawDynamic(SilkWireBatch wires)

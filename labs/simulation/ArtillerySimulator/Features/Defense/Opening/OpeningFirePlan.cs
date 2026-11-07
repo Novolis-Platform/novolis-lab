@@ -60,11 +60,12 @@ internal static class OpeningFirePlan
         var closeCharge = 3;
 
         // Prefer low → reduced → standard → max (shortest usable zone first).
+        // Coarse elevation steps — opening lay is a seed, not a fire-for-effect table.
         ReadOnlySpan<int> chargeOrder = [3, 0, 1, 2];
         foreach (var charge in chargeOrder)
         {
             var speed = SimulationUnits.ChargeSpeedsMps[charge];
-            for (var elev = GunModel.MaxElevationDegrees; elev >= 12f; elev -= 0.5f)
+            for (var elev = GunModel.MaxElevationDegrees; elev >= 12f; elev -= 2f)
             {
                 var reach = ReachMeters(terrain, atmosphere, simulation, gun, aimBearing, elev, speed);
                 if (reach < SimulationUnits.MinEffectiveRangeMeters - 50f)
@@ -135,9 +136,9 @@ internal static class OpeningFirePlan
             environment,
             terrain.Field,
             state,
-            dtSeconds: 1.0 / 60.0,
-            maxTimeSeconds: 55,
-            maxPoints: 4_000);
+            dtSeconds: 1.0 / 20.0,
+            maxTimeSeconds: 120,
+            maxPoints: 1_200);
         return Horizontal(pivot, preview[^1]);
     }
 

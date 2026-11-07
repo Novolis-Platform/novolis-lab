@@ -47,10 +47,10 @@ internal static class FrameWebPlateBuilder
             return;
 
         var fabPartId = FabPartId(frameId, "P-FRAME");
-        // Open-frame clearances: full deck-bay openings + aggressive lightening (fab SoT).
+        // Open-frame: passageway clearances only — no lightening swiss-cheese (one-model: fab ≡ viz).
         var holeLoops = BuildHoles(
             gaps, portals, portalBands, upMin, upMax, zStem, inset, decks, 0f, bowAligned,
-            skipLightening: false, openWebFrame: true);
+            skipLightening: true, openWebFrame: true);
         RegisterFabProfile(fabPartId, ring, holeLoops, zStem, web);
 
         EmitOpenWebFrameViz(
@@ -88,6 +88,7 @@ internal static class FrameWebPlateBuilder
         RegisterFabProfile(fabPartId, ring, holeLoops, zStem, thickness);
 
         // Closed plate viz — door-in-wall coarse spans (pressure barrier).
+        // Openings are boolean holes in the plate only — no second portal-bar model.
         _ = useCoarseSpans;
         EmitPlateSpans(
             entities, loa, bulkheadId, zStem, thickness, halfDepthZ,
@@ -179,8 +180,8 @@ internal static class FrameWebPlateBuilder
     }
 
     /// <summary>
-    /// Viz for open web frames: connected skeleton — ring + deck chords + narrow residual webs.
-    /// Large clearances stay empty (no wall boxes).
+    /// Viz for open web frames: ring + deck chords split at passageway tracks.
+    /// Clearances stay empty — no portal-bar second model (one steel story).
     /// </summary>
     private static void EmitOpenWebFrameViz(
         List<CadEntity> entities,
@@ -202,6 +203,12 @@ internal static class FrameWebPlateBuilder
     {
         _ = mid;
         _ = fabPartId;
+        _ = upMin;
+        _ = upMax;
+        _ = ring;
+        _ = holeLoops;
+        _ = inset;
+        _ = web;
         // 1) Perimeter ring along IML octagon (primary closed load path).
         CalypsoShipbuildingFrames.AddPerimeterRingPublic(
             entities, loa, frameId, zStem, web, halfDepthZ, inset);
@@ -233,11 +240,6 @@ internal static class FrameWebPlateBuilder
                 }
             }
         }
-
-        // 3) Narrow residual webs only — material between large clearances (not full-height wings).
-        EmitResidualWebStrips(
-            entities, loa, frameId, zStem, web, halfDepthZ,
-            upMin, upMax, ring, athwartGaps, decks, holeLoops, inset, bowAligned, ref cellIndex);
     }
 
     /// <summary>

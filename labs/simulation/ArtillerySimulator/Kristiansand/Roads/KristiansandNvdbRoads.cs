@@ -13,9 +13,10 @@ internal static class KristiansandNvdbRoads
 {
     private static readonly Color PrimaryColor = Color.FromArgb(255, 36, 36, 36);
     private static readonly Color SecondaryColor = Color.FromArgb(220, 48, 48, 48);
-    private const float LiftMeters = 3.2f;
-    private const float DrapeMeters = 28f;
-    private const float SecondaryDrapeMeters = 55f;
+    private const float LiftMeters = 8f;
+    /// <summary>Drape spacing — dense enough that roads follow relief and stay continuous.</summary>
+    private const float DrapeMeters = 40f;
+    private const float SecondaryDrapeMeters = 70f;
     /// <summary>Skip local K/P strokes in the runtime mesh — primary roads carry OPFOR + map intent.</summary>
     private const bool DrawSecondaryRoads = false;
 
@@ -174,6 +175,15 @@ internal static class KristiansandNvdbRoads
             var len = MathF.Sqrt(dx * dx + dz * dz);
             if (len < 0.5f)
                 continue;
+
+            if (len <= drapeMeters)
+            {
+                wires.Line(
+                    Place(heights, east, north, a2.X, a2.Y),
+                    Place(heights, east, north, b2.X, b2.Y),
+                    color);
+                continue;
+            }
 
             var samples = Math.Max(2, (int)MathF.Ceiling(len / drapeMeters) + 1);
             Vector3? prev = null;

@@ -24,7 +24,8 @@ internal static class KristiansandLandFillMesh
         if (vertices.Length < stride * (cellsZ + 1))
             throw new ArgumentException("Vertex buffer shorter than cells imply.", nameof(vertices));
 
-        var tris = new WorldSolidVertex[cellsX * cellsZ * 6];
+        // Worst case: every cell straddles shore → 2×2 subdivide (8 tris × 3 verts).
+        var tris = new WorldSolidVertex[cellsX * cellsZ * 24];
         var o = 0;
         for (var z = 0; z < cellsZ; z++)
         {
@@ -38,22 +39,55 @@ internal static class KristiansandLandFillMesh
                 var b = vertices[i10];
                 var c = vertices[i11];
                 var d = vertices[i01];
+                var ca = ColorAt(a);
+                var cb = ColorAt(b);
+                var cc = ColorAt(c);
+                var cd = ColorAt(d);
 
-                // Cell-center mask pick — no slope / elevation tint.
-                var cx = (a.X + b.X + c.X + d.X) * 0.25f;
-                var cz = (a.Z + b.Z + c.Z + d.Z) * 0.25f;
-                var color = KristiansandSurface.KindAt(cx, cz) == KristiansandSurfaceKind.Water
-                    ? Water
-                    : Land;
+                // Same-kind cell: two tris. Mixed land/water: 2×2 subdivide so the shore
+                // follows the mask more closely than the coarse heightfield grid.
+                if (ca.Equals(cb) && cb.Equals(cc) && cc.Equals(cd))
+                {
+                    Write(tris, ref o, a, d, c, ca, cd, cc);
+                    Write(tris, ref o, a, c, b, ca, cc, cb);
+                    continue;
+                }
 
-                // CCW from above (+Y outward): a→d→c and a→c→b.
-                Write(tris, ref o, a, d, c, color);
-                Write(tris, ref o, a, c, b, color);
+                var ab = Mid(a, b);
+                var bc = Mid(b, c);
+                var cdMid = Mid(c, d);
+                var da = Mid(d, a);
+                var m = Mid(a, c);
+                var cab = ColorAt(ab);
+                var cbc = ColorAt(bc);
+                var ccd = ColorAt(cdMid);
+                var cda = ColorAt(da);
+                var cm = ColorAt(m);
+
+                Write(tris, ref o, a, da, m, ca, cda, cm);
+                Write(tris, ref o, a, m, ab, ca, cm, cab);
+                Write(tris, ref o, ab, m, bc, cab, cm, cbc);
+                Write(tris, ref o, ab, bc, b, cab, cbc, cb);
+                Write(tris, ref o, da, d, cdMid, cda, cd, ccd);
+                Write(tris, ref o, da, cdMid, m, cda, ccd, cm);
+                Write(tris, ref o, m, cdMid, c, cm, ccd, cc);
+                Write(tris, ref o, m, c, bc, cm, cc, cbc);
             }
         }
 
-        return tris;
+        // Mixed cells use 8 tris; allocate for worst case then trim.
+        if (o == tris.Length)
+            return tris;
+        var tight = new WorldSolidVertex[o];
+        tris.AsSpan(0, o).CopyTo(tight);
+        return tight;
     }
+
+    private static Vector3 Mid(Vector3 p, Vector3 q) =>
+        new((p.X + q.X) * 0.5f, (p.Y + q.Y) * 0.5f, (p.Z + q.Z) * 0.5f);
+
+    private static Rgba32 ColorAt(Vector3 p) =>
+        KristiansandSurface.KindAt(p.X, p.Z) == KristiansandSurfaceKind.Water ? Water : Land;
 
     private static void Write(
         WorldSolidVertex[] dest,
@@ -61,10 +95,12 @@ internal static class KristiansandLandFillMesh
         Vector3 p0,
         Vector3 p1,
         Vector3 p2,
-        Rgba32 color)
+        Rgba32 c0,
+        Rgba32 c1,
+        Rgba32 c2)
     {
-        dest[o++] = new WorldSolidVertex(p0.X, p0.Y, p0.Z, color);
-        dest[o++] = new WorldSolidVertex(p1.X, p1.Y, p1.Z, color);
-        dest[o++] = new WorldSolidVertex(p2.X, p2.Y, p2.Z, color);
+        dest[o++] = new WorldSolidVertex(p0.X, p0.Y, p0.Z, c0);
+        dest[o++] = new WorldSolidVertex(p1.X, p1.Y, p1.Z, c1);
+        dest[o++] = new WorldSolidVertex(p2.X, p2.Y, p2.Z, c2);
     }
 }

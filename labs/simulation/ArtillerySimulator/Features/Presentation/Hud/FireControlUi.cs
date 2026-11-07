@@ -50,7 +50,6 @@ internal sealed class FireControlUi : IDisposable
 
     public readonly record struct FrameActions(
         int? ChargeIndex,
-        int? PaceIndex,
         bool Fire,
         bool SnapGun,
         bool SnapBattle,
@@ -64,7 +63,6 @@ internal sealed class FireControlUi : IDisposable
         PointerOverUi = HitAny(mx, my);
 
         int? charge = null;
-        int? pace = null;
         var fire = false;
         var snapGun = false;
         var snapBattle = false;
@@ -72,7 +70,7 @@ internal sealed class FireControlUi : IDisposable
         var toggleFollow = false;
 
         if (!frame.IsMouseButtonPressed(MouseButton.Left))
-            return new FrameActions(null, null, false, false, false, false, false);
+            return new FrameActions(null, false, false, false, false, false);
 
         foreach (var btn in _buttons)
         {
@@ -90,12 +88,6 @@ internal sealed class FireControlUi : IDisposable
                 case "charge-3":
                     charge = btn.Id[^1] - '0';
                     _chargeMenuOpen = false;
-                    break;
-                case "pace-0":
-                case "pace-1":
-                case "pace-2":
-                case "pace-3":
-                    pace = btn.Id[^1] - '0';
                     break;
                 case "fire":
                     fire = true;
@@ -117,7 +109,7 @@ internal sealed class FireControlUi : IDisposable
             break;
         }
 
-        return new FrameActions(charge, pace, fire, snapGun, snapBattle, map, toggleFollow);
+        return new FrameActions(charge, fire, snapGun, snapBattle, map, toggleFollow);
     }
 
     public void Draw(
@@ -133,10 +125,10 @@ internal sealed class FireControlUi : IDisposable
         float predictedRangeMeters,
         float predictedTofSeconds,
         Vector3 predictedImpact,
-        int paceIndex,
-        string paceLabel,
         string? defenseLine,
-        string? reloadLine)
+        string? fireBlockReason,
+        bool solutionUnsafe,
+        bool launchDetonation)
     {
         _width = frame.Width;
         _height = frame.Height;
@@ -160,18 +152,16 @@ internal sealed class FireControlUi : IDisposable
             BallisticTrajectoryPhase.Impacted when shot.Impact is { } hit => hit.HorizontalRangeMeters,
             _ => predictedRangeMeters,
         };
-        var underMin = predictedRangeMeters < SimulationUnits.MinEffectiveRangeMeters;
-        // reloadLine is null once the breech is closed — fire snaps the tube; do not wait on lay.
-        // Rounds already airborne do not block the next fire (autoloader only).
-        var canFire = reloadLine is null;
+        // Fire when breech is ready and the shell clears the piece (HE min is warning-only).
+        var canFire = fireBlockReason is null;
 
         // Rebuild hit boxes every frame (cheap); rasterize Skia only when chrome meaningfully changes.
         _buttons.Clear();
-        BuildButtons(gun, paceIndex, followProjectile, canFire);
+        BuildButtons(gun, followProjectile, canFire);
 
         var signature = string.Create(
             CultureInfo.InvariantCulture,
-            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{predictedRangeMeters:F0}|{predictedTofSeconds:F1}|{heroRange:F0}|{gun.ChargeIndex}|{paceIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{reloadLine}|{shot.Phase}|{underMin}|{windSpeed:F0}|{windBearing:F0}|{predictedImpact.Y:F0}");
+            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{predictedRangeMeters:F0}|{predictedTofSeconds:F1}|{heroRange:F0}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{windSpeed:F0}|{windBearing:F0}|{predictedImpact.Y:F0}");
         _rasterAge += frame.DeltaSeconds;
         var dirty = signature != _lastSignature || _rasterAge >= 0.12f;
         if (dirty)
@@ -180,14 +170,22 @@ internal sealed class FireControlUi : IDisposable
             _rasterAge = 0f;
             var canvas = _canvas!;
             canvas.Clear(SKColors.Transparent);
-            DrawTopBar(canvas, shot, heroRange, gun, defenseLine, reloadLine);
-            DrawGunPanel(canvas, gun, orderedElevMils, orderedDeflMils, reloadLine, underMin, predictedRangeMeters, predictedTofSeconds);
+            DrawTopBar(canvas, shot, heroRange, gun, defenseLine, fireBlockReason, launchDetonation, solutionUnsafe);
+            DrawGunPanel(
+                canvas,
+                gun,
+                orderedElevMils,
+                orderedDeflMils,
+                fireBlockReason,
+                solutionUnsafe,
+                launchDetonation,
+                predictedRangeMeters,
+                predictedTofSeconds);
             DrawMetPanel(canvas, atmosphere, sampleAlt, windSpeed, windBearing, predictedImpact, terrain);
             DrawChargeMenu(canvas, gun);
-            DrawPaceRow(canvas, paceIndex);
             DrawCameraRow(canvas, followProjectile);
             DrawFireButton(canvas, canFire);
-            DrawLegend(canvas);
+            DrawLegend(canvas, solutionUnsafe);
             DrawHelp(canvas);
             CopyPixels();
         }
@@ -199,15 +197,14 @@ internal sealed class FireControlUi : IDisposable
         frame.ClearDepth();
         frame.BlitOverlay(_pixels, _width, _height);
         LastOverlayLineCount = 0;
-        _ = paceLabel;
     }
 
-    private void BuildButtons(GunModel gun, int paceIndex, bool followProjectile, bool canFire)
+    private void BuildButtons(GunModel gun, bool followProjectile, bool canFire)
     {
         var bw = 280f * _scale;
         var bh = 42f * _scale;
         var bx = 8f;
-        var by = _height - 230f * _scale;
+        var by = _height - 180f * _scale;
         AddButton("charge-toggle", bx, by, bw, bh, $"CHARGE  {gun.ChargeLabel.ToUpperInvariant()}", selected: true);
         if (_chargeMenuOpen)
         {
@@ -218,16 +215,7 @@ internal sealed class FireControlUi : IDisposable
             }
         }
 
-        var paceLabels = new[] { "1X", "3X", "8X", "24X" };
-        var pbw = 72f * _scale;
-        var pbh = 36f * _scale;
         var gap = 8f * _scale;
-        var total = paceLabels.Length * pbw + (paceLabels.Length - 1) * gap;
-        var x0 = (_width - total) * 0.5f;
-        var py = _height - 120f * _scale;
-        for (var i = 0; i < paceLabels.Length; i++)
-            AddButton($"pace-{i}", x0 + i * (pbw + gap), py, pbw, pbh, paceLabels[i], paceIndex == i);
-
         var cbw = 120f * _scale;
         var cbh = 36f * _scale;
         var cx = _width - 8 - 4 * cbw - 3 * gap;
@@ -285,16 +273,19 @@ internal sealed class FireControlUi : IDisposable
         float heroRange,
         GunModel gun,
         string? defenseLine,
-        string? reloadLine)
+        string? fireBlockReason,
+        bool launchDetonation,
+        bool solutionUnsafe)
     {
         var topH = 72f * _scale;
         PanelBox(canvas, 8, 8, _width - 16, topH);
 
-        // Status is breech/crew — multiple rounds may be airborne while READY to fire again.
-        var phase = reloadLine is not null ? "BUSY"
+        var phase = launchDetonation ? "NO CLR"
+            : solutionUnsafe ? "UNSAFE"
+            : fireBlockReason is not null ? "BUSY"
             : shot.Phase == BallisticTrajectoryPhase.Impacted ? "IMPACT"
             : "READY";
-        var phaseColor = reloadLine is not null ? Alert
+        var phaseColor = launchDetonation || solutionUnsafe || fireBlockReason is not null ? Alert
             : shot.Phase == BallisticTrajectoryPhase.Impacted ? Alert
             : Ready;
 
@@ -316,15 +307,16 @@ internal sealed class FireControlUi : IDisposable
         GunModel gun,
         float orderedElevMils,
         float orderedDeflMils,
-        string? reloadLine,
-        bool underMin,
+        string? fireBlockReason,
+        bool solutionUnsafe,
+        bool launchDetonation,
         float predictedRange,
         float tof)
     {
         var px = 8f;
         var py = 92f * _scale;
         var pw = 360f * _scale;
-        var ph = 210f * _scale;
+        var ph = 230f * _scale;
         PanelBox(canvas, px, py, pw, ph);
 
         var lx = px + 16 * _scale;
@@ -338,9 +330,14 @@ internal sealed class FireControlUi : IDisposable
         ly += lh;
         DrawText(canvas, $"DEFL  {gun.DeflectionMils:F0} -> {orderedDeflMils:F0} MIL", lx, ly, ls, Text);
         ly += lh;
-        DrawText(canvas, $"PRED  {SimulationUnits.FormatRange(predictedRange)}   TOF {tof:F1} S", lx, ly, ls, underMin ? Alert : Text);
+        DrawText(canvas, $"PRED  {SimulationUnits.FormatRange(predictedRange)}   TOF {tof:F1} S", lx, ly, ls, solutionUnsafe ? Alert : Text);
         ly += lh;
-        if (underMin)
+        if (launchDetonation)
+        {
+            DrawText(canvas, "NO CLEARANCE — DETONATION AT PIECE", lx, ly, ls, Alert);
+            ly += lh;
+        }
+        else if (solutionUnsafe)
         {
             DrawText(canvas, $"BELOW HE MIN {SimulationUnits.MinEffectiveRangeMeters / 1000f:F1} KM", lx, ly, ls, Alert);
             ly += lh;
@@ -348,11 +345,11 @@ internal sealed class FireControlUi : IDisposable
 
         DrawText(
             canvas,
-            reloadLine is null ? "CREW READY" : Truncate(reloadLine.ToUpperInvariant(), 32),
+            fireBlockReason is null ? "CREW READY" : Truncate(fireBlockReason.ToUpperInvariant(), 36),
             lx,
             ly,
             ls,
-            reloadLine is null ? Ready : Alert);
+            fireBlockReason is null ? Ready : Alert);
     }
 
     private void DrawMetPanel(
@@ -414,23 +411,6 @@ internal sealed class FireControlUi : IDisposable
         }
     }
 
-    private void DrawPaceRow(SKCanvas canvas, int paceIndex)
-    {
-        var labels = new[] { "1X", "3X", "8X", "24X" };
-        var bw = 72f * _scale;
-        var bh = 36f * _scale;
-        var gap = 8f * _scale;
-        var total = labels.Length * bw + (labels.Length - 1) * gap;
-        var x0 = (_width - total) * 0.5f;
-        var y = _height - 120f * _scale;
-        DrawText(canvas, "PACE", x0, y - 10 * _scale, 13f * _scale, Dim);
-        for (var i = 0; i < labels.Length; i++)
-        {
-            var x = x0 + i * (bw + gap);
-            DrawButtonVisual(canvas, x, y, bw, bh, labels[i], paceIndex == i);
-        }
-    }
-
     private void DrawCameraRow(SKCanvas canvas, bool followProjectile)
     {
         var bw = 120f * _scale;
@@ -472,7 +452,7 @@ internal sealed class FireControlUi : IDisposable
         DrawCenteredText(canvas, "FIRE", bx, by, bw, bh, 22f * _scale, canFire ? Alert : Dim);
     }
 
-    private void DrawLegend(SKCanvas canvas)
+    private void DrawLegend(SKCanvas canvas, bool solutionUnsafe)
     {
         var pw = 280f * _scale;
         var ph = 190f * _scale;
@@ -486,8 +466,10 @@ internal sealed class FireControlUi : IDisposable
         var lh = 28f * _scale;
         DrawText(canvas, "ARC LEGEND", lx, ly, 17f * _scale, Accent);
         ly += lh;
-        LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.Ordered, "AIMED TRAJECTORY");
-        LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.Probability, "PROBABILITY CONE");
+        var aim = solutionUnsafe ? BallisticArcColors.OrderedUnsafe : BallisticArcColors.Ordered;
+        var prob = solutionUnsafe ? BallisticArcColors.ProbabilityUnsafe : BallisticArcColors.Probability;
+        LegendRow(canvas, ref ly, lx, ls, lh, aim, solutionUnsafe ? "AIMED (UNSAFE)" : "AIMED TRAJECTORY");
+        LegendRow(canvas, ref ly, lx, ls, lh, prob, solutionUnsafe ? "PROBABILITY (UNSAFE)" : "PROBABILITY CONE");
         LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.Tube, "TUBE (LAYING)");
         LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.Flight, "LIVE ROUND");
         LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.MinRange, "HE MIN RING");

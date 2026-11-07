@@ -53,9 +53,11 @@ internal static class CadJsonStructureQuery
         {
             if (e.Name is null || !SandwichName.IsMatch(e.Name))
                 continue;
-            // Prefer face-top (or legacy single slab); skip core / face-bot duplicates.
+            // Prefer face-top (or legacy single slab); skip ribs / peri / face-bot duplicates.
             var n = e.Name;
-            if (n.Contains("-core", StringComparison.OrdinalIgnoreCase)
+            if (n.Contains("-rib-", StringComparison.OrdinalIgnoreCase)
+                || n.Contains("-peri-", StringComparison.OrdinalIgnoreCase)
+                || n.Contains("-core", StringComparison.OrdinalIgnoreCase)
                 || n.Contains("-face-bot", StringComparison.OrdinalIgnoreCase))
                 continue;
             if (!TryBox(e, out var center, out var half))

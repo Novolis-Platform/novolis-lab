@@ -11,7 +11,7 @@ namespace CalypsoCad.Blueprints;
 /// </summary>
 internal static class InternalsBlueprintEmitter
 {
-    private const string Rev = "F";
+    private const string Rev = "G";
     private const string StdNote = "INTERPRET PER ISO 128-15 / ISO 5457 / ISO 7200. UNITS: METRES. STERN LEFT, BOW RIGHT.";
 
     private enum DeckAnnotMode
@@ -60,20 +60,19 @@ internal static class InternalsBlueprintEmitter
         written.Add(Write(outDir, "CAL-INT-GA-001.html", BuildGaSheet(lockDoc, sandwiches)));
         written.Add(Write(outDir, "CAL-INT-DK-001.html", BuildDeckSheet(lockDoc, DeckAnnotMode.CadDimensions)));
         written.Add(Write(outDir, "CAL-INT-DK-002.html", BuildDeckSheet(lockDoc, DeckAnnotMode.ExpectedOverlay)));
+        written.Add(Write(outDir, "CAL-INT-DKM1-001.html",
+            BuildSingleDeckSheet(lockDoc, -1, "CAL-INT-DKM1-001", "DECK −1 PLAN", "C — DECK −1 FULL")));
+        written.Add(Write(outDir, "CAL-INT-DK0-001.html",
+            BuildSingleDeckSheet(lockDoc, 0, "CAL-INT-DK0-001", "DECK 0 PLAN", "D — DECK 0 FULL")));
+        written.Add(Write(outDir, "CAL-INT-DKP1-001.html",
+            BuildSingleDeckSheet(lockDoc, 1, "CAL-INT-DKP1-001", "DECK +1 PLAN", "E — DECK +1 FULL")));
+        written.Add(Write(outDir, "CAL-INT-PRF-001.html", BuildProfileSheet(lockDoc, sandwiches)));
+        written.Add(Write(outDir, "CAL-INT-SEC-001.html", BuildSectionsSheet(lockDoc, sandwiches)));
         written.Add(Write(outDir, "CAL-INT-SCH-001.html", BuildScheduleSheet(lockDoc)));
-
-        // Retire prior web-style sheets so the package is not ambiguous.
-        foreach (var stale in new[]
-                 {
-                     "CAL-INT-DK0-001.html", "CAL-INT-DKM1-001.html", "CAL-INT-DKP1-001.html",
-                     "CAL-INT-PRF-001.html", "CAL-INT-SEC-001.html", "CAL-INT-HTC-001.html",
-                     "CAL-INT-HOLD-001.html",
-                 })
-        {
-            var p = Path.Combine(outDir, stale);
-            if (File.Exists(p))
-                File.Delete(p);
-        }
+        written.Add(Write(outDir, "CAL-INT-HTC-001.html", BuildHatchDetailSheet(lockDoc)));
+        written.Add(Write(outDir, "CAL-INT-HOLD-001.html", BuildHoldSheet(lockDoc)));
+        written.Add(Write(outDir, "CAL-INT-PASS-001.html", BuildPassageSheet(lockDoc)));
+        written.Add(Write(outDir, "index.html", BuildPackageIndex(written)));
 
         Console.WriteLine($"Wrote {written.Count} blueprint sheets (Rev {Rev}) → {outDir}");
         foreach (var w in written)
@@ -199,6 +198,106 @@ internal static class InternalsBlueprintEmitter
             sb.ToString());
     }
 
+    private static string BuildSingleDeckSheet(
+        LockSnapshot L, int deck, string dwg, string title, string viewName)
+    {
+        var drawX = FrameX + 8;
+        var drawY = FrameY + 8;
+        var drawW = FrameW - TbW - 16;
+        var drawH = FrameH - 16;
+
+        var sb = new StringBuilder(64_000);
+        BeginSvg(sb, dwg, title, L);
+        SheetChrome(sb, dwg, title, $"FULL-SCALE DECK PLAN · DK {DeckLabel(deck)}", "1:175", L);
+        ViewLabel(sb, drawX, drawY + 10, viewName);
+        DrawDeckPlan(sb, L, deck, drawX + 10, drawY + 18, drawW - 20, drawH - 100, out var sPlan,
+            DeckAnnotMode.CadDimensions);
+        ScaleCallout(sb, drawX + 10, FrameY + FrameH - TbH - 82, sPlan, "PLAN");
+        NotesBlock(sb, FrameX + 8, FrameY + FrameH - TbH - 72, 280, 64, new[]
+        {
+            $"1. SINGLE-DECK SHEET FOR DK {DeckLabel(deck)} — PAIR WITH CAL-INT-DK-001.",
+            "2. FIGURED DIMS ARE CLEAR INSIDE FINISHES UNLESS MARKED “O/A”.",
+            "3. BH STATIONS AS DASHED TRANSVERSE LINES FROM LOCK.",
+            "4. DO NOT SCALE — USE FIGURED DIMENSIONS.",
+        });
+        EndSvg(sb);
+        return WrapHtml(dwg, title, sb.ToString());
+    }
+
+    private static string BuildProfileSheet(
+        LockSnapshot L, IReadOnlyList<CadJsonStructureQuery.SandwichPanel> sandwiches)
+    {
+        var drawX = FrameX + 8;
+        var drawY = FrameY + 8;
+        var drawW = FrameW - TbW - 16;
+        var drawH = FrameH - 16;
+
+        var sb = new StringBuilder(48_000);
+        BeginSvg(sb, "CAL-INT-PRF-001", "SIDE ELEVATION (CL)", L);
+        SheetChrome(sb, "CAL-INT-PRF-001", "SIDE ELEVATION", "PROFILE ON CL · DECKS FROM CADJSON", "1:175", L);
+        ViewLabel(sb, drawX, drawY + 10, "A — SIDE ELEVATION (CL) FULL");
+        DrawProfile(sb, L, drawX + 10, drawY + 18, drawW - 20, drawH - 100, sandwiches, out var sProf);
+        ScaleCallout(sb, drawX + 10, FrameY + FrameH - TbH - 82, sProf, "PROFILE");
+        NotesBlock(sb, FrameX + 8, FrameY + FrameH - TbH - 72, 280, 64, new[]
+        {
+            "1. DECK LINES FROM cadjson sandwich plate tops (merged spans).",
+            "2. KEY COMPARTMENTS SHOWN ON CL BAND — NOT FULL LOFT FILL.",
+            "3. OUTER SKIN: CAL-HULL-GA-001 (SAME LOA).",
+            "4. DO NOT SCALE — USE FIGURED DIMENSIONS.",
+        });
+        EndSvg(sb);
+        return WrapHtml("CAL-INT-PRF-001", "Side elevation", sb.ToString());
+    }
+
+    private static string BuildSectionsSheet(
+        LockSnapshot L, IReadOnlyList<CadJsonStructureQuery.SandwichPanel> sandwiches)
+    {
+        var drawX = FrameX + 8;
+        var drawY = FrameY + 8;
+        var drawW = FrameW - TbW - 16;
+        var drawH = FrameH - 16;
+
+        // Prefer lock BH stations; pad with midbody / hold samples.
+        var zs = L.BhStations.Where(z => z > 1 && z < L.Loa - 1).Take(4).ToList();
+        foreach (var z in new[] { 24.0, 40.0, 54.0 })
+        {
+            if (zs.Count >= 6)
+                break;
+            if (zs.All(x => Math.Abs(x - z) > 1.5))
+                zs.Add(z);
+        }
+
+        zs = zs.OrderBy(z => z).Take(6).ToList();
+        var cols = Math.Min(3, Math.Max(1, zs.Count));
+        var rows = (int)Math.Ceiling(zs.Count / (double)cols);
+        var cellW = (drawW - 16) / cols;
+        var cellH = (drawH - 90) / rows;
+
+        var sb = new StringBuilder(64_000);
+        BeginSvg(sb, "CAL-INT-SEC-001", "TRANSVERSE SECTIONS", L);
+        SheetChrome(sb, "CAL-INT-SEC-001", "TRANSVERSE SECTIONS", "LOOKING AFT · PORT LEFT", "1:200", L);
+
+        for (var i = 0; i < zs.Count; i++)
+        {
+            var col = i % cols;
+            var row = i / cols;
+            var x = drawX + col * cellW;
+            var y = drawY + row * cellH;
+            ViewLabel(sb, x + 4, y + 12, $"S{i + 1} — z={Nice(zs[i])} m FROM STEM");
+            DrawTransverseSection(sb, L, zs[i], sandwiches, x + 8, y + 18, cellW - 16, cellH - 28);
+        }
+
+        NotesBlock(sb, FrameX + 8, FrameY + FrameH - TbH - 72, 300, 64, new[]
+        {
+            "1. LOOKING AFT: PORT (−Y) LEFT, STBD (+Y) RIGHT.",
+            "2. HULL OUTLINE FROM LOCK LOFT AT STATION.",
+            "3. DECK PLATE TOPS FROM CADJSON WHERE PRESENT.",
+            "4. CORR / ACCESS TRACKS MARKED AS VERTICAL CLEAR BANDS.",
+        });
+        EndSvg(sb);
+        return WrapHtml("CAL-INT-SEC-001", "Transverse sections", sb.ToString());
+    }
+
     private static string BuildScheduleSheet(LockSnapshot L)
     {
         var sb = new StringBuilder(48_000);
@@ -224,6 +323,120 @@ internal static class InternalsBlueprintEmitter
 
         EndSvg(sb);
         return WrapHtml("CAL-INT-SCH-001", "Hatch schedule and hold", sb.ToString());
+    }
+
+    private static string BuildHatchDetailSheet(LockSnapshot L)
+    {
+        var sb = new StringBuilder(64_000);
+        BeginSvg(sb, "CAL-INT-HTC-001", "HATCH / OPENING DETAILS", L);
+        SheetChrome(sb, "CAL-INT-HTC-001", "HATCH DETAILS", "FULL OPENING SCHEDULE + TYPICAL ELEVATIONS", "AS NOTED", L);
+
+        var tableX = FrameX + 12;
+        var tableY = FrameY + 18;
+        var tableW = FrameW - TbW - 28;
+        HatchTable(sb, L, tableX, tableY, tableW, 360, maxRows: 55);
+
+        // Typical personnel + corridor elevations (schematic clear boxes).
+        var elevY = tableY + 380;
+        ViewLabel(sb, tableX, elevY, "TYPICAL LEAF ELEVATIONS (CLEAR)");
+        DrawOpeningElevation(sb, tableX + 20, elevY + 16, 1.0, 2.1, "PERSONNEL 1.0×2.1");
+        DrawOpeningElevation(sb, tableX + 160, elevY + 16, 2.0, 2.1, "CORR / WT 2.0×2.1");
+        DrawOpeningElevation(sb, tableX + 320, elevY + 16, 1.2, 2.15, "PASSAGE PORTAL 2.15 CLR H");
+
+        NotesBlock(sb, FrameX + 8, FrameY + FrameH - TbH - 70, 300, 62, new[]
+        {
+            "1. SCHEDULE AUTHORITY: CAL-INT-GA-001.json hatches[].",
+            "2. FACE / NORMAL FROM LOCK — NOT INVENTED ON SHEET.",
+            "3. SEE CAL-INT-PASS-001 FOR CORRIDOR TRACK GEOMETRY.",
+            "4. D1/D2 AIRLOCK LEAVES CLOSED UNDER VACUUM.",
+        });
+        EndSvg(sb);
+        return WrapHtml("CAL-INT-HTC-001", "Hatch / opening details", sb.ToString());
+    }
+
+    private static string BuildHoldSheet(LockSnapshot L)
+    {
+        var drawX = FrameX + 8;
+        var drawY = FrameY + 8;
+        var drawW = FrameW - TbW - 16;
+        var drawH = FrameH - 16;
+
+        var sb = new StringBuilder(48_000);
+        BeginSvg(sb, "CAL-INT-HOLD-001", "CARGO HOLD ARRANGEMENT", L);
+        SheetChrome(sb, "CAL-INT-HOLD-001", "CARGO HOLD", "HOLD PACK · C40 · AFT DOOR", "1:125", L);
+        ViewLabel(sb, drawX, drawY + 10, "F — HOLD PACK (PLAN) FULL");
+        DrawHoldPlan(sb, L, drawX + 20, drawY + 24, drawW - 40, drawH * 0.55, out var sHold);
+        ScaleCallout(sb, drawX + 20, drawY + drawH * 0.55 + 20, sHold, "HOLD");
+
+        // Hold footprint on deck −1 context strip
+        ViewLabel(sb, drawX, drawY + drawH * 0.62, "G — HOLD IN DECK −1 CONTEXT");
+        DrawDeckPlan(sb, L, -1, drawX + 10, drawY + drawH * 0.62 + 12, drawW - 20, drawH * 0.28, out _,
+            DeckAnnotMode.CadDimensions);
+
+        NotesBlock(sb, FrameX + 8, FrameY + FrameH - TbH - 72, 300, 64, new[]
+        {
+            $"1. HOLD PACK L={Nice(L.Hold.HoldL)} · DOOR {Nice(L.Hold.DoorW)}×{Nice(L.Hold.DoorH)}.",
+            "2. C40 GRID 5 FORE–AFT × 1 ATHWART × 3 HIGH.",
+            $"3. APRON DEPTH ≥ {Nice(L.Hold.ApronD)} AFT OF DOOR.",
+            "4. CATWALK_D IS LONGITUDINAL — NOT A CENTER CUT.",
+        });
+        EndSvg(sb);
+        return WrapHtml("CAL-INT-HOLD-001", "Cargo hold arrangement", sb.ToString());
+    }
+
+    private static string BuildPassageSheet(LockSnapshot L)
+    {
+        var drawX = FrameX + 8;
+        var drawY = FrameY + 8;
+        var drawW = FrameW - TbW - 16;
+        var drawH = FrameH - 16;
+        var rowH = (drawH - 90) / 2.0;
+
+        var sb = new StringBuilder(64_000);
+        BeginSvg(sb, "CAL-INT-PASS-001", "PASSAGEWAYS & CORRIDORS", L);
+        SheetChrome(sb, "CAL-INT-PASS-001", "PASSAGEWAYS", "CORR_P/S · ACCESS · CROSS · HATCHES", "1:200", L);
+
+        ViewLabel(sb, drawX, drawY + 10, "D — DECK 0 CIRCULATION");
+        DrawDeckPlan(sb, L, 0, drawX + 10, drawY + 16, drawW - 20, rowH - 22, out _,
+            DeckAnnotMode.CadDimensions);
+        HighlightCorrTracks(sb, L, drawX + 10, drawY + 16, drawW - 20, rowH - 22);
+
+        ViewLabel(sb, drawX, drawY + rowH + 10, "E — DECK +1 CIRCULATION");
+        DrawDeckPlan(sb, L, 1, drawX + 10, drawY + rowH + 16, drawW - 20, rowH - 22, out _,
+            DeckAnnotMode.CadDimensions);
+        HighlightCorrTracks(sb, L, drawX + 10, drawY + rowH + 16, drawW - 20, rowH - 22);
+
+        NotesBlock(sb, FrameX + 8, FrameY + FrameH - TbH - 72, 320, 64, new[]
+        {
+            $"1. SPINE CORRIDORS {InternalsLockCorridorPatch.CorrW:0.#} m CLEAR (±{InternalsLockCorridorPatch.CorrInner:0.#}…±{InternalsLockCorridorPatch.CorrOuter:0.#}).",
+            "2. ACCESS (FORE CL) → CROSS → CORR_P/S IS ONE PASSAGEWAY (DK-001).",
+            "3. FRAME WEB PORTALS: SILL + 2.15 m CLEAR HEAD (SHIRT-SLEEVES).",
+            "4. HATCH SYMBOLS ON TRACKS = LOCK OPENINGS.",
+        });
+        EndSvg(sb);
+        return WrapHtml("CAL-INT-PASS-001", "Passageways and corridors", sb.ToString());
+    }
+
+    private static string BuildPackageIndex(IReadOnlyList<string> written)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"/>");
+        sb.AppendLine($"<title>Calypso internals blueprints Rev {Rev}</title>");
+        sb.AppendLine("<style>body{font:14px/1.45 \"IBM Plex Mono\",Consolas,monospace;margin:2rem;background:#f4f1ea;color:#222}");
+        sb.AppendLine("a{color:#0645ad} li{margin:0.35rem 0} .note{color:#555;max-width:48rem}</style></head><body>");
+        sb.AppendLine($"<h1>Calypso internals blueprints — Rev {Rev}</h1>");
+        sb.AppendLine("<p class=\"note\">ISO 5457 A1 · ISO 128-15 stern left / bow right · lock <code>CAL-INT-GA-001.json</code>. Detail pack under <a href=\"details/index.html\">details/</a>.</p>");
+        sb.AppendLine("<ol>");
+        foreach (var path in written)
+        {
+            var name = Path.GetFileName(path);
+            if (string.Equals(name, "index.html", StringComparison.OrdinalIgnoreCase))
+                continue;
+            sb.AppendLine($"<li><a href=\"{name}\">{name}</a></li>");
+        }
+
+        sb.AppendLine("</ol></body></html>");
+        return sb.ToString();
     }
 
     // ─── Drawing primitives ──────────────────────────────────────────────────
@@ -637,12 +850,128 @@ internal static class InternalsBlueprintEmitter
         _ = c40X;
     }
 
-    private static void HatchTable(StringBuilder sb, LockSnapshot L, double x, double y, double w, double maxH)
+    private static void DrawTransverseSection(
+        StringBuilder sb, LockSnapshot L, double zStem,
+        IReadOnlyList<CadJsonStructureQuery.SandwichPanel> sandwiches,
+        double x, double y, double w, double h)
+    {
+        var hb = HullHalfBeamAt(L, zStem);
+        LockDraftGeometry.SampleLoftUpRange(L.Loft, zStem, L.Oah, out var upMin, out var upMax);
+        if (hb < 0.5)
+            hb = L.Beam * 0.5;
+        if (upMax <= upMin + 0.5)
+        {
+            upMin = 0;
+            upMax = L.Oah;
+        }
+
+        var scale = Math.Min(w / (hb * 2.2), h / (upMax - upMin + 0.8)) * 0.88;
+        var ox = x + w * 0.5;
+        var oy = y + h - 10; // keel
+
+        // Outer hull box (loft half-beam × up range)
+        var top = oy - upMax * scale;
+        var bot = oy - upMin * scale;
+        sb.Append(
+            $"<rect x=\"{F(ox - hb * scale)}\" y=\"{F(top)}\" width=\"{F(hb * 2 * scale)}\" height=\"{F(Math.Abs(bot - top))}\" class=\"ol\" fill=\"none\"/>");
+        CenterLine(sb, ox, top, ox, bot);
+
+        // Deck plate tops
+        foreach (var (name, deckNum, lockUp) in new[] { ("−1", -1, L.DkM1), ("0", 0, L.Dk0), ("+1", 1, L.Dk1) })
+        {
+            var up = CadJsonStructureQuery.PlateTopForDeck(sandwiches, deckNum) ?? lockUp;
+            if (up < upMin - 0.05 || up > upMax + 0.05)
+                continue;
+            var yy = oy - up * scale;
+            sb.Append(
+                $"<line x1=\"{F(ox - hb * scale)}\" y1=\"{F(yy)}\" x2=\"{F(ox + hb * scale)}\" y2=\"{F(yy)}\" class=\"thin\"/>");
+            sb.Append($"<text x=\"{F(ox + hb * scale + 2)}\" y=\"{F(yy + 1)}\" class=\"anno\">DK {name}</text>");
+        }
+
+        // Spaces that straddle this station
+        foreach (var c in L.Compartments.Where(c => c.Z0 - 0.05 <= zStem && zStem <= c.Z1 + 0.05))
+        {
+            var y0 = Math.Max(c.Y0, -hb);
+            var y1 = Math.Min(c.Y1, hb);
+            if (y1 <= y0 + 0.05)
+                continue;
+            var u0 = Math.Max(c.Up0, upMin);
+            var u1 = Math.Min(c.Up1, upMax);
+            if (u1 <= u0 + 0.05)
+                continue;
+            var cls = c.Id is not null && c.Id.StartsWith("CORR", StringComparison.Ordinal) ? "corr" : "space";
+            sb.Append(
+                $"<rect x=\"{F(ox - y1 * scale)}\" y=\"{F(oy - u1 * scale)}\" width=\"{F((y1 - y0) * scale)}\" height=\"{F((u1 - u0) * scale)}\" class=\"{cls}\"/>");
+        }
+
+        // Passage tracks (CORR inner/outer) as vertical guides
+        foreach (var yFace in new[]
+                 {
+                     -InternalsLockCorridorPatch.CorrOuter, -InternalsLockCorridorPatch.CorrInner,
+                     InternalsLockCorridorPatch.CorrInner, InternalsLockCorridorPatch.CorrOuter,
+                 })
+        {
+            if (Math.Abs(yFace) > hb)
+                continue;
+            var sx = ox - yFace * scale;
+            sb.Append(
+                $"<line x1=\"{F(sx)}\" y1=\"{F(top)}\" x2=\"{F(sx)}\" y2=\"{F(bot)}\" class=\"bh\"/>");
+        }
+
+        sb.Append($"<text x=\"{F(ox - hb * scale)}\" y=\"{F(y + 8)}\" class=\"anno\">P</text>");
+        sb.Append($"<text x=\"{F(ox + hb * scale)}\" y=\"{F(y + 8)}\" class=\"anno\" text-anchor=\"end\">S</text>");
+    }
+
+    private static void DrawOpeningElevation(
+        StringBuilder sb, double x, double y, double clearW, double clearH, string label)
+    {
+        const double px = 28; // px per metre for schematic
+        var ww = clearW * px;
+        var hh = clearH * px;
+        sb.Append($"<rect x=\"{F(x)}\" y=\"{F(y)}\" width=\"{F(ww)}\" height=\"{F(hh)}\" class=\"hatch\"/>");
+        sb.Append($"<text x=\"{F(x + ww * 0.5)}\" y=\"{F(y + hh + 8)}\" class=\"anno\" text-anchor=\"middle\">{Esc(label)}</text>");
+        DimH(sb, x, y + hh + 14, x + ww, y + hh + 14, Nice(clearW));
+        DimV(sb, x + ww + 6, y + hh, x + ww + 6, y, Nice(clearH));
+    }
+
+    private static void HighlightCorrTracks(
+        StringBuilder sb, LockSnapshot L, double x, double y, double w, double h)
+    {
+        var scale = Math.Min(w / L.Loa, h / L.Beam) * 0.90;
+        var ox = x + (w - L.Loa * scale) * 0.5;
+        var oy = y + h * 0.5;
+        if (L.CorrZ1 <= L.CorrZ0)
+            return;
+        var x0 = ShipX(ox, scale, L.Loa, L.CorrZ1);
+        var x1 = ShipX(ox, scale, L.Loa, L.CorrZ0);
+        foreach (var (y0, y1) in new[]
+                 {
+                     (-InternalsLockCorridorPatch.CorrOuter, -InternalsLockCorridorPatch.CorrInner),
+                     (InternalsLockCorridorPatch.CorrInner, InternalsLockCorridorPatch.CorrOuter),
+                 })
+        {
+            var py0 = oy - y1 * scale;
+            var py1 = oy - y0 * scale;
+            sb.Append(
+                $"<rect x=\"{F(Math.Min(x0, x1))}\" y=\"{F(Math.Min(py0, py1))}\" width=\"{F(Math.Abs(x1 - x0))}\" height=\"{F(Math.Abs(py1 - py0))}\" class=\"exps\"/>");
+        }
+    }
+
+    private static string DeckLabel(int deck) => deck switch
+    {
+        -1 => "−1",
+        1 => "+1",
+        _ => "0",
+    };
+
+    private static void HatchTable(StringBuilder sb, LockSnapshot L, double x, double y, double w, double maxH,
+        int maxRows = 0)
     {
         var cols = new[] { 0.10, 0.06, 0.22, 0.14, 0.16, 0.16, 0.16 }; // fractions of w
         var headers = new[] { "ID", "DK", "FROM → TO", "CLEAR", "FACE", "Y", "Z" };
         var rowH = 5.2;
-        var n = Math.Min(L.Hatches.Count, (int)((maxH - 12) / rowH) - 1);
+        var byHeight = (int)((maxH - 12) / rowH) - 1;
+        var n = Math.Min(L.Hatches.Count, maxRows > 0 ? Math.Min(maxRows, byHeight) : byHeight);
 
         sb.Append($"<text x=\"{F(x)}\" y=\"{F(y)}\" class=\"view\">HATCH OPENING SCHEDULE</text>");
         var hy = y + 6;

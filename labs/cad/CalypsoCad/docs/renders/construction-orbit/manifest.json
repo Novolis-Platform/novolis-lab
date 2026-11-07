@@ -1,5 +1,5 @@
 {
-  "generatedUtc": "2026-11-07T14:21:31.6189880Z",
+  "generatedUtc": "2026-11-07T17:29:16.6060860Z",
   "width": 3840,
   "height": 2160,
   "fps": 24,
@@ -28,21 +28,21 @@
       "index": 3,
       "Id": "interiors",
       "Title": "Interiors \u00B7 partitions / spaces",
-      "layers": "InteriorStructureNoHull",
+      "layers": "CorridorStructure",
       "wire": "CutawayPartial"
     },
     {
       "index": 4,
       "Id": "fitout",
       "Title": "Fitout \u00B7 outfit \u002B openings",
-      "layers": "InteriorStructureNoHull",
+      "layers": "CorridorStructure",
       "wire": "CutawayPartial"
     },
     {
       "index": 5,
       "Id": "all",
       "Title": "All layers (no solid OML)",
-      "layers": "InteriorStructureNoHull",
+      "layers": "CorridorStructure",
       "wire": "CutawayPartial"
     }
   ]

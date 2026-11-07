@@ -11,8 +11,6 @@ namespace ArtillerySimulator;
 
 internal sealed class ArtilleryApp : IDisposable
 {
-    /// <summary>Battle-time multipliers vs wall clock (1× / 3× / 8× / 24×). Independent of FPS.</summary>
-    private static readonly float[] PaceMultipliers = [1f, 3f, 8f, 24f];
     private const float PhysicsHz = 120f;
     private const float MilsPerDegree = 6400f / 360f;
     private const float FineMilsPerSecond = 12f;
@@ -45,7 +43,6 @@ internal sealed class ArtilleryApp : IDisposable
 
     private readonly SmoothedFps _fps = new();
     private readonly CrewDrill _crew = new();
-    private int _paceIndex = 1;
     private KristiansandDefenseMission? _mission;
     private IReadOnlyList<Vector3> _orderedPreview = [];
     private IReadOnlyList<Vector3> _tubePreview = [];
@@ -96,7 +93,7 @@ internal sealed class ArtilleryApp : IDisposable
     internal TerrainWorld Terrain => _terrain;
     internal BallisticTrajectoryRunner Shot => _shot;
     internal CameraMode CameraMode => CameraMode.Orbit;
-    internal string PaceText => PaceLabel();
+    internal string PaceText => "realtime";
     internal KristiansandDefenseMission? Mission => _mission;
     internal float PredictedRangeMeters => HorizontalRange(_terrain.GunBaseline, PredictedImpact());
     internal CrewDrill Crew => _crew;
@@ -115,15 +112,28 @@ internal sealed class ArtilleryApp : IDisposable
 
     internal void RefreshPrediction() => RebuildAimPreview();
 
-    internal void SetPace(int index) => _paceIndex = Math.Clamp(index, 0, PaceMultipliers.Length - 1);
+    internal void SetPace(int index) => _ = index; // Realtime only — pace UI removed.
 
     internal void SetFollowCamera(bool followShell) => _camera.FollowProjectile = followShell;
+
+    /// <summary>True when the arc dies at the piece (terrain / muzzle clearance) — blocks fire.</summary>
+    internal bool LaunchDetonation => PredictedRangeMeters < SimulationUnits.LaunchClearanceMeters;
+
+    /// <summary>Below HE min (warning / red tint) — fire still allowed if the shell clears the piece.</summary>
+    internal bool BelowHeMin =>
+        !LaunchDetonation && PredictedRangeMeters < SimulationUnits.MinEffectiveRangeMeters;
+
+    /// <summary>Red-tinge aim when clearance fails or the MPI is inside HE min.</summary>
+    internal bool SolutionUnsafe => LaunchDetonation || BelowHeMin;
 
     internal string? FireBlockReason()
     {
         // Autoloader only — rounds already in the air do not block the next fire.
+        // HE min is a warning (red arcs), not a hard fire interlock.
         if (!_crew.BreechReady)
             return _crew.Phrase(_gun);
+        if (LaunchDetonation)
+            return "No clearance — predicted detonation at the piece.";
         return null;
     }
 
@@ -313,7 +323,7 @@ internal sealed class ArtilleryApp : IDisposable
         sb.AppendLine(CultureInfo.InvariantCulture,
             $"GEO  fillTris {_terrain.TerrainTriangleCount}  roads {_terrain.RoadLineCount}  dyn {_wires.AsSpan().Length / 2}");
         sb.AppendLine(CultureInfo.InvariantCulture,
-            $"VIEW  {frame.Width}x{frame.Height}  pace {PaceLabel()}  follow={(_camera.FollowProjectile ? "shell" : "gun")}");
+            $"VIEW  {frame.Width}x{frame.Height}  pace realtime  follow={(_camera.FollowProjectile ? "shell" : "gun")}");
         sb.AppendLine(CultureInfo.InvariantCulture,
             $"GUN  QE {_gun.ElevationMils:F0} mil  DEFL {_gun.DeflectionMils:F0}  {_gun.ChargeLabel} {_gun.MuzzleSpeedMps:F0} m/s");
         sb.AppendLine(CultureInfo.InvariantCulture,
@@ -383,7 +393,7 @@ internal sealed class ArtilleryApp : IDisposable
 
         sb.AppendLine("--- camera ---");
         sb.AppendLine(CultureInfo.InvariantCulture,
-            $"follow={(_camera.FollowProjectile ? "shell" : "gun")}  pace={PaceLabel()}");
+            $"follow={(_camera.FollowProjectile ? "shell" : "gun")}  pace=realtime");
         sb.AppendLine("--- terrain ---");
         sb.AppendLine(CultureInfo.InvariantCulture,
             $"east={_terrain.EastMeters:F0}  north={_terrain.NorthMeters:F0}  gun={_terrain.GunBaseline}");
@@ -394,8 +404,8 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void Simulate(SilkFrame frame)
     {
-        // Wall-clock × pace — aim/crew/shell stay correct even when FPS dips.
-        var battleSeconds = PaceMultipliers[_paceIndex] * MathF.Max(1e-4f, frame.DeltaSeconds);
+        // Realtime battle clock — aim/crew/shell stay correct even when FPS dips.
+        var battleSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
         // Advance the crew before fire input so Space/FIRE works on the same frame the breech closes.
         _crew.Advance(_gun, battleSeconds);
         HandleInput(frame, battleSeconds);
@@ -523,10 +533,10 @@ internal sealed class ArtilleryApp : IDisposable
                 predictedRange,
                 tof,
                 predicted,
-                _paceIndex,
-                PaceLabel(),
                 _mission?.HudLine(),
-                _crew.BreechReady ? null : _crew.Phrase(_gun));
+                FireBlockReason(),
+                SolutionUnsafe,
+                LaunchDetonation);
         }
 
         if (ActiveProfiler() is { } hudProf)
@@ -554,16 +564,13 @@ internal sealed class ArtilleryApp : IDisposable
         _dispersionPreviews.Clear();
         var dElev = DispersionElevMils / MilsPerDegree;
         var dAz = DispersionDeflMils / MilsPerDegree;
+        // Four envelope samples keep the cone readable without 8× ballistic previews each aim change.
         ReadOnlySpan<(float De, float Da, float Mv, float Wind)> samples =
         [
-            (dElev, 0f, 0f, 0f),
-            (-dElev, 0f, 0f, 0f),
-            (0f, dAz, 0f, 0f),
-            (0f, -dAz, 0f, 0f),
-            (dElev * 0.7f, dAz * 0.7f, DispersionMuzzleFrac, DispersionWindFrac),
-            (-dElev * 0.7f, -dAz * 0.7f, -DispersionMuzzleFrac, -DispersionWindFrac),
-            (dElev * 0.5f, -dAz * 0.5f, DispersionMuzzleFrac, -DispersionWindFrac),
-            (-dElev * 0.5f, dAz * 0.5f, -DispersionMuzzleFrac, DispersionWindFrac),
+            (dElev, dAz * 0.35f, DispersionMuzzleFrac, DispersionWindFrac),
+            (-dElev, -dAz * 0.35f, -DispersionMuzzleFrac, -DispersionWindFrac),
+            (dElev * 0.4f, dAz, DispersionMuzzleFrac * 0.5f, -DispersionWindFrac),
+            (-dElev * 0.4f, -dAz, -DispersionMuzzleFrac * 0.5f, DispersionWindFrac),
         ];
         foreach (var s in samples)
         {
@@ -597,14 +604,15 @@ internal sealed class ArtilleryApp : IDisposable
                 baseEnv.WindMetersPerSecond * windScale,
                 baseEnv.TemperatureKelvin,
                 baseEnv.LatitudeDegrees);
+        // Long 155 mm loft can exceed 60 s — do not clip the aim arc mid-air at apogee.
         return BallisticTrajectoryRunner.BuildPreview(
             _ballistics,
             env,
             _terrain.Field,
             start,
-            dtSeconds: coarse ? 1.0 / 30.0 : 1.0 / 60.0,
-            maxTimeSeconds: 90.0,
-            maxPoints: coarse ? 1_800 : 6_000);
+            dtSeconds: coarse ? 1.0 / 20.0 : 1.0 / 30.0,
+            maxTimeSeconds: 120.0,
+            maxPoints: coarse ? 1_200 : 2_400);
     }
 
     private void HandleInput(SilkFrame frame, float battleSeconds)
@@ -615,9 +623,6 @@ internal sealed class ArtilleryApp : IDisposable
             _crew.OrderCharge(_gun, charge);
             _aimDirty = true;
         }
-
-        if (actions.PaceIndex is { } pace)
-            _paceIndex = pace;
 
         if (actions.Fire || frame.IsKeyPressed(Key.Space))
             TryFire();
@@ -639,8 +644,7 @@ internal sealed class ArtilleryApp : IDisposable
             _camera.ShowMapOverview(_terrain.EastMeters, _terrain.NorthMeters);
 
         // WASD + arrows lay the tube. Shift = fine. Mouse never aims.
-        // Order rates follow the battle clock (same as turret slew) so high pace compresses
-        // lay time without making a single tap jump half the arc.
+        // Order rates follow the realtime battle clock (same as turret slew).
         var fine = frame.IsKeyDown(Key.ShiftLeft) || frame.IsKeyDown(Key.ShiftRight);
         var laying = frame.IsKeyDown(Key.W) || frame.IsKeyDown(Key.Up)
             || frame.IsKeyDown(Key.S) || frame.IsKeyDown(Key.Down)
@@ -721,14 +725,6 @@ internal sealed class ArtilleryApp : IDisposable
     private Vector3 PredictedImpact() =>
         _orderedPreview.Count == 0 ? _terrain.GunBaseline : _orderedPreview[^1];
 
-    private string PaceLabel() => _paceIndex switch
-    {
-        0 => "pace 1x",
-        1 => "pace 3x",
-        2 => "pace 8x",
-        _ => "pace 24x",
-    };
-
     private static float HorizontalRange(Vector3 origin, Vector3 point)
     {
         var dx = point.X - origin.X;
@@ -740,8 +736,8 @@ internal sealed class ArtilleryApp : IDisposable
     {
         if (preview.Count < 2)
             return 0f;
-        // Preview built at 1/60 s steps.
-        return (preview.Count - 1) / 60f;
+        // Ordered preview uses 1/30 s steps (see BuildPreview).
+        return (preview.Count - 1) / 30f;
     }
 
     private void DrawSky(SilkWireBatch wires)
@@ -768,31 +764,40 @@ internal sealed class ArtilleryApp : IDisposable
 
     private void DrawAimPreview(SilkWireBatch wires)
     {
-        // Keep the aimed (cyan) solution visible while a round is in flight so the gunner can keep laying.
-        foreach (var arc in _dispersionPreviews)
-            DrawArc(wires, arc, BallisticArcColors.Probability, maxSegments: 90);
+        var unsafeSol = SolutionUnsafe;
+        var prob = unsafeSol ? BallisticArcColors.ProbabilityUnsafe : BallisticArcColors.Probability;
+        var ordered = unsafeSol ? BallisticArcColors.OrderedUnsafe : BallisticArcColors.Ordered;
+        var mpiColor = unsafeSol ? BallisticArcColors.MpiMarkUnsafe : BallisticArcColors.MpiMark;
 
-        DrawProbabilityEnvelope(wires);
+        // Keep the aimed solution visible while a round is in flight so the gunner can keep laying.
+        foreach (var arc in _dispersionPreviews)
+            DrawArc(wires, arc, prob, maxSegments: 90);
+
+        DrawProbabilityEnvelope(wires, unsafeSol);
 
         if (_tubePreview.Count >= 2)
             DrawArc(wires, _tubePreview, BallisticArcColors.Tube, maxSegments: 160);
 
         if (_orderedPreview.Count >= 2)
         {
-            // Aimed trajectory — bright cyan, denser samples so it reads as the fire solution.
-            DrawArc(wires, _orderedPreview, BallisticArcColors.Ordered, maxSegments: 280);
+            DrawArc(wires, _orderedPreview, ordered, maxSegments: 280);
             var mpi = _orderedPreview[^1];
-            wires.WireSphere(mpi, 28f, BallisticArcColors.MpiMark, segments: 10);
-            wires.Ring(mpi, 40f, BallisticArcColors.MpiMark);
+            wires.WireSphere(mpi, 28f, mpiColor, segments: 10);
+            wires.Ring(mpi, 40f, mpiColor);
             var ground = _terrain.Field.SampleHeight(mpi.X, mpi.Z);
-            wires.Line(mpi, new Vector3(mpi.X, ground + 1f, mpi.Z), BallisticArcColors.MpiMark);
+            wires.Line(mpi, new Vector3(mpi.X, ground + 1f, mpi.Z), mpiColor);
         }
     }
 
-    private void DrawProbabilityEnvelope(SilkWireBatch wires)
+    private void DrawProbabilityEnvelope(SilkWireBatch wires, bool unsafeSol)
     {
         if (_dispersionPreviews.Count < 2 || _orderedPreview.Count < 2)
             return;
+
+        var band = unsafeSol ? BallisticArcColors.ProbabilityUnsafe : BallisticArcColors.Probability;
+        var footprint = unsafeSol
+            ? BallisticArcColors.ProbabilityFootprintUnsafe
+            : BallisticArcColors.ProbabilityFootprint;
 
         // Connect impacts into a ground footprint ring (CEP-ish ellipse proxy).
         var impacts = new List<Vector3>(_dispersionPreviews.Count + 1);
@@ -820,7 +825,7 @@ internal sealed class ArtilleryApp : IDisposable
 
         radius = Math.Clamp(radius, 40f, 900f);
         var y = _terrain.Field.SampleHeight(cx, cz) + 2.5f;
-        wires.Ring(new Vector3(cx, y, cz), radius, BallisticArcColors.ProbabilityFootprint, segments: 36, yLift: 0f);
+        wires.Ring(new Vector3(cx, y, cz), radius, footprint, segments: 36, yLift: 0f);
 
         // Pair left/right-ish samples into translucent loft bands along the arc.
         for (var a = 0; a + 1 < _dispersionPreviews.Count; a += 2)
@@ -830,7 +835,7 @@ internal sealed class ArtilleryApp : IDisposable
             var n = Math.Min(left.Count, right.Count);
             var step = Math.Max(1, n / 48);
             for (var i = 0; i < n; i += step)
-                wires.Line(left[i], right[i], BallisticArcColors.Probability);
+                wires.Line(left[i], right[i], band);
         }
     }
 

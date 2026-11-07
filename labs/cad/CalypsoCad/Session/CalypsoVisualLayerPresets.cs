@@ -4,16 +4,18 @@ internal static class CalypsoVisualLayerPresets
 {
     private static readonly (CalypsoVisualLayers Layers, string Label)[] OrbitCycle =
     [
-        (CalypsoVisualLayers.PrimaryStructure, "primary structure"),
-        (CalypsoVisualLayers.PrimaryPlusDecks, "primary + decks"),
-        (CalypsoVisualLayers.PressureStructure, "pressure structure"),
-        (CalypsoVisualLayers.CompleteArrangement, "complete arrangement"),
+        (CalypsoVisualLayers.PrimaryStructure, "1 primary steel (frames+BH+girders)"),
+        (CalypsoVisualLayers.PrimaryPlusDecks, "2 + sandwich decks"),
+        (CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.Joinery, "3 + joinery stubs"),
+        (CalypsoVisualLayers.PressureStructure | CalypsoVisualLayers.Airlocks, "4 pressure + airlocks"),
+        (CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.SpaceFinish | CalypsoVisualLayers.PassagewayCutouts,
+            "5 passageway volumes"),
+        (CalypsoVisualLayers.PrimaryPlusDecks | CalypsoVisualLayers.Partitions | CalypsoVisualLayers.Openings
+         | CalypsoVisualLayers.Airlocks, "6 partitions + openings + airlocks"),
+        (CalypsoVisualLayers.CompleteArrangement, "7 complete arrangement"),
         (CalypsoVisualLayers.Dk001Plan, "DK-001 plan"),
         (CalypsoVisualLayers.StructureNoHull, "structure no OML"),
-        (CalypsoVisualLayers.InteriorStructureNoHull, "interiors no OML"),
         (CalypsoVisualLayers.HoldCargo, "HOLD cargo"),
-        (CalypsoVisualLayers.StructureOnlyCutaway, "structure+cutouts"),
-        (CalypsoVisualLayers.FitoutCutaway, "fitout+cutouts"),
         (CalypsoVisualLayers.HullShell | CalypsoVisualLayers.Structure, "shell+frames"),
     ];
 

@@ -1340,10 +1340,9 @@ internal sealed class CalypsoRenderer
         var body = ShadeColor(color, isC40 ? 0.55f : 0.4f, isC40 ? 0.25f : (isBh ? 0.75f : 0.65f), Vector3.UnitY, LightDir);
         var wireMode = _session.WireMeshMode == CalypsoWireMeshMode.Wire;
         // Oriented structural members (polygonal ring edges): rotate around world +Z (bow).
-        var hasOrient = box.Properties is not null
-                        && box.Properties.TryGetValue("orientZ", out var orientEl)
-                        && orientEl.ValueKind == System.Text.Json.JsonValueKind.Number;
-        if (hasOrient)
+        if (box.Properties is not null
+            && box.Properties.TryGetValue("orientZ", out var orientEl)
+            && orientEl.ValueKind == System.Text.Json.JsonValueKind.Number)
         {
             var angle = (float)orientEl.GetDouble();
             var rot = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, angle);
@@ -2174,9 +2173,10 @@ internal sealed class CalypsoRenderer
             && roleEl.ValueKind == System.Text.Json.JsonValueKind.String)
         {
             var role = roleEl.GetString() ?? "";
-            if (string.Equals(role, "TransverseFrame", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(role, "StructuralBracket", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(role, "TransverseFrame", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Frames;
+            if (string.Equals(role, "StructuralBracket", StringComparison.OrdinalIgnoreCase))
+                return CalypsoVisualLayers.Joinery;
             if (string.Equals(role, "PressureBulkhead", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Bulkheads;
             if (string.Equals(role, "StructuralDeck", StringComparison.OrdinalIgnoreCase))
@@ -2194,6 +2194,8 @@ internal sealed class CalypsoRenderer
             return CalypsoVisualLayers.HullShell;
         if (n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Longitudinals;
+        if (n.Contains("-join-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.Joinery;
         if (n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Frames;
         if (n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
@@ -2216,6 +2218,13 @@ internal sealed class CalypsoRenderer
         var n = box.Name ?? "";
         if (n.StartsWith("C40", StringComparison.OrdinalIgnoreCase))
             return layers.HasFlag(CalypsoVisualLayers.Cargo);
+        if (n.StartsWith("outfit-AIRLOCK", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("outfit-hatch-", StringComparison.OrdinalIgnoreCase)
+               && (n.Contains("-D1-", StringComparison.OrdinalIgnoreCase)
+                   || n.Contains("-D2-", StringComparison.OrdinalIgnoreCase)
+                   || n.Contains("-D3-", StringComparison.OrdinalIgnoreCase)))
+            return layers.HasFlag(CalypsoVisualLayers.Airlocks)
+                   || layers.HasFlag(CalypsoVisualLayers.Outfit);
         if (n.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase))
             return layers.HasFlag(CalypsoVisualLayers.Outfit);
         if (IsStructureBox(box))
@@ -2370,9 +2379,16 @@ internal sealed class CalypsoRenderer
         return entity.Kind switch
         {
             "wall" => layers.HasFlag(CalypsoVisualLayers.Partitions),
-            "opening" => layers.HasFlag(CalypsoVisualLayers.Openings),
-            "space" => layers.HasFlag(CalypsoVisualLayers.SpaceFinish)
-                       || layers.HasFlag(CalypsoVisualLayers.Partitions),
+            "opening" => layers.HasFlag(CalypsoVisualLayers.Openings)
+                         || ((entity.Name?.StartsWith("D1-", StringComparison.OrdinalIgnoreCase) == true
+                              || entity.Name?.StartsWith("D2-", StringComparison.OrdinalIgnoreCase) == true
+                              || entity.Name?.StartsWith("D3-", StringComparison.OrdinalIgnoreCase) == true)
+                             && layers.HasFlag(CalypsoVisualLayers.Airlocks)),
+            "space" => entity.Name?.StartsWith("AIRLOCK_", StringComparison.OrdinalIgnoreCase) == true
+                ? layers.HasFlag(CalypsoVisualLayers.Airlocks)
+                  || layers.HasFlag(CalypsoVisualLayers.SpaceFinish)
+                : layers.HasFlag(CalypsoVisualLayers.SpaceFinish)
+                  || layers.HasFlag(CalypsoVisualLayers.Partitions),
             "box" => IsBoxLayerVisible(entity),
             // OML / IML meshes only with HullShell — never leak onto DK-001 plan / structure-no-hull.
             "mesh" => layers.HasFlag(CalypsoVisualLayers.HullShell),

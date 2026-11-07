@@ -236,8 +236,11 @@ internal static class Program
             var includeAdjacent = string.Equals(tests, "all", StringComparison.OrdinalIgnoreCase)
                                   || tests.Contains('E', StringComparison.OrdinalIgnoreCase)
                                   || tests.Contains('e');
+            var includeHold = string.Equals(tests, "all", StringComparison.OrdinalIgnoreCase)
+                              || tests.Contains('H', StringComparison.OrdinalIgnoreCase)
+                              || tests.Contains('h');
             var session = new CalypsoSession();
-            session.RegenerateAndLoadStructuralBay(includeAdjacentBay: includeAdjacent);
+            session.RegenerateAndLoadStructuralBay(includeAdjacentBay: includeAdjacent, includeHoldBay: includeHold);
             Console.WriteLine($"Wrote bay CAD → {session.GeneratedDirectory}");
 
             foreach (var check in CalypsoBayAcceptance.Evaluate(session.Document))

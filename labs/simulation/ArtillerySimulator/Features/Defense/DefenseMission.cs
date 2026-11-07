@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 
@@ -14,7 +15,11 @@ internal sealed class KristiansandDefenseMission
     public const float CaughtMeters = 200f;
     public const float PinnedMeters = 340f;
     public const float ObjectiveRadiusMeters = 180f;
-    public const float BaseColumnSpeedMetersPerSecond = 3.2f;
+    /// <summary>
+    /// Road-column close rate on the realtime clock (~40 km/h). Formerly 3.2 m/s under a 3× pace
+    /// multiplier — with pace removed that crawl looked almost stationary.
+    /// </summary>
+    public const float BaseColumnSpeedMetersPerSecond = 11f;
     public const float SpacingMeters = 160f;
 
     private readonly TerrainWorld _terrain;
@@ -52,7 +57,9 @@ internal sealed class KristiansandDefenseMission
         TrailBearingDegrees = OpeningFirePlan.BearingDegrees(site.Position, Objective);
 
         PlaceDefenders();
+        var sw = Stopwatch.StartNew();
         BuildSpawnCatalog();
+        var afterSpawns = sw.ElapsedMilliseconds;
         ApplyRoundDifficulty();
         _nextWaveAt = 0f;
         SpawnWave();
@@ -63,6 +70,9 @@ internal sealed class KristiansandDefenseMission
         OpeningElevationDegrees = lay.Elevation;
         OpeningChargeIndex = lay.Charge;
         OpeningAzimuthDegrees = lay.Bearing;
+        Console.WriteLine(string.Create(
+            CultureInfo.InvariantCulture,
+            $"Mission boot: spawns={afterSpawns}ms tune={sw.ElapsedMilliseconds - afterSpawns}ms total={sw.ElapsedMilliseconds}ms approaches={_spawnRoutes.Count}"));
     }
 
     public float GunX { get; }
@@ -212,7 +222,7 @@ internal sealed class KristiansandDefenseMission
 
             // Near-miss: suppress to 0.25× speed — never freeze the column.
             unit.Hold = 0f;
-            unit.Scare = MathF.Max(unit.Scare, 16f);
+            unit.Scare = MathF.Max(unit.Scare, 6f);
             unit.Posture = "pinned";
             _units[i] = unit;
             LastPinned++;

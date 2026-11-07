@@ -203,10 +203,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                     : string.Create(CultureInfo.InvariantCulture, $"Charge {_game.Gun.ChargeLabel} ({_game.Gun.MuzzleSpeedMps:F0} m/s). {_game.Crew.Phrase(_game.Gun)}");
                 return Accept(command, seated);
             case "artillery.pace":
-                if (!TryNumber(command, "index", out var pace))
-                    return Reject(command, "invalid-arguments", "Pace needs an index.");
-                _game.SetPace((int)pace);
-                return Accept(command, _game.PaceText);
+                return Accept(command, "Realtime only — pace multipliers removed.");
             case "artillery.camera":
                 if (!command.Params.TryGetValue("mode", out var mode))
                     return Reject(command, "invalid-arguments", "Camera needs mode shell or gun.");
@@ -462,7 +459,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             Action("artillery.aim", "Aim", "Order elevation and world azimuth. The crew lays the tube on the handwheels. Trails clamp the azimuth.", AgentActionSchema.Object(["elevation", "azimuth"], ("elevation", "number"), ("azimuth", "number")), true, null),
             Action("artillery.charge", "Charge", "Order reduced, standard, max, or low (0, 1, 2, or 3). A new zone is reseated before the next shot.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
             Action("artillery.fire", "Fire", "Shoot when the breech is closed and the tube is on the order. The burst puts nearby vehicles out of action and pins the next ones.", null, blocked is null, blocked),
-            Action("artillery.pace", "Pace", "Set pace 0..3. The shell, the column, and the crew share this clock.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
+            Action("artillery.pace", "Pace", "Realtime only — pace multipliers removed.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
             Action("artillery.camera", "Camera", "Choose follow or free.", AgentActionSchema.Object(["mode"], ("mode", "string")), true, null),
         ];
     }

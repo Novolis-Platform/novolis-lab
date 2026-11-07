@@ -109,7 +109,10 @@ internal static class CalypsoLockGenerator
     /// Piece-by-piece midbody bay only (F24–F28, optional adjacent F28–F32). No rooms/outfit.
     /// Writes <c>calypso-structural-bay.cadjson</c> under the generated directory.
     /// </summary>
-    public static string GenerateStructuralBay(bool includeAdjacentBay = false, string? outputDirectory = null)
+    public static string GenerateStructuralBay(
+        bool includeAdjacentBay = false,
+        bool includeHoldBay = false,
+        string? outputDirectory = null)
     {
         var dir = outputDirectory ?? DefaultOutputDirectory;
         Directory.CreateDirectory(dir);
@@ -127,15 +130,15 @@ internal static class CalypsoLockGenerator
         StructuralBayEmitter.Emit(
             entities, loa, web, tPlate, deckUps,
             (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
-            includeAdjacentBay);
+            includeAdjacentBay,
+            includeHoldBay,
+            (z, margin) => CollectHatchWebPortals(lockDoc, z, margin, deckUps));
 
         var layers = BuildLayers(stamp);
         var shapes = BuildShapes(stamp);
         var cad = new CadDocument
         {
-            Name = includeAdjacentBay
-                ? "Calypso — structural bay F24–F32 (piece-by-piece)"
-                : "Calypso — structural bay F24–F28 (piece-by-piece)",
+            Name = "Calypso — structural bay (piece-by-piece)",
             Generator = new CadGenerator { Name = "CalypsoCad.StructuralBay", Version = "2026.1.0" },
             CreatedAt = stamp,
             ModifiedAt = stamp,
@@ -155,7 +158,7 @@ internal static class CalypsoLockGenerator
                 Pitch = 0.42f,
             },
         };
-        StructuralBayEmitter.TagDocument(cad, includeAdjacentBay);
+        StructuralBayEmitter.TagDocument(cad, includeAdjacentBay, includeHoldBay);
         CadDocumentBundle.Write(dir, layers, shapes, cad, "calypso-structural-bay");
         return dir;
     }
@@ -397,8 +400,14 @@ internal static class CalypsoLockGenerator
         }
 
         CalypsoHullNest.RefineAllSpaceFootprints(entities, loa);
+        // Contiguous passageway (ACCESS/CROSSING/CORR_*): no partition walls — BH cutouts +
+        // open-frame chord gaps are the only transverse barriers. Cabin/ENG walls stay.
         foreach (var (space, deck, up0, height) in wallJobs)
+        {
+            if (IsPassagewaySpace(space.Name))
+                continue;
             AddRoomWalls(entities, space, deck, up0, height, loa);
+        }
 
         foreach (var hatch in lockDoc.Hatches ?? [])
         {
@@ -498,7 +507,12 @@ internal static class CalypsoLockGenerator
         IntegrateInteriorHatches(entities, loa);
         ClampAllBoxesInside(entities, loa);
 
+        // BH / airlock punches need dedicated hosts BEFORE wall splitting — otherwise
+        // OpeningDerivation latches onto short cabin walls and crashes / swiss-cheeses partitions.
+        EnsurePassageOpeningHosts(entities, loa);
         OpeningDerivation.Apply(entities);
+        EnsurePassageOpeningHosts(entities, loa);
+        EnsureLiveOpeningHosts(entities, loa);
 
         var cad = new CadDocument
         {
@@ -1097,6 +1111,10 @@ internal static class CalypsoLockGenerator
         return true;
     }
 
+    /// <summary>DK-001 shirt-sleeves spine: ACCESS + CROSSING + CORR_P/S = one contiguous passageway.</summary>
+    internal static bool IsPassagewaySpace(string? id) =>
+        id is "ACCESS" or "CROSSING" or "CORR_P" or "CORR_S";
+
     private static void AddRoomWalls(List<CadEntity> entities, CadEntity space, int deck, float floorY, float height, float loa)
     {
         _ = loa;
@@ -1237,6 +1255,10 @@ internal static class CalypsoLockGenerator
         {
             if (opening.Name?.StartsWith("D3-", StringComparison.OrdinalIgnoreCase) == true)
                 continue;
+            // PASS-* / HOLD-* are BH cutouts — dedicated hosts, never snap onto cabin walls.
+            if (opening.Name?.StartsWith("PASS-", StringComparison.OrdinalIgnoreCase) == true
+                || opening.Name?.StartsWith("HOLD-", StringComparison.OrdinalIgnoreCase) == true)
+                continue;
             var connects = ShipCad.GetOpeningConnects(opening);
             if (connects.Count < 2
                 || connects.Any(c => string.Equals(c, "SPACE", StringComparison.OrdinalIgnoreCase)))
@@ -1249,8 +1271,6 @@ internal static class CalypsoLockGenerator
             Vector3 bestB = default;
             foreach (var wall in entities.Where(w => string.Equals(w.Kind, "wall", StringComparison.OrdinalIgnoreCase)))
             {
-                if (wall.Deck != opening.Deck)
-                    continue;
                 if (wall.Name?.StartsWith("hatch-host-", StringComparison.OrdinalIgnoreCase) == true)
                     continue;
                 if (!TryParsePartitionWallSpace(wall.Name, out var spaceName))
@@ -1261,6 +1281,10 @@ internal static class CalypsoLockGenerator
                     continue;
                 var a = CadVec.FromArray(wall.A);
                 var b = CadVec.FromArray(wall.B);
+                // ENG/HOLD are single tall spaces (deck 0) with multi-deck CORR doors — match by
+                // vertical overlap, not deck index alone.
+                if (wall.Deck != opening.Deck && !WallSpansOpeningDeck(wall, a, b, opening))
+                    continue;
                 var d = PointToSegmentDistanceXZ(center, a, b);
                 if (d < bestDist)
                 {
@@ -1271,7 +1295,12 @@ internal static class CalypsoLockGenerator
                 }
             }
 
-            if (bestWall is null || bestDist > 2.75f)
+            // CORR has no partition walls — ENG/HOLD doors snap farther onto chamber faces.
+            var maxSnap = opening.Name?.StartsWith("HOLD-", StringComparison.OrdinalIgnoreCase) == true
+                          || opening.Name?.StartsWith("ENG-", StringComparison.OrdinalIgnoreCase) == true
+                ? 4.5f
+                : 2.75f;
+            if (bestWall is null || bestDist > maxSnap)
                 continue;
 
             var along = OpeningClearWidthAlongWall(opening, bestA, bestB);
@@ -1304,32 +1333,147 @@ internal static class CalypsoLockGenerator
 
         if (hostsToRemove.Count > 0)
             entities.RemoveAll(e => hostsToRemove.Contains(e.Id));
+
+        EnsurePassageOpeningHosts(entities, loa);
+    }
+
+    /// <summary>
+    /// Contiguous-passage BH openings must keep a live <see cref="CadEntity.HostWallId"/> after
+    /// <see cref="OpeningDerivation"/> splits end-cap walls (esp. CORR_S).
+    /// </summary>
+    private static void EnsurePassageOpeningHosts(List<CadEntity> entities, float loa)
+    {
+        _ = loa;
+        foreach (var opening in entities.Where(e =>
+                     string.Equals(e.Kind, "opening", StringComparison.OrdinalIgnoreCase)
+                     && IsStructuralPunchOpening(e.Name)).ToList())
+        {
+            var hostOk = opening.HostWallId is { } hid
+                         && entities.Any(e => e.Id == hid
+                                              && e.Name?.StartsWith("hatch-host-", StringComparison.OrdinalIgnoreCase) == true);
+            if (hostOk)
+                continue;
+
+            var center = OpeningFootprintCenter(opening);
+            var clearW = OpeningClearWidthHint(opening);
+            var clearH = opening.Height > 0.5f ? opening.Height : 2.15f;
+            // Prefer lock footprint orientation already on the opening; default athwart for PASS.
+            var normal = opening.Name!.StartsWith("D1-P", StringComparison.OrdinalIgnoreCase) ? "-Y"
+                : opening.Name.StartsWith("D1-S", StringComparison.OrdinalIgnoreCase) ? "+Y"
+                : opening.Name.StartsWith("D2-", StringComparison.OrdinalIgnoreCase) ? "+Zaft"
+                : "+Zaft";
+            var host = MakeHatchWall(opening.Name!, opening.Deck, center, clearW, clearH, normal);
+            entities.Add(host);
+            opening.HostWallId = host.Id;
+            opening.Footprint = BuildHatchFootprint(center, clearW, clearH, normal);
+        }
+    }
+
+    private static bool IsStructuralPunchOpening(string? name) =>
+        name is not null
+        && (name.StartsWith("PASS-", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("D1-", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("D2-", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("HOLD-", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Any opening whose host was split away gets a dedicated hatch-host (no orphans).</summary>
+    private static void EnsureLiveOpeningHosts(List<CadEntity> entities, float loa)
+    {
+        _ = loa;
+        foreach (var opening in entities.Where(e =>
+                     string.Equals(e.Kind, "opening", StringComparison.OrdinalIgnoreCase)).ToList())
+        {
+            if (opening.Name is null)
+                continue;
+            var hostOk = opening.HostWallId is { } hid && entities.Any(e => e.Id == hid);
+            if (hostOk)
+                continue;
+            var center = OpeningFootprintCenter(opening);
+            var clearW = OpeningClearWidthHint(opening);
+            var clearH = opening.Height > 0.5f ? opening.Height : 2.1f;
+            var normal = "+Zaft";
+            var host = MakeHatchWall(opening.Name, opening.Deck, center, clearW, clearH, normal);
+            entities.Add(host);
+            opening.HostWallId = host.Id;
+        }
+    }
+
+    /// <summary>True when a tall single-space wall (ENG/HOLD) covers the opening's deck elevation.</summary>
+    private static bool WallSpansOpeningDeck(CadEntity wall, Vector3 a, Vector3 b, CadEntity opening)
+    {
+        var sill = MathF.Min(a.Y, b.Y);
+        var head = sill + MathF.Max(wall.Height, 0.5f);
+        var mid = opening.Footprint is { Count: > 0 }
+            ? OpeningFootprintCenter(opening).Y
+            : sill + 1f;
+        var half = opening.Height > 0.5f ? opening.Height * 0.5f : 1.1f;
+        return mid + half > sill + 0.05f && mid - half < head - 0.05f;
+    }
+
+    private static float OpeningClearWidthHint(CadEntity opening)
+    {
+        if (opening.Properties is not null
+            && opening.Properties.TryGetValue("clearW", out var cw)
+            && cw.ValueKind == System.Text.Json.JsonValueKind.Number)
+            return MathF.Max(0.8f, (float)cw.GetDouble());
+        if (opening.Footprint is { Count: >= 2 })
+        {
+            var a = CadVec.FromArray(opening.Footprint[0]);
+            var b = CadVec.FromArray(opening.Footprint[1]);
+            var d = Vector3.Distance(new Vector3(a.X, 0, a.Z), new Vector3(b.X, 0, b.Z));
+            if (d > 0.4f)
+                return d;
+        }
+
+        return 2.0f;
     }
 
     private static void AddPassagewayHatchFrames(List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa)
     {
         foreach (var hatch in lockDoc.Hatches ?? [])
         {
+            var id = hatch.Id ?? "";
+            // No floating jamb forest: PASS/HOLD are BH cutouts; D3 vacuum; D1/D2 airlock leaves.
+            // Keep frames for room↔corridor doors only.
             if (string.Equals(hatch.To, "SPACE", StringComparison.OrdinalIgnoreCase)
-                || hatch.Id!.StartsWith("D3-", StringComparison.OrdinalIgnoreCase))
+                || id.StartsWith("D3-", StringComparison.OrdinalIgnoreCase)
+                || id.StartsWith("D1-", StringComparison.OrdinalIgnoreCase)
+                || id.StartsWith("D2-", StringComparison.OrdinalIgnoreCase)
+                || id.StartsWith("PASS-", StringComparison.OrdinalIgnoreCase)
+                || id.StartsWith("HOLD-", StringComparison.OrdinalIgnoreCase))
                 continue;
-            var clearW = (float)hatch.ClearW;
-            var clearH = (float)hatch.ClearH;
+            var clearW = hatch.ClearW > 0 ? (float)hatch.ClearW : 0.9f;
+            var clearH = hatch.ClearH > 0 ? (float)hatch.ClearH : 2.1f;
             var c = LockToWorld((float)hatch.Y, (float)hatch.Up, (float)hatch.Z, loa);
+            // Lock Up is portal mid-height; sill/head from clearH.
             var sill = c.Y - clearH * 0.5f;
-            var frameH = MathF.Min(clearH, 2.15f);
+            var frameH = MathF.Max(1.6f, MathF.Min(clearH, 2.25f));
             var jamb = 0.07f;
+            var sillHu = 0.05f;
+            var lintelHu = 0.06f;
+            var meta = new StructuralSolidMeta(
+                StructuralRoles.ThrustStructure, $"hatch-{hatch.Id}", StationZ: c.Z, DeckUp: sill);
             if (HatchNormalFacesForeAft(hatch.Normal))
             {
-                TryAddBar(entities, loa, $"outfit-hatch-jamb-{hatch.Id}-port", c.X - clearW * 0.5f - jamb, sill + frameH * 0.5f, c.Z, jamb, frameH * 0.5f, jamb);
-                TryAddBar(entities, loa, $"outfit-hatch-jamb-{hatch.Id}-stbd", c.X + clearW * 0.5f + jamb, sill + frameH * 0.5f, c.Z, jamb, frameH * 0.5f, jamb);
-                TryAddBar(entities, loa, $"outfit-hatch-lintel-{hatch.Id}", c.X, sill + frameH - 0.05f, c.Z, clearW * 0.5f + jamb, 0.05f, jamb);
+                TryAddBar(entities, loa, $"outfit-hatch-jamb-{hatch.Id}-port",
+                    c.X - clearW * 0.5f - jamb, sill + frameH * 0.5f, c.Z, jamb, frameH * 0.5f, jamb, meta: meta);
+                TryAddBar(entities, loa, $"outfit-hatch-jamb-{hatch.Id}-stbd",
+                    c.X + clearW * 0.5f + jamb, sill + frameH * 0.5f, c.Z, jamb, frameH * 0.5f, jamb, meta: meta);
+                TryAddBar(entities, loa, $"outfit-hatch-sill-{hatch.Id}",
+                    c.X, sill + sillHu, c.Z, clearW * 0.5f + jamb, sillHu, jamb, meta: meta);
+                TryAddBar(entities, loa, $"outfit-hatch-lintel-{hatch.Id}",
+                    c.X, sill + frameH - lintelHu, c.Z, clearW * 0.5f + jamb, lintelHu, jamb, meta: meta);
             }
             else
             {
-                TryAddBar(entities, loa, $"outfit-hatch-jamb-{hatch.Id}-fore", c.X, sill + frameH * 0.5f, c.Z - clearW * 0.5f - jamb, jamb, frameH * 0.5f, jamb);
-                TryAddBar(entities, loa, $"outfit-hatch-jamb-{hatch.Id}-aft", c.X, sill + frameH * 0.5f, c.Z + clearW * 0.5f + jamb, jamb, frameH * 0.5f, jamb);
-                TryAddBar(entities, loa, $"outfit-hatch-lintel-{hatch.Id}", c.X, sill + frameH - 0.05f, c.Z, jamb, 0.05f, clearW * 0.5f + jamb);
+                TryAddBar(entities, loa, $"outfit-hatch-jamb-{hatch.Id}-fore",
+                    c.X, sill + frameH * 0.5f, c.Z - clearW * 0.5f - jamb, jamb, frameH * 0.5f, jamb, meta: meta);
+                TryAddBar(entities, loa, $"outfit-hatch-jamb-{hatch.Id}-aft",
+                    c.X, sill + frameH * 0.5f, c.Z + clearW * 0.5f + jamb, jamb, frameH * 0.5f, jamb, meta: meta);
+                TryAddBar(entities, loa, $"outfit-hatch-sill-{hatch.Id}",
+                    c.X, sill + sillHu, c.Z, jamb, sillHu, clearW * 0.5f + jamb, meta: meta);
+                TryAddBar(entities, loa, $"outfit-hatch-lintel-{hatch.Id}",
+                    c.X, sill + frameH - lintelHu, c.Z, jamb, lintelHu, clearW * 0.5f + jamb, meta: meta);
             }
         }
     }
@@ -2052,18 +2196,24 @@ internal static class CalypsoLockGenerator
 
         void PlaceFrame(string id, float zStem, bool bowAligned = false)
         {
-            if (topo.InOpenHoldCell(zStem))
-                return; // tramp hold = open bay; girders + shell + ENG-AFT only
-
             var z = Math.Clamp(zStem, web * 0.5f + skin, zMax - web * 0.5f - skin);
             SectionAt(z, out var halfB, out var halfH, out _, out _, out _);
             if (halfB < 0.5f || halfH < 0.5f)
                 return;
             var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
             var gaps = CollectAthwartPassageGaps(lockDoc, z, margin: 0.28f);
-            var hatchPortals = CollectHatchWebPortals(lockDoc, z, 0.28f, deckUps);
+
+            // Open HOLD: perimeter framing + cargo-floor supports only — never skip the whole station.
+            if (topo.InOpenHoldCell(zStem))
+            {
+                CalypsoShipbuildingFrames.AddHoldPerimeterFrame(
+                    entities, loa, frameName, z, web, halfDepthZ, deckUps, tPlate);
+                return;
+            }
+
+            // Open frames: passageway track gaps only. Hatch punches belong on pressure BHs.
             CalypsoShipbuildingFrames.AddTransverseFrameWeb(
-                entities, loa, frameName, z, web, halfDepthZ, gaps, bowAligned, deckUps, hatchPortals);
+                entities, loa, frameName, z, web, halfDepthZ, gaps, bowAligned, deckUps, hatchPortals: null);
             if (!bowAligned)
             {
                 CalypsoShipbuildingFrames.AddTransverseDeckBeams(
@@ -2071,7 +2221,7 @@ internal static class CalypsoLockGenerator
             }
         }
 
-        // 2) Open bay frames outside HOLD.
+        // 2) Bay frames (HOLD uses perimeter-only path above).
         foreach (var (id, zStem, bowAligned) in topo.FrameStations)
             PlaceFrame(id, zStem, bowAligned);
 
@@ -2160,29 +2310,37 @@ internal static class CalypsoLockGenerator
         var corrOuter = circ?.CorrOuter is > 0 ? (float)circ.CorrOuter : 8f;
         var accessHalf = circ?.AccessW is > 0 ? (float)circ.AccessW * 0.5f : 1.5f;
 
-        // One passageway (DK-001): ACCESS (fore CL) → CROSS link → CORR_P/S (spine).
+        // One contiguous passageway (DK-001): ACCESS → CROSS → CORR_P/S.
+        // Punch only the tracks that exist at that station — never swiss-cheese CROSS-FORE
+        // with CORR holes or CROSS-AFT with a CL hole into ENG.
         const float PassageZ0 = 13f;
         const float CrossZ0 = 19f;
         const float CorrZ0 = 23f;
         const float CorrZ1 = 49.25f;
+        var crossMid = (CrossZ0 + CorrZ0) * 0.5f;
 
         if (zStem >= PassageZ0 - margin && zStem <= CorrZ1 + margin)
         {
-            if (zStem < CrossZ0)
+            if (zStem < CrossZ0 - 0.15f)
             {
                 // ACCESS on CL — spine-symmetric portal track.
                 gaps.Add((-accessHalf - margin, accessHalf + margin));
             }
-            else if (zStem < CorrZ0)
+            else if (zStem < crossMid)
             {
-                // CROSS station: CORR tracks + CL ACCESS link — never gut the full CROSSING beam.
+                // CROSS-FORE face + forward CROSS: ACCESS CL only.
+                gaps.Add((-accessHalf - margin, accessHalf + margin));
+            }
+            else if (zStem < CorrZ0 - 0.15f)
+            {
+                // Aft CROSS bay (open frames): CL + both CORR tracks for the crossing floor.
                 gaps.Add((-corrOuter - margin, -corrInner + margin));
                 gaps.Add((corrInner - margin, corrOuter + margin));
                 gaps.Add((-accessHalf - margin, accessHalf + margin));
             }
             else
             {
-                // CORR_P + CORR_S tracks — same passageway, outboard of ENG/cabins.
+                // CROSS-AFT BH + CORR length: CORR_P/S only (CL is ENG/cabins).
                 gaps.Add((-corrOuter - margin, -corrInner + margin));
                 gaps.Add((corrInner - margin, corrOuter + margin));
             }
@@ -2227,6 +2385,12 @@ internal static class CalypsoLockGenerator
         var roomH = lockDoc.Decks?.RoomH is > 1 ? (float)lockDoc.Decks.RoomH : 3.5f;
         foreach (var hatch in lockDoc.Hatches ?? [])
         {
+            var id = hatch.Id ?? "";
+            // Athwart CORR/ACCESS/HOLD tracks already come from CollectAthwartPassageGaps.
+            // Extra BH punches = airlock intermediate D2 only (y outboard of CORR). Never
+            // re-punch PASS/HOLD on the same Y — that swiss-cheeses the plate.
+            if (!id.StartsWith("D2-", StringComparison.OrdinalIgnoreCase))
+                continue;
             if (!HatchNormalFacesForeAft(hatch.Normal))
                 continue;
             var hz = (float)hatch.Z;
@@ -2308,8 +2472,55 @@ internal static class CalypsoLockGenerator
         float halfUp,
         float halfZ,
         string? fabPartId = null,
-        StructuralSolidMeta? meta = null) =>
-        TryAddBar(entities, loa, name, y, up, zFromStem, halfY, halfUp, halfZ, fabPartId, meta);
+        StructuralSolidMeta? meta = null,
+        float minHalf = 0.02f) =>
+        TryAddBar(entities, loa, name, y, up, zFromStem, halfY, halfUp, halfZ, fabPartId, meta, minHalf);
+
+    /// <summary>
+    /// Oriented structure bar in the Y–Up plane: local +X along the edge after <paramref name="orientZ"/>
+    /// (world +Z rotation). Does not silently shorten the edge — fails closed if the center cannot fit.
+    /// </summary>
+    internal static bool TryAddOrientedStructureBar(
+        List<CadEntity> entities,
+        float loa,
+        string name,
+        float y,
+        float up,
+        float zFromStem,
+        float halfAlongEdge,
+        float halfFlange,
+        float halfDepthZ,
+        float orientZ,
+        string? fabPartId = null,
+        StructuralSolidMeta? meta = null)
+    {
+        var ha = MathF.Abs(halfAlongEdge);
+        var hf = MathF.Abs(halfFlange);
+        var hz = MathF.Abs(halfDepthZ);
+        if (ha < 0.05f || hf < 0.02f || hz < 0.02f)
+            return false;
+
+        // Conservative AABB fit using flange radius (not full edge length).
+        if (!BoxFits(y, up, zFromStem, hf + 0.02f, hf + 0.02f, hz))
+        {
+            hf *= 0.75f;
+            if (hf < 0.03f || !BoxFits(y, up, zFromStem, hf + 0.02f, hf + 0.02f, hz))
+                return false;
+        }
+
+        var center = LockToWorld(y, up, zFromStem, loa);
+        var resolved = meta ?? InferStructuralMeta(name, zFromStem, up);
+        // Local half-extents: X along edge, Y flange, Z web depth.
+        var entity = MakeSolid(
+            name, LayerStruct, ShapeHullInt, center,
+            new Vector3(ha, hf, hz),
+            [0.55f, 0.58f, 0.62f], "structure", fabPartId, resolved);
+        entity.Properties ??= new Dictionary<string, JsonElement>();
+        entity.Properties["orientZ"] = JsonSerializer.SerializeToElement(orientZ);
+        entity.Properties["edgeLength"] = JsonSerializer.SerializeToElement(ha * 2f);
+        entities.Add(entity);
+        return true;
+    }
 
     private static void TryAddBar(
         List<CadEntity> entities,
@@ -2322,16 +2533,22 @@ internal static class CalypsoLockGenerator
         float halfUp,
         float halfZ,
         string? fabPartId = null,
-        StructuralSolidMeta? meta = null)
+        StructuralSolidMeta? meta = null,
+        float minHalf = 0.02f)
     {
         var hy = MathF.Abs(halfY);
         var hu = MathF.Abs(halfUp);
         var hz = MathF.Abs(halfZ);
-        if (hy < 0.02f || hu < 0.02f || hz < 0.02f)
+        var floor = MathF.Max(0.01f, minHalf);
+        if (hy < floor || hu < floor || hz < floor)
             return;
         // Ship-height webs/BHs: never chew plate height to satisfy IML — shrink athwart only.
+        // Oriented ring edges and sandwich faces: do not silently chew primary length/thickness.
         var keepHeight = name.Contains("web-solid", StringComparison.OrdinalIgnoreCase)
-                         || name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase);
+                         || name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+                         || name.Contains("-face-", StringComparison.OrdinalIgnoreCase)
+                         || name.Contains("-rib-", StringComparison.OrdinalIgnoreCase)
+                         || name.Contains("-peri-", StringComparison.OrdinalIgnoreCase);
         for (var n = 0; n < 10; n++)
         {
             if (BoxFits(y, up, zFromStem, hy, hu, hz))
@@ -2343,7 +2560,7 @@ internal static class CalypsoLockGenerator
             hy *= 0.8f;
             if (!keepHeight)
                 hu *= 0.8f;
-            if (hy < 0.04f || hu < 0.04f)
+            if (hy < floor * 2f || hu < floor * 2f)
                 return;
         }
     }
@@ -2535,7 +2752,8 @@ internal static class CalypsoLockGenerator
                         PlaceInSpace(entities, loa, space, $"{prefix}-tread-{i}", minY + spanY * t, rise, midZ, 0.16f, 0.04f, MathF.Min(0.45f, spanZ * 0.35f), [0.55f, 0.56f, 0.58f], "outfit");
                 }
             }
-            else if (name.StartsWith("CORR_", StringComparison.OrdinalIgnoreCase))
+            else if (name.StartsWith("CORR_", StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(name, "ACCESS", StringComparison.OrdinalIgnoreCase))
             {
                 var walkHalfY = MathF.Min(0.32f, spanY * 0.22f);
                 PlaceInSpace(entities, loa, space, $"{prefix}-walk-deck", midY, floor + 0.03f, midZ, walkHalfY, 0.025f, spanZ * 0.46f, [0.38f, 0.4f, 0.44f], "outfit");
@@ -2552,6 +2770,20 @@ internal static class CalypsoLockGenerator
             {
                 // Cosmetic finish snaps to sandwich plate top (floor = lock plate top).
                 PlaceInSpace(entities, loa, space, $"{prefix}-deck-plate", midY, floor, midZ, spanY * 0.42f, 0.01f, spanZ * 0.42f, [0.4f, 0.42f, 0.46f], "outfit");
+            }
+            else if (name.StartsWith("AIRLOCK_", StringComparison.OrdinalIgnoreCase) && space.Deck == 0)
+            {
+                // Visible chamber volume: deck + coaming so airlocks read in plan/orbit (not empty voids).
+                PlaceInSpace(entities, loa, space, $"{prefix}-deck", midY, floor + 0.02f, midZ,
+                    MathF.Max(0.25f, spanY * 0.42f), 0.02f, MathF.Max(0.35f, spanZ * 0.42f),
+                    [0.42f, 0.44f, 0.48f], "outfit");
+                PlaceInSpace(entities, loa, space, $"{prefix}-coaming", midY, floor + 0.12f, midZ,
+                    MathF.Max(0.2f, spanY * 0.38f), 0.06f, MathF.Max(0.25f, spanZ * 0.38f),
+                    [0.55f, 0.5f, 0.4f], "outfit");
+                if (!HasNamed(entities, $"{prefix}-leaf"))
+                    PlaceInSpace(entities, loa, space, $"{prefix}-leaf", midY, floor + 1.1f, maxStem - 0.12f,
+                        MathF.Min(0.45f, spanY * 0.35f), 0.9f, 0.04f,
+                        [0.62f, 0.64f, 0.68f], "outfit");
             }
             else if (string.Equals(name, "BRIDGE", StringComparison.OrdinalIgnoreCase) && space.Deck == 0)
             {

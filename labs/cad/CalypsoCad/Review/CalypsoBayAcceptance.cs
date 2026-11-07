@@ -31,6 +31,13 @@ internal static class CalypsoBayAcceptance
         var frames = entities.Count(e => e.Name?.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) == true);
         Add("open frame assemblies", frames >= 20, $"frameBars={frames}");
 
+        Add("no floating passage-portal bars",
+            entities.Count(e => e.Name?.Contains("-passage-portal-", StringComparison.OrdinalIgnoreCase) == true) == 0);
+
+        var chordGaps = entities.Count(e =>
+            e.Name?.Contains("-chord-", StringComparison.OrdinalIgnoreCase) == true);
+        Add("deck chords split at passage tracks", chordGaps >= 4, $"chords={chordGaps}");
+
         var wallLike = entities.Count(e =>
         {
             var n = e.Name ?? "";
@@ -47,8 +54,60 @@ internal static class CalypsoBayAcceptance
         var girders = entities.Count(e => e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) == true);
         Add("keel+port+stbd girders", girders >= 3, $"girders={girders}");
 
-        var decks = entities.Count(StructuralBayEmitter.IsDeck);
-        Add("DK0 sandwich faces", decks >= 2, $"deckSolids={decks}");
+        var faceTop = entities.Count(e =>
+            e.Name?.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase) == true
+            && e.Name.Contains("-face-top", StringComparison.OrdinalIgnoreCase));
+        var ribs = entities.Count(e =>
+            e.Name?.Contains("-rib-", StringComparison.OrdinalIgnoreCase) == true);
+        Add("DK0 sandwich faces", faceTop >= 1, $"faceTop={faceTop}");
+        Add("cellular deck ribs", ribs >= 2, $"ribs={ribs}");
+
+        var orientedRings = entities.Count(e =>
+            e.Name?.Contains("-ring-", StringComparison.OrdinalIgnoreCase) == true
+            && e.Properties is not null
+            && e.Properties.ContainsKey("orientZ"));
+        Add("oriented polygonal ring edges", orientedRings >= 6, $"orientedRing={orientedRings}");
+
+        // Geometric continuity: consecutive girder segments along the same assembly meet within 0.05 m.
+        var girderEnds = entities
+            .Where(e => e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) == true
+                        && e.Points is { Count: >= 2 })
+            .Select(e =>
+            {
+                var c = e.Points![0];
+                var h = e.Points[1];
+                var zc = c.Length > 2 ? c[2] : 0f;
+                var hz = h.Length > 2 ? MathF.Abs(h[2]) : 0f;
+                var asm = e.Properties is not null
+                          && e.Properties.TryGetValue("assembly", out var a)
+                          && a.ValueKind == JsonValueKind.String
+                    ? a.GetString() ?? ""
+                    : e.Name ?? "";
+                return (Asm: asm, Z0: zc - hz, Z1: zc + hz);
+            })
+            .GroupBy(g => g.Asm)
+            .ToList();
+        // Flag only unexpected small gaps between neighbors that should meet (same run).
+        // Large separations (midbody vs HOLD) are intentional and ignored.
+        var gapFails = 0;
+        var checkedPairs = 0;
+        foreach (var g in girderEnds)
+        {
+            var segs = g.OrderBy(s => s.Z0).ToList();
+            for (var i = 1; i < segs.Count; i++)
+            {
+                var gap = segs[i].Z0 - segs[i - 1].Z1;
+                var sep = MathF.Abs(gap);
+                if (sep > 3.5f)
+                    continue; // different hull regions
+                checkedPairs++;
+                if (sep > 0.05f)
+                    gapFails++;
+            }
+        }
+
+        Add("longitudinal girder continuity (≤50 mm gaps)", checkedPairs == 0 || gapFails == 0,
+            $"gapFails={gapFails} checked={checkedPairs}");
 
         var withJoins = entities.Count(e =>
             e.Properties is not null

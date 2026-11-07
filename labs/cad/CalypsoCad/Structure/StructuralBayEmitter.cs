@@ -13,14 +13,17 @@ internal static class StructuralBayEmitter
     public const float CanonicalZ0 = 24f;
     public const float CanonicalZ1 = 28f;
     public const float AdjacentZ1 = 32f;
+    public const float HoldBayZ0 = 52f;
+    public const float HoldBayZ1 = 56f;
 
-    public sealed record BaySpec(float Z0, float Z1, string ForeFrameId, string AftFrameId);
+    public sealed record BaySpec(float Z0, float Z1, string ForeFrameId, string AftFrameId, bool HoldPerimeter);
 
-    public static BaySpec Canonical => new(CanonicalZ0, CanonicalZ1, "frame-F24", "frame-F28");
-    public static BaySpec Adjacent => new(CanonicalZ1, AdjacentZ1, "frame-F28", "frame-F32");
+    public static BaySpec Canonical => new(CanonicalZ0, CanonicalZ1, "frame-F24", "frame-F28", HoldPerimeter: false);
+    public static BaySpec Adjacent => new(CanonicalZ1, AdjacentZ1, "frame-F28", "frame-F32", HoldPerimeter: false);
+    public static BaySpec HoldBay => new(HoldBayZ0, HoldBayZ1, "frame-F52", "frame-F56", HoldPerimeter: true);
 
     /// <summary>
-    /// Emit one or two bays into <paramref name="entities"/>. Caller must have prepared loft stations.
+    /// Emit one or two midbody bays (and optional HOLD perimeter bay). Caller must have prepared loft stations.
     /// </summary>
     public static void Emit(
         List<CadEntity> entities,
@@ -29,11 +32,15 @@ internal static class StructuralBayEmitter
         float tPlate,
         IReadOnlyList<float> deckUps,
         Func<float, float, List<(float Y0, float Y1)>> passageGapsAt,
-        bool includeAdjacentBay = false)
+        bool includeAdjacentBay = false,
+        bool includeHoldBay = false,
+        Func<float, float, List<FrameWebPlateBuilder.WebPlatePortal>>? hatchPortalsAt = null)
     {
-        EmitBay(entities, loa, web, tPlate, deckUps, passageGapsAt, Canonical);
+        EmitBay(entities, loa, web, tPlate, deckUps, passageGapsAt, Canonical, hatchPortalsAt: hatchPortalsAt);
         if (includeAdjacentBay)
-            EmitBay(entities, loa, web, tPlate, deckUps, passageGapsAt, Adjacent, skipSharedForeFrame: true);
+            EmitBay(entities, loa, web, tPlate, deckUps, passageGapsAt, Adjacent, skipSharedForeFrame: true, hatchPortalsAt: hatchPortalsAt);
+        if (includeHoldBay)
+            EmitBay(entities, loa, web, tPlate, deckUps, passageGapsAt, HoldBay, hatchPortalsAt: hatchPortalsAt);
     }
 
     private static void EmitBay(
@@ -44,23 +51,34 @@ internal static class StructuralBayEmitter
         IReadOnlyList<float> deckUps,
         Func<float, float, List<(float Y0, float Y1)>> passageGapsAt,
         BaySpec bay,
-        bool skipSharedForeFrame = false)
+        bool skipSharedForeFrame = false,
+        Func<float, float, List<FrameWebPlateBuilder.WebPlatePortal>>? hatchPortalsAt = null)
     {
         var halfDepthZ = web * 0.5f;
         var zMid = (bay.Z0 + bay.Z1) * 0.5f;
-        var halfLenZ = (bay.Z1 - bay.Z0) * 0.48f;
+        var halfLenZ = (bay.Z1 - bay.Z0) * 0.5f;
         var dk0 = deckUps.Count > 1 ? deckUps[1] : 4.4f;
+        var floorUp = deckUps.Count > 0 ? deckUps[0] : 0.5f;
 
         // 1) Stiffened shell panel strips (IML faces) for this bay length.
         EmitShellPanels(entities, loa, bay, zMid, halfLenZ, web);
 
-        // 2) Open transverse frames at bay ends.
+        // 2) Open transverse frames at bay ends (HOLD = perimeter + floor only).
         void Place(string id, float zStem)
         {
             CalypsoLockGenerator.SectionAtPublic(zStem, out var halfB, out var halfH, out _, out _, out _);
             if (halfB < 0.5f || halfH < 0.5f)
                 return;
+            if (bay.HoldPerimeter)
+            {
+                CalypsoShipbuildingFrames.AddHoldPerimeterFrame(
+                    entities, loa, id, zStem, web, halfDepthZ, deckUps, tPlate);
+                return;
+            }
+
             var gaps = passageGapsAt(zStem, 0.28f);
+            // Open frames: CORR track gaps only — hatch punches belong on pressure BHs (one model).
+            _ = hatchPortalsAt;
             CalypsoShipbuildingFrames.AddTransverseFrameWeb(
                 entities, loa, id, zStem, web, halfDepthZ, gaps, bowAligned: false, deckUps, hatchPortals: null);
             CalypsoShipbuildingFrames.AddTransverseDeckBeams(
@@ -71,9 +89,10 @@ internal static class StructuralBayEmitter
             Place(bay.ForeFrameId, bay.Z0);
         Place(bay.AftFrameId, bay.Z1);
 
-        // 3) Longitudinal girders spanning the bay (keel + sides at each deck).
+        // 3) Longitudinal girders — HOLD: floor deck only.
+        var girderDecks = bay.HoldPerimeter ? (IReadOnlyList<float>)[floorUp] : deckUps;
         CalypsoShipbuildingFrames.AddDeckLongitudinalGirders(
-            entities, loa, bay.Z0, bay.Z1, web, bay.Z1 - bay.Z0, deckUps, tPlate, openAtriumSpans: null);
+            entities, loa, bay.Z0, bay.Z1, web, bay.Z1 - bay.Z0, girderDecks, tPlate, openAtriumSpans: null);
 
         // 3b) Frame ↔ girder join stubs.
         var stations = new List<(string Id, float ZStem, bool BowAligned)>();
@@ -81,22 +100,22 @@ internal static class StructuralBayEmitter
             stations.Add((bay.ForeFrameId, bay.Z0, false));
         stations.Add((bay.AftFrameId, bay.Z1, false));
         CalypsoShipbuildingFrames.AddFrameGirderJoinStubs(
-            entities, loa, stations, web, halfDepthZ, deckUps, tPlate,
-            _ => false, openAtriumSpans: null);
+            entities, loa, stations, web, halfDepthZ, girderDecks, tPlate,
+            z => bay.HoldPerimeter, openAtriumSpans: null);
 
-        // Tag join stubs as StructuralBracket when name contains -join-.
-        foreach (var e in entities)
+        // 4) Cellular sandwich — midbody DK0; HOLD floor only (DK−1).
+        if (bay.HoldPerimeter)
         {
-            if (e.Name?.Contains("-join-", StringComparison.OrdinalIgnoreCase) != true)
-                continue;
-            e.Properties ??= new Dictionary<string, JsonElement>();
-            e.Properties["structuralRole"] = JsonSerializer.SerializeToElement(StructuralRoles.StructuralBracket);
+            CalypsoShipbuildingFrames.AddCellularSandwichDecks(
+                entities, loa, bay.Z0, bay.Z1, bay.Z1 - bay.Z0,
+                [(-1, floorUp)], tPlate, openAtriumSpans: null);
         }
-
-        // 4) One DK0 cellular sandwich panel for the bay.
-        CalypsoShipbuildingFrames.AddCellularSandwichDecks(
-            entities, loa, bay.Z0, bay.Z1, bay.Z1 - bay.Z0,
-            [(0, dk0)], tPlate, openAtriumSpans: null);
+        else
+        {
+            CalypsoShipbuildingFrames.AddCellularSandwichDecks(
+                entities, loa, bay.Z0, bay.Z1, bay.Z1 - bay.Z0,
+                [(0, dk0)], tPlate, openAtriumSpans: null);
+        }
     }
 
     private static void EmitShellPanels(
@@ -184,19 +203,48 @@ internal static class StructuralBayEmitter
         }
     }
 
-    public static void TagDocument(CadDocument cad, bool includeAdjacent)
+    public static void TagDocument(CadDocument cad, bool includeAdjacent, bool includeHold = false)
     {
         cad.Properties ??= new Dictionary<string, JsonElement>();
+        var stations = new List<string> { "F24", "F28" };
+        if (includeAdjacent)
+            stations.Add("F32");
+        if (includeHold)
+        {
+            stations.Add("F52");
+            stations.Add("F56");
+        }
+
         cad.Properties["structuralBay"] = JsonSerializer.SerializeToElement(new
         {
             z0 = CanonicalZ0,
             z1 = includeAdjacent ? AdjacentZ1 : CanonicalZ1,
-            stations = includeAdjacent
-                ? new[] { "F24", "F28", "F32" }
-                : new[] { "F24", "F28" },
+            holdZ0 = includeHold ? HoldBayZ0 : (float?)null,
+            holdZ1 = includeHold ? HoldBayZ1 : (float?)null,
+            stations,
             adjacent = includeAdjacent,
+            holdBay = includeHold,
         });
         cad.Properties["maturity"] = JsonSerializer.SerializeToElement("structural-bay");
+    }
+
+    public static bool IsHoldBayEntity(CadEntity e)
+    {
+        if (e.Properties is not null
+            && e.Properties.TryGetValue("stationZ", out var sz)
+            && sz.ValueKind == JsonValueKind.Number)
+        {
+            var z = (float)sz.GetDouble();
+            if (z >= HoldBayZ0 - 0.5f && z <= HoldBayZ1 + 0.5f)
+                return true;
+        }
+
+        var n = e.Name ?? "";
+        return n.Contains("F52", StringComparison.OrdinalIgnoreCase)
+               || n.Contains("F56", StringComparison.OrdinalIgnoreCase)
+               || n.Contains("-holdfloor", StringComparison.OrdinalIgnoreCase)
+               || (n.Contains("-z52", StringComparison.OrdinalIgnoreCase)
+                   || n.Contains("-z56", StringComparison.OrdinalIgnoreCase));
     }
 
     public static bool IsShellEntity(CadEntity e)
