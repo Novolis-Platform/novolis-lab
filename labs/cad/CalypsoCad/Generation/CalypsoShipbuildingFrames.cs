@@ -134,8 +134,9 @@ internal static class CalypsoShipbuildingFrames
             return;
 
         var bayIndex = 0;
-        // Longitudinal girders are not frames — keep them clear of the bow web plates.
-        var girderStart = MathF.Max(zStart, 20f);
+        // Start at zStart — HalfBeamInside + ySide<0.35 already taper-clips the extreme stem.
+        // A hard 20 m floor left bow frames/BH floating ahead of the girder cage.
+        var girderStart = zStart;
         for (var z = girderStart; z < zEnd - 0.5f; z += frameBay)
         {
             var zc = MathF.Min(z + frameBay * 0.5f, zEnd - 0.2f);

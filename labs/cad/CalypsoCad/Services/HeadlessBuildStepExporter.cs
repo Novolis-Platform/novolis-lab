@@ -6,9 +6,10 @@ using Novolis.Cad.Primitives;
 namespace CalypsoCad.Services;
 
 /// <summary>
-/// Progressive build slides: hull → bulkheads → frames → longitudinals →
-/// passageways → airlocks → hatch groups → complete.
-/// Structure phases use structure-wire; interior phases use fitout+cutouts so spaces/hatches read.
+/// Progressive build slides in construction order: longitudinals → frames → bulkheads →
+/// OML → passageways → airlocks → hatch groups → plan.
+/// Structure phases use structure-wire + faceted OML guide; fitout keeps structure underlay.
+/// Camera: three-quarter-high ×1.5 at 3840×2160 (same framing, higher pixel density).
 /// </summary>
 internal static class HeadlessBuildStepExporter
 {
@@ -39,10 +40,7 @@ internal static class HeadlessBuildStepExporter
     {
         var outDir = CalypsoProjectPaths.BuildStepsDirectory;
         Directory.CreateDirectory(outDir);
-        foreach (var stale in Directory.EnumerateFiles(outDir, "*.png"))
-        {
-            try { File.Delete(stale); } catch { /* best-effort */ }
-        }
+        // Overwrite in place — do not wipe the tree first (keeps viewers/diffs stable mid-run).
 
         var steps = BuildSteps(session.Document);
         var previousLayers = session.VisualLayers;
@@ -52,8 +50,9 @@ internal static class HeadlessBuildStepExporter
         var previousStatus = session.StatusText;
         var previousDeck = session.DeckFilter;
 
-        // Full LOA in frame: midships target, pull back (no ×1.5 crop that lost the bow).
-        renderer.SetOrbitPose(new System.Numerics.Vector3(0f, 5.5f, 0f), 135f, 0.95f, 0.48f);
+        // Same framing as before (three-quarter-high ×1.5); resolution alone is 3840×2160.
+        renderer.ApplyOrbitPreset("three-quarter-high");
+        renderer.ZoomOrbit(1.5f);
 
         var cumulative = new HashSet<Guid>();
         var manifest = new List<Step>();
@@ -105,6 +104,7 @@ internal static class HeadlessBuildStepExporter
                 jobs,
                 frame => renderer.DrawFrame(frame, 0f));
             WriteManifest(outDir, manifest);
+            PruneOrphanPngs(outDir, saved);
             return saved;
         }
         finally
@@ -129,26 +129,19 @@ internal static class HeadlessBuildStepExporter
     private static List<PlannedStep> BuildSteps(CadDocument doc)
     {
         var steps = new List<PlannedStep>();
-        var exterior = doc.Entities
-            .Where(CalypsoExterior.IsExteriorDrawable)
+
+        // —— Primary skeleton (yard order): girders → frames → limited BH → OML shell ——
+        var girders = doc.Entities
+            .Where(e =>
+                e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) == true
+                || e.Name?.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase) == true
+                || e.Name?.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase) == true
+                || e.Name?.StartsWith("ramp-", StringComparison.OrdinalIgnoreCase) == true)
             .Select(e => e.Id)
             .ToList();
-        steps.Add(new PlannedStep("hull", "OML / exterior shell", exterior, HullOnly));
+        if (girders.Count > 0)
+            steps.Add(new PlannedStep("longitudinals", $"Girders / coaming / ramp (+{girders.Count})", girders, StructureWire));
 
-        // —— Structure: bulkheads (massive plates) ——
-        foreach (var g in GroupByKey(
-                     doc.Entities.Where(e => e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true),
-                     e => BulkheadKey(e.Name!),
-                     bowFirst: true))
-        {
-            steps.Add(new PlannedStep(
-                $"bh-{g.Key}",
-                $"Bulkhead {g.Key} (+{g.Ids.Count})",
-                g.Ids,
-                StructureWire));
-        }
-
-        // —— Structure: bay frame rims ——
         foreach (var g in GroupByKey(
                      doc.Entities.Where(e => e.Name?.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) == true),
                      e => FrameStationKey(e.Name!),
@@ -161,16 +154,23 @@ internal static class HeadlessBuildStepExporter
                 StructureWire));
         }
 
-        var girders = doc.Entities
-            .Where(e =>
-                e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) == true
-                || e.Name?.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase) == true
-                || e.Name?.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase) == true
-                || e.Name?.StartsWith("ramp-", StringComparison.OrdinalIgnoreCase) == true)
+        foreach (var g in GroupByKey(
+                     doc.Entities.Where(e => e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true),
+                     e => BulkheadKey(e.Name!),
+                     bowFirst: true))
+        {
+            steps.Add(new PlannedStep(
+                $"bh-{g.Key}",
+                $"Bulkhead {g.Key} (+{g.Ids.Count})",
+                g.Ids,
+                StructureWire));
+        }
+
+        var exterior = doc.Entities
+            .Where(CalypsoExterior.IsExteriorDrawable)
             .Select(e => e.Id)
             .ToList();
-        if (girders.Count > 0)
-            steps.Add(new PlannedStep("longitudinals", $"Girders / coaming / ramp (+{girders.Count})", girders, StructureWire));
+        steps.Add(new PlannedStep("hull", "OML / exterior shell", exterior, HullOnly));
 
         // —— Passageway (DK-001: ACCESS + CROSS + CORR = one clear) ——
         foreach (var spaceName in new[] { "ACCESS", "CROSSING", "CORR_P", "CORR_S", "STAIRS_P", "ELEV_S" })
@@ -378,13 +378,25 @@ internal static class HeadlessBuildStepExporter
         return 0f;
     }
 
+    /// <summary>Remove PNGs no longer produced by this export (renamed/retired slides only).</summary>
+    private static void PruneOrphanPngs(string outDir, IReadOnlyList<string> kept)
+    {
+        var keep = kept.Select(Path.GetFullPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in Directory.EnumerateFiles(outDir, "*.png"))
+        {
+            if (keep.Contains(Path.GetFullPath(file)))
+                continue;
+            try { File.Delete(file); } catch { /* best-effort */ }
+        }
+    }
+
     private static void WriteManifest(string outDir, List<Step> steps)
     {
         var path = Path.Combine(outDir, "manifest.json");
         var payload = new
         {
             packageId = "CAL-MFG-002",
-            camera = "midships three-quarter @135m 3840x2160; OML wire guide; structure underlay on fitout",
+            camera = "three-quarter-high ×1.5 @3840×2160; faceted OML guide; yard-order slides",
             generatedUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
             stepCount = steps.Count,
             steps = steps.Select(s => new

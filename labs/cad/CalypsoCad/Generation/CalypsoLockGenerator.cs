@@ -1812,7 +1812,7 @@ internal static class CalypsoLockGenerator
             entities,
             loa,
             tBh,
-            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
+            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin, ringPreserveCross: false),
             deckUps);
 
         void PlaceFrame(string id, float zStem, bool bowAligned = false)
@@ -1822,7 +1822,8 @@ internal static class CalypsoLockGenerator
             if (halfB < 0.5f || halfH < 0.5f)
                 return;
             var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
-            var gaps = CollectAthwartPassageGaps(lockDoc, z, margin: 0.28f);
+            // Frames: preserve a web ring through CROSS (full void gutted F20). BH keep full cut.
+            var gaps = CollectAthwartPassageGaps(lockDoc, z, margin: 0.28f, ringPreserveCross: true);
             // Bay web frames = CNC plate-webs (primary skeleton). Few bh-* elsewhere.
             CalypsoShipbuildingFrames.AddTransverseFrameWeb(
                 entities, loa, frameName, z, web, halfDepthZ, gaps, bowAligned, deckUps);
@@ -1870,7 +1871,11 @@ internal static class CalypsoLockGenerator
     /// are <b>one passageway</b> (continuous clear). Do not cut ENG/HOLD room boxes as voids;
     /// only the passageway track, hold catwalk/door, and hatch clearW.
     /// </summary>
-    private static List<(float Y0, float Y1)> CollectAthwartPassageGaps(CalypsoLockDocument lockDoc, float zStem, float margin)
+    private static List<(float Y0, float Y1)> CollectAthwartPassageGaps(
+        CalypsoLockDocument lockDoc,
+        float zStem,
+        float margin,
+        bool ringPreserveCross = false)
     {
         var gaps = new List<(float Y0, float Y1)>();
         var circ = lockDoc.Circulation;
@@ -1896,14 +1901,24 @@ internal static class CalypsoLockGenerator
             }
             else if (zStem < CorrZ0)
             {
-                // CROSS — full athwart link between port/stbd corridors (DK-001 "CROSS").
-                var cross = lockDoc.Compartments?.FirstOrDefault(x =>
-                    string.Equals(x.Id, "CROSSING", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(x.Id, "CROSS", StringComparison.OrdinalIgnoreCase));
-                if (cross is not null)
-                    gaps.Add(((float)cross.Y0 - margin, (float)cross.Y1 + margin));
+                if (ringPreserveCross)
+                {
+                    // Web frames: CORR tracks + CL link — full CROSSING void gutted F20.
+                    gaps.Add((-corrOuter - margin, -corrInner + margin));
+                    gaps.Add((corrInner - margin, corrOuter + margin));
+                    gaps.Add((-accessHalf - margin, accessHalf + margin));
+                }
                 else
-                    gaps.Add((-corrOuter - margin, corrOuter + margin));
+                {
+                    // Pressure BH: full athwart CROSSING clear (NormalizeGaps keeps wing remnant).
+                    var cross = lockDoc.Compartments?.FirstOrDefault(x =>
+                        string.Equals(x.Id, "CROSSING", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(x.Id, "CROSS", StringComparison.OrdinalIgnoreCase));
+                    if (cross is not null)
+                        gaps.Add(((float)cross.Y0 - margin, (float)cross.Y1 + margin));
+                    else
+                        gaps.Add((-corrOuter - margin, corrOuter + margin));
+                }
             }
             else
             {
@@ -1916,7 +1931,7 @@ internal static class CalypsoLockGenerator
         var hold = lockDoc.Hold;
         if (hold is not null)
         {
-            var hz0 = hold.CatwalkFore > 0 ? (float)hold.CatwalkFore : 49.3f;
+            var hz0 = hold.CatwalkFore > 0 ? (float)hold.CatwalkFore : 49.25f;
             var hz1 = hold.C40Aft > 0 ? (float)hold.C40Aft : 69f;
             if (zStem >= hz0 - margin && zStem <= hz1 + margin)
             {

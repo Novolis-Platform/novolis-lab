@@ -217,7 +217,23 @@ static async Task<MapDataBundle> BuildLayerDataAsync(MapLayerBundle layers)
     if (landSamples == 0 || minH == short.MaxValue)
         minH = maxH = 0;
 
-    WriteElevationPreviewPng(layers.ElevationPath, heights, water, w, h, minH, maxH);
+    WriteLandElevationPng(layers.ElevationPath, heights, water, w, h, minH, maxH);
+    // water-mask.png stays the flat binary silhouette from SplitReliefMasks (authoritative).
+    // water-heightmap.png = NDH shades; water-combined.png = height only where mask says water.
+    var waterHeightPath = Path.Combine(layers.State.Input.LayersDir, "water-heightmap.png");
+    var waterCombinedPath = Path.Combine(layers.State.Input.LayersDir, "water-combined.png");
+    WriteWaterHeightmapPng(waterHeightPath, heights, water, w, h, minH, maxH);
+    WriteWaterCombinedFromMaskAndHeight(
+        waterCombinedPath,
+        layers.WaterMaskPath,
+        waterHeightPath,
+        heights,
+        water,
+        w,
+        h,
+        minH,
+        maxH);
+    WriteWaterElevationBin(Path.Combine(layers.State.Input.LayersDir, "water-elevation.bin"), heights, water, w, h);
 
     var heightsPath = Path.Combine(layers.State.Input.LayersDir, "elevation.bin");
     var waterPath = Path.Combine(layers.State.Input.LayersDir, "water-mask.bin");
@@ -343,22 +359,36 @@ static float SampleFloatBilinear(float[] src, int w, int h, double x, double y)
     return top + (bot - top) * (float)ty;
 }
 
-static void WriteElevationPreviewPng(string path, short[] heights, byte[] water, int w, int h, short minH, short maxH)
+/// <summary>Land-only green height preview — water pixels are transparent.</summary>
+static void WriteLandElevationPng(string path, short[] heights, byte[] water, int w, int h, short minH, short maxH)
 {
-    using var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Premul);
-    var span = Math.Max(1, maxH - minH);
+    using var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    bmp.Erase(SKColors.Transparent);
+    short landMin = short.MaxValue, landMax = short.MinValue;
+    for (var i = 0; i < heights.Length; i++)
+    {
+        if (water[i] != 0)
+            continue;
+        if (heights[i] < landMin) landMin = heights[i];
+        if (heights[i] > landMax) landMax = heights[i];
+    }
+
+    if (landMin == short.MaxValue)
+    {
+        landMin = minH;
+        landMax = maxH;
+    }
+
+    var span = Math.Max(1, landMax - landMin);
     for (var y = 0; y < h; y++)
     {
         for (var x = 0; x < w; x++)
         {
             var i = y * w + x;
             if (water[i] != 0)
-            {
-                bmp.SetPixel(x, y, new SKColor(81, 130, 255, 255));
                 continue;
-            }
 
-            var t = (heights[i] - minH) / (float)span;
+            var t = (heights[i] - landMin) / (float)span;
             var g = (byte)Math.Clamp(40 + t * 200, 0, 255);
             bmp.SetPixel(x, y, new SKColor(g, (byte)Math.Clamp(g + 20, 0, 255), (byte)Math.Clamp(g - 10, 0, 255), 255));
         }
@@ -366,6 +396,124 @@ static void WriteElevationPreviewPng(string path, short[] heights, byte[] water,
 
     using var encoded = SKImage.FromBitmap(bmp).Encode(SKEncodedImageFormat.Png, 92);
     File.WriteAllBytes(path, encoded.ToArray());
+}
+
+/// <summary>
+/// Separate water elevation heightmap (not the binary mask). Opaque blue = water;
+/// shade = NDH meters (dark navy sea → bright cyan high ponds).
+/// </summary>
+static void WriteWaterHeightmapPng(string path, short[] heights, byte[] water, int w, int h, short minH, short maxH)
+{
+    using var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    bmp.Erase(SKColors.Transparent);
+    short waterMin = short.MaxValue, waterMax = short.MinValue;
+    for (var i = 0; i < heights.Length; i++)
+    {
+        if (water[i] == 0)
+            continue;
+        if (heights[i] < waterMin) waterMin = heights[i];
+        if (heights[i] > waterMax) waterMax = heights[i];
+    }
+
+    if (waterMin == short.MaxValue)
+    {
+        waterMin = minH;
+        waterMax = maxH;
+    }
+
+    var lo = Math.Min(waterMin, (short)0);
+    var hi = Math.Max(waterMax, (short)1);
+    var span = Math.Max(1f, hi - lo);
+    for (var y = 0; y < h; y++)
+    {
+        for (var x = 0; x < w; x++)
+        {
+            var i = y * w + x;
+            if (water[i] == 0)
+                continue;
+            bmp.SetPixel(x, y, ShadeWaterBlue(heights[i], lo, span));
+        }
+    }
+
+    using var encoded = SKImage.FromBitmap(bmp).Encode(SKEncodedImageFormat.Png, 92);
+    File.WriteAllBytes(path, encoded.ToArray());
+}
+
+static SKColor ShadeWaterBlue(short meters, short lo, float span)
+{
+    var t = Math.Clamp((meters - lo) / span, 0f, 1f);
+    var r = (byte)Math.Clamp(18 + t * 90, 0, 255);
+    var g = (byte)Math.Clamp(70 + t * 160, 0, 255);
+    var b = (byte)Math.Clamp(160 + t * 95, 0, 255);
+    return new SKColor(r, g, b, 255);
+}
+
+/// <summary>
+/// Unbreakable: water-mask.png defines water. Heightmap shades only on mask-water;
+/// heightmap-only pixels are stripped.
+/// </summary>
+static void WriteWaterCombinedFromMaskAndHeight(
+    string path,
+    string maskPath,
+    string heightPath,
+    short[] heights,
+    byte[] water,
+    int w,
+    int h,
+    short minH,
+    short maxH)
+{
+    using var mask = SKBitmap.Decode(maskPath) ?? throw new FileNotFoundException(maskPath);
+    using var heightBmp = SKBitmap.Decode(heightPath) ?? throw new FileNotFoundException(heightPath);
+    using var bmp = new SKBitmap(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+    bmp.Erase(SKColors.Transparent);
+    short waterMin = short.MaxValue, waterMax = short.MinValue;
+    for (var i = 0; i < heights.Length; i++)
+    {
+        if (water[i] == 0)
+            continue;
+        if (heights[i] < waterMin) waterMin = heights[i];
+        if (heights[i] > waterMax) waterMax = heights[i];
+    }
+
+    if (waterMin == short.MaxValue)
+    {
+        waterMin = minH;
+        waterMax = maxH;
+    }
+
+    var lo = Math.Min(waterMin, (short)0);
+    var hi = Math.Max(waterMax, (short)1);
+    var span = Math.Max(1f, hi - lo);
+    for (var y = 0; y < h; y++)
+    {
+        for (var x = 0; x < w; x++)
+        {
+            var i = y * w + x;
+            var maskWater = mask.GetPixel(x, y).Alpha > 0 || water[i] != 0;
+            if (!maskWater)
+                continue;
+
+            var hc = heightBmp.GetPixel(x, y);
+            if (hc.Alpha > 0)
+                bmp.SetPixel(x, y, new SKColor(hc.Red, hc.Green, hc.Blue, 255));
+            else
+                bmp.SetPixel(x, y, ShadeWaterBlue(heights[i], lo, span));
+        }
+    }
+
+    using var encoded = SKImage.FromBitmap(bmp).Encode(SKEncodedImageFormat.Png, 92);
+    File.WriteAllBytes(path, encoded.ToArray());
+}
+
+static void WriteWaterElevationBin(string path, short[] heights, byte[] water, int w, int h)
+{
+    using var stream = File.Create(path);
+    using var writer = new BinaryWriter(stream);
+    writer.Write(w);
+    writer.Write(h);
+    for (var i = 0; i < heights.Length; i++)
+        writer.Write(water[i] != 0 ? heights[i] : (short)-32768);
 }
 
 static MapDataBundle CompositeLayers(MapDataBundle data)
@@ -393,6 +541,12 @@ static MapDataBundle CompositeLayers(MapDataBundle data)
     File.Copy(layers.RoadsPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-roads-reference.png"), overwrite: true);
     File.Copy(layers.LandMaskPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-land-sea-mask.png"), overwrite: true);
     File.Copy(layers.WaterMaskPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-water-mask.png"), overwrite: true);
+    var waterHeightSrc = Path.Combine(layers.State.Input.LayersDir, "water-heightmap.png");
+    if (File.Exists(waterHeightSrc))
+        File.Copy(waterHeightSrc, Path.Combine(layers.State.Input.MapDir, "kristiansand-water-heightmap.png"), overwrite: true);
+    var waterCombinedSrc = Path.Combine(layers.State.Input.LayersDir, "water-combined.png");
+    if (File.Exists(waterCombinedSrc))
+        File.Copy(waterCombinedSrc, Path.Combine(layers.State.Input.MapDir, "kristiansand-water-combined.png"), overwrite: true);
     File.Copy(layers.ElevationPath, Path.Combine(layers.State.Input.MapDir, "kristiansand-elevation.png"), overwrite: true);
     Console.WriteLine($"composite: {outPath}");
     return data;
@@ -780,9 +934,12 @@ static void WriteStackJson(string mapDir, MapDataBundle data, int meshGrid, stri
         layers = new object[]
         {
             new { id = "relief-source", imageFile = "layers/relief-source.png", role = "relief_source", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
-            new { id = "water-mask", imageFile = "layers/water-mask.png", role = "water", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
+            new { id = "water-mask", imageFile = "layers/water-mask.png", role = "water_binary", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "opaque_cyan_water_transparent_land", authority = "where_water_unbreakable", sourcePdfPath = g.ReliefPdf },
+            new { id = "water-heightmap", imageFile = "layers/water-heightmap.png", role = "water_heightmap", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "opaque_blue_shade_ndh_meters_transparent_land" },
+            new { id = "water-combined", imageFile = "layers/water-combined.png", role = "water_combined", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "height_shades_only_where_water_mask", rule = "water_mask_wins_conflicts" },
+            new { id = "water-elevation", imageFile = "layers/water-elevation.bin", role = "water_meters", encoding = "int16_grid_land_sentinel_-32768" },
             new { id = "land-mask", imageFile = "layers/land-mask.png", role = "land", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.ReliefPdf },
-            new { id = "elevation", imageFile = "layers/elevation.png", role = "elevation_preview", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", source = "NHM_DTM_25833" },
+            new { id = "elevation", imageFile = "layers/elevation.png", role = "land_elevation_preview", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", encoding = "opaque_land_green_shade_water_transparent", source = "NHM_DTM_25833" },
             new { id = "ndh-dtm", imageFile = "layers/ndh-dtm.tif", role = "dtm", source = "https://hoydedata.no/arcgis/rest/services/NHM_DTM_25833/ImageServer" },
             new { id = "roads", imageFile = "layers/roads.png", role = "roads", pixelWidth = g.PixelWidth, pixelHeight = g.PixelHeight, northUp = true, pixelOrigin = "topLeftNorthWest", sourcePdfPath = g.RoadsPdf },
             new { id = "heightfield", imageFile = heightfieldRel, role = "heightfield", grid = meshGrid, northUp = true, source = "NHM_DTM_25833" },

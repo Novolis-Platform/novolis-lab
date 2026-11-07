@@ -4,15 +4,12 @@ using Novolis.Math.Geometry;
 
 namespace ArtillerySimulator.Game;
 
-/// <summary>Classic heightfield wires: green land, flat sea blue, elevated lake cyan.</summary>
+/// <summary>Heightfield wires: green land, one blue for all water.</summary>
 internal static class KristiansandLandWireGrid
 {
     private static readonly Rgba32 LandEast = new(58, 88, 52);
     private static readonly Rgba32 LandNorth = new(88, 132, 68);
-    private static readonly Rgba32 SeaEast = new(48, 110, 210);
-    private static readonly Rgba32 SeaNorth = new(81, 130, 255);
-    private static readonly Rgba32 LakeEast = new(40, 160, 190);
-    private static readonly Rgba32 LakeNorth = new(70, 200, 210);
+    private static readonly Rgba32 Water = new(48, 110, 210);
 
     /// <summary>Build once after mesh rebuild — never call KindAt per frame.</summary>
     public static WorldLineVertex[] Build(ReadOnlySpan<Vector3> vertices, int cellsX, int cellsZ)
@@ -42,29 +39,20 @@ internal static class KristiansandLandWireGrid
 
     private static void Add(List<WorldLineVertex> list, Vector3 a, Vector3 b, bool eastWest)
     {
-        var kind = SegmentKind(a, b);
-        var color = kind switch
-        {
-            KristiansandSurfaceKind.Sea => eastWest ? SeaEast : SeaNorth,
-            KristiansandSurfaceKind.Lake => eastWest ? LakeEast : LakeNorth,
-            _ => eastWest ? LandEast : LandNorth,
-        };
+        var water = IsWaterSegment(a, b);
+        var color = water
+            ? Water
+            : eastWest ? LandEast : LandNorth;
         list.Add(new WorldLineVertex(a.X, a.Y, a.Z, color));
         list.Add(new WorldLineVertex(b.X, b.Y, b.Z, color));
     }
 
-    private static KristiansandSurfaceKind SegmentKind(Vector3 a, Vector3 b)
+    private static bool IsWaterSegment(Vector3 a, Vector3 b)
     {
-        var mid = (a + b) * 0.5f;
         var ka = KristiansandSurface.KindAt(a.X, a.Z);
         var kb = KristiansandSurface.KindAt(b.X, b.Z);
-        var km = KristiansandSurface.KindAt(mid.X, mid.Z);
-        if (ka != kb)
-            return KristiansandSurfaceKind.Land;
-        if (ka == KristiansandSurfaceKind.Sea && km == KristiansandSurfaceKind.Sea)
-            return KristiansandSurfaceKind.Sea;
-        if (ka == KristiansandSurfaceKind.Lake && km == KristiansandSurfaceKind.Lake)
-            return KristiansandSurfaceKind.Lake;
-        return KristiansandSurfaceKind.Land;
+        // Both ends water → water. Mixed shore edges stay land green
+        // so land→water drops are not drawn as tall blue walls.
+        return ka == KristiansandSurfaceKind.Water && kb == KristiansandSurfaceKind.Water;
     }
 }

@@ -1,9 +1,8 @@
 namespace ArtillerySimulator.Game;
 
-/// <summary>Sea (coastal, ~0 m) vs inland lakes vs land.</summary>
+/// <summary>Land vs water. One water kind — no sea/lake color split.</summary>
 internal enum KristiansandSurfaceKind : byte
 {
     Land = 0,
-    Sea = 1,
-    Lake = 2,
+    Water = 1,
 }

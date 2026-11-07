@@ -11,6 +11,8 @@ internal static class CalypsoExterior
 {
     private static readonly Color FallbackSolid = Color.FromArgb(255, 120, 150, 170);
     private static readonly Color AccentCargo = Color.FromArgb(255, 168, 128, 62);
+    private static readonly Color OmlFacet = Color.FromArgb(38, 70, 120, 150);
+    private static readonly Color OmlCrease = Color.FromArgb(120, 90, 160, 200);
 
     public static bool IsExteriorDrawable(CadEntity entity)
     {
@@ -71,15 +73,13 @@ internal static class CalypsoExterior
     }
 
     /// <summary>
-    /// Thin OML edge cage (no filled faces) — always full hull, ignore reveal/cutaway.
-    /// Used when <see cref="CalypsoVisualLayers.HullShell"/> is off so structure/fitout still read in context.
+    /// Soft faceted OML guide (filled plates + sparse creases) — not triangle-edge soup.
+    /// Ignores reveal/cutaway so structure slides keep full-hull context.
     /// </summary>
     public static void DrawOmlWireGuide(SilkCadWorld world, CadDocument document)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(document);
-        // Bright cyan cage — must read over dense white structure wire.
-        var edge = Color.FromArgb(230, 72, 188, 230);
         foreach (var entity in document.Entities)
         {
             if (!string.Equals(entity.Kind, "mesh", StringComparison.OrdinalIgnoreCase))
@@ -97,9 +97,15 @@ internal static class CalypsoExterior
                 var a = mesh.Vertices[mesh.Indices[i]];
                 var b = mesh.Vertices[mesh.Indices[i + 1]];
                 var c = mesh.Vertices[mesh.Indices[i + 2]];
-                world.DrawLine(a, b, edge);
-                world.DrawLine(b, c, edge);
-                world.DrawLine(c, a, edge);
+                world.DrawTriangle(a, b, c, OmlFacet);
+
+                // Crease every ~8th triangle edge — plate silhouette, not full tessellation.
+                if ((i / 3) % 8 == 0)
+                {
+                    world.DrawLine(a, b, OmlCrease);
+                    world.DrawLine(b, c, OmlCrease);
+                    world.DrawLine(c, a, OmlCrease);
+                }
             }
         }
     }

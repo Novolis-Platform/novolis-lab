@@ -29,6 +29,12 @@ internal sealed class CalypsoSession
     /// </summary>
     public HashSet<Guid>? RevealEntityIds { get; set; }
 
+    /// <summary>
+    /// Optional faceted OML ghost when HullShell is off. Off by default — it fills the
+    /// volume and blocks structure / passageway reads on build-step slides.
+    /// </summary>
+    public bool ShowOmlGuide { get; set; }
+
     /// <summary>World cutaway plane origin (used when <see cref="WireMeshMode"/> is CutawayPartial).</summary>
     public Vector3 CutPlaneOrigin { get; set; } = new(0f, 4f, 0f);
 

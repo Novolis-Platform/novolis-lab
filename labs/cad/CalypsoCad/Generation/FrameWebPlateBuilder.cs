@@ -34,11 +34,11 @@ internal static class FrameWebPlateBuilder
     {
         EmitCore(
             entities, loa, frameId, zStem, web, halfDepthZ, athwartGaps, bowAligned, deckUps,
-            densePlate: true, fabPrefix: "P-FRAME");
+            densePlate: true, fabPrefix: "P-FRAME", skipLightening: false, useCoarseSpans: false);
     }
 
     /// <summary>
-    /// Bulkhead: full IML octagon steel plate → boolean passageway/lightening → dense remnant.
+    /// Bulkhead: full IML octagon steel plate → boolean passageway → plate spans.
     /// Spine-centered. This is the “massive plate then cut” path.
     /// </summary>
     public static void EmitBulkhead(
@@ -50,11 +50,13 @@ internal static class FrameWebPlateBuilder
         float halfDepthZ,
         IReadOnlyList<(float Y0, float Y1)> athwartGaps,
         bool bowAligned,
-        IReadOnlyList<float>? deckUps = null)
+        IReadOnlyList<float>? deckUps = null,
+        bool skipLightening = false,
+        bool useCoarseSpans = false)
     {
         EmitCore(
             entities, loa, bulkheadId, zStem, thickness, halfDepthZ, athwartGaps, bowAligned, deckUps,
-            densePlate: true, fabPrefix: "P-BH");
+            densePlate: true, fabPrefix: "P-BH", skipLightening, useCoarseSpans);
     }
 
     private static void EmitCore(
@@ -68,7 +70,9 @@ internal static class FrameWebPlateBuilder
         bool bowAligned,
         IReadOnlyList<float>? deckUps,
         bool densePlate,
-        string fabPrefix)
+        string fabPrefix,
+        bool skipLightening = false,
+        bool useCoarseSpans = false)
     {
         CalypsoLockGenerator.SectionAtPublic(zStem, out _, out var halfH, out var mid, out _, out _);
         var inset = CalypsoShipbuildingFrames.DefaultSkinInset
@@ -93,8 +97,9 @@ internal static class FrameWebPlateBuilder
             : GuessDeckBands(upMin, upMax);
 
         var outerLoop = ring.Select(v => (v.Y, v.Up)).ToList();
-        // Step 2 — boolean cutters (passageway).
-        var holeLoops = BuildHoles(gaps, upMin, upMax, zStem, inset, decks, sectionY, bowAligned);
+        // Step 2 — boolean cutters (passageway; lightening optional).
+        var holeLoops = BuildHoles(
+            gaps, upMin, upMax, zStem, inset, decks, sectionY, bowAligned, skipLightening);
 
         var outerArea = HullFaceUnfolder.PolygonAreaM2(outerLoop);
         var holeArea = holeLoops.Sum(h => HullFaceUnfolder.PolygonAreaM2(h));
@@ -117,10 +122,21 @@ internal static class FrameWebPlateBuilder
 
         if (densePlate)
         {
-            // Step 3 — dense scan of (plate − holes) → continuous web / bulkhead plate.
-            EmitPlateScan(
-                entities, loa, partId, zStem, web, halfDepthZ,
-                upMin, upMax, ring, gaps, holeLoops, fabPartId, inset, bowAligned);
+            if (useCoarseSpans)
+            {
+                // One solid bar per athwart span × deck band — reads as plate, not voxel soup.
+                EmitPlateSpans(
+                    entities, loa, partId, zStem, web, halfDepthZ,
+                    upMin, upMax, ring, gaps, holeLoops, fabPartId, inset, bowAligned, decks,
+                    skipShellDoor: skipLightening);
+            }
+            else
+            {
+                EmitPlateScan(
+                    entities, loa, partId, zStem, web, halfDepthZ,
+                    upMin, upMax, ring, gaps, holeLoops, fabPartId, inset, bowAligned,
+                    skipShellDoor: skipLightening);
+            }
         }
 
         // Midbody flange on web frames (not bow taper; not required on every BH).
@@ -145,8 +161,9 @@ internal static class FrameWebPlateBuilder
             var b = MathF.Min(y1, halfY);
             if (b <= a + 0.08f)
                 continue;
-            // Leave a web remnant outboard so the station still reads as a ring.
-            var maxGap = halfY * 2f - 0.85f;
+            // Leave web remnant outboard so the station still reads as a ring.
+            // ≥1.8 m total (0.9 m/side) so pressure-BH wings survive shell-door relief.
+            var maxGap = halfY * 2f - 1.8f;
             if (b - a > maxGap && maxGap > 0.8f)
             {
                 var c = (a, b).GetCenter();
@@ -182,6 +199,74 @@ internal static class FrameWebPlateBuilder
     }
 
     /// <summary>
+    /// Coarse plate: one structure bar per solid athwart span in each deck elevation band.
+    /// Used for massive BH so orbit reads continuous steel, not 0.32 m voxel noise.
+    /// </summary>
+    private static void EmitPlateSpans(
+        List<CadEntity> entities,
+        float loa,
+        string frameId,
+        float zStem,
+        float web,
+        float halfDepthZ,
+        float upMin,
+        float upMax,
+        (float Y, float Up)[] ring,
+        IReadOnlyList<(float Y0, float Y1)> athwartGaps,
+        IReadOnlyList<List<(float X, float Y)>> holeLoops,
+        string fabPartId,
+        float inset,
+        bool bowAligned,
+        IReadOnlyList<float> decks,
+        bool skipShellDoor = false)
+    {
+        _ = web;
+        var bands = BuildElevationBands(upMin, upMax, decks);
+        if (bands.Count == 0)
+            bands.Add((upMin, upMax));
+
+        var cellIndex = 0;
+        foreach (var (u0, u1) in bands)
+        {
+            var uMid = (u0, u1).GetCenter();
+            var hu = (u1 - u0) * 0.48f;
+            if (hu < 0.12f)
+                continue;
+
+            var halfY = MathF.Min(
+                CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u0, inset),
+                MathF.Min(
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, uMid, inset),
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, u1, inset)));
+            halfY -= 0.12f;
+            if (halfY < 0.2f)
+                continue;
+
+            var bandGaps = GapsForBand(athwartGaps, uMid, halfY, bowAligned, skipShellDoor);
+            foreach (var (ya, yb) in CalypsoLockGenerator.SolidSpansPublic(-halfY, halfY, bandGaps))
+            {
+                var width = yb - ya;
+                if (width < 0.25f)
+                    continue;
+                var cy = (ya, yb).GetCenter();
+                var hy = width * 0.48f;
+                if (bowAligned && cy < -0.02f)
+                    continue;
+                if (!TryEmitPlateVoxel(
+                        entities, loa, frameId, ref cellIndex, fabPartId,
+                        cy, uMid, hy, hu, halfDepthZ, zStem, ring, holeLoops))
+                    continue;
+                if (bowAligned && cy > 0.02f)
+                {
+                    TryEmitPlateVoxel(
+                        entities, loa, frameId, ref cellIndex, fabPartId,
+                        -cy, uMid, hy, hu, halfDepthZ, zStem, ring, holeLoops);
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Dense Y×Up scan of the plate: abutting voxels → one steel web with holes cut through.
     /// </summary>
     private static void EmitPlateScan(
@@ -198,7 +283,8 @@ internal static class FrameWebPlateBuilder
         IReadOnlyList<List<(float X, float Y)>> holeLoops,
         string fabPartId,
         float inset,
-        bool bowAligned)
+        bool bowAligned,
+        bool skipShellDoor = false)
     {
         var cellIndex = 0;
         var halfCell = PlateScan * 0.48f;
@@ -220,7 +306,7 @@ internal static class FrameWebPlateBuilder
             if (halfY < 0.15f)
                 continue;
 
-            var bandGaps = GapsForBand(athwartGaps, uMid, halfY, bowAligned);
+            var bandGaps = GapsForBand(athwartGaps, uMid, halfY, bowAligned, skipShellDoor);
             foreach (var (ya, yb) in CalypsoLockGenerator.SolidSpansPublic(-halfY, halfY, bandGaps))
             {
                 for (var y = ya; y < yb - 0.04f; y += PlateScan)
@@ -311,7 +397,8 @@ internal static class FrameWebPlateBuilder
         float inset,
         IReadOnlyList<float> decks,
         float sectionY,
-        bool bowAligned)
+        bool bowAligned,
+        bool skipLightening = false)
     {
         _ = sectionY;
         var holes = new List<List<(float X, float Y)>>();
@@ -323,14 +410,15 @@ internal static class FrameWebPlateBuilder
         }
 
         var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, (upMin, upMax).GetCenter(), inset);
-        if (!bowAligned)
+        // Pressure BH (skipLightening): passageway cuts only — no shell-door swiss-cheese on the wings.
+        if (!bowAligned && !skipLightening)
         {
             holes.Add(RectHole(halfY - ShellDoorReliefM, halfY + 0.05f, ShellDoorBandUp0, ShellDoorBandUp1));
             holes.Add(RectHole(-halfY - 0.05f, -halfY + ShellDoorReliefM, ShellDoorBandUp0, ShellDoorBandUp1));
         }
 
-        // Lightening between decks — skip on the bow taper (plate is already small).
-        if (bowAligned)
+        // Lightening between decks — skip on bow taper and massive ENG/BOW plates.
+        if (bowAligned || skipLightening)
             return holes;
 
         var bands = BuildElevationBands(upMin, upMax, decks);
@@ -396,10 +484,11 @@ internal static class FrameWebPlateBuilder
         IReadOnlyList<(float Y0, float Y1)> athwartGaps,
         float up,
         float halfY,
-        bool bowAligned)
+        bool bowAligned,
+        bool skipShellDoor = false)
     {
         var gaps = new List<(float Y0, float Y1)>(athwartGaps);
-        if (!bowAligned && up >= ShellDoorBandUp0 && up <= ShellDoorBandUp1)
+        if (!bowAligned && !skipShellDoor && up >= ShellDoorBandUp0 && up <= ShellDoorBandUp1)
         {
             gaps.Add((halfY - ShellDoorReliefM, halfY + 0.05f));
             gaps.Add((-halfY - 0.05f, -halfY + ShellDoorReliefM));

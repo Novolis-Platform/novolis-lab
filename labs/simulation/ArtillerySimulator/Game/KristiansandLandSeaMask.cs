@@ -1,15 +1,15 @@
+using SkiaSharp;
+
 namespace ArtillerySimulator.Game;
 
 /// <summary>
-/// Pixel-perfect land/sea from Norgeskart reference (#5182FF). Mask matches reference image pixels;
-/// scenario meters map with uniform scale and letterboxing (aspect preserved).
+/// PDF Norgeskart water silhouette — authoritative land/sea/lake/pond delineation.
+/// Prefers binary <c>map/layers/water-mask.png</c> (Alpha&gt;0 = water) — unbreakable where-water.
+/// Falls back to packed <c>kristiansand-land-sea-mask.bin</c>.
+/// Height shades: <c>water-heightmap.png</c>; mask-gated composite: <c>water-combined.png</c>.
 /// </summary>
 internal static class KristiansandLandSeaMask
 {
-    public const byte WaterR = 0x51;
-    public const byte WaterG = 0x82;
-    public const byte WaterB = 0xFF;
-
     private const uint Magic = 0x4D534C4Bu; // KLSM
 
     private static byte[]? _water;
@@ -28,9 +28,6 @@ internal static class KristiansandLandSeaMask
         if (!EnsureLoaded() || _water is null)
             return false;
 
-        // Mask bytes and georef come from extract-artillery-map (same letterboxing as kristiansand-reference.png).
-        // Do not use ArtilleryMapStackGeoref.TryWorldToReliefPixel here: stack JSON pixel sizes can differ from
-        // the exported PNG, and full-bleed u/v mapping ignores offsetPx — both yield wrong rows (visible seam).
         var px = KristiansandGeoref.WorldToDataX(xMeters, KristiansandHeightSampler.EastMeters) * _pixelsPerMeter + _offsetPxX;
         var py = _offsetPxY + (_scenarioNorthMeters - zMeters) * _pixelsPerMeter;
         var ix = (int)MathF.Round(px);
@@ -47,7 +44,85 @@ internal static class KristiansandLandSeaMask
             return _water is not null;
 
         _loadAttempted = true;
-        var path = Path.Combine(AppContext.BaseDirectory, "map", "kristiansand-land-sea-mask.bin");
+        foreach (var path in CandidatePngPaths())
+        {
+            if (TryLoadPng(path))
+                return true;
+        }
+
+        foreach (var path in CandidateBinPaths())
+        {
+            if (TryLoadBin(path))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<string> CandidatePngPaths()
+    {
+        yield return Path.Combine(AppContext.BaseDirectory, "map", "layers", "water-mask.png");
+        yield return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "map", "layers", "water-mask.png"));
+        yield return @"d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\map\layers\water-mask.png";
+    }
+
+    private static IEnumerable<string> CandidateBinPaths()
+    {
+        yield return Path.Combine(AppContext.BaseDirectory, "map", "kristiansand-land-sea-mask.bin");
+        yield return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "map", "kristiansand-land-sea-mask.bin"));
+        yield return @"d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\map\kristiansand-land-sea-mask.bin";
+    }
+
+    private static bool TryLoadPng(string path)
+    {
+        if (!File.Exists(path))
+            return false;
+
+        try
+        {
+            using var bitmap = SKBitmap.Decode(path);
+            if (bitmap is null || bitmap.Width < 8 || bitmap.Height < 8)
+                return false;
+
+            var w = bitmap.Width;
+            var h = bitmap.Height;
+            var water = new byte[w * h];
+            var waterCount = 0;
+            for (var y = 0; y < h; y++)
+            {
+                for (var x = 0; x < w; x++)
+                {
+                    var c = bitmap.GetPixel(x, y);
+                    // Same rule as build-kristiansand-map: water-mask.png stores opaque water, transparent land.
+                    if (c.Alpha <= 0)
+                        continue;
+                    water[y * w + x] = 1;
+                    waterCount++;
+                }
+            }
+
+            if (waterCount < w * h / 50)
+                return false;
+
+            var east = KristiansandHeightSampler.EastMeters;
+            var north = KristiansandHeightSampler.NorthMeters;
+            _imageWidth = w;
+            _imageHeight = h;
+            _pixelsPerMeter = (w - 1) / east;
+            _offsetPxX = 0f;
+            _offsetPxY = 0f;
+            _scenarioNorthMeters = north;
+            _water = water;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool TryLoadBin(string path)
+    {
         if (!File.Exists(path))
             return false;
 
@@ -63,7 +138,7 @@ internal static class KristiansandLandSeaMask
             _pixelsPerMeter = reader.ReadSingle();
             _offsetPxX = reader.ReadSingle();
             _offsetPxY = reader.ReadSingle();
-            _ = reader.ReadSingle(); // scenario east (m); mask georef uses ppm + offsets only
+            _ = reader.ReadSingle();
             _scenarioNorthMeters = reader.ReadSingle();
             var count = _imageWidth * _imageHeight;
             _water = reader.ReadBytes(count);

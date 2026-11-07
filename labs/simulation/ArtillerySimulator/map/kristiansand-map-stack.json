@@ -37,12 +37,41 @@
     {
       "id": "water-mask",
       "imageFile": "layers/water-mask.png",
-      "role": "water",
+      "role": "water_binary",
       "pixelWidth": 3466,
       "pixelHeight": 2348,
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
+      "encoding": "opaque_cyan_water_transparent_land",
+      "authority": "where_water_unbreakable",
       "sourcePdfPath": "C:\\Users\\frank\\Downloads\\63271497-8460-4ad9-9552-201b4e5ce72e.pdf"
+    },
+    {
+      "id": "water-heightmap",
+      "imageFile": "layers/water-heightmap.png",
+      "role": "water_heightmap",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "encoding": "opaque_blue_shade_ndh_meters_transparent_land"
+    },
+    {
+      "id": "water-combined",
+      "imageFile": "layers/water-combined.png",
+      "role": "water_combined",
+      "pixelWidth": 3466,
+      "pixelHeight": 2348,
+      "northUp": true,
+      "pixelOrigin": "topLeftNorthWest",
+      "encoding": "height_shades_only_where_water_mask",
+      "rule": "water_mask_wins_conflicts"
+    },
+    {
+      "id": "water-elevation",
+      "imageFile": "layers/water-elevation.bin",
+      "role": "water_meters",
+      "encoding": "int16_grid_land_sentinel_-32768"
     },
     {
       "id": "land-mask",
@@ -57,11 +86,12 @@
     {
       "id": "elevation",
       "imageFile": "layers/elevation.png",
-      "role": "elevation_preview",
+      "role": "land_elevation_preview",
       "pixelWidth": 3466,
       "pixelHeight": 2348,
       "northUp": true,
       "pixelOrigin": "topLeftNorthWest",
+      "encoding": "opaque_land_green_shade_water_transparent",
       "source": "NHM_DTM_25833"
     },
     {

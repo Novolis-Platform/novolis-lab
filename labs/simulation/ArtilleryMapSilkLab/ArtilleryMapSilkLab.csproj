@@ -7,6 +7,7 @@
     <None Include="..\ArtillerySimulator\map\kristiansand-land-sea-mask.bin" Link="map\kristiansand-land-sea-mask.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\ArtillerySimulator\map\kristiansand-map-stack.json" Link="map\kristiansand-map-stack.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\ArtillerySimulator\map\layers\heightfield-1025.bin" Link="map\layers\heightfield-1025.bin" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\ArtillerySimulator\map\layers\water-mask.png" Link="map\layers\water-mask.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ArtillerySimulator\Game\KristiansandGeoref.cs" Link="Map\KristiansandGeoref.cs" />
@@ -18,6 +19,7 @@
     <Compile Include="..\ArtillerySimulator\Game\KristiansandFort.cs" Link="Map\KristiansandFort.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
     <LibraryReference Include="Novolis.Silk" />
     <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.Physics.Abstractions" />

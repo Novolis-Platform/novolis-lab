@@ -122,7 +122,7 @@ internal sealed class ArtillerySimulatorGame
         _gun.NudgeAzimuth(_mission.OpeningAzimuthDegrees - _mission.TrailBearingDegrees);
         _crew.SeatOpening(_gun);
         _shot.Reset();
-        Kommunekart3DView.ApplyStartupCamera(_camera, _terrain);
+        _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
         RebuildAimPreview();
         _surface = AgentSurface.AttachAll(
             _agent,
@@ -200,8 +200,8 @@ internal sealed class ArtillerySimulatorGame
 
         // Cached terrain wires (built once). Dynamic overlay rebuilt each frame.
         frame.DrawWorldLines(_terrain.CachedWires, mvp);
-        if (KristiansandKommunekartBuildings.IsAvailable)
-            frame.DrawWorldLines(KristiansandKommunekartBuildings.CachedWires, mvp);
+        // Kommunekart 3D Tiles → wires is not trustworthy yet (quantized/instanced glTF).
+        // Do not draw KristiansandKommunekartBuildings until a correct converter lands.
 
         _wires.Clear();
         DrawSky(_wires);

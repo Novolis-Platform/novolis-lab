@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Numerics;
+using CalypsoCad.Generation;
 using Novolis.Cad.Primitives;
 using Novolis.Math.Geometry;
 using Novolis.Ship.Primitives;
@@ -414,6 +415,11 @@ internal sealed class CalypsoRenderer
             return Color.FromArgb(240, 70, 140, 210); // blue shirt-sleeves tube
         if (IsCargoVoidHollow(space))
             return Color.FromArgb(200, 78, 82, 88); // open cargo bay deck
+        // ENG atrium — slightly cooler so the 3-deck machinery void reads vs cabins/galley.
+        if (string.Equals(space.Name, "ENG", StringComparison.OrdinalIgnoreCase))
+            return Color.FromArgb(220, 168, 178, 188);
+        if (string.Equals(space.Name, "BRIDGE", StringComparison.OrdinalIgnoreCase))
+            return Color.FromArgb(230, 210, 214, 200);
         return Color.FromArgb(210, 232, 228, 218); // compartment field
     }
 
@@ -538,9 +544,11 @@ internal sealed class CalypsoRenderer
         float fovDeg;
         if (_session.ViewMode == CalypsoViewMode.Plan)
         {
-            eye = new Vector3(0f, 120f, 0.01f);
+            // ISO stern-left / bow-right, port toward top of frame (matches CAL-INT-GA-001).
+            // World: +X stbd, +Y up, +Z bow (LockToWorld). Look from below so up=(-X) → port-up, +Z → screen-right.
+            eye = new Vector3(0f, -120f, 0.01f);
             target = new Vector3(0f, 0f, 0f);
-            up = new Vector3(0, 0, -1);
+            up = new Vector3(-1f, 0f, 0f);
             fovDeg = 35f;
         }
         else if (_session.ViewMode == CalypsoViewMode.Interior)
@@ -715,13 +723,19 @@ internal sealed class CalypsoRenderer
                 DrawPassagewayCutoutHighlights();
         }
 
-        // Structure / fitout slides: OML edge cage as a guide when the solid shell is off.
+        // Faceted OML guide only when explicitly requested — never on structure-wire
+        // progressive slides (it fills the volume and blocks the skeleton read).
         if (_session.ViewMode == CalypsoViewMode.Orbit
+            && _session.ShowOmlGuide
             && !_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
             CalypsoExterior.DrawOmlWireGuide(_world, _session.Document);
 
         if (_session.ViewMode == CalypsoViewMode.Plan)
             DrawPlanBulkheadStations();
+        else if (_session.ViewMode == CalypsoViewMode.Orbit
+                 && _session.VisualLayers.HasFlag(CalypsoVisualLayers.Structure)
+                 && AnyRevealedBulkhead())
+            DrawOrbitBulkheadStations();
 
         if (_session.ViewMode == CalypsoViewMode.Interior && _session.SelectedHook is { Position: { } hp } && hp.Length >= 3)
             DrawHookMarker(SvgCoords.FromArray(hp));
@@ -1307,10 +1321,21 @@ internal sealed class CalypsoRenderer
         var sx = Math.Abs(he.X) * 2f;
         var sy = Math.Abs(he.Y) * 2f;
         var sz = Math.Abs(he.Z) * 2f;
-        var body = ShadeColor(color, isC40 ? 0.55f : 0.4f, isC40 ? 0.25f : 0.65f, Vector3.UnitY, LightDir);
+        var isBh = box.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true;
+        // Pressure BH: solid steel (ENG tinted warmer) — never wire-rib only in structure slides.
+        if (isBh)
+        {
+            var eng = box.Name!.Contains("ENG", StringComparison.OrdinalIgnoreCase);
+            color = eng
+                ? Color.FromArgb(255, 120, 118, 112)
+                : Color.FromArgb(255, 96, 100, 108);
+        }
+
+        var body = ShadeColor(color, isC40 ? 0.55f : 0.4f, isC40 ? 0.25f : (isBh ? 0.75f : 0.65f), Vector3.UnitY, LightDir);
         _world.DrawCube(c, sx, sy, sz, body);
         var wireMode = _session.WireMeshMode == CalypsoWireMeshMode.Wire;
-        if (wireMode)
+        // BH stay solid in wire orbit so ENG faces read as plates, not lattice.
+        if (wireMode && !isBh)
             _world.DrawCubeWiresV(c, new Vector3(sx, sy, sz), Bulkhead);
 
         if (isC40)
@@ -1599,7 +1624,7 @@ internal sealed class CalypsoRenderer
         return true;
     }
 
-    private void DrawInteriorWallPanel(Vector3 a, Vector3 b, float h, bool ribs = true)
+    private void DrawInteriorWallPanel(Vector3 a, Vector3 b, float h, bool ribs = true, Color? fill = null)
     {
         var dir = b - a;
         dir.Y = 0;
@@ -1608,7 +1633,7 @@ internal sealed class CalypsoRenderer
             return;
         dir /= len;
         var normal = Vector3.Normalize(Vector3.Cross(dir, Vector3.UnitY));
-        var lining = ShadeColor(Lining, 0.8f, 0.05f, normal, LightDir);
+        var lining = ShadeColor(fill ?? Lining, fill is null ? 0.8f : 0.55f, 0.05f, normal, LightDir);
         var steel = ShadeColor(Steel, 0.45f, 0.55f, normal, LightDir);
         // Sit on the footprint edge (slightly outward) so the room volume stays clear of the camera.
         var mid = Vector3.Lerp(a, b, 0.5f) - normal * 0.04f;
@@ -1836,7 +1861,15 @@ internal sealed class CalypsoRenderer
                                  || nm.StartsWith("w-AIRLOCK", StringComparison.OrdinalIgnoreCase))
                     ? h
                     : Math.Min(h, 3.5f);
-                DrawInteriorWallPanel(a, b, panelH, ribs: false);
+                // Shirt-sleeves: blue panels in cutaway/wire so fitout slides match the annotated legend.
+                var passageBlue = cutaway && airtightPartition
+                                  && (nm.StartsWith("w-CORR", StringComparison.OrdinalIgnoreCase)
+                                      || nm.StartsWith("w-CROSS", StringComparison.OrdinalIgnoreCase)
+                                      || nm.StartsWith("w-ACCESS", StringComparison.OrdinalIgnoreCase)
+                                      || nm.StartsWith("w-STAIRS", StringComparison.OrdinalIgnoreCase)
+                                      || nm.StartsWith("w-ELEV", StringComparison.OrdinalIgnoreCase));
+                DrawInteriorWallPanel(a, b, panelH, ribs: false,
+                    fill: passageBlue ? PlanPassageBlue : null);
                 continue;
             }
 
@@ -2103,37 +2136,75 @@ internal sealed class CalypsoRenderer
                || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase);
     }
 
+    private bool AnyRevealedBulkhead()
+    {
+        foreach (var e in _session.Document.Entities)
+        {
+            if (e.Kind != "box" || e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) != true)
+                continue;
+            if (_session.RevealEntityIds is { } reveal && !reveal.Contains(e.Id))
+                continue;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static SortedSet<float> BulkheadWorldStations(float loa = 69f)
+    {
+        var halfLoa = loa * 0.5f;
+        var stations = new SortedSet<float>();
+        foreach (var (_, zStem, _) in CalypsoBulkheads.BuildSchedule(loa))
+            stations.Add(halfLoa - zStem);
+        return stations;
+    }
+
     /// <summary>
-    /// Plan: one full-beam red line per structural BH station (passage cut out of the plate).
-    /// Dense bh-* remnant boxes are skipped — they read as noise, not the user's red legend.
+    /// Plan: full-beam red line per structural BH station (CAL-INT-GA-001 / user legend).
+    /// Shirt-sleeves cuts are shown in blue passageway fill — not as a missing red center gap.
+    /// Dense bh-* remnant boxes are skipped (noise).
     /// </summary>
     private void DrawPlanBulkheadStations()
     {
         if (_session.ViewMode != CalypsoViewMode.Plan)
             return;
 
-        var stations = new SortedSet<float>();
-        foreach (var e in _session.Document.Entities)
+        var stations = BulkheadWorldStations();
+        if (stations.Count == 0)
         {
-            if (e.Kind != "box" || e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) != true)
-                continue;
-            if (e.Points is not { Count: >= 2 })
-                continue;
-            var c = SvgCoords.FromArray(e.Points[0]);
-            stations.Add(MathF.Round(c.Z * 2f) / 2f); // 0.5 m bins
+            foreach (var e in _session.Document.Entities)
+            {
+                if (e.Kind != "box" || e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) != true)
+                    continue;
+                if (e.Points is not { Count: >= 2 })
+                    continue;
+                var c = SvgCoords.FromArray(e.Points[0]);
+                stations.Add(MathF.Round(c.Z * 2f) / 2f);
+            }
         }
 
         foreach (var z in stations)
+            _world.DrawCube(new Vector3(0f, 0.18f, z), 18.5f, 0.22f, 0.32f, PlanBulkheadRed);
+    }
+
+    /// <summary>
+    /// Orbit: thin full-beam red quads at BH stations so structure slides read the legend
+    /// without opening the plan view.
+    /// </summary>
+    private void DrawOrbitBulkheadStations()
+    {
+        var stations = BulkheadWorldStations();
+        var cue = Color.FromArgb(200, PlanBulkheadRed.R, PlanBulkheadRed.G, PlanBulkheadRed.B);
+        foreach (var z in stations)
         {
-            // Full-beam red BH with a center gap cue for the shirt-sleeves cutout.
-            _world.DrawCube(new Vector3(-6.5f, 0.16f, z), 5.5f, 0.22f, 0.28f, PlanBulkheadRed);
-            _world.DrawCube(new Vector3(6.5f, 0.16f, z), 5.5f, 0.22f, 0.28f, PlanBulkheadRed);
+            // Full-beam translucent plate cue ~deck-0 band height so it reads in three-quarter view.
+            _world.DrawCube(new Vector3(0f, 5.5f, z), 18.5f, 10.5f, 0.18f, cue);
         }
     }
 
     /// <summary>
-    /// Plan wall legend: blue = shirt-sleeves passageway; red = transverse bulkhead/partition
-    /// (passage cut through); gray = longitudinal room lining.
+    /// Plan wall legend: blue = shirt-sleeves passageway; muted gray = room lining.
+    /// Structural BH stations are drawn only by <see cref="DrawPlanBulkheadStations"/> (red).
     /// </summary>
     private void DrawPlanWallSegments(CadEntity wall, List<(Vector3 A, Vector3 B)> segments)
     {
@@ -2154,7 +2225,6 @@ internal sealed class CalypsoRenderer
                 continue;
             var mid = (a + b) * 0.5f;
             mid.Y = 0.14f;
-            var transverse = dz < dx * 0.4f; // mostly athwart → bulkhead face
             Color color;
             float thick;
             if (passage)
@@ -2162,13 +2232,9 @@ internal sealed class CalypsoRenderer
                 color = PlanPassageBlue;
                 thick = 0.22f;
             }
-            else if (transverse)
-            {
-                color = PlanBulkheadRed;
-                thick = 0.2f;
-            }
             else
             {
+                // Room partitions stay muted — red is reserved for structural BH stations.
                 color = Color.FromArgb(220, 90, 94, 100);
                 thick = 0.1f;
             }

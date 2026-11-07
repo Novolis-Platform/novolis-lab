@@ -288,8 +288,8 @@ internal static class CalypsoAcceptance
         var webSolids = doc.Entities.Count(e =>
             e.Name?.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase) == true);
         var webProfiles = FrameWebPlateRegistry.All.Count;
-        // Limited full-depth BH (ENG/airlock/bow/stern) — not a bulkhead every bay.
-        Add("compartment bulkheads (limited structural BH)", bulkheads >= 40 && bulkheads <= 8000,
+        // Limited full-depth BH (ENG massive / airlock / bow) — no stern thrust BH (nacelles).
+        Add("compartment bulkheads (limited structural BH)", bulkheads >= 8 && bulkheads <= 8000,
             $"bhSolids={bulkheads}");
         Add("transverse frame web plates", webSolids >= 40 && webProfiles >= 10,
             $"solids={webSolids} profiles={webProfiles}");
