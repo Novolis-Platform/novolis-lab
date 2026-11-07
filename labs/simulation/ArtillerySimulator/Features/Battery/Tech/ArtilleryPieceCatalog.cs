@@ -18,16 +18,12 @@ internal static class ArtilleryPieceCatalog
     /// <summary>Default Kristiansand lab piece (K9 DOG — cheeky educational name).</summary>
     public static IArtilleryPieceSpec Default => Require(ProductIdentity.PieceSpecId);
 
-    public static IArtilleryPieceSpec K9DogEducational => Default;
-
     public static IArtilleryPieceSpec Require(string id) =>
         ById.TryGetValue(id, out var spec)
             ? spec
             : throw new KeyNotFoundException($"Unknown artillery piece spec '{id}'.");
 
     public static bool TryGet(string id, out IArtilleryPieceSpec spec) => ById.TryGetValue(id, out spec!);
-
-    public static IEnumerable<IArtilleryPieceSpec> All => ById.Values;
 
     public static void Register(IArtilleryPieceSpec spec)
     {
@@ -42,7 +38,7 @@ internal static class ArtilleryPieceCatalog
     /// Not a manufacturer product. Charge MV and PE are open approximations for the lab —
     /// expand by registering another id rather than editing callers.
     /// </summary>
-    public static IArtilleryPieceSpec CreateK9DogEducational()
+    private static IArtilleryPieceSpec CreateK9DogEducational()
     {
         var caliber = 0.155f;
         var projectile = new ProjectileProfile(
@@ -58,12 +54,12 @@ internal static class ArtilleryPieceCatalog
             metWindResidualPeFraction: 0.10f,
             envelopePeScale: 2.0f);
 
-        // Educational airburst HE — larger soft-skin radii than the old ground-burst sandbox.
+        // Educational airburst HE — soft-skin effect radii (deliberately modest for gameplay).
         var warhead = new WarheadEffectSpec(
-            caughtMeters: 320f,
-            pinnedMeters: 520f,
-            airburstHeightMeters: 18f,
-            scareSeconds: 7.5f);
+            caughtMeters: 95f,
+            pinnedMeters: 200f,
+            airburstHeightMeters: 12f,
+            scareSeconds: 4.0f);
 
         // Ordered reduced / standard / max / low — same ordinals the UI and agent already use.
         IReadOnlyList<ChargeZoneSpec> charges =

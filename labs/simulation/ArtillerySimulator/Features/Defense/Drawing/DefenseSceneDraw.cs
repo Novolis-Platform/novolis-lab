@@ -20,16 +20,16 @@ internal static class DefenseSceneDraw
         var mark = new Vector3(objective.X, ground, objective.Z);
         var copper = Color.FromArgb(255, 232, 196, 120);
         wires.Line(mark, mark + Vector3.UnitY * 120f, copper);
-        DrawRing(wires, mark + Vector3.UnitY * 2f, objectiveRadiusMeters, copper);
+        wires.Ring(mark + Vector3.UnitY * 2f, objectiveRadiusMeters, copper, segments: 24, yLift: 0f);
 
         var route = Color.FromArgb(200, 255, 120, 48);
         var hostile = Color.FromArgb(255, 255, 48, 32);
-        var hostileHot = Color.FromArgb(255, 255, 210, 64);
+        var suppressed = Color.FromArgb(255, 255, 210, 64);
         var wreckColor = Color.FromArgb(180, 130, 120, 110);
         var friendly = Color.FromArgb(255, 72, 210, 120);
 
-        DrawUnits(wires, terrain, units, lanes, hostile, hostileHot, wreckColor);
-        DrawUnits(wires, terrain, wrecks, lanes, hostile, hostileHot, wreckColor);
+        DrawUnits(wires, terrain, units, lanes, hostile, suppressed, wreckColor);
+        DrawUnits(wires, terrain, wrecks, lanes, hostile, suppressed, wreckColor);
 
         foreach (var lane in lanes)
             DrawLaneRibbon(wires, terrain, lane, route);
@@ -60,8 +60,10 @@ internal static class DefenseSceneDraw
             var at = new Vector3(unit.X, y + lift, unit.Z);
             var lane = lanes[unit.Lane];
             var yaw = LaneYaw(lane, unit.Arc);
+            // Yellow = scare-suppressed only. Passing/blocked stay red so packed columns
+            // are not mistaken for pre-fire suppression.
             var color = unit.Alive
-                ? (unit.Posture is "holding" or "pinned" or "blocked" or "passing" ? hostileHot : hostile)
+                ? (unit.Scare > 0f || unit.Posture is "pinned" or "holding" ? hostileHot : hostile)
                 : wreckColor;
             NatoSymbolDraw.HostileMechanized(wires, at, yaw, 42f, color, wreck: !unit.Alive);
         }
@@ -113,16 +115,4 @@ internal static class DefenseSceneDraw
         return MathF.Atan2(forward.Y, forward.X) * (180f / MathF.PI);
     }
 
-    private static void DrawRing(SilkWireBatch wires, Vector3 center, float radius, Color color)
-    {
-        const int segments = 24;
-        var previous = center + new Vector3(radius, 0f, 0f);
-        for (var i = 1; i <= segments; i++)
-        {
-            var angle = i / (float)segments * MathF.Tau;
-            var next = center + new Vector3(MathF.Cos(angle) * radius, 0f, MathF.Sin(angle) * radius);
-            wires.Line(previous, next, color);
-            previous = next;
-        }
-    }
 }

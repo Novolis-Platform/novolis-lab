@@ -22,6 +22,30 @@ internal sealed class ShellOverlay : IDisposable
     private int _width;
     private int _height;
     private string _lastSignature = "";
+    private float _legalScrollLines;
+    private float _legalMaxScrollLines;
+
+    public float LegalScrollLines
+    {
+        get => _legalScrollLines;
+        set
+        {
+            var next = Math.Clamp(value, 0f, Math.Max(0f, _legalMaxScrollLines));
+            if (MathF.Abs(next - _legalScrollLines) < 0.01f)
+                return;
+            _legalScrollLines = next;
+            _lastSignature = "";
+        }
+    }
+
+    public void ResetLegalScroll()
+    {
+        _legalScrollLines = 0f;
+        _lastSignature = "";
+    }
+
+    public void NudgeLegalScroll(float deltaLines) =>
+        LegalScrollLines = _legalScrollLines + deltaLines;
 
     public void EnsureAssetsLoaded()
     {
@@ -36,7 +60,7 @@ internal sealed class ShellOverlay : IDisposable
         var levelKey = level is null ? "" : $"{level.Id}|{level.DisplayName}";
         var signature = string.Create(
             CultureInfo.InvariantCulture,
-            $"{phase}|{statusLine}|{levelKey}|{_width}x{_height}|{GameLevelCatalog.PlayableCount}");
+            $"{phase}|{statusLine}|{levelKey}|{_width}x{_height}|{GameLevelCatalog.PlayableCount}|{_legalScrollLines:F1}");
         if (signature != _lastSignature)
         {
             _lastSignature = signature;
@@ -50,11 +74,11 @@ internal sealed class ShellOverlay : IDisposable
                     break;
                 case ShellPhase.Paused:
                     DrawDim(canvas);
-                    DrawPanel(canvas, "PAUSED", ProductLegal.PauseHint + "\n\n" + ProductLegal.Tagline);
+                    DrawPanel(canvas, "PAUSED", ProductLegal.PauseHint + "\n\n" + ProductLegal.Tagline, scrollable: false);
                     break;
                 case ShellPhase.Legal:
                     DrawDim(canvas);
-                    DrawPanel(canvas, "LICENSES & DISCLAIMERS", ProductLegal.BuildLicensePanel(level));
+                    DrawPanel(canvas, "LICENSES & DISCLAIMERS", ProductLegal.BuildLicensePanel(level), scrollable: true);
                     break;
             }
 
@@ -97,7 +121,6 @@ internal sealed class ShellOverlay : IDisposable
         {
             var dest = FitContain(_splash!.Width, _splash.Height, _width, _height);
             canvas.DrawBitmap(_splash, dest, SKSamplingOptions.Default);
-            // Light shade so the level card / controls stay readable; title+subtitle live in the art.
             using var shade = new SKPaint { Color = new SKColor(0, 0, 0, 70) };
             canvas.DrawRect(0, 0, _width, _height, shade);
         }
@@ -108,7 +131,6 @@ internal sealed class ShellOverlay : IDisposable
             canvas.DrawBitmap(_icon, new SKRect(28, 28, 28 + s, 28 + s), SKSamplingOptions.Default);
         }
 
-        // Fallback typography only when splash art is missing.
         if (!hasArt)
         {
             DrawCentered(canvas, ProductIdentity.Title, _height * 0.30f, Math.Min(68f, _width / 14f), new SKColor(232, 214, 180));
@@ -163,9 +185,9 @@ internal sealed class ShellOverlay : IDisposable
         canvas.DrawRect(0, 0, _width, _height, shade);
     }
 
-    private void DrawPanel(SKCanvas canvas, string title, string body)
+    private void DrawPanel(SKCanvas canvas, string title, string body, bool scrollable)
     {
-        var margin = Math.Max(36f, _width * 0.10f);
+        var margin = Math.Max(28f, _width * 0.06f);
         var rect = new SKRect(margin, margin, _width - margin, _height - margin);
         using (var fill = new SKPaint { Color = new SKColor(22, 28, 24, 235) })
             canvas.DrawRoundRect(rect, 8, 8, fill);
@@ -178,17 +200,96 @@ internal sealed class ShellOverlay : IDisposable
         })
             canvas.DrawRoundRect(rect, 8, 8, stroke);
 
-        var x = rect.Left + 28;
-        var y = rect.Top + 44;
-        DrawText(canvas, title, x, y, 28f, new SKColor(232, 214, 180));
-        y += 36;
-        foreach (var line in body.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
+        var x = rect.Left + 24;
+        var y = rect.Top + 40;
+        var titleSize = Math.Min(26f, _width / 48f);
+        DrawText(canvas, title, x, y, titleSize, new SKColor(232, 214, 180));
+        y += titleSize + 14f;
+
+        var bodySize = scrollable ? Math.Min(13f, _width / 95f) : 14f;
+        var lineHeight = bodySize + 4f;
+        var maxWidth = rect.Width - 48f;
+        var lines = WrapLines(body, bodySize, maxWidth);
+        var visible = Math.Max(1, (int)((rect.Bottom - 36f - y) / lineHeight));
+        _legalMaxScrollLines = scrollable ? Math.Max(0, lines.Count - visible) : 0;
+        _legalScrollLines = Math.Clamp(_legalScrollLines, 0f, _legalMaxScrollLines);
+        var start = scrollable ? (int)_legalScrollLines : 0;
+        var end = scrollable ? Math.Min(lines.Count, start + visible) : lines.Count;
+
+        for (var i = start; i < end; i++)
         {
-            DrawText(canvas, Truncate(line, 96), x, y, 14f, new SKColor(200, 208, 196));
-            y += 18;
+            DrawText(canvas, lines[i], x, y, bodySize, new SKColor(200, 208, 196));
+            y += lineHeight;
             if (y > rect.Bottom - 28)
                 break;
         }
+
+        if (scrollable && _legalMaxScrollLines > 0.5f)
+        {
+            var hint = string.Create(
+                CultureInfo.InvariantCulture,
+                $"[{start + 1}-{end}/{lines.Count}]  {ProductLegal.LegalCloseHint}");
+            DrawText(canvas, hint, x, rect.Bottom - 14f, 12f, new SKColor(210, 132, 72));
+        }
+    }
+
+    private static List<string> WrapLines(string body, float fontSize, float maxWidth)
+    {
+        var result = new List<string>(128);
+        using var font = new SKFont(Typeface, fontSize);
+        foreach (var raw in body.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'))
+        {
+            if (raw.Length == 0)
+            {
+                result.Add(string.Empty);
+                continue;
+            }
+
+            if (font.MeasureText(raw) <= maxWidth)
+            {
+                result.Add(raw);
+                continue;
+            }
+
+            var words = raw.Split(' ');
+            var current = string.Empty;
+            foreach (var word in words)
+            {
+                var candidate = current.Length == 0 ? word : current + " " + word;
+                if (font.MeasureText(candidate) <= maxWidth)
+                {
+                    current = candidate;
+                    continue;
+                }
+
+                if (current.Length > 0)
+                    result.Add(current);
+
+                if (font.MeasureText(word) <= maxWidth)
+                {
+                    current = word;
+                    continue;
+                }
+
+                // Hard-break overlong tokens (paths / URLs).
+                var slice = word;
+                while (slice.Length > 0)
+                {
+                    var fit = 1;
+                    while (fit < slice.Length && font.MeasureText(slice[..(fit + 1)]) <= maxWidth)
+                        fit++;
+                    result.Add(slice[..fit]);
+                    slice = slice[fit..];
+                }
+
+                current = string.Empty;
+            }
+
+            if (current.Length > 0)
+                result.Add(current);
+        }
+
+        return result;
     }
 
     private void EnsureSurface(int width, int height)

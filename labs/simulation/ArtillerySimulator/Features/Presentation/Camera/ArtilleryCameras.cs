@@ -9,6 +9,7 @@ internal sealed class ArtilleryCameras
 {
     private const float MouseSensitivity = 0.0022f;
     private const float OrbitPanPixelsToMeters = 1.15f;
+    private const float NorthFacingYaw = 0f;
 
     private readonly OrbitCameraRig _orbit = new();
     private Vector3 _battleFocus;
@@ -24,32 +25,13 @@ internal sealed class ArtilleryCameras
         set => _followProjectile = value;
     }
 
-    public CameraMode Mode { get; private set; } = CameraMode.Orbit;
-
-    /// <summary>
-    /// When true, render with Cesium-matched look-at (no map X-flip) so Kommunekart head/pitch dumps keep N/S.
-    /// </summary>
-    public bool MatchKommunekartOrientation { get; private set; }
-
     public void ToggleFollowTarget() => _followProjectile = !_followProjectile;
-
-    public void Use(CameraMode mode)
-    {
-        if (Mode == mode)
-            return;
-
-        Mode = CameraMode.Orbit; // game UX is orbit-only; freecam retired for WASD lay
-        _ = mode;
-        _orbit.ResetSmoothing();
-    }
 
     public void ShowMapOverview(float eastMeters, float northMeters)
     {
         _trackBattle = false;
         _lockMapOverview = true;
         _userOrbitHold = false;
-        MatchKommunekartOrientation = false;
-        Mode = CameraMode.Orbit;
         var cx = eastMeters * 0.5f;
         var cz = northMeters * 0.5f;
         _orbit.MinDistance = 80f;
@@ -64,36 +46,11 @@ internal sealed class ArtilleryCameras
         _orbit.Yaw = NorthFacingYaw;
     }
 
-    public void ShowKommunekartView(TerrainWorld terrain, Kommunekart3DView.KommunekartViewState view)
-    {
-        // Keep API for dumps — map into orbit look-at near the Cesium eye.
-        _ = terrain;
-        _trackBattle = false;
-        _userOrbitHold = false;
-        _lockMapOverview = false;
-        MatchKommunekartOrientation = true;
-        Mode = CameraMode.Orbit;
-
-        var xz = KristiansandHeightSampler.ToWorldMeters(view.Latitude, view.Longitude);
-        var eyeY = (float)view.CameraHeightMeters - KristiansandGeoref.GeoidUndulationMeters;
-        _orbit.MinDistance = 40f;
-        _orbit.MaxDistance = 40_000f;
-        _orbit.SnapTarget(new Vector3(xz.X, MathF.Max(8f, eyeY * 0.15f), xz.Y));
-        _orbit.Distance = Math.Clamp(eyeY * 0.85f, 200f, 12_000f);
-        _orbit.Yaw = (float)(view.HeadDegrees * (Math.PI / 180.0));
-        _orbit.Pitch = Math.Clamp((float)(view.PitchDegrees * (Math.PI / 180.0)), -0.1f, 1.4f);
-        _orbit.FieldOfViewDegrees = 42f;
-    }
-
-    private const float NorthFacingYaw = 0f;
-
     public void SnapToGun(Vector3 gunPivot, Vector3 barrelDir)
     {
         _lockMapOverview = false;
         _userOrbitHold = false;
         _followProjectile = false;
-        MatchKommunekartOrientation = false;
-        Mode = CameraMode.Orbit;
         var orbitTarget = gunPivot + new Vector3(0f, 2.2f, 0f);
         _orbit.MinDistance = 8f;
         _orbit.MaxDistance = 16_000f;
@@ -110,8 +67,6 @@ internal sealed class ArtilleryCameras
     {
         _lockMapOverview = false;
         _userOrbitHold = false;
-        MatchKommunekartOrientation = false;
-        Mode = CameraMode.Orbit;
         var mid = (gunPivot + downrange) * 0.5f;
         _battleFocus = new Vector3(mid.X, MathF.Max(gunPivot.Y, downrange.Y) + 60f, mid.Z);
         _trackBattle = true;
@@ -146,11 +101,9 @@ internal sealed class ArtilleryCameras
 
     private void ApplyOrbitLook(SilkFrame frame)
     {
-        // Right-drag or left-drag (when not on UI) orbits the view — never lays the tube.
         if (!frame.IsMouseButtonDown(MouseButton.Right) && !frame.IsMouseButtonDown(MouseButton.Left))
             return;
 
-        // Middle is reserved for pan; shift+left also pans.
         if (frame.IsMouseButtonDown(MouseButton.Middle))
             return;
         if (frame.IsMouseButtonDown(MouseButton.Left)

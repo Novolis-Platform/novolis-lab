@@ -18,20 +18,8 @@ internal static class NatoSymbolDraw
         DrawTracks(wires, at + Vector3.UnitY * (s * 0.08f), yawDegrees, s * 0.42f, stroke);
         if (!wreck)
         {
-            DrawRing(wires, at + Vector3.UnitY * 1.5f, s * 0.95f, stroke, segments: 16);
-            DrawRing(wires, at + Vector3.UnitY * 1.5f, s * 1.35f, stroke, segments: 16);
-        }
-    }
-
-    private static void DrawRing(SilkWireBatch wires, Vector3 center, float radius, Color color, int segments)
-    {
-        var previous = center + new Vector3(radius, 0f, 0f);
-        for (var i = 1; i <= segments; i++)
-        {
-            var angle = i / (float)segments * MathF.Tau;
-            var next = center + new Vector3(MathF.Cos(angle) * radius, 0f, MathF.Sin(angle) * radius);
-            wires.Line(previous, next, color);
-            previous = next;
+            wires.Ring(at + Vector3.UnitY * 1.5f, s * 0.95f, stroke, segments: 16, yLift: 0f);
+            wires.Ring(at + Vector3.UnitY * 1.5f, s * 1.35f, stroke, segments: 16, yLift: 0f);
         }
     }
 

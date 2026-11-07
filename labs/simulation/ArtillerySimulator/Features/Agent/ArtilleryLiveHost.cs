@@ -265,10 +265,10 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                     : string.Create(CultureInfo.InvariantCulture, $"Charge {_game.Gun.ChargeLabel} ({_game.Gun.MuzzleSpeedMps:F0} m/s). {_game.Crew.Phrase(_game.Gun)}");
                 return Accept(command, seated);
             case "artillery.pace":
-                return Accept(command, "Realtime only — pace multipliers removed.");
+                return Accept(command, "Realtime only — fixed battle clock.");
             case "artillery.camera":
                 if (!command.Params.TryGetValue("mode", out var mode))
-                    return Reject(command, "invalid-arguments", "Camera needs mode shell or gun.");
+                    return Reject(command, "invalid-arguments", "Camera needs mode shell|follow or gun.");
                 var followShell = mode.Equals("shell", StringComparison.OrdinalIgnoreCase)
                     || mode.Equals("follow", StringComparison.OrdinalIgnoreCase)
                     || mode.Equals("projectile", StringComparison.OrdinalIgnoreCase);
@@ -331,7 +331,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 $"|{mission.Remaining}|{(int)(mission.NearestMeters / 25f)}|{mission.ObjectiveLost}|{mission.Held}|{mission.PostureToken()}|{crew.Token(gun)}|{(int)MathF.Ceiling(crew.BusySeconds(gun))}");
         var key = string.Create(
             CultureInfo.InvariantCulture,
-            $"{shot.Phase}|{gun.ElevationDegrees:F0}|{gun.AzimuthDegrees:F0}|{crew.OrderedElevation:F0}|{crew.OrderedAzimuth:F0}|{crew.OrderedCharge}|{_game.CameraMode}|{_game.PaceText}|{shot.Impact?.HorizontalRangeMeters:F0}{defense}");
+            $"{shot.Phase}|{gun.ElevationDegrees:F0}|{gun.AzimuthDegrees:F0}|{crew.OrderedElevation:F0}|{crew.OrderedAzimuth:F0}|{crew.OrderedCharge}|{_game.CameraModeName}|{_game.PaceText}|{shot.Impact?.HorizontalRangeMeters:F0}{defense}");
         if (key == _seen)
             return null;
 
@@ -389,7 +389,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             ["charge"] = gun.ChargeLabel,
             ["muzzleMps"] = gun.MuzzleSpeedMps.ToString("F0", CultureInfo.InvariantCulture),
             ["phase"] = shot.Phase.ToString(),
-            ["camera"] = _game.CameraMode.ToString(),
+            ["camera"] = _game.CameraModeName,
             ["pace"] = _game.PaceText,
             ["orderedElevation"] = _game.Crew.OrderedElevation.ToString("F1", CultureInfo.InvariantCulture),
             ["orderedAzimuth"] = _game.Crew.OrderedAzimuth.ToString("F1", CultureInfo.InvariantCulture),
@@ -553,8 +553,8 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             Action("artillery.aim", "Aim", "Order elevation and world azimuth. The crew lays the tube on the handwheels. Trails clamp the azimuth.", AgentActionSchema.Object(["elevation", "azimuth"], ("elevation", "number"), ("azimuth", "number")), true, null),
             Action("artillery.charge", "Charge", "Order reduced, standard, max, or low (0, 1, 2, or 3). A new zone is reseated before the next shot.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
             Action("artillery.fire", "Fire", "Shoot when the breech is closed and the tube is on the order. Returns immediately; impact arrives as artillery.impact.", null, blocked is null, blocked),
-            Action("artillery.pace", "Pace", "Realtime only — pace multipliers removed.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
-            Action("artillery.camera", "Camera", "Choose follow or free.", AgentActionSchema.Object(["mode"], ("mode", "string")), true, null),
+            Action("artillery.pace", "Pace", "Realtime only — fixed battle clock.", AgentActionSchema.Object(["index"], ("index", "integer")), true, null),
+            Action("artillery.camera", "Camera", "Choose shell follow or gun orbit.", AgentActionSchema.Object(["mode"], ("mode", "string")), true, null),
         ];
     }
 

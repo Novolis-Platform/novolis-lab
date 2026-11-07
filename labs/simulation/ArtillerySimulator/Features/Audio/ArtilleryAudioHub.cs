@@ -80,7 +80,12 @@ internal sealed class ArtilleryAudioHub : IDisposable
         Speak(_chatter.AnnounceSplash(airburst));
     }
 
-    public void Update(float dt, bool playing, bool missionHot, MissionOutcome outcome)
+    public void Update(
+        float dt,
+        bool playing,
+        int remaining,
+        float nearestMeters,
+        MissionOutcome outcome)
     {
         if (!playing)
             return;
@@ -101,13 +106,13 @@ internal sealed class ArtilleryAudioHub : IDisposable
         {
             _terminalAnnounced = true;
             _sfx.Play("warning");
-            var line = _chatter.Update(0f, missionHot, terminalVictory, terminalDefeat);
+            var line = _chatter.Update(0f, remaining, nearestMeters, terminalVictory, terminalDefeat);
             if (line is not null)
                 Speak(line);
             return;
         }
 
-        var chatter = _chatter.Update(dt, missionHot, terminalVictory: false, terminalDefeat: false);
+        var chatter = _chatter.Update(dt, remaining, nearestMeters, terminalVictory: false, terminalDefeat: false);
         if (chatter is not null)
         {
             _sfx.Play("radio-blip");

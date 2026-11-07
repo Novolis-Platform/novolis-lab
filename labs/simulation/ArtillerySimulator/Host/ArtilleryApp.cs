@@ -148,7 +148,7 @@ internal sealed class ArtilleryApp : IDisposable
     internal TerrainWorld Terrain => _terrain;
     internal BallisticTrajectoryRunner Shot => _shot;
     internal AtmosphereModel Atmosphere => _atmosphere;
-    internal CameraMode CameraMode => CameraMode.Orbit;
+    internal string CameraModeName => "Orbit";
     internal string PaceText => "realtime";
     internal IDefenseMission? Mission => _mission;
     internal float PredictedRangeMeters => HorizontalRange(_terrain.GunBaseline, PredictedImpact());
@@ -167,8 +167,6 @@ internal sealed class ArtilleryApp : IDisposable
     }
 
     internal void RefreshPrediction() => RebuildAimPreview();
-
-    internal void SetPace(int index) => _ = index; // Realtime only — pace UI removed.
 
     internal void SetFollowCamera(bool followShell) => _camera.FollowProjectile = followShell;
 
@@ -220,9 +218,16 @@ internal sealed class ArtilleryApp : IDisposable
         _particles.SpawnMuzzle(muzzle, fireDir);
         _audio?.OnFire();
         _crew.BeginReload();
-        // Stay on the gun; press F while any round is in flight for optional killcam.
-        _camera.FollowProjectile = false;
-        _killcamActive = false;
+        // New round becomes the follow target if shell-cam is already on; otherwise stay on the gun.
+        if (_camera.FollowProjectile)
+        {
+            _killcamActive = true;
+        }
+        else
+        {
+            _killcamActive = false;
+        }
+
         _aimDirty = true;
         return true;
     }
@@ -509,8 +514,12 @@ internal sealed class ArtilleryApp : IDisposable
         _fxTime += wallSeconds;
         if (_menus.IsPlaying)
         {
-            var hot = _mission is { IsTerminal: false };
-            _audio?.Update(wallSeconds, playing: true, missionHot: hot, _mission?.Outcome ?? MissionOutcome.Open);
+            _audio?.Update(
+                wallSeconds,
+                playing: true,
+                remaining: _mission?.Remaining ?? 0,
+                nearestMeters: _mission?.NearestMeters ?? 0f,
+                _mission?.Outcome ?? MissionOutcome.Open);
         }
 
         if (_aimDirty || TubePreviewStale())
@@ -544,6 +553,7 @@ internal sealed class ArtilleryApp : IDisposable
 
             if (frame.IsKeyPressed(Key.L))
             {
+                _shell.ResetLegalScroll();
                 _menus.PushLegal();
                 return;
             }
@@ -554,8 +564,9 @@ internal sealed class ArtilleryApp : IDisposable
             return;
         }
 
-        if (_menus.IsLegal && !_worldReady)
+        if (_menus.IsLegal)
         {
+            HandleLegalScroll(frame);
             if (frame.IsKeyPressed(Key.Escape)
                 || frame.IsKeyPressed(Key.L)
                 || frame.IsKeyPressed(Key.Enter))
@@ -568,6 +579,8 @@ internal sealed class ArtilleryApp : IDisposable
 
         if (frame.IsKeyPressed(Key.L))
         {
+            if (!_menus.IsLegal)
+                _shell.ResetLegalScroll();
             _menus.ToggleLegal();
             return;
         }
@@ -580,6 +593,20 @@ internal sealed class ArtilleryApp : IDisposable
 
         if (_menus.IsPaused && frame.IsKeyPressed(Key.Enter))
             _menus.PopOverlay();
+    }
+
+    private void HandleLegalScroll(SilkFrame frame)
+    {
+        if (MathF.Abs(frame.ScrollDelta) > 0.001f)
+            _shell.NudgeLegalScroll(-frame.ScrollDelta * 3f);
+        if (frame.IsKeyPressed(Key.Up) || frame.IsKeyPressed(Key.W))
+            _shell.NudgeLegalScroll(-8f);
+        if (frame.IsKeyPressed(Key.Down) || frame.IsKeyPressed(Key.S))
+            _shell.NudgeLegalScroll(+8f);
+        if (frame.IsKeyDown(Key.Up) || frame.IsKeyDown(Key.W))
+            _shell.NudgeLegalScroll(-frame.DeltaSeconds * 14f);
+        if (frame.IsKeyDown(Key.Down) || frame.IsKeyDown(Key.S))
+            _shell.NudgeLegalScroll(+frame.DeltaSeconds * 14f);
     }
 
     public void Dispose()
@@ -752,7 +779,10 @@ internal sealed class ArtilleryApp : IDisposable
 
         if (_mission is { } mission)
             _camera.SetBattleFocus(mission.BattleFocus(_terrain.GunBaseline));
-        _camera.Update(frame, _terrain.GunBaseline, _shot, allowMouseLook: !_ui.PointerOverUi);
+        var camRound = RoundForCamera() ?? _shot;
+        if (_camera.FollowProjectile && camRound.Phase == BallisticTrajectoryPhase.InFlight)
+            _shot = camRound;
+        _camera.Update(frame, _terrain.GunBaseline, camRound, allowMouseLook: !_ui.PointerOverUi);
     }
 
     private bool TubePreviewStale() =>
@@ -765,9 +795,7 @@ internal sealed class ArtilleryApp : IDisposable
         frame.Clear(ClearSky);
         var cam = _camera.Build(frame.DeltaSeconds);
         var aspect = frame.Width / (float)Math.Max(1, frame.Height);
-        var view = _camera.MatchKommunekartOrientation
-            ? KristiansandGeoref.CreateCesiumMatchedView(cam.Position, cam.Target, cam.Up)
-            : KristiansandGeoref.CreateMapView(cam.Position, cam.Target, cam.Up);
+        var view = KristiansandGeoref.CreateMapView(cam.Position, cam.Target, cam.Up);
         var near = 2f;
         var far = MathF.Max(40_000f, Vector3.Distance(cam.Position, cam.Target) * 8f);
         var proj = Matrix4x4.CreatePerspectiveFieldOfView(
@@ -1054,13 +1082,21 @@ internal sealed class ArtilleryApp : IDisposable
 
     private BallisticTrajectoryRunner? RoundForCamera()
     {
-        if (_shot.Phase is BallisticTrajectoryPhase.InFlight or BallisticTrajectoryPhase.Impacted)
-            return _shot;
-
+        // Prefer any live flyer (newest first) so shell-cam works beyond the first round.
         for (var i = _rounds.Count - 1; i >= 0; i--)
         {
             if (_rounds[i].Phase == BallisticTrajectoryPhase.InFlight)
                 return _rounds[i];
+        }
+
+        // Short post-impact hold for killcam — only the most recent impact still in the window.
+        if (_burstAge >= 0f && _burstAge < KillcamReturnSeconds)
+        {
+            for (var i = _rounds.Count - 1; i >= 0; i--)
+            {
+                if (_rounds[i].Phase == BallisticTrajectoryPhase.Impacted)
+                    return _rounds[i];
+            }
         }
 
         return null;

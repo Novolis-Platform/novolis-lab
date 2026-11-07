@@ -52,7 +52,7 @@ Do not put generic CAD types here — extend `Novolis.Cad.Primitives` / `Novolis
 | Mode | Invocation | Does |
 |------|------------|------|
 | **GUI** | (default; optional `--explorer` / `--silk`) | Avalonia chrome + Silk 3D |
-| **Headless export** | `--headless-export` | Generate + blueprints + descriptors + 8K stills + 4K construction-orbit and walkthrough video |
+| **Headless export** | `--headless-export` | Generate + blueprints + descriptors + 8K stills + ship OBJ/STL/GLB (+ FBX/DAE when Assimp supports) + 4K construction-orbit and walkthrough video |
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true

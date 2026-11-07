@@ -12,37 +12,70 @@ Ballistic probable-error budgets, muzzle velocities, coastal met clocks, and war
 effect radii are open educational approximations for gameplay and agent labs — not
 firing tables, not METAR products, and not classified or controlled technical data.
 
+PRODUCT
+-------
+Title: K9 DOG — Howitzer defence simulation game
+Host: Novolis Silk GAME lab (ArtillerySimulator)
+Controls: WASD lay, Space fire, F shell-cam, Esc/P pause, L licenses
+
 LEVELS
 ------
 Maps/scenarios are pluggable (GameLevelCatalog / IGameLevel).
 Shipped level: Defense of Kristiansand (kristiansand.defense) on Odderøya.
 Scenarios are fictional defense exercises, not targeting instruction.
+CLI: --list-levels / --level <id> / --seed <int|hex>
 
 MAP / GEO DATA
 --------------
-Height and road layers may derive from public Kartverket (e.g. NHM DTM) and NVDB
-vegnett extracts. Follow those providers' license and attribution requirements when
-redistributing map binaries or rebuild scripts.
+Height and road layers may derive from public Kartverket sources (e.g. NHM DTM)
+and NVDB vegnett extracts. Follow those providers' license and attribution
+requirements when redistributing map binaries or rebuild scripts.
+Rebuild tooling lives under scripts/ (not part of the shipped game binary).
 
 THIRD-PARTY SOFTWARE
 --------------------
-This product links .NET, Silk.NET, SkiaSharp, and Novolis platform libraries under
-their respective licenses (typically MIT, Apache-2.0, or Novolis package terms).
+This product links:
+  • .NET runtime — Microsoft .NET license / MIT components as applicable
+  • Silk.NET — MIT
+  • SkiaSharp — MIT
+  • Novolis platform libraries (Math, Physics, Simulation, Silk, Audio, Agent,
+    Game.MenuFlows, Voice) — Novolis-Platform package terms as published
 
 ART ASSETS
 ----------
 Splash and icon art under assets/ are Novolis lab assets for K9 DOG.
 They are not official marks of any vehicle manufacturer.
 
-AUDIO
------
-Battle score "Odderøya Frontline" is an original Novolis MusicScore
-(MidiSynth bake) — a mid-2000s battlefield pastiche, not a licensed theme.
+AUDIO — SCORE
+-------------
+Battle score "Odderøya Frontline" is an original Novolis MusicScore composed with
+Novolis.Audio.Midi (MusicScore + MidiSynth bake). Mid-2000s battlefield pastiche
+reminiscent of classic FPS menus — not a licensed commercial theme.
 
-SFX under assets/sfx/:
-  - impact-he.wav / impact-air.wav / beep.wav — OpenGameArt, CC0 1.0
-    (see assets/sfx/LICENSE.txt)
-  - muzzle / breech / radio-blip / warning — procedural Novolis cues
+AUDIO — SFX (OpenGameArt, CC0 1.0)
+---------------------------------
+See also assets/sfx/LICENSE.txt.
 
-Voice chatter uses Novolis.Audio.Voice (Sherpa ONNX + ATC radio delivery)
-when models are available; otherwise HUD radio text only.
+  impact-he.wav   — OpenGameArt Explosion2.wav (CC0 1.0)
+  impact-air.wav  — OpenGameArt Explosion3.wav (CC0 1.0)
+  beep.wav        — OpenGameArt beep.wav (CC0 1.0)
+
+  License: Creative Commons Zero (CC0 1.0)
+  https://creativecommons.org/publicdomain/zero/1.0/
+
+AUDIO — SFX (procedural Novolis)
+--------------------------------
+Generated at first run by ArtillerySimulator (no third-party sample content):
+  muzzle.wav, breech.wav, radio-blip.wav, warning.wav
+
+AUDIO — VOICE
+-------------
+Battery radio chatter uses Novolis.Audio.Voice (Sherpa ONNX TTS + ATC radio
+delivery / phraseology) when bundled models are available. Otherwise the HUD
+shows radio text only. Voice model packages ship under Novolis.Audio.Voice.*
+license terms.
+
+CONTACT / SOURCE
+----------------
+Novolis-Platform lab tree. Full notices ship next to the executable as NOTICE.txt
+and assets/sfx/LICENSE.txt.

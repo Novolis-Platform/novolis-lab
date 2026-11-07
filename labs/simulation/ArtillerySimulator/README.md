@@ -13,7 +13,7 @@ dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\A
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -- --level kristiansand.defense --seed 42
 ```
 
-Splash → ←/→ pick level → load → play. **Esc / P** pause, **L** licenses. Full text: `assets/NOTICE.txt`.
+Splash → ←/→ pick level → load → play. **Esc / P** pause, **L** licenses (scrollable full `NOTICE.txt` + `assets/sfx/LICENSE.txt`).
 
 `--seed` makes PE sampling and convoy RNG reproducible (`SeedHash` on agent snapshots).
 
@@ -58,7 +58,7 @@ Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force,
 | `Features/Presentation/` | Camera, HUD, splash/pause overlays |
 | `Features/Agent/` | Live agent surface |
 | `Kristiansand/` | Geodesy, terrain, roads, atmosphere |
-| `assets/` | Splash, icons, NOTICE.txt |
+| `assets/` | Splash, icons, NOTICE.txt, sfx (+ LICENSE) |
 | `map/` | Runtime layers + pipeline sources (see `map/README.md`) |
 | `scripts/` | Map rebuild + icon bake + agent play |
 
