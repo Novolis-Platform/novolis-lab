@@ -23,10 +23,13 @@ internal static class SimulationUnits
   public const float MinEffectiveRangeMeters = 4_000f;
 
   /// <summary>
-  /// Opening column spawn floor from the fort. Well outside HE min so the first wave is a
-  /// plausible inbound approach (~7.5–12 km), not crowding the danger-close ring.
+  /// Column spawn ring from the fort: ~2.25× HE minimum so the battery has time to observe,
+  /// lay, and fire before the lead vehicle closes the HE floor.
   /// </summary>
-  public const float MinOpeningEngagementMeters = 7_500f;
+  public const float MinOpeningEngagementMeters = MinEffectiveRangeMeters * 2.25f;
+
+  /// <summary>Fixed pool of road-network spawn mouths around the HE ring.</summary>
+  public const int ApproachSpawnCount = 18;
 
   /// <summary>Outer city-approach band the Odderøya battery is expected to cover (m).</summary>
   public const float MaxCityApproachMeters = 14_000f;

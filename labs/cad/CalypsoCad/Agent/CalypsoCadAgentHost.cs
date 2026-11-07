@@ -1,11 +1,12 @@
 using System.Text.Json;
-using CalypsoCad.Generation;
 using Novolis.Cad.Primitives;
-using CalypsoCad.Host;
-using CalypsoCad.Rendering;
+using CalypsoCad.Session;
+using CalypsoCad.Viewport;
 using CalypsoCad.Export;
 using Novolis.Agent.Core;
 using Novolis.Agent.Surface;
+using CalypsoCad.Structure;
+using CalypsoCad.Review;
 
 namespace CalypsoCad.Agent;
 

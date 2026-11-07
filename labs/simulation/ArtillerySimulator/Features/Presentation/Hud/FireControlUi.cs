@@ -1,37 +1,48 @@
-using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using Novolis.Math.Geometry;
 using Novolis.Physics.Ballistics;
 using Novolis.Silk;
+using SkiaSharp;
 
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Mouse-driven fire-control chrome: charge menu, pace, camera snaps, data readout, arc legend.
+/// Mouse-driven fire-control chrome rasterized with SkiaSharp fonts, then alpha-blitted over the 3D frame.
 /// Keyboard aims (WASD / arrows) and fires (Space); mouse never lays the tube.
 /// </summary>
-internal sealed class FireControlUi
+internal sealed class FireControlUi : IDisposable
 {
-    // Mid-gray translucent — dark enough to kill terrain, light enough that white stick text pops.
-    private static readonly Rgba32 PanelRgba = new(36, 42, 52, 210);
-    private static readonly Rgba32 PanelHotRgba = new(52, 40, 36, 220);
-    private static readonly Color Border = Color.FromArgb(255, 200, 220, 235);
-    private static readonly Color Text = Color.FromArgb(255, 255, 255, 255);
-    private static readonly Color Accent = Color.FromArgb(255, 255, 210, 110);
-    private static readonly Color Ready = Color.FromArgb(255, 140, 240, 160);
-    private static readonly Color Alert = Color.FromArgb(255, 255, 150, 90);
-    private static readonly Color Dim = Color.FromArgb(255, 190, 200, 210);
-    private static readonly Color Selected = Color.FromArgb(255, 120, 230, 255);
-
-    private static readonly SilkWireBatch Overlay = new();
-    private static readonly WorldSolidBatch Panels = new();
+    private static readonly SKColor PanelFill = new(36, 42, 52, 220);
+    private static readonly SKColor PanelHotFill = new(52, 40, 36, 230);
+    private static readonly SKColor Border = new(200, 220, 235, 255);
+    private static readonly SKColor Text = new(245, 248, 252, 255);
+    private static readonly SKColor Accent = new(255, 210, 110, 255);
+    private static readonly SKColor Ready = new(140, 240, 160, 255);
+    private static readonly SKColor Alert = new(255, 150, 90, 255);
+    private static readonly SKColor Dim = new(190, 200, 210, 220);
+    private static readonly SKColor Selected = new(120, 230, 255, 255);
 
     private readonly List<UiButton> _buttons = [];
+    private readonly SKTypeface _typeface;
+    private SKBitmap? _bitmap;
+    private SKCanvas? _canvas;
+    private Rgba32[] _pixels = [];
     private bool _chargeMenuOpen;
     private float _scale = 1f;
     private int _width;
     private int _height;
+    private string _lastSignature = "";
+    private float _rasterAge = 99f;
+
+    public FireControlUi()
+    {
+        _typeface =
+            SKTypeface.FromFamilyName("Cascadia Mono", SKFontStyle.Bold)
+            ?? SKTypeface.FromFamilyName("Consolas", SKFontStyle.Bold)
+            ?? SKTypeface.FromFamilyName("Courier New", SKFontStyle.Bold)
+            ?? SKTypeface.Default;
+    }
 
     public static int LastOverlayLineCount { get; private set; }
 
@@ -130,9 +141,7 @@ internal sealed class FireControlUi
         _width = frame.Width;
         _height = frame.Height;
         _scale = Math.Clamp(Math.Min(_width, _height) / 900f, 0.85f, 1.4f);
-        _buttons.Clear();
-        Overlay.Clear();
-        Panels.Clear();
+        EnsureSurface(_width, _height);
 
         var sampleAlt = shot.Phase == BallisticTrajectoryPhase.InFlight
             ? shot.CurrentPosition.Y
@@ -152,38 +161,133 @@ internal sealed class FireControlUi
             _ => predictedRangeMeters,
         };
         var underMin = predictedRangeMeters < SimulationUnits.MinEffectiveRangeMeters;
+        // reloadLine is null once the breech is closed — fire snaps the tube; do not wait on lay.
+        var canFire = reloadLine is null && shot.Phase != BallisticTrajectoryPhase.InFlight;
 
-        DrawTopBar(shot, heroRange, gun, defenseLine, reloadLine);
-        DrawGunPanel(gun, orderedElevMils, orderedDeflMils, reloadLine, underMin, predictedRangeMeters, predictedTofSeconds);
-        DrawMetPanel(atmosphere, sampleAlt, windSpeed, windBearing, predictedImpact, terrain);
-        DrawChargeMenu(gun);
-        DrawPaceRow(paceIndex, paceLabel);
-        DrawCameraRow(followProjectile);
-        DrawFireButton(reloadLine is null && shot.Phase != BallisticTrajectoryPhase.InFlight);
-        DrawLegend();
-        DrawHelp();
+        // Rebuild hit boxes every frame (cheap); rasterize Skia only when chrome meaningfully changes.
+        _buttons.Clear();
+        BuildButtons(gun, paceIndex, followProjectile, canFire);
+
+        var signature = string.Create(
+            CultureInfo.InvariantCulture,
+            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{predictedRangeMeters:F0}|{predictedTofSeconds:F1}|{heroRange:F0}|{gun.ChargeIndex}|{paceIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{reloadLine}|{shot.Phase}|{underMin}|{windSpeed:F0}|{windBearing:F0}|{predictedImpact.Y:F0}");
+        _rasterAge += frame.DeltaSeconds;
+        var dirty = signature != _lastSignature || _rasterAge >= 0.12f;
+        if (dirty)
+        {
+            _lastSignature = signature;
+            _rasterAge = 0f;
+            var canvas = _canvas!;
+            canvas.Clear(SKColors.Transparent);
+            DrawTopBar(canvas, shot, heroRange, gun, defenseLine, reloadLine);
+            DrawGunPanel(canvas, gun, orderedElevMils, orderedDeflMils, reloadLine, underMin, predictedRangeMeters, predictedTofSeconds);
+            DrawMetPanel(canvas, atmosphere, sampleAlt, windSpeed, windBearing, predictedImpact, terrain);
+            DrawChargeMenu(canvas, gun);
+            DrawPaceRow(canvas, paceIndex);
+            DrawCameraRow(canvas, followProjectile);
+            DrawFireButton(canvas, canFire);
+            DrawLegend(canvas);
+            DrawHelp(canvas);
+            CopyPixels();
+        }
 
         frame.SetTitle(string.Create(
             CultureInfo.InvariantCulture,
             $"Kristiansand K9  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
 
-        var ortho = Matrix4x4.CreateOrthographicOffCenter(0f, _width, _height, 0f, -1f, 1f);
-        // Solid panels first (dark translucent boxes), then wire text/borders on top.
-        if (Panels.Triangles.Length >= 3)
-            frame.DrawWorldTriangles(Panels.Triangles, ortho);
-        LastOverlayLineCount = Overlay.AsSpan().Length / 2;
-        frame.DrawWorldLines(Overlay.AsSpan(), ortho);
+        frame.ClearDepth();
+        frame.BlitOverlay(_pixels, _width, _height);
+        LastOverlayLineCount = 0;
+        _ = paceLabel;
+    }
+
+    private void BuildButtons(GunModel gun, int paceIndex, bool followProjectile, bool canFire)
+    {
+        var bw = 280f * _scale;
+        var bh = 42f * _scale;
+        var bx = 8f;
+        var by = _height - 230f * _scale;
+        AddButton("charge-toggle", bx, by, bw, bh, $"CHARGE  {gun.ChargeLabel.ToUpperInvariant()}", selected: true);
+        if (_chargeMenuOpen)
+        {
+            for (var i = 0; i < SimulationUnits.ChargeLabels.Length; i++)
+            {
+                var y = by - (i + 1) * (bh + 4 * _scale);
+                AddButton($"charge-{i}", bx, y, bw, bh, SimulationUnits.ChargeLabels[i], gun.ChargeIndex == i);
+            }
+        }
+
+        var paceLabels = new[] { "1X", "3X", "8X", "24X" };
+        var pbw = 72f * _scale;
+        var pbh = 36f * _scale;
+        var gap = 8f * _scale;
+        var total = paceLabels.Length * pbw + (paceLabels.Length - 1) * gap;
+        var x0 = (_width - total) * 0.5f;
+        var py = _height - 120f * _scale;
+        for (var i = 0; i < paceLabels.Length; i++)
+            AddButton($"pace-{i}", x0 + i * (pbw + gap), py, pbw, pbh, paceLabels[i], paceIndex == i);
+
+        var cbw = 120f * _scale;
+        var cbh = 36f * _scale;
+        var cx = _width - 8 - 4 * cbw - 3 * gap;
+        var cy = _height - 120f * _scale;
+        AddButton("follow", cx, cy, cbw, cbh, followProjectile ? "SHELL" : "GUN", true);
+        AddButton("snap-gun", cx + cbw + gap, cy, cbw, cbh, "GUN VIEW", false);
+        AddButton("snap-battle", cx + 2 * (cbw + gap), cy, cbw, cbh, "BATTLE", false);
+        AddButton("map", cx + 3 * (cbw + gap), cy, cbw, cbh, "MAP", false);
+
+        var fbw = 180f * _scale;
+        var fbh = 48f * _scale;
+        AddButton("fire", (_width - fbw) * 0.5f, _height - 64f * _scale, fbw, fbh, "FIRE", canFire);
+    }
+
+    public void Dispose()
+    {
+        _canvas?.Dispose();
+        _bitmap?.Dispose();
+        _typeface.Dispose();
+        _canvas = null;
+        _bitmap = null;
+    }
+
+    private void EnsureSurface(int width, int height)
+    {
+        if (_bitmap is { } existing && existing.Width == width && existing.Height == height)
+            return;
+
+        _canvas?.Dispose();
+        _bitmap?.Dispose();
+        _bitmap = new SKBitmap(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
+        _canvas = new SKCanvas(_bitmap);
+        _pixels = new Rgba32[width * height];
+    }
+
+    private void CopyPixels()
+    {
+        if (_bitmap is null)
+            return;
+
+        // SKColorType.Rgba8888 → byte order matches Novolis.Math.Geometry.Rgba32.
+        using var pixmap = _bitmap.PeekPixels();
+        var bytes = pixmap.GetPixelSpan<byte>();
+        var n = Math.Min(_pixels.Length, bytes.Length / 4);
+        for (var i = 0; i < n; i++)
+        {
+            var o = i * 4;
+            _pixels[i] = new Rgba32(bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]);
+        }
     }
 
     private void DrawTopBar(
+        SKCanvas canvas,
         BallisticTrajectoryRunner shot,
         float heroRange,
         GunModel gun,
         string? defenseLine,
         string? reloadLine)
     {
-        var topH = 56f * _scale;
-        PanelBox(8, 8, _width - 16, topH);
+        var topH = 72f * _scale;
+        PanelBox(canvas, 8, 8, _width - 16, topH);
 
         var phase = shot.Phase switch
         {
@@ -195,20 +299,21 @@ internal sealed class FireControlUi
             : shot.Phase == BallisticTrajectoryPhase.Impacted ? Alert
             : reloadLine is null ? Ready : Alert;
 
-        HudStickFont.Draw(Overlay, phase, 18 * _scale, 16 * _scale, 2.2f * _scale, phaseColor);
-        HudStickFont.Draw(
-            Overlay,
+        DrawText(canvas, phase, 20 * _scale, 28 * _scale, 22f * _scale, phaseColor);
+        DrawText(
+            canvas,
             $"{SimulationUnits.FormatRange(heroRange)}   ZONE {gun.ChargeLabel.ToUpperInvariant()}",
-            170 * _scale,
-            16 * _scale,
-            2.0f * _scale,
+            200 * _scale,
+            28 * _scale,
+            20f * _scale,
             Text);
 
         var mission = string.IsNullOrEmpty(defenseLine) ? "DEFENSE OF KRISTIANSAND — ODDEROYA K9" : defenseLine;
-        HudStickFont.Draw(Overlay, Truncate(mission, 78), 18 * _scale, 36 * _scale, 1.5f * _scale, Accent);
+        DrawText(canvas, Truncate(mission, 72), 20 * _scale, 56 * _scale, 15f * _scale, Accent);
     }
 
     private void DrawGunPanel(
+        SKCanvas canvas,
         GunModel gun,
         float orderedElevMils,
         float orderedDeflMils,
@@ -218,33 +323,33 @@ internal sealed class FireControlUi
         float tof)
     {
         var px = 8f;
-        var py = 72f * _scale;
-        var pw = 300f * _scale;
-        var ph = 168f * _scale;
-        PanelBox(px, py, pw, ph);
+        var py = 92f * _scale;
+        var pw = 360f * _scale;
+        var ph = 210f * _scale;
+        PanelBox(canvas, px, py, pw, ph);
 
-        var lx = px + 12 * _scale;
-        var ly = py + 12 * _scale;
-        var ls = 1.65f * _scale;
-        var lh = 15f * _scale;
+        var lx = px + 16 * _scale;
+        var ly = py + 28 * _scale;
+        var ls = 16f * _scale;
+        var lh = 28f * _scale;
 
-        HudStickFont.Draw(Overlay, "FIRE CONTROL", lx, ly, 1.9f * _scale, Accent);
-        ly += lh + 4 * _scale;
-        HudStickFont.Draw(Overlay, $"QE    {gun.ElevationMils:F0} -> {orderedElevMils:F0} MIL", lx, ly, ls, Text);
+        DrawText(canvas, "FIRE CONTROL", lx, ly, 18f * _scale, Accent);
         ly += lh;
-        HudStickFont.Draw(Overlay, $"DEFL  {gun.DeflectionMils:F0} -> {orderedDeflMils:F0} MIL", lx, ly, ls, Text);
+        DrawText(canvas, $"QE    {gun.ElevationMils:F0} -> {orderedElevMils:F0} MIL", lx, ly, ls, Text);
         ly += lh;
-        HudStickFont.Draw(Overlay, $"PRED  {SimulationUnits.FormatRange(predictedRange)}   TOF {tof:F1} S", lx, ly, ls, underMin ? Alert : Text);
+        DrawText(canvas, $"DEFL  {gun.DeflectionMils:F0} -> {orderedDeflMils:F0} MIL", lx, ly, ls, Text);
+        ly += lh;
+        DrawText(canvas, $"PRED  {SimulationUnits.FormatRange(predictedRange)}   TOF {tof:F1} S", lx, ly, ls, underMin ? Alert : Text);
         ly += lh;
         if (underMin)
         {
-            HudStickFont.Draw(Overlay, $"BELOW HE MIN {SimulationUnits.MinEffectiveRangeMeters / 1000f:F1} KM", lx, ly, ls, Alert);
+            DrawText(canvas, $"BELOW HE MIN {SimulationUnits.MinEffectiveRangeMeters / 1000f:F1} KM", lx, ly, ls, Alert);
             ly += lh;
         }
 
-        HudStickFont.Draw(
-            Overlay,
-            reloadLine is null ? "CREW READY" : Truncate(reloadLine.ToUpperInvariant(), 30),
+        DrawText(
+            canvas,
+            reloadLine is null ? "CREW READY" : Truncate(reloadLine.ToUpperInvariant(), 32),
             lx,
             ly,
             ls,
@@ -252,6 +357,7 @@ internal sealed class FireControlUi
     }
 
     private void DrawMetPanel(
+        SKCanvas canvas,
         AtmosphereModel atmosphere,
         float sampleAlt,
         float windSpeed,
@@ -259,38 +365,44 @@ internal sealed class FireControlUi
         Vector3 predictedImpact,
         TerrainWorld terrain)
     {
-        var pw = 300f * _scale;
-        var ph = 132f * _scale;
+        var pw = 360f * _scale;
+        var ph = 170f * _scale;
         var px = _width - pw - 8;
-        var py = 72f * _scale;
-        PanelBox(px, py, pw, ph);
+        var py = 92f * _scale;
+        PanelBox(canvas, px, py, pw, ph);
 
-        var lx = px + 12 * _scale;
-        var ly = py + 12 * _scale;
-        var ls = 1.55f * _scale;
-        var lh = 15f * _scale;
+        var lx = px + 16 * _scale;
+        var ly = py + 28 * _scale;
+        var ls = 16f * _scale;
+        var lh = 28f * _scale;
         var rho = atmosphere.DensityKgPerM3At(sampleAlt);
 
-        HudStickFont.Draw(Overlay, "MET / MPI", lx, ly, 1.9f * _scale, Accent);
-        ly += lh + 4 * _scale;
-        HudStickFont.Draw(Overlay, $"AIR   {rho:F3} KG/M3  {atmosphere.TemperatureAt(sampleAlt):F0} K", lx, ly, ls, Text);
+        DrawText(canvas, "MET / MPI", lx, ly, 18f * _scale, Accent);
         ly += lh;
-        HudStickFont.Draw(Overlay, $"WIND  {windSpeed:F0} M/S  BRG {windBearing:F0}", lx, ly, ls, Text);
+        DrawText(canvas, $"AIR   {rho:F3} KG/M3  {atmosphere.TemperatureAt(sampleAlt):F0} K", lx, ly, ls, Text);
         ly += lh;
-        HudStickFont.Draw(Overlay, $"LAT   {KristiansandHeightSampler.MeanLatitudeDegrees:F1} N", lx, ly, ls, Text);
+        DrawText(canvas, $"WIND  {windSpeed:F0} M/S  BRG {windBearing:F0}", lx, ly, ls, Text);
+        ly += lh;
+        DrawText(canvas, $"LAT   {KristiansandHeightSampler.MeanLatitudeDegrees:F1} N", lx, ly, ls, Text);
         ly += lh;
         var mpiRange = Horiz(terrain.GunBaseline, predictedImpact);
-        HudStickFont.Draw(Overlay, $"MPI   {SimulationUnits.FormatRange(mpiRange)}  H {predictedImpact.Y:F0} M", lx, ly, ls, BallisticArcColors.MpiMark);
+        DrawText(
+            canvas,
+            $"MPI   {SimulationUnits.FormatRange(mpiRange)}  H {predictedImpact.Y:F0} M",
+            lx,
+            ly,
+            ls,
+            ToSk(BallisticArcColors.MpiMark));
     }
 
-    private void DrawChargeMenu(GunModel gun)
+    private void DrawChargeMenu(SKCanvas canvas, GunModel gun)
     {
-        var bw = 210f * _scale;
-        var bh = 34f * _scale;
+        var bw = 280f * _scale;
+        var bh = 42f * _scale;
         var bx = 8f;
-        var by = _height - 210f * _scale;
-        AddButton("charge-toggle", bx, by, bw, bh, $"CHARGE  {gun.ChargeLabel.ToUpperInvariant()}", selected: true);
-        DrawButtonVisual(bx, by, bw, bh, $"CHARGE  {gun.ChargeLabel.ToUpperInvariant()}", selected: true);
+        var by = _height - 230f * _scale;
+        var label = $"CHARGE  {gun.ChargeLabel.ToUpperInvariant()}";
+        DrawButtonVisual(canvas, bx, by, bw, bh, label, selected: true);
 
         if (!_chargeMenuOpen)
             return;
@@ -298,140 +410,175 @@ internal sealed class FireControlUi
         for (var i = 0; i < SimulationUnits.ChargeLabels.Length; i++)
         {
             var y = by - (i + 1) * (bh + 4 * _scale);
-            var label = $"{i + 1} {SimulationUnits.ChargeLabels[i].ToUpperInvariant()}  {SimulationUnits.ChargeSpeedsMps[i]:F0} M/S";
-            var id = $"charge-{i}";
-            var on = gun.ChargeIndex == i;
-            AddButton(id, bx, y, bw, bh, label, on);
-            DrawButtonVisual(bx, y, bw, bh, label, on);
+            var item = $"{i + 1}  {SimulationUnits.ChargeLabels[i].ToUpperInvariant()}  {SimulationUnits.ChargeSpeedsMps[i]:F0} M/S";
+            DrawButtonVisual(canvas, bx, y, bw, bh, item, gun.ChargeIndex == i);
         }
     }
 
-    private void DrawPaceRow(int paceIndex, string paceLabel)
+    private void DrawPaceRow(SKCanvas canvas, int paceIndex)
     {
         var labels = new[] { "1X", "3X", "8X", "24X" };
-        var bw = 64f * _scale;
-        var bh = 30f * _scale;
-        var gap = 6f * _scale;
+        var bw = 72f * _scale;
+        var bh = 36f * _scale;
+        var gap = 8f * _scale;
         var total = labels.Length * bw + (labels.Length - 1) * gap;
         var x0 = (_width - total) * 0.5f;
-        var y = _height - 100f * _scale;
-        HudStickFont.Draw(Overlay, "PACE", x0, y - 18 * _scale, 1.4f * _scale, Dim);
+        var y = _height - 120f * _scale;
+        DrawText(canvas, "PACE", x0, y - 10 * _scale, 13f * _scale, Dim);
         for (var i = 0; i < labels.Length; i++)
         {
             var x = x0 + i * (bw + gap);
-            var id = $"pace-{i}";
-            AddButton(id, x, y, bw, bh, labels[i], paceIndex == i);
-            DrawButtonVisual(x, y, bw, bh, labels[i], paceIndex == i);
+            DrawButtonVisual(canvas, x, y, bw, bh, labels[i], paceIndex == i);
         }
-
-        _ = paceLabel;
     }
 
-    private void DrawCameraRow(bool followProjectile)
+    private void DrawCameraRow(SKCanvas canvas, bool followProjectile)
     {
-        var bw = 110f * _scale;
-        var bh = 30f * _scale;
-        var gap = 6f * _scale;
+        var bw = 120f * _scale;
+        var bh = 36f * _scale;
+        var gap = 8f * _scale;
         var x = _width - 8 - 4 * bw - 3 * gap;
-        var y = _height - 100f * _scale;
+        var y = _height - 120f * _scale;
 
-        void Cam(string id, string label, bool on)
+        void Cam(string label, bool on)
         {
-            AddButton(id, x, y, bw, bh, label, on);
-            DrawButtonVisual(x, y, bw, bh, label, on);
+            DrawButtonVisual(canvas, x, y, bw, bh, label, on);
             x += bw + gap;
         }
 
-        Cam("follow", followProjectile ? "SHELL" : "GUN", true);
-        Cam("snap-gun", "GUN VIEW", false);
-        Cam("snap-battle", "BATTLE", false);
-        Cam("map", "MAP", false);
+        Cam(followProjectile ? "SHELL" : "GUN", true);
+        Cam("GUN VIEW", false);
+        Cam("BATTLE", false);
+        Cam("MAP", false);
     }
 
-    private void DrawFireButton(bool canFire)
+    private void DrawFireButton(SKCanvas canvas, bool canFire)
     {
-        var bw = 160f * _scale;
-        var bh = 44f * _scale;
+        var bw = 180f * _scale;
+        var bh = 48f * _scale;
         var bx = (_width - bw) * 0.5f;
-        var by = _height - 52f * _scale;
-        AddButton("fire", bx, by, bw, bh, "FIRE", canFire);
-        PanelBox(bx, by, bw, bh, hot: canFire);
-        HudStickFont.Rect(Overlay, bx, by, bw, bh, canFire ? Alert : Dim);
-        var fireScale = 2.0f * _scale;
-        var tw = HudStickFont.MeasureWidth("FIRE", fireScale);
-        HudStickFont.Draw(Overlay, "FIRE", bx + Math.Max(6f, (bw - tw) * 0.5f), by + (bh - 7 * fireScale) * 0.5f, fireScale, canFire ? Alert : Dim);
+        var by = _height - 64f * _scale;
+        PanelBox(canvas, bx, by, bw, bh, hot: canFire);
+        using (var stroke = new SKPaint
+        {
+            Color = canFire ? Alert : Dim,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2f * _scale,
+            IsAntialias = true,
+        })
+        {
+            canvas.DrawRoundRect(bx, by, bw, bh, 4 * _scale, 4 * _scale, stroke);
+        }
+
+        DrawCenteredText(canvas, "FIRE", bx, by, bw, bh, 22f * _scale, canFire ? Alert : Dim);
     }
 
-    private void DrawLegend()
+    private void DrawLegend(SKCanvas canvas)
     {
-        var pw = 220f * _scale;
-        var ph = 118f * _scale;
+        var pw = 280f * _scale;
+        var ph = 190f * _scale;
         var px = _width - pw - 8;
-        var py = 220f * _scale;
-        PanelBox(px, py, pw, ph);
+        var py = 280f * _scale;
+        PanelBox(canvas, px, py, pw, ph);
 
-        var lx = px + 12 * _scale;
-        var ly = py + 12 * _scale;
-        var ls = 1.45f * _scale;
-        var lh = 16f * _scale;
-        HudStickFont.Draw(Overlay, "ARC LEGEND", lx, ly, 1.7f * _scale, Accent);
-        ly += lh + 2 * _scale;
-        LegendRow(ref ly, lx, ls, lh, BallisticArcColors.Ordered, "ORDERED LAY");
-        LegendRow(ref ly, lx, ls, lh, BallisticArcColors.Tube, "TUBE (LAYING)");
-        LegendRow(ref ly, lx, ls, lh, BallisticArcColors.Flight, "LIVE ROUND");
-        LegendRow(ref ly, lx, ls, lh, BallisticArcColors.MinRange, "HE MIN RING");
+        var lx = px + 16 * _scale;
+        var ly = py + 28 * _scale;
+        var ls = 15f * _scale;
+        var lh = 28f * _scale;
+        DrawText(canvas, "ARC LEGEND", lx, ly, 17f * _scale, Accent);
+        ly += lh;
+        LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.Ordered, "AIMED TRAJECTORY");
+        LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.Probability, "PROBABILITY CONE");
+        LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.Tube, "TUBE (LAYING)");
+        LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.Flight, "LIVE ROUND");
+        LegendRow(canvas, ref ly, lx, ls, lh, BallisticArcColors.MinRange, "HE MIN RING");
     }
 
-    private void LegendRow(ref float ly, float lx, float ls, float lh, Color color, string label)
+    private void LegendRow(SKCanvas canvas, ref float ly, float lx, float ls, float lh, System.Drawing.Color color, string label)
     {
-        var swatch = 18f * _scale;
-        HudStickFont.Rect(Overlay, lx, ly + 2 * _scale, swatch, 8 * _scale, color);
-        HudStickFont.FillHatch(Overlay, lx, ly + 2 * _scale, swatch, 8 * _scale, color, 3f * _scale);
-        HudStickFont.Draw(Overlay, label, lx + swatch + 8 * _scale, ly, ls, Text);
+        var swatch = 22f * _scale;
+        var sk = ToSk(color);
+        using (var fill = new SKPaint { Color = sk, Style = SKPaintStyle.Fill, IsAntialias = true })
+            canvas.DrawRect(lx, ly - 12 * _scale, swatch, 10 * _scale, fill);
+        DrawText(canvas, label, lx + swatch + 10 * _scale, ly, ls, Text);
         ly += lh;
     }
 
-    private void DrawHelp()
+    private void DrawHelp(SKCanvas canvas)
     {
-        var help = "WASD/ARROWS LAY   SPACE FIRE   C FOLLOW GUN/SHELL   MOUSE CAM/MENUS";
-        var hs = 1.35f * _scale;
-        var hw = HudStickFont.MeasureWidth(help, hs);
-        HudStickFont.Draw(Overlay, help, Math.Max(12f, (_width - hw) * 0.5f), _height - 18f * _scale, hs, Dim);
+        var help = "WASD LAY  SPACE FIRE  F SHELL CAM (IN FLIGHT)  F1 PROFILE  CTRL+C DUMP";
+        var size = 13f * _scale;
+        using var font = new SKFont(_typeface, size);
+        var width = font.MeasureText(help);
+        DrawText(canvas, help, Math.Max(12f, (_width - width) * 0.5f), _height - 12f * _scale, size, Dim);
     }
 
-    private void PanelBox(float x, float y, float w, float h, bool hot = false)
+    private void PanelBox(SKCanvas canvas, float x, float y, float w, float h, bool hot = false)
     {
-        SolidRect(x, y, w, h, hot ? PanelHotRgba : PanelRgba);
-        HudStickFont.Rect(Overlay, x, y, w, h, Border);
-        HudStickFont.Rect(Overlay, x + 2, y + 2, w - 4, h - 4, Color.FromArgb(140, Border.R, Border.G, Border.B));
-    }
+        using var fill = new SKPaint
+        {
+            Color = hot ? PanelHotFill : PanelFill,
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true,
+        };
+        canvas.DrawRoundRect(x, y, w, h, 6 * _scale, 6 * _scale, fill);
 
-    private static void SolidRect(float x, float y, float w, float h, Rgba32 color)
-    {
-        // Panel farther than stick text (HudZ=-0.4) so depth-test Less still shows glyphs.
-        const float z = 0.2f;
-        var a = new Vector3(x, y, z);
-        var b = new Vector3(x + w, y, z);
-        var c = new Vector3(x + w, y + h, z);
-        var d = new Vector3(x, y + h, z);
-        // Both windings — ortho Y-down + back-face cull must not eat the panel.
-        Panels.Triangle(a, b, c, color);
-        Panels.Triangle(a, c, d, color);
-        Panels.Triangle(a, c, b, color);
-        Panels.Triangle(a, d, c, color);
+        using var stroke = new SKPaint
+        {
+            Color = Border,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1.5f * _scale,
+            IsAntialias = true,
+        };
+        canvas.DrawRoundRect(x, y, w, h, 6 * _scale, 6 * _scale, stroke);
     }
 
     private void AddButton(string id, float x, float y, float w, float h, string label, bool selected)
         => _buttons.Add(new UiButton(id, x, y, w, h, label, selected));
 
-    private void DrawButtonVisual(float x, float y, float w, float h, string label, bool selected, Color? force = null)
+    private void DrawButtonVisual(SKCanvas canvas, float x, float y, float w, float h, string label, bool selected)
     {
-        var border = force ?? (selected ? Selected : Border);
-        SolidRect(x, y, w, h, selected ? PanelHotRgba : PanelRgba);
-        HudStickFont.Rect(Overlay, x, y, w, h, border);
-        var ls = 1.55f * _scale;
-        var tw = HudStickFont.MeasureWidth(label, ls);
-        HudStickFont.Draw(Overlay, label, x + Math.Max(6f, (w - tw) * 0.5f), y + (h - 7 * ls) * 0.5f, ls, force ?? (selected ? Selected : Text));
+        PanelBox(canvas, x, y, w, h, hot: selected);
+        if (selected)
+        {
+            using var stroke = new SKPaint
+            {
+                Color = Selected,
+                Style = SKPaintStyle.Stroke,
+                StrokeWidth = 2f * _scale,
+                IsAntialias = true,
+            };
+            canvas.DrawRoundRect(x, y, w, h, 6 * _scale, 6 * _scale, stroke);
+        }
+
+        DrawCenteredText(canvas, label, x, y, w, h, 14f * _scale, selected ? Selected : Text);
+    }
+
+    private void DrawText(SKCanvas canvas, string text, float x, float baselineY, float size, SKColor color)
+    {
+        using var font = new SKFont(_typeface, size);
+        using var paint = new SKPaint
+        {
+            Color = color,
+            IsAntialias = true,
+            Style = SKPaintStyle.Fill,
+        };
+        canvas.DrawText(text, x, baselineY, SKTextAlign.Left, font, paint);
+    }
+
+    private void DrawCenteredText(SKCanvas canvas, string text, float x, float y, float w, float h, float size, SKColor color)
+    {
+        using var font = new SKFont(_typeface, size);
+        using var paint = new SKPaint
+        {
+            Color = color,
+            IsAntialias = true,
+            Style = SKPaintStyle.Fill,
+        };
+        var metrics = font.Metrics;
+        var textWidth = font.MeasureText(text);
+        var baseline = y + (h + metrics.CapHeight) * 0.5f;
+        canvas.DrawText(text, x + (w - textWidth) * 0.5f, baseline, SKTextAlign.Left, font, paint);
     }
 
     private bool HitAny(float mx, float my)
@@ -442,12 +589,11 @@ internal sealed class FireControlUi
                 return true;
         }
 
-        // Approximate panel hit areas so dragging over chrome does not orbit.
-        if (mx < 320 * _scale && my < 260 * _scale)
+        if (mx < 380 * _scale && my < 320 * _scale)
             return true;
-        if (mx > _width - 320 * _scale && my < 360 * _scale)
+        if (mx > _width - 380 * _scale && my < 460 * _scale)
             return true;
-        if (my > _height - 220 * _scale)
+        if (my > _height - 250 * _scale)
             return true;
         return false;
     }
@@ -461,6 +607,8 @@ internal sealed class FireControlUi
 
     private static string Truncate(string text, int max)
         => text.Length <= max ? text : text[..Math.Max(0, max - 3)] + "...";
+
+    private static SKColor ToSk(System.Drawing.Color c) => new(c.R, c.G, c.B, c.A);
 
     private readonly record struct UiButton(string Id, float X, float Y, float W, float H, string Label, bool Selected)
     {

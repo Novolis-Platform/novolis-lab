@@ -1,5 +1,5 @@
-using CalypsoCad.Rendering;
-using CalypsoCad.Host;
+using CalypsoCad.Viewport;
+using CalypsoCad.Session;
 using Novolis.Silk;
 using System.Globalization;
 using System.Text;

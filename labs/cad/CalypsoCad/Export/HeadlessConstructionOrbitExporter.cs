@@ -3,8 +3,8 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using CalypsoCad.Host;
-using CalypsoCad.Rendering;
+using CalypsoCad.Session;
+using CalypsoCad.Viewport;
 using Novolis.Math.Geometry;
 using Novolis.Silk;
 

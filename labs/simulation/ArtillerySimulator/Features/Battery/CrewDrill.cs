@@ -12,8 +12,9 @@ internal sealed class CrewDrill
     public const float ChargeSeconds = 1.6f;
     public const float ChargeSwapSeconds = 4.5f;
     public const float CloseSeconds = 0.6f;
-    public const float ElevateMilsPerSecond = 280f;
-    public const float TraverseMilsPerSecond = 900f;
+    /// <summary>Coarse WASD lay rates — kept moderate so Shift-fine is optional, not mandatory.</summary>
+    public const float ElevateMilsPerSecond = 95f;
+    public const float TraverseMilsPerSecond = 300f;
 
     private const float OnLayMils = 1.25f;
     private const float MilsPerDegree = 6400f / 360f;
@@ -30,6 +31,9 @@ internal sealed class CrewDrill
     public int OrderedCharge { get; private set; }
 
     public bool Loading => _stage != Stage.Ready;
+
+    /// <summary>Autoloader finished — tube may still be slewing to the ordered lay.</summary>
+    public bool BreechReady => _stage == Stage.Ready;
 
     public void SeatOpening(GunModel gun)
     {
@@ -122,7 +126,14 @@ internal sealed class CrewDrill
         }
     }
 
-    public bool Ready(GunModel gun) => _stage == Stage.Ready && LaySeconds(gun) <= 0.05f;
+    public bool Ready(GunModel gun) => BreechReady && LaySeconds(gun) <= 0.05f;
+
+    /// <summary>Snap the tube onto the ordered lay (used when firing on a reloaded breech).</summary>
+    public void SnapTube(GunModel gun)
+    {
+        gun.SetElevation(OrderedElevation);
+        gun.NudgeAzimuth(Wrap(OrderedAzimuth - gun.AzimuthDegrees));
+    }
 
     public float BusySeconds(GunModel gun) => MathF.Max(LoaderSeconds(), LaySeconds(gun));
 

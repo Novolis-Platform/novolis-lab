@@ -25,6 +25,25 @@ internal sealed class FrameProfiler
 
     public long Frames => _frames;
 
+    /// <summary>Most recent completed frame duration (ms), including warmup frames.</summary>
+    public double LastFrameMs { get; private set; }
+
+    public void Reset()
+    {
+        _sections.Clear();
+        _seen = 0;
+        _frames = 0;
+        _frameTotalMs = 0;
+        _frameMinMs = double.MaxValue;
+        _frameMaxMs = 0;
+        LastFrameMs = 0;
+        _recording = false;
+        _terrainLines = 0;
+        _roadLines = 0;
+        _dynamicLines = 0;
+        _hudLines = 0;
+    }
+
     public void BeginFrame()
     {
         _seen++;
@@ -35,10 +54,11 @@ internal sealed class FrameProfiler
     public void EndFrame()
     {
         _frame.Stop();
+        LastFrameMs = _frame.Elapsed.TotalMilliseconds;
         if (!_recording)
             return;
 
-        var ms = _frame.Elapsed.TotalMilliseconds;
+        var ms = LastFrameMs;
         _frames++;
         _frameTotalMs += ms;
         if (ms < _frameMinMs)
@@ -46,6 +66,14 @@ internal sealed class FrameProfiler
         if (ms > _frameMaxMs)
             _frameMaxMs = ms;
     }
+
+    public double AverageFps()
+    {
+        var avg = _frames > 0 ? _frameTotalMs / _frames : LastFrameMs;
+        return avg > 1e-6 ? 1000.0 / avg : 0;
+    }
+
+    public double InstantFps() => LastFrameMs > 1e-6 ? 1000.0 / LastFrameMs : 0;
 
     public void Time(string name, Action action)
     {

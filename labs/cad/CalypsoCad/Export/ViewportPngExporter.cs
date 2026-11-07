@@ -1,5 +1,5 @@
-using CalypsoCad.Rendering;
-using CalypsoCad.Host;
+using CalypsoCad.Viewport;
+using CalypsoCad.Session;
 namespace CalypsoCad.Export;
 
 /// <summary>Path helpers for Calypso PNG tours (Silk headless / agent dumps).</summary>

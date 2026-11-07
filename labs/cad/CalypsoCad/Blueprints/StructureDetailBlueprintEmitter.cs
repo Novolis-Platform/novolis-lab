@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using CalypsoCad.Generation;
-using CalypsoCad.Host;
+using CalypsoCad.Session;
+using CalypsoCad.Structure;
 
 namespace CalypsoCad.Blueprints;
 

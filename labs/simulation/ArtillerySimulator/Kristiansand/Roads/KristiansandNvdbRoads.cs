@@ -15,7 +15,10 @@ internal static class KristiansandNvdbRoads
     private static readonly Color SecondaryColor = Color.FromArgb(220, 168, 168, 168);
     private const float LiftMeters = 3.2f;
     private const float PrimaryWidthMeters = 9f;
-    private const float DrapeMeters = 14f;
+    private const float DrapeMeters = 28f;
+    private const float SecondaryDrapeMeters = 55f;
+    /// <summary>Skip local K/P strokes in the runtime mesh — primary roads carry OPFOR + map intent.</summary>
+    private const bool DrawSecondaryRoads = false;
 
     private static RoadStroke[]? _strokes;
     private static bool _loadAttempted;
@@ -31,8 +34,11 @@ internal static class KristiansandNvdbRoads
         var north = KristiansandHeightSampler.NorthMeters;
         foreach (var stroke in _strokes)
         {
+            if (!stroke.Primary && !DrawSecondaryRoads)
+                continue;
             var color = stroke.Primary ? PrimaryColor : SecondaryColor;
-            DrapePolyline(batch, heights, east, north, stroke.Points, color, stroke.Primary ? PrimaryWidthMeters : 0f);
+            var drape = stroke.Primary ? DrapeMeters : SecondaryDrapeMeters;
+            DrapePolyline(batch, heights, east, north, stroke.Points, color, stroke.Primary ? PrimaryWidthMeters : 0f, drape);
         }
 
         return batch.AsSpan().ToArray();
@@ -155,7 +161,8 @@ internal static class KristiansandNvdbRoads
         float north,
         Vector2[] points,
         Color color,
-        float widthMeters)
+        float widthMeters,
+        float drapeMeters)
     {
         if (points.Length < 2)
             return;
@@ -170,7 +177,7 @@ internal static class KristiansandNvdbRoads
             if (len < 0.5f)
                 continue;
 
-            var samples = Math.Max(2, (int)MathF.Ceiling(len / DrapeMeters) + 1);
+            var samples = Math.Max(2, (int)MathF.Ceiling(len / drapeMeters) + 1);
             Vector3? prev = null;
             Vector3? prevL = null;
             Vector3? prevR = null;

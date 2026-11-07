@@ -20,8 +20,8 @@ internal sealed class TerrainWorld : IDisposable
     /// </summary>
     public const int DisplayCells = 1024;
 
-    /// <summary>Every Nth display cell emits a wire (2 ≈ 4× fewer lines than full 1024 grid).</summary>
-    public const int WireCellStride = 2;
+    /// <summary>Every Nth display cell emits a wire (4 ≈ 16× fewer lines than full 1024 grid).</summary>
+    public const int WireCellStride = 4;
 
     private WorldExtentOptions _extentOptions = new()
     {

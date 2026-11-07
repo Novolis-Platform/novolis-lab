@@ -1,12 +1,15 @@
 using CalypsoCad.Blueprints;
 using CalypsoCad.Agent;
-using CalypsoCad.Generation;
 using Novolis.Cad.Primitives;
-using CalypsoCad.Host;
-using CalypsoCad.Rendering;
+using CalypsoCad.Session;
+using CalypsoCad.Viewport;
 using CalypsoCad.Export;
-using CalypsoCad.Shell;
+using CalypsoCad.Explorer;
 using Novolis.Agent.Surface;
+using CalypsoCad.Structure;
+using CalypsoCad.Fabrication;
+using CalypsoCad.Review;
+using CalypsoCad.Canvas;
 
 namespace CalypsoCad;
 

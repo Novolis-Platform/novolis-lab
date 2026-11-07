@@ -15,9 +15,9 @@ internal sealed class ArtilleryCameras
     private bool _trackBattle;
     private bool _lockMapOverview;
     private bool _userOrbitHold;
-    private bool _followProjectile = true;
+    private bool _followProjectile;
 
-    /// <summary>When true (default in flight), orbit tracks the shell; otherwise the gun.</summary>
+    /// <summary>When true, orbit tracks the shell (killcam); default is gun follow.</summary>
     public bool FollowProjectile
     {
         get => _followProjectile;

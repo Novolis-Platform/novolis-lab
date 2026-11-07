@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using CalypsoCad.Generation;
 using Novolis.Cad.Primitives;
+using CalypsoCad.Structure;
 
 namespace CalypsoCad.Blueprints;
 
