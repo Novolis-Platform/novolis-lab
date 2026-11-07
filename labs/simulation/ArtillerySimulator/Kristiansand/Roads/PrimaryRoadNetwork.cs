@@ -26,8 +26,52 @@ internal static class PrimaryRoadNetwork
     }
 
     /// <summary>
-    /// Shortest primary-road path from a far approach toward <paramref name="goal"/>.
+    /// Shortest primary-road path from a geographic approach seed toward <paramref name="goal"/>.
     /// Points are world XZ (Vector2.Y = world Z). Returns null if unreachable.
+    /// </summary>
+    public static GroundPolyline? RouteFromSeed(
+        Vector2 goal,
+        Vector2 approachSeed,
+        string name,
+        float minLengthMeters = 1_200f,
+        float maxSeedSnapMeters = 2_400f)
+    {
+        EnsureBuilt();
+        if (_nodes.Length == 0)
+            return null;
+
+        var end = NearestMainNode(goal);
+        var start = NearestMainNode(approachSeed);
+        if (end < 0 || start < 0 || start == end)
+            return null;
+
+        // Reject when the primary graph does not reach the named place (snap jumped too far).
+        if (Vector2.Distance(_nodes[start].Pos, approachSeed) > maxSeedSnapMeters)
+            return null;
+
+        // Prefer a seed that is actually out-of-town; reject if snap collapsed onto downtown.
+        if (Vector2.Distance(_nodes[start].Pos, goal) < 1_400f)
+            return null;
+
+        var (distFromGoal, prev) = Dijkstra(end);
+        if (float.IsPositiveInfinity(distFromGoal[start]))
+            return null;
+
+        var path = Reconstruct(prev, start, end);
+        if (path is null || path.Count < 2)
+            return null;
+
+        var points = Decimate(path, 40f);
+        if (Vector2.Distance(points[0], goal) < Vector2.Distance(points[^1], goal))
+            Array.Reverse(points);
+
+        var line = new GroundPolyline(name, "primary", points);
+        return line.Length >= minLengthMeters ? line : null;
+    }
+
+    /// <summary>
+    /// Shortest primary-road path from a far approach bearing toward <paramref name="goal"/>.
+    /// Fallback when no geographic seed is available.
     /// </summary>
     public static GroundPolyline? RouteToward(Vector2 goal, float approachBearingDegrees, string name, float minLengthMeters = 1_200f)
     {
@@ -36,19 +80,13 @@ internal static class PrimaryRoadNetwork
             return null;
 
         var rad = approachBearingDegrees * (MathF.PI / 180f);
-        var fromX = MathF.Cos(rad);
-        var fromZ = MathF.Sin(rad);
-        var east = KristiansandHeightSampler.EastMeters;
-        var north = KristiansandHeightSampler.NorthMeters;
+        var dir = new Vector2(MathF.Cos(rad), MathF.Sin(rad));
 
-        // Snap downtown onto the main primary component (not a tiny disconnected stub).
         var end = NearestMainNode(goal);
         if (end < 0)
             return null;
 
-        // One Dijkstra from downtown — pick the farthest reachable seed in the approach sector.
         var (distFromGoal, prev) = Dijkstra(end);
-        var dir = new Vector2(fromX, fromZ);
         var start = -1;
         var bestScore = float.MaxValue;
         for (var i = 0; i < _nodes.Length; i++)
@@ -62,11 +100,11 @@ internal static class PrimaryRoadNetwork
                 continue;
 
             var off = DistancePointToRay(n, goal, dir);
-            if (off > 4_500f)
+            if (off > 3_200f)
                 continue;
 
-            // Prefer ~6–10 km out, on-bearing.
-            var score = off * 2.8f + MathF.Abs(along - 8_000f) * 0.1f - along * 0.02f;
+            // Prefer ~5–8 km out, on-bearing.
+            var score = off * 3.2f + MathF.Abs(along - 6_000f) * 0.12f - along * 0.02f;
             if (score >= bestScore)
                 continue;
 

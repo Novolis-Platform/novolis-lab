@@ -80,7 +80,8 @@ internal sealed class ArtilleryCameras
         _free.FieldOfViewDegrees = 42f;
     }
 
-    private const float NorthFacingYaw = MathF.PI;
+    /// <summary>FreeLook / orbit yaw 0 = look north (+Z).</summary>
+    private const float NorthFacingYaw = 0f;
 
     public void SnapToGun(Vector3 gunPivot, Vector3 barrelDir)
     {
@@ -94,10 +95,10 @@ internal sealed class ArtilleryCameras
         _orbit.FieldOfViewDegrees = 42f;
         _orbit.SmoothRate = 6f;
         _orbit.SnapTarget(orbitTarget);
-        // From Odderøya south tip: look north toward Kvadraturen (harbor).
+        // From Odderøya fort: look north across the harbor toward Kvadraturen.
         _orbit.Yaw = NorthFacingYaw;
         _orbit.Pitch = 0.55f;
-        _orbit.Distance = 420f;
+        _orbit.Distance = 520f;
         _ = barrelDir;
 
         _free.Position = gunPivot + SimulationUnits.FixedCamEyeOffset;

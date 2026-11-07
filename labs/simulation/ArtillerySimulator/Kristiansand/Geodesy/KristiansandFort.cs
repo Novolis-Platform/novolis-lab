@@ -3,31 +3,31 @@ using System.Numerics;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Odderøya south tip / Galgebakken seaward rock — not the inland 80 m ridge.
-/// WGS84 chosen so mask shows water south + peninsula sides and NDH is low coastal rock.
+/// Old Odderøya Fort — Lasaretthøyden / festningsmurene on the northern island ridge,
+/// overlooking Østre havn toward Kvadraturen (not Galgebakken south tip).
 /// </summary>
 internal static class KristiansandFort
 {
-    /// <summary>Southern Odderøya tip (user green mark) — probed against KLSM + NDH.</summary>
-    public const double Latitude = 58.13216;
+    /// <summary>Lasaretthøyden fort ridge (WGS84), probed against NDH + water mask.</summary>
+    public const double Latitude = 58.13650;
 
-    public const double Longitude = 8.01088;
+    public const double Longitude = 8.00450;
 
-    public const string Address = "Odderøya south tip / Galgebakken, Kristiansand S";
+    public const string Address = "Odderøya fort (Lasaretthøyden), Kristiansand S";
 
     public static Vector2 ToWorldMeters()
     {
         var raw = KristiansandHeightSampler.ToWorldMeters(Latitude, Longitude);
-        return SnapToSouthTip(raw.X, raw.Y);
+        return SnapToFortGround(raw.X, raw.Y);
     }
 
     /// <summary>
-    /// Keep the gun on low coastal rock with water to the south — never climb inland hills.
+    /// Stay on fort rock near the seed — ridge height OK; never walk out to Galgebakken tip.
     /// </summary>
-    private static Vector2 SnapToSouthTip(float x0, float z0)
+    private static Vector2 SnapToFortGround(float x0, float z0)
     {
-        const float radius = 280f;
-        const float step = 16f;
+        const float radius = 160f;
+        const float step = 8f;
         var bestX = x0;
         var bestZ = z0;
         var bestScore = float.NegativeInfinity;
@@ -46,22 +46,16 @@ internal static class KristiansandFort
                     continue;
 
                 var h = KristiansandHeightSampler.SampleMetersStatic(x, z);
-                // Odderøya tip is low coastal rock — reject inland ridges (~80 m).
-                if (h < 3f || h > 35f)
-                    continue;
-
-                var waterSouth = KristiansandLandSeaMask.IsWater(x, z - 140f);
-                var waterWest = KristiansandLandSeaMask.IsWater(x - 140f, z);
-                var waterEast = KristiansandLandSeaMask.IsWater(x + 140f, z);
-                var waterNear = (waterSouth ? 1 : 0) + (waterWest ? 1 : 0) + (waterEast ? 1 : 0);
-                if (!waterSouth || waterNear < 2)
+                // Fort terrace / ridge — reject flats and Odderøytoppen peak.
+                if (h < 6f || h > 70f)
                     continue;
 
                 var dx = x - x0;
                 var dz = z - z0;
                 var dist = MathF.Sqrt(dx * dx + dz * dz);
-                // Prefer further south (lower Z), then closeness to seed, then modest height.
-                var score = (z0 - z) * 2.5f + waterNear * 10f - dist * 0.35f + h * 0.15f;
+                // Prefer near seed and usable battery height (~10–40 m).
+                var heightFit = 1f - MathF.Abs(h - 22f) / 40f;
+                var score = heightFit * 25f + h * 0.2f - dist * 1.1f;
                 if (score <= bestScore)
                     continue;
 

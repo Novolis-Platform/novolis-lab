@@ -6,6 +6,13 @@ Silk-only Kristiansand artillery lab (single executable). Vertical-slice layout:
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true
 ```
 
+If MSBuild dies with `MSB4166` (child node exited prematurely), clear the sticky servers and retry:
+
+```powershell
+dotnet build-server shutdown
+dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true
+```
+
 Headless timing:
 
 ```powershell

@@ -148,6 +148,8 @@ internal static class CalypsoExterior
                     System.Math.Clamp(color.R - 40, 0, 255),
                     System.Math.Clamp(color.G - 40, 0, 255),
                     System.Math.Clamp(color.B - 40, 0, 255));
+                // Boundary edges only — full triangle soup reads as a crushed wireframe.
+                var boundary = CollectBoundaryEdges(mesh.Indices);
                 for (var i = 0; i < mesh.Indices.Count; i += 3)
                 {
                     var a = mesh.Vertices[mesh.Indices[i]];
@@ -162,9 +164,15 @@ internal static class CalypsoExterior
                     }
 
                     world.DrawTriangle(a, b, c, color);
+                }
+
+                foreach (var (i0, i1) in boundary)
+                {
+                    var a = mesh.Vertices[i0];
+                    var b = mesh.Vertices[i1];
+                    if (cutaway && Culled(a, cutOrigin, cutNormal) && Culled(b, cutOrigin, cutNormal))
+                        continue;
                     world.DrawLine(a, b, edge);
-                    world.DrawLine(b, c, edge);
-                    world.DrawLine(c, a, edge);
                 }
 
                 break;
@@ -174,6 +182,26 @@ internal static class CalypsoExterior
 
     private static bool Culled(Vector3 p, Vector3 cutOrigin, Vector3 cutNormal) =>
         Vector3.Dot(p - cutOrigin, cutNormal) > 0f;
+
+    /// <summary>Edges used by exactly one triangle (silhouette / plate seams).</summary>
+    private static List<(int A, int B)> CollectBoundaryEdges(IReadOnlyList<int> indices)
+    {
+        var counts = new Dictionary<(int, int), int>();
+        for (var i = 0; i + 2 < indices.Count; i += 3)
+        {
+            void Edge(int a, int b)
+            {
+                var key = a < b ? (a, b) : (b, a);
+                counts[key] = counts.TryGetValue(key, out var n) ? n + 1 : 1;
+            }
+
+            Edge(indices[i], indices[i + 1]);
+            Edge(indices[i + 1], indices[i + 2]);
+            Edge(indices[i + 2], indices[i]);
+        }
+
+        return counts.Where(kv => kv.Value == 1).Select(kv => kv.Key).ToList();
+    }
 
     private static Color ResolveColor(CadEntity entity)
     {

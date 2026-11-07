@@ -1396,12 +1396,125 @@ internal static class CalypsoLockGenerator
 
         if (!TryBuildShellMesh(byId, facesEl, "OML", LayerHull, ShapeHullExt, exterior: true, path, sx, sy, sz, out oml))
             return false;
+        // Manufacturer faces are loft strips only — close stem (and aft ring) so the bow is not an open tube.
+        AppendManufacturerEndCaps(root, byId, oml, "OML");
 
         if (TryBuildShellMesh(byId, facesEl, "IML", LayerHull, ShapeHullInt, exterior: false, path, sx, sy, sz, out var imlMesh)
             || TryBuildShellMeshFromRings(root, byId, "IML", LayerHull, ShapeHullInt, exterior: false, path, sx, sy, sz, out imlMesh))
+        {
+            AppendManufacturerEndCaps(root, byId, imlMesh, "IML");
             iml = imlMesh;
+        }
 
         return true;
+    }
+
+    /// <summary>
+    /// Manufacturer JSON loft faces omit stem/aft end plates. Cap rings so orbit reads a closed hull,
+    /// not a crushed open tube at the bow.
+    /// </summary>
+    private static void AppendManufacturerEndCaps(
+        JsonElement root,
+        Dictionary<string, Vector3> byId,
+        CadEntity mesh,
+        string shellName)
+    {
+        if (mesh.MeshVertices is null || mesh.MeshIndices is null)
+            return;
+        if (!root.TryGetProperty("rings", out var ringsRoot)
+            || !ringsRoot.TryGetProperty(shellName, out var ringsEl)
+            || ringsEl.ValueKind != JsonValueKind.Array)
+            return;
+
+        List<string>? stemIds = null;
+        List<string>? aftIds = null;
+        foreach (var ring in ringsEl.EnumerateArray())
+        {
+            var id = ring.TryGetProperty("id", out var idEl) ? idEl.GetString() : null;
+            if (!ring.TryGetProperty("vertIds", out var vids))
+                continue;
+            var ids = vids.EnumerateArray().Select(e => e.GetString()).Where(s => s is not null).Cast<string>().ToList();
+            if (ids.Count < 3)
+                continue;
+            if (string.Equals(id, "ST0", StringComparison.OrdinalIgnoreCase)
+                || ids.Exists(v => v.Contains(".ST0.", StringComparison.OrdinalIgnoreCase)))
+                stemIds = ids;
+            if (string.Equals(id, "AFT", StringComparison.OrdinalIgnoreCase)
+                || ids.Exists(v => v.Contains(".AFT.", StringComparison.OrdinalIgnoreCase)))
+                aftIds = ids;
+        }
+
+        var indexOf = new Dictionary<(int, int, int), int>();
+        for (var i = 0; i < mesh.MeshVertices.Count; i++)
+        {
+            var v = mesh.MeshVertices[i];
+            if (v.Length < 3)
+                continue;
+            indexOf[((int)MathF.Round(v[0] * 1000f), (int)MathF.Round(v[1] * 1000f), (int)MathF.Round(v[2] * 1000f))] = i;
+        }
+
+        int AddVert(Vector3 v)
+        {
+            var key = (
+                (int)MathF.Round(v.X * 1000f),
+                (int)MathF.Round(v.Y * 1000f),
+                (int)MathF.Round(v.Z * 1000f));
+            if (indexOf.TryGetValue(key, out var existing))
+                return existing;
+            var i = mesh.MeshVertices.Count;
+            indexOf[key] = i;
+            mesh.MeshVertices.Add([v.X, v.Y, v.Z]);
+            return i;
+        }
+
+        void CapRing(IReadOnlyList<string> ids, Vector3 outwardHint)
+        {
+            var ring = new List<Vector3>(ids.Count);
+            foreach (var vid in ids)
+            {
+                if (!byId.TryGetValue(vid, out var p))
+                    return;
+                ring.Add(p);
+            }
+
+            if (ring.Count < 3)
+                return;
+
+            var centroid = Vector3.Zero;
+            foreach (var p in ring)
+                centroid += p;
+            centroid /= ring.Count;
+
+            var cIdx = AddVert(centroid);
+            for (var i = 0; i < ring.Count; i++)
+            {
+                var a = ring[i];
+                var b = ring[(i + 1) % ring.Count];
+                var n = Vector3.Cross(a - centroid, b - centroid);
+                var iA = AddVert(a);
+                var iB = AddVert(b);
+                if (Vector3.Dot(n, outwardHint) >= 0f)
+                {
+                    mesh.MeshIndices.Add(cIdx);
+                    mesh.MeshIndices.Add(iA);
+                    mesh.MeshIndices.Add(iB);
+                }
+                else
+                {
+                    mesh.MeshIndices.Add(cIdx);
+                    mesh.MeshIndices.Add(iB);
+                    mesh.MeshIndices.Add(iA);
+                }
+            }
+        }
+
+        if (stemIds is not null)
+            CapRing(stemIds, Vector3.UnitZ); // bow / +Z
+        if (aftIds is not null)
+            CapRing(aftIds, -Vector3.UnitZ); // stern / −Z (cargo door still punched by openings later)
+
+        if (mesh.Properties is not null)
+            mesh.Properties["triangleCount"] = JsonSerializer.SerializeToElement(mesh.MeshIndices.Count / 3);
     }
 
     /// <summary>

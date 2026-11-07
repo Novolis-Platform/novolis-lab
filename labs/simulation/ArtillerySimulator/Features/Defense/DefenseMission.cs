@@ -514,27 +514,46 @@ internal sealed class KristiansandDefenseMission
     {
         var east = KristiansandHeightSampler.EastMeters;
         var north = KristiansandHeightSampler.NorthMeters;
-        var bearing = ApproachBearing(roadToken);
-        if (TrySpawnPrimaryRoadColumn(bearing, roadToken))
+        if (TrySpawnPrimaryRoadColumn(roadToken))
             return;
 
-        SpawnBearingColumn(east, north, bearing, roadToken);
+        SpawnBearingColumn(east, north, ApproachBearing(roadToken), roadToken);
     }
 
+    /// <summary>
+    /// Math bearing from Kvadraturen toward the named approach (0° = east, 90° = north).
+    /// Used only when primary-road seed routing fails.
+    /// </summary>
     private static float ApproachBearing(string roadToken) => roadToken switch
     {
-        "Strai" => 200f,
-        "Hellemyr" => 240f,
-        "Søm" => 110f,
-        "Møvik" or "Movik" => 255f,
-        "Vågsbygd" or "Vagsbygd" => 260f,
-        _ => 180f,
+        "Strai" => 128f,
+        "Hellemyr" => 165f,
+        "Søm" => 12f,
+        "Møvik" or "Movik" => 235f,
+        "Vågsbygd" or "Vagsbygd" => 245f,
+        _ => 90f,
     };
 
-    private bool TrySpawnPrimaryRoadColumn(float approachBearingDegrees, string name)
+    /// <summary>WGS84 seeds for inbound approaches (Kartverket / OSM place points).</summary>
+    private static Vector2 ApproachSeed(string roadToken)
+    {
+        var (lat, lon) = roadToken switch
+        {
+            "Strai" => (58.1893, 7.92826),
+            "Hellemyr" => (58.1680, 7.9450),
+            "Søm" => (58.1520, 8.0780),
+            "Møvik" or "Movik" => (58.1250, 7.9550),
+            "Vågsbygd" or "Vagsbygd" => (58.1320, 7.9480),
+            _ => (58.1700, 7.9600),
+        };
+        return KristiansandHeightSampler.ToWorldMeters(lat, lon);
+    }
+
+    private bool TrySpawnPrimaryRoadColumn(string name)
     {
         var goal = new Vector2(Objective.X, Objective.Z);
-        var line = PrimaryRoadNetwork.RouteToward(goal, approachBearingDegrees, name);
+        var line = PrimaryRoadNetwork.RouteFromSeed(goal, ApproachSeed(name), name)
+            ?? PrimaryRoadNetwork.RouteToward(goal, ApproachBearing(name), name);
         if (line is null)
             return false;
 
@@ -542,9 +561,15 @@ internal sealed class KristiansandDefenseMission
         var start = line.Points[0];
         var endDist = Vector2.Distance(end, goal);
         var startDist = Vector2.Distance(start, goal);
+        // March from the far (seed) end toward downtown — park the column near the approach origin.
         var crossingArc = endDist <= startDist ? line.Length - 40f : 40f;
         var away = endDist <= startDist ? -1 : 1;
-        var lead = Math.Clamp(line.Length * 0.28f, 1_200f, 3_500f);
+        var columnSpan = (ColumnCount - 1) * SpacingMeters;
+        var rearClearance = 240f;
+        var lead = crossingArc - rearClearance - columnSpan;
+        if (away > 0)
+            lead = line.Length - crossingArc - rearClearance - columnSpan;
+        lead = Math.Clamp(lead, 600f, MathF.Max(800f, line.Length - 200f));
         var before = _units.Count;
         AddColumn(line, crossingArc, away, ColumnCount, lead);
         return _units.Count > before;
@@ -552,11 +577,24 @@ internal sealed class KristiansandDefenseMission
 
     private void PlaceDefenders()
     {
-        var center = new Vector2(Objective.X, Objective.Z);
-        AddDefender("D1", center + new Vector2(0f, -220f));
-        AddDefender("D2", center + new Vector2(-200f, 0f));
-        AddDefender("D3", center + new Vector2(180f, 0f));
-        AddDefender("D4", center + new Vector2(0f, 160f));
+        // Four downtown mouths: south harbor, west Grim, east Lund, north Strai/Baneheia.
+        AddDefender("D1", DefenderAt(270f, 240f));
+        AddDefender("D2", DefenderAt(180f, 220f));
+        AddDefender("D3", DefenderAt(0f, 220f));
+        AddDefender("D4", DefenderAt(90f, 200f));
+    }
+
+    private Vector2 DefenderAt(float bearingDegrees, float meters)
+    {
+        var rad = bearingDegrees * (MathF.PI / 180f);
+        var seed = new Vector2(
+            Objective.X + MathF.Cos(rad) * meters,
+            Objective.Z + MathF.Sin(rad) * meters);
+        // Snap only when the road node stays on the same mouth (avoid collapsing all four onto one junction).
+        if (PrimaryRoadNetwork.Snap(seed) is { } snapped
+            && Vector2.Distance(snapped, seed) < 140f)
+            return snapped;
+        return seed;
     }
 
     private void AddDefender(string label, Vector2 at)
@@ -575,12 +613,12 @@ internal sealed class KristiansandDefenseMission
     {
         var east = KristiansandHeightSampler.EastMeters;
         var north = KristiansandHeightSampler.NorthMeters;
-        if (!TrySpawnPrimaryRoadColumn(215f, "Strai"))
-            SpawnBearingColumn(east, north, 215f, "Strai");
-        if (!TrySpawnPrimaryRoadColumn(255f, "Vågsbygd"))
-            SpawnBearingColumn(east, north, 255f, "Vågsbygd");
-        if (!TrySpawnPrimaryRoadColumn(125f, "Søm"))
-            SpawnBearingColumn(east, north, 125f, "Søm");
+        if (!TrySpawnPrimaryRoadColumn("Strai"))
+            SpawnBearingColumn(east, north, ApproachBearing("Strai"), "Strai");
+        if (!TrySpawnPrimaryRoadColumn("Vågsbygd"))
+            SpawnBearingColumn(east, north, ApproachBearing("Vågsbygd"), "Vågsbygd");
+        if (!TrySpawnPrimaryRoadColumn("Søm"))
+            SpawnBearingColumn(east, north, ApproachBearing("Søm"), "Søm");
     }
 
     private void SpawnBearingColumn(float east, float north, float approachBearingDegrees, string name)

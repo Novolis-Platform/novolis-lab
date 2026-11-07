@@ -1,0 +1,3 @@
+# ProjectReference mode fans out across many sibling repos; reused MSBuild
+# worker nodes sometimes die mid-graph (MSB4166). Prefer fresh nodes.
+/nodeReuse:false

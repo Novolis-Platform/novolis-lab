@@ -24,4 +24,8 @@
     <Content Include="docs\internals\CAL-INT-GA-001.json" Link="lock\CAL-INT-GA-001.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="docs\manufacturer\CAL-HULL-CAD-001.json" Link="lock\CAL-HULL-CAD-001.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tools\**\*" />
+    <None Include="tools\**\*" />
+  </ItemGroup>
 </Project>
