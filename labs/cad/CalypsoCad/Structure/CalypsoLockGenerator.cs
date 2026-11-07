@@ -2469,6 +2469,53 @@ internal static class CalypsoLockGenerator
         TryAddBar(entities, loa, name, y, up, zFromStem, halfY, halfUp, halfZ, fabPartId, meta, minHalf);
 
     /// <summary>
+    /// Adds a polygonal structure solid (<c>kind=mesh</c>) — used for heavy bulkhead plates.
+    /// Bounding box is stored in Points for selection/broad-phase; mesh is authoritative.
+    /// </summary>
+    internal static bool TryAddStructureMesh(
+        List<CadEntity> entities,
+        float loa,
+        string name,
+        float zFromStem,
+        Novolis.Math.Geometry.EditableMesh mesh,
+        string? fabPartId = null,
+        StructuralSolidMeta? meta = null)
+    {
+        ArgumentNullException.ThrowIfNull(entities);
+        ArgumentNullException.ThrowIfNull(mesh);
+        if (mesh.VertexCount < 3 || mesh.TriangleCount < 1)
+        {
+            StructurePlacementLog.Record(name, 0f, 0f, zFromStem, 0f, 0f, 0f, "empty structure mesh");
+            return false;
+        }
+
+        var min = new Vector3(float.PositiveInfinity);
+        var max = new Vector3(float.NegativeInfinity);
+        foreach (var v in mesh.Vertices)
+        {
+            min = Vector3.Min(min, v);
+            max = Vector3.Max(max, v);
+        }
+
+        var center = (min + max) * 0.5f;
+        var half = (max - min) * 0.5f;
+        half = new Vector3(
+            MathF.Max(0.02f, half.X),
+            MathF.Max(0.02f, half.Y),
+            MathF.Max(0.02f, half.Z));
+
+        var resolved = meta ?? InferStructuralMeta(name, zFromStem, center.Y);
+        var entity = MakeSolid(
+            name, LayerStruct, ShapeHullInt, center, half,
+            [0.66f, 0.36f, 0.22f], "structure", fabPartId, resolved);
+        entity.Kind = "mesh";
+        entity.MeshVertices = mesh.Vertices.Select(v => new[] { v.X, v.Y, v.Z }).ToList();
+        entity.MeshIndices = mesh.Indices.ToList();
+        entities.Add(entity);
+        return true;
+    }
+
+    /// <summary>
     /// Oriented structure bar in the Y–Up plane: local +X along the edge after <paramref name="orientZ"/>
     /// (world +Z rotation). Does not silently shorten the edge — fails closed if the center cannot fit.
     /// </summary>
@@ -2601,7 +2648,11 @@ internal static class CalypsoLockGenerator
     {
         if (name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
         {
-            // bh-ENG-AFT-web-0 → assembly bh-ENG-AFT
+            // bh-ENG-AFT-plate / bh-ENG-AFT-web-0 → assembly bh-ENG-AFT
+            var plate = name.IndexOf("-plate", StringComparison.OrdinalIgnoreCase);
+            if (plate > 0)
+                return new StructuralSolidMeta(
+                    StructuralRoles.PressureBulkhead, name[..plate], StationZ: zFromStem, DeckUp: up);
             var dash = name.IndexOf("-web-", StringComparison.OrdinalIgnoreCase);
             var assembly = dash > 0
                 ? name[..dash]

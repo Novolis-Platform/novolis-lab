@@ -64,6 +64,12 @@ internal static class Program
             return;
         }
 
+        if (HasFlag(args, "--bulkhead-mesh"))
+        {
+            Environment.ExitCode = RunBulkheadMesh();
+            return;
+        }
+
         if (HasFlag(args, "--blueprints") || HasFlag(args, "--blueprint-details"))
         {
             Environment.ExitCode = RunBlueprints(emitDetails: true);
@@ -159,6 +165,12 @@ internal static class Program
             return;
         }
 
+        if (HasFlag(args, "--stills"))
+        {
+            Environment.ExitCode = RunHeadless(exportPng: true, walkthrough: false);
+            return;
+        }
+
         if (HasFlag(args, "--generate-only"))
         {
             Environment.ExitCode = RunHeadless(exportPng: false, walkthrough: false);
@@ -238,6 +250,7 @@ internal static class Program
             return 0;
         });
         Step("hull-first Views A–D", () => RunHullFirst());
+        Step("bulkhead polygon-mesh views", () => RunBulkheadMesh());
         Step("curated 8K stills", () => RunHeadless(exportPng: true, walkthrough: false));
         Step("construction-orbit 4K video", () => RunConstructionOrbit());
         Step("walkthrough 4K video", () => RunHeadless(exportPng: false, walkthrough: true));
@@ -249,6 +262,53 @@ internal static class Program
             ? "CalypsoCad headless suite OK"
             : $"CalypsoCad headless suite FAILED ({failures} step(s))");
         return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>Polygonal heavy-BH solids: regenerate → mesh views + IML section compare.</summary>
+    private static int RunBulkheadMesh()
+    {
+        Console.WriteLine("CalypsoCad bulkhead polygon-mesh acceptance");
+        try
+        {
+            var session = new CalypsoSession();
+            session.RegenerateAndLoad();
+            Console.WriteLine($"Wrote CAD → {session.GeneratedDirectory}");
+
+            var plates = session.Document.Entities.Count(e =>
+                e.Kind == "mesh"
+                && e.Name is not null
+                && e.Name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+                && e.Name.Contains("-plate", StringComparison.OrdinalIgnoreCase));
+            var voxelBoxes = session.Document.Entities.Count(e =>
+                e.Kind == "box"
+                && e.Name is not null
+                && e.Name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+                && (e.Name.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase)
+                    || e.Name.Contains("-web-", StringComparison.OrdinalIgnoreCase)));
+            var seats = session.Document.Entities.Count(e =>
+                e.Kind == "box"
+                && e.Name is not null
+                && e.Name.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase));
+            Console.WriteLine($"  bh mesh plates={plates}  leftover bh voxel boxes={voxelBoxes}  deckseats={seats}");
+            if (plates < 6 || voxelBoxes > 0)
+            {
+                Console.WriteLine($"  FAIL expected ≥6 mesh plates and 0 bh voxel boxes");
+                return 1;
+            }
+
+            var renderer = new CalypsoRenderer(session);
+            renderer.Fit();
+            var stills = HeadlessBulkheadMeshExporter.Export(session, renderer);
+            Console.WriteLine($"Bulkhead-mesh PNGs ({stills.Count}) → {Path.Combine(CalypsoProjectPaths.RendersDirectory, "bulkhead-mesh")}");
+            foreach (var path in stills)
+                Console.WriteLine($"  {path}");
+            return stills.Count >= 4 ? 0 : 2;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            return 1;
+        }
     }
 
     /// <summary>Hull-first: regenerate → transverse skeleton validation → Views A–D.</summary>

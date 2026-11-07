@@ -148,9 +148,11 @@ internal static class CadJsonStructureQuery
                 || !TryBox(e, out var center, out _))
                 continue;
 
-            // bh-ENG-AFT-web-solid-0 → ENG-AFT
+            // bh-ENG-AFT-plate / bh-ENG-AFT-web-solid-0 → ENG-AFT
             var rest = e.Name["bh-".Length..];
-            var cut = rest.IndexOf("-web", StringComparison.OrdinalIgnoreCase);
+            var cut = rest.IndexOf("-plate", StringComparison.OrdinalIgnoreCase);
+            if (cut < 0)
+                cut = rest.IndexOf("-web", StringComparison.OrdinalIgnoreCase);
             if (cut < 0)
                 cut = rest.IndexOf("-flange", StringComparison.OrdinalIgnoreCase);
             var id = cut > 0 ? rest[..cut] : rest.Split('-')[0];

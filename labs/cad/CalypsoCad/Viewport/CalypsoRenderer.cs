@@ -3,6 +3,7 @@ using CalypsoCad.Session;
 using System.Drawing;
 using System.Numerics;
 using Novolis.Cad.Primitives;
+using Novolis.Cad.SceneBridge.Tessellation;
 using Novolis.Math.Geometry;
 using Novolis.Ship.Primitives;
 using Novolis.Ship.Topology;
@@ -697,13 +698,22 @@ internal sealed class CalypsoRenderer
                             CalypsoExterior.DrawOne(_world, entity);
                         break;
                     case "mesh":
-                        // OML/IML only — never on structure-no-hull or DK-001 plan.
-                        if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
-                            break;
-                        if (cutaway)
-                            CalypsoExterior.DrawOne(_world, entity, frameCutPt, frameCutN);
-                        else
-                            CalypsoExterior.DrawOne(_world, entity);
+                        // Hull shell meshes OR polygonal structure plates (heavy bulkheads).
+                        if (IsStructureMesh(entity))
+                        {
+                            if (_session.ViewMode == CalypsoViewMode.Interior
+                                && !StructureTouchesSelectedInterior(entity))
+                                break;
+                            DrawStructureMesh(entity, cutaway, frameCutPt, frameCutN);
+                        }
+                        else if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
+                        {
+                            if (cutaway)
+                                CalypsoExterior.DrawOne(_world, entity, frameCutPt, frameCutN);
+                            else
+                                CalypsoExterior.DrawOne(_world, entity);
+                        }
+
                         break;
             }
         }
@@ -1265,6 +1275,79 @@ internal sealed class CalypsoRenderer
         {
             for (var z = min.Z + 1.5f; z < max.Z - 1f; z += 3f)
                 _world.DrawCube(new Vector3(center.X, min.Y + 0.12f, z), Math.Max(0.5f, size.X * 0.7f), 0.08f, 0.25f, steel);
+        }
+    }
+
+    private static bool IsStructureMesh(CadEntity entity)
+    {
+        if (!string.Equals(entity.Kind, "mesh", StringComparison.OrdinalIgnoreCase))
+            return false;
+        var n = entity.Name ?? "";
+        if (n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-plate", StringComparison.OrdinalIgnoreCase))
+            return true;
+        return entity.Properties is not null
+               && entity.Properties.TryGetValue("structuralRole", out var role)
+               && role.ValueKind == System.Text.Json.JsonValueKind.String
+               && !string.IsNullOrEmpty(role.GetString());
+    }
+
+    private void DrawStructureMesh(CadEntity entity, bool cutaway, Vector3 cutPt, Vector3 cutN)
+    {
+        if (_session.ViewMode == CalypsoViewMode.Plan
+            && entity.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true)
+            return;
+        if (!IsBoxLayerVisible(entity))
+            return;
+
+        var mesh = CadSolidTessellator.TryTessellate(entity);
+        if (mesh is null)
+            return;
+
+        var isBh = entity.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true;
+        var color = isBh
+            ? (entity.Name!.Contains("ENG", StringComparison.OrdinalIgnoreCase)
+                ? Color.FromArgb(255, 148, 78, 48)
+                : HeavyBulkhead)
+            : entity.Color is { Length: >= 3 } rgb
+                ? Color.FromArgb(255,
+                    (int)(Math.Clamp(rgb[0], 0, 1) * 255),
+                    (int)(Math.Clamp(rgb[1], 0, 1) * 255),
+                    (int)(Math.Clamp(rgb[2], 0, 1) * 255))
+                : Steel;
+
+        var wireOnly = _session.WireMeshMode == CalypsoWireMeshMode.Wire;
+        var boundaryOnly = wireOnly || _session.StatusText?.Contains("bh-edges", StringComparison.OrdinalIgnoreCase) == true;
+        var body = ShadeColor(color, 0.4f, isBh ? 0.75f : 0.65f, Vector3.UnitY, LightDir);
+        var edge = Color.FromArgb(255,
+            Math.Clamp(color.R - 36, 0, 255),
+            Math.Clamp(color.G - 36, 0, 255),
+            Math.Clamp(color.B - 36, 0, 255));
+
+        if (!boundaryOnly)
+        {
+            for (var i = 0; i < mesh.Indices.Count; i += 3)
+            {
+                var a = mesh.Vertices[mesh.Indices[i]];
+                var b = mesh.Vertices[mesh.Indices[i + 1]];
+                var c = mesh.Vertices[mesh.Indices[i + 2]];
+                if (cutaway
+                    && CulledByCutPlane(a, cutPt, cutN)
+                    && CulledByCutPlane(b, cutPt, cutN)
+                    && CulledByCutPlane(c, cutPt, cutN))
+                    continue;
+                _world.DrawTriangle(a, b, c, body);
+            }
+        }
+
+        foreach (var (i0, i1) in mesh.FindBoundaryEdges())
+        {
+            var a = mesh.Vertices[i0];
+            var b = mesh.Vertices[i1];
+            if (cutaway && CulledByCutPlane(a, cutPt, cutN) && CulledByCutPlane(b, cutPt, cutN))
+                continue;
+            _world.DrawLine(a, b, edge);
         }
     }
 
@@ -2152,6 +2235,8 @@ internal sealed class CalypsoRenderer
 
     private static bool IsStructureBox(CadEntity box)
     {
+        if (IsStructureMesh(box))
+            return true;
         if (box.LayerId == LayerStruct)
             return true;
         var n = box.Name ?? "";
@@ -2478,8 +2563,10 @@ internal sealed class CalypsoRenderer
                 : layers.HasFlag(CalypsoVisualLayers.SpaceFinish)
                   || layers.HasFlag(CalypsoVisualLayers.Partitions),
             "box" => IsBoxLayerVisible(entity),
-            // OML / IML meshes only with HullShell — never leak onto DK-001 plan / structure-no-hull.
-            "mesh" => layers.HasFlag(CalypsoVisualLayers.HullShell),
+            // Hull shells on HullShell; polygonal BH plates use structure layer flags.
+            "mesh" => IsStructureMesh(entity)
+                ? IsBoxLayerVisible(entity)
+                : layers.HasFlag(CalypsoVisualLayers.HullShell),
             _ => true,
         };
     }

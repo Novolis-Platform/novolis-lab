@@ -31,7 +31,9 @@ internal static class StructureAuditExporter
         var groups = new Dictionary<string, List<CadEntity>>(StringComparer.OrdinalIgnoreCase);
         foreach (var e in doc.Entities)
         {
-            if (e.Kind != "box" || e.Name is null || e.Points is not { Count: >= 2 })
+            if (e.Name is null || e.Points is not { Count: >= 2 })
+                continue;
+            if (e.Kind is not ("box" or "mesh"))
                 continue;
             var key = GroupKey(e.Name);
             if (key is null)
@@ -129,9 +131,11 @@ internal static class StructureAuditExporter
     {
         if (name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
         {
-            // bh-ENG-FORE-web-solid-0 → bh-ENG-FORE
+            // bh-ENG-FORE-plate / bh-ENG-FORE-web-solid-0 → bh-ENG-FORE
             var rest = name["bh-".Length..];
-            var cut = rest.IndexOf("-web-", StringComparison.OrdinalIgnoreCase);
+            var cut = rest.IndexOf("-plate", StringComparison.OrdinalIgnoreCase);
+            if (cut < 0)
+                cut = rest.IndexOf("-web-", StringComparison.OrdinalIgnoreCase);
             if (cut < 0)
                 cut = rest.IndexOf("-webplate-", StringComparison.OrdinalIgnoreCase);
             return cut > 0 ? "bh-" + rest[..cut] : "bh-" + rest;

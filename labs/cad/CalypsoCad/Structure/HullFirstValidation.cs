@@ -26,8 +26,9 @@ internal static class HullFirstValidation
             .Select(e => e.Name!)
             .ToList();
         var bhs = doc.Entities
-            .Where(e => e.Kind == "box" && e.Name is not null
-                        && e.Name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
+            .Where(e => e.Name is not null
+                        && e.Name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+                        && (e.Kind is "box" or "mesh"))
             .Select(e => e.Name!)
             .ToList();
 
@@ -124,6 +125,9 @@ internal static class HullFirstValidation
 
         if (name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
         {
+            var plate = name.IndexOf("-plate", StringComparison.OrdinalIgnoreCase);
+            if (plate > 0)
+                return name[..plate];
             var parts = name.Split('-');
             return parts.Length >= 3 ? $"bh-{parts[1]}-{parts[2]}" : name;
         }

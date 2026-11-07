@@ -59,7 +59,8 @@ internal static class FrameWebPlateBuilder
     }
 
     /// <summary>
-    /// Pressure bulkhead: mostly closed plate with shirt-sleeves portals only (no lightening swiss-cheese).
+    /// Pressure bulkhead: one extruded polygonal plate (outer IML ring − openings).
+    /// Fabrication profile and rendered solid share the same boundary — no AABB voxel soup.
     /// </summary>
     public static void EmitBulkhead(
         List<CadEntity> entities,
@@ -75,6 +76,8 @@ internal static class FrameWebPlateBuilder
         bool useCoarseSpans = false,
         IReadOnlyList<WebPlatePortal>? hatchPortals = null)
     {
+        _ = skipLightening;
+        _ = useCoarseSpans;
         if (!TryPreparePlate(
                 zStem, thickness, bowAligned, deckUps, athwartGaps, hatchPortals,
                 out var inset, out var upMin, out var upMax, out _, out var ring,
@@ -87,13 +90,32 @@ internal static class FrameWebPlateBuilder
             skipLightening: true, openWebFrame: false);
         RegisterFabProfile(fabPartId, ring, holeLoops, zStem, thickness);
 
-        // Closed plate viz — door-in-wall coarse spans (pressure barrier).
-        // Openings are boolean holes in the plate only — no second portal-bar model.
-        _ = useCoarseSpans;
-        EmitPlateSpans(
-            entities, loa, bulkheadId, zStem, thickness, halfDepthZ,
-            upMin, upMax, ring, gaps, portals, portalBands, holeLoops, fabPartId, inset, bowAligned, decks,
-            skipShellDoor: true);
+        var outer = ring.Select(v => (v.Y, v.Up)).ToList();
+        var holes = holeLoops
+            .Select(h => (IReadOnlyList<(float Y, float Up)>)h.Select(p => (p.X, p.Y)).ToList())
+            .ToList();
+        var zCad = loa * 0.5f - zStem;
+        EditableMesh mesh;
+        try
+        {
+            mesh = PolygonWithHolesExtrude.ExtrudeAlongZ(outer, holes, zCad, halfDepthZ);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"  WARN {bulkheadId} polygon extrude: {ex.Message}");
+            StructurePlacementLog.Record(
+                bulkheadId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
+                $"polygon extrude failed: {ex.Message}");
+            return;
+        }
+
+        CalypsoLockGenerator.TryAddStructureMesh(
+            entities,
+            loa,
+            $"{bulkheadId}-plate",
+            zStem,
+            mesh,
+            fabPartId);
     }
 
     private static bool TryPreparePlate(
