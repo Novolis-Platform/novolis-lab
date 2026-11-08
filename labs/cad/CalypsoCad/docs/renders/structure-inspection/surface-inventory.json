@@ -1,5 +1,5 @@
 {
-  "generatedUtc": "2026-11-08T11:42:07.5100771Z",
+  "generatedUtc": "2026-11-08T11:49:10.9959737Z",
   "totalMeshes": 341,
   "bulkheadPlates": 6,
   "annularWebs": 15,
@@ -16,7 +16,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-CROSS-AFT-plate",
-      "EntityId": "10b73634-4c86-4c1b-8b8e-f50348f6027f"
+      "EntityId": "2fc5d35c-6dcd-46e3-bb27-3857f3aa48f2"
     },
     {
       "PartId": "BH-ENG-AFT-PLATE",
@@ -29,7 +29,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-ENG-AFT-plate",
-      "EntityId": "980cd1ab-a4ef-46d1-b2f0-16c69720ecef"
+      "EntityId": "98ff756c-4277-4772-8350-d37b782c363e"
     },
     {
       "PartId": "BH-ENG-FORE-PLATE",
@@ -42,7 +42,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-ENG-FORE-plate",
-      "EntityId": "02b0bd5f-a5fb-41c7-9c8d-b388cf653dfd"
+      "EntityId": "2d288436-3b55-4ea2-8b02-f60875ba7225"
     },
     {
       "PartId": "BH-CREW-AFT-PLATE",
@@ -55,7 +55,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-CREW-AFT-plate",
-      "EntityId": "6db7e1a1-2c35-4558-bd9d-f4c9de25f65a"
+      "EntityId": "1fc0179c-b87f-4792-b66a-df5b073e6cef"
     },
     {
       "PartId": "BH-BOW-COLLISION-PLATE",
@@ -68,7 +68,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-BOW-COLLISION-plate",
-      "EntityId": "6d5cfb3d-4b02-439a-a177-17d783896233"
+      "EntityId": "e67e95dc-b11b-4b82-922b-6f8bc30f5e51"
     },
     {
       "PartId": "BH-CROSS-FORE-PLATE",
@@ -81,7 +81,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-CROSS-FORE-plate",
-      "EntityId": "b679cf60-8b0b-4084-b8b7-1b9833efcb72"
+      "EntityId": "e32f32d3-c256-4fb0-9513-3e6e4d319246"
     }
   ],
   "allStructuralMeshes": [
@@ -96,7 +96,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-CROSS-AFT-plate",
-      "EntityId": "10b73634-4c86-4c1b-8b8e-f50348f6027f"
+      "EntityId": "2fc5d35c-6dcd-46e3-bb27-3857f3aa48f2"
     },
     {
       "PartId": "BH-ENG-AFT-PLATE",
@@ -109,7 +109,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-ENG-AFT-plate",
-      "EntityId": "980cd1ab-a4ef-46d1-b2f0-16c69720ecef"
+      "EntityId": "98ff756c-4277-4772-8350-d37b782c363e"
     },
     {
       "PartId": "BH-ENG-FORE-PLATE",
@@ -122,7 +122,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-ENG-FORE-plate",
-      "EntityId": "02b0bd5f-a5fb-41c7-9c8d-b388cf653dfd"
+      "EntityId": "2d288436-3b55-4ea2-8b02-f60875ba7225"
     },
     {
       "PartId": "BH-CREW-AFT-PLATE",
@@ -135,7 +135,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-CREW-AFT-plate",
-      "EntityId": "6db7e1a1-2c35-4558-bd9d-f4c9de25f65a"
+      "EntityId": "1fc0179c-b87f-4792-b66a-df5b073e6cef"
     },
     {
       "PartId": "BH-BOW-COLLISION-PLATE",
@@ -148,7 +148,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-BOW-COLLISION-plate",
-      "EntityId": "6d5cfb3d-4b02-439a-a177-17d783896233"
+      "EntityId": "e67e95dc-b11b-4b82-922b-6f8bc30f5e51"
     },
     {
       "PartId": "BH-CROSS-FORE-PLATE",
@@ -161,7 +161,7 @@
       "ExpectedBoundary": "Full IML cross-section plate with passage openings; transverse at BH station",
       "BoundaryMatch": "ok: substantial plate mesh (openings expected)",
       "DisplayName": "bh-CROSS-FORE-plate",
-      "EntityId": "b679cf60-8b0b-4084-b8b7-1b9833efcb72"
+      "EntityId": "e32f32d3-c256-4fb0-9513-3e6e4d319246"
     },
     {
       "PartId": "frame-F0-annulus",
@@ -174,7 +174,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F0-annulus",
-      "EntityId": "8bed2543-e0a8-40c1-81e2-6281031b654f"
+      "EntityId": "9d8c3a6a-2368-4eab-82d7-532186646156"
     },
     {
       "PartId": "frame-F16-annulus",
@@ -187,7 +187,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F16-annulus",
-      "EntityId": "7c9b99a1-539a-4d99-a35b-536c89a6520f"
+      "EntityId": "914e045b-6339-45a8-a992-04f29426d8cc"
     },
     {
       "PartId": "frame-F26.6-annulus",
@@ -200,7 +200,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F26.6-annulus",
-      "EntityId": "aaeea038-e297-45de-8449-498bf740584a"
+      "EntityId": "0727083c-00c4-499d-92a9-996e840c01e8"
     },
     {
       "PartId": "frame-F3.3-annulus",
@@ -213,7 +213,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F3.3-annulus",
-      "EntityId": "53a1fc33-f1c9-4eb4-a38e-907d074e8328"
+      "EntityId": "ab2dcf8a-c5f8-4f2f-af36-bbebdd6a994b"
     },
     {
       "PartId": "frame-F33.9-annulus",
@@ -226,7 +226,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F33.9-annulus",
-      "EntityId": "fa9e2cd2-8453-40a1-8b4f-cda5bdb0aa2b"
+      "EntityId": "da247b68-de46-4707-8357-f00ec3848599"
     },
     {
       "PartId": "frame-F37.4-annulus",
@@ -239,7 +239,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F37.4-annulus",
-      "EntityId": "a339c925-f6d9-4a4e-9b3d-1285eeca8e95"
+      "EntityId": "7a9685f0-2499-4110-a0ab-3f9c790273ab"
     },
     {
       "PartId": "frame-F43.8-annulus",
@@ -252,7 +252,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F43.8-annulus",
-      "EntityId": "a735bb10-dbed-4486-84ae-fb9d9b7e45ed"
+      "EntityId": "1f0065f9-1bef-43ad-a0ea-ffa40c774574"
     },
     {
       "PartId": "frame-F46.5-annulus",
@@ -265,7 +265,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F46.5-annulus",
-      "EntityId": "303603e6-e741-4eeb-bb74-71988c62399f"
+      "EntityId": "2087868e-bc1a-44b0-b65b-c36037d6daf9"
     },
     {
       "PartId": "frame-F53.2-ring-annulus",
@@ -278,7 +278,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F53.2-ring-annulus",
-      "EntityId": "1760f6ea-fa76-4d6d-9387-73c51e8390bf"
+      "EntityId": "8aed774d-5f31-40d5-a0ec-fbcb75d4a0c5"
     },
     {
       "PartId": "frame-F57.1-ring-annulus",
@@ -291,7 +291,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F57.1-ring-annulus",
-      "EntityId": "ef0f36e3-dd0c-404c-9f98-5a1369ca82f0"
+      "EntityId": "a89e577c-71ca-4446-b472-d048fe31926e"
     },
     {
       "PartId": "frame-F6.5-annulus",
@@ -304,7 +304,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F6.5-annulus",
-      "EntityId": "df538b24-85ae-455b-a7d4-34129bad2298"
+      "EntityId": "07ea54e7-e892-40ba-8d42-bd57b2ffae6f"
     },
     {
       "PartId": "frame-F61.1-ring-annulus",
@@ -317,7 +317,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F61.1-ring-annulus",
-      "EntityId": "b6878d92-7502-4f30-a723-e8b0cb542749"
+      "EntityId": "87e31012-dd42-405e-bdeb-153a917831bc"
     },
     {
       "PartId": "frame-F65-ring-annulus",
@@ -330,7 +330,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F65-ring-annulus",
-      "EntityId": "235b6a4b-9971-41d6-9650-2961973686d5"
+      "EntityId": "3eacdd21-b2c1-4bcf-aba7-9ebcd000b636"
     },
     {
       "PartId": "frame-F69-annulus",
@@ -343,7 +343,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F69-annulus",
-      "EntityId": "b648063a-2fc6-4a76-a45e-81361d956932"
+      "EntityId": "3dbbc7b6-86b7-468c-a94f-1662dcc8057e"
     },
     {
       "PartId": "frame-F9.8-annulus",
@@ -356,7 +356,7 @@
       "ExpectedBoundary": "Annular open-web ring on IML inset; large central void; not a closed wall",
       "BoundaryMatch": "ok: annular web mesh present",
       "DisplayName": "frame-F9.8-annulus",
-      "EntityId": "27ecac5b-b46b-49de-abe4-6ed9244ec25c"
+      "EntityId": "ca87cced-72b6-4941-8609-2e04d939b03e"
     },
     {
       "PartId": "shell-panel-s0-e0",
@@ -369,7 +369,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s0-e0",
-      "EntityId": "a955b903-0f97-41bb-a953-a11eeaf8f754"
+      "EntityId": "cb1c96ef-3ad0-4d06-82b0-e983005091ac"
     },
     {
       "PartId": "shell-panel-s0-e1",
@@ -382,7 +382,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s0-e1",
-      "EntityId": "e11c54e9-d494-43be-b16c-fe90b50a1054"
+      "EntityId": "0a3cd2a6-cda2-484f-9a78-4a2c4124c164"
     },
     {
       "PartId": "shell-panel-s0-e2",
@@ -395,7 +395,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s0-e2",
-      "EntityId": "05a10f0d-5b37-4b34-9f05-c8e99b27f794"
+      "EntityId": "61d90269-5140-4cbe-883d-4a5e1d6c6902"
     },
     {
       "PartId": "shell-panel-s0-e3",
@@ -408,7 +408,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s0-e3",
-      "EntityId": "e683cf98-fc34-473d-b1a0-c8c28e2bcb3a"
+      "EntityId": "867b53f1-c525-4e20-9065-cfde2ba5193e"
     },
     {
       "PartId": "shell-panel-s0-e4",
@@ -421,7 +421,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s0-e4",
-      "EntityId": "a27bf1a8-3850-46ee-9ba3-de90941f297d"
+      "EntityId": "e444c23f-5743-4b02-a882-429ff4b2c01b"
     },
     {
       "PartId": "shell-panel-s0-e5",
@@ -434,7 +434,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s0-e5",
-      "EntityId": "0792418d-5927-46d9-b411-58da723b6bf1"
+      "EntityId": "72daf91d-577a-4db7-a929-b5dc10ae1d10"
     },
     {
       "PartId": "shell-panel-s0-e6",
@@ -447,7 +447,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s0-e6",
-      "EntityId": "56644e91-1b75-4671-94c2-1be9b71cd88a"
+      "EntityId": "7f75378d-c90e-4551-9e8c-3538673757b5"
     },
     {
       "PartId": "shell-panel-s0-e7",
@@ -460,7 +460,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s0-e7",
-      "EntityId": "5074414f-44b4-4b44-909d-c1ecd55d2151"
+      "EntityId": "9b03b09f-ad60-4658-b641-94800cf76c9d"
     },
     {
       "PartId": "shell-panel-s1-e0",
@@ -473,7 +473,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s1-e0",
-      "EntityId": "f7a41a8e-51e4-4af0-afed-0676afbab270"
+      "EntityId": "d7fe0d2c-5236-4e2b-a39c-b55f13239b1f"
     },
     {
       "PartId": "shell-panel-s1-e1",
@@ -486,7 +486,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s1-e1",
-      "EntityId": "b55967ca-d708-44fb-9d6b-c1740040781f"
+      "EntityId": "503bd13f-c63a-4419-9078-c8df04edbe78"
     },
     {
       "PartId": "shell-panel-s1-e2",
@@ -499,7 +499,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s1-e2",
-      "EntityId": "4311501b-4c79-4ce1-baad-7fbc95e666b2"
+      "EntityId": "45f6d9a5-4aec-413c-a839-b93ad1f4bbe4"
     },
     {
       "PartId": "shell-panel-s1-e3",
@@ -512,7 +512,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s1-e3",
-      "EntityId": "20b5a15b-6cb8-4235-b392-d720175eaccf"
+      "EntityId": "e9a416e0-dd48-470c-ab95-a944d0c96f90"
     },
     {
       "PartId": "shell-panel-s1-e4",
@@ -525,7 +525,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s1-e4",
-      "EntityId": "5007106c-f1b9-4233-a075-f0727dac77ee"
+      "EntityId": "b5d5fd83-ac97-4e7c-b9d2-46a07236f4a1"
     },
     {
       "PartId": "shell-panel-s1-e5",
@@ -538,7 +538,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s1-e5",
-      "EntityId": "6e844bcc-62f5-42bc-9a0d-b7cc6cdecef0"
+      "EntityId": "16642259-d8f8-4a38-967e-1d139637a35e"
     },
     {
       "PartId": "shell-panel-s1-e6",
@@ -551,7 +551,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s1-e6",
-      "EntityId": "2c2c2c4c-10bb-4e1d-874b-ba776f773fcc"
+      "EntityId": "4640d883-ad56-4d08-a705-7a628b55bde5"
     },
     {
       "PartId": "shell-panel-s1-e7",
@@ -564,7 +564,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s1-e7",
-      "EntityId": "a204cd28-8ccd-4aa0-8ed6-b6ed6cfc8061"
+      "EntityId": "cf955cd8-1eb4-4ddf-b3a7-6686a7b9dae6"
     },
     {
       "PartId": "shell-panel-s10-e0",
@@ -577,7 +577,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s10-e0",
-      "EntityId": "2427546c-7092-4132-bf43-92a4dd205c89"
+      "EntityId": "745f9e3c-2c5c-4239-aacd-5b6b9f069245"
     },
     {
       "PartId": "shell-panel-s10-e1",
@@ -590,7 +590,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s10-e1",
-      "EntityId": "c0495dd1-df57-4509-a820-c984c69fd3da"
+      "EntityId": "3a57e364-ea55-4062-b651-4dc76794c8e1"
     },
     {
       "PartId": "shell-panel-s10-e2",
@@ -603,7 +603,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s10-e2",
-      "EntityId": "91d35cf4-7239-4bf3-a40d-008f8759e8ca"
+      "EntityId": "6bf21a49-2f0c-47ef-89f2-33fa79480603"
     },
     {
       "PartId": "shell-panel-s10-e3",
@@ -616,7 +616,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s10-e3",
-      "EntityId": "f1ae6c90-b315-41af-a867-4fb7b98b4f7d"
+      "EntityId": "71f9433a-6855-416f-8561-f965463c09e2"
     },
     {
       "PartId": "shell-panel-s10-e4",
@@ -629,7 +629,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s10-e4",
-      "EntityId": "ba5d1a5b-5086-4a56-ab4a-f1f64550ddf5"
+      "EntityId": "9bfcbf69-019d-4254-8222-4647978c77b0"
     },
     {
       "PartId": "shell-panel-s10-e5",
@@ -642,7 +642,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s10-e5",
-      "EntityId": "27d95fdc-0720-4446-b52c-0d8afc1902d7"
+      "EntityId": "a15f2128-e670-4ad3-af6a-ef11edcb6592"
     },
     {
       "PartId": "shell-panel-s10-e6",
@@ -655,7 +655,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s10-e6",
-      "EntityId": "caaadba9-5e3b-458c-92a4-ccd668cbaba2"
+      "EntityId": "e6a7d0ef-c1d2-4c24-818f-1a8bf3a4a56c"
     },
     {
       "PartId": "shell-panel-s10-e7",
@@ -668,7 +668,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s10-e7",
-      "EntityId": "f247f935-f925-4670-b1de-1b40d3eab779"
+      "EntityId": "b052b99c-b855-4ee9-be22-d596b1761a2d"
     },
     {
       "PartId": "shell-panel-s11-e0",
@@ -681,7 +681,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s11-e0",
-      "EntityId": "9ae971ed-3827-441e-bcfb-25ac0f7ff654"
+      "EntityId": "bad1ad2e-b902-4955-abf4-71e90325fb0a"
     },
     {
       "PartId": "shell-panel-s11-e1",
@@ -694,7 +694,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s11-e1",
-      "EntityId": "98deec0c-d41d-4293-bba8-15788746949d"
+      "EntityId": "53fad106-708d-4783-a574-cbd2c97f3533"
     },
     {
       "PartId": "shell-panel-s11-e2",
@@ -707,7 +707,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s11-e2",
-      "EntityId": "e2d055f5-e3f9-4658-87d4-1fdd97cc1344"
+      "EntityId": "03670bc9-871e-4d49-9c1e-84178bb084b9"
     },
     {
       "PartId": "shell-panel-s11-e3",
@@ -720,7 +720,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s11-e3",
-      "EntityId": "54b49395-37f0-4915-93ac-648ceba01236"
+      "EntityId": "bd2322d0-eb2b-432f-be78-aa8fcb33a39c"
     },
     {
       "PartId": "shell-panel-s11-e4",
@@ -733,7 +733,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s11-e4",
-      "EntityId": "8d3bd3bb-0dd8-4007-9c57-849f54bc5eed"
+      "EntityId": "acfd9379-9122-4555-9e4b-23a667ace110"
     },
     {
       "PartId": "shell-panel-s11-e5",
@@ -746,7 +746,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s11-e5",
-      "EntityId": "fb5bc1fc-95fa-4968-978c-5cd62416c474"
+      "EntityId": "67864509-9248-4728-8f4a-51091e0e2b08"
     },
     {
       "PartId": "shell-panel-s11-e6",
@@ -759,7 +759,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s11-e6",
-      "EntityId": "df57ab8d-3a20-4a68-aed4-8d190784c46a"
+      "EntityId": "bbbfd209-45dc-4d11-bfeb-3f9aa9278bb3"
     },
     {
       "PartId": "shell-panel-s11-e7",
@@ -772,7 +772,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s11-e7",
-      "EntityId": "1905a167-123d-4b78-9acb-cdbaf36cf67e"
+      "EntityId": "07efddfc-251b-4237-a1a7-6ee039babc65"
     },
     {
       "PartId": "shell-panel-s12-e0",
@@ -785,7 +785,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s12-e0",
-      "EntityId": "eafa249f-0a55-4a1f-9bf6-7ffadd14c99e"
+      "EntityId": "776b364e-3f26-4853-8cd9-87ede62ac349"
     },
     {
       "PartId": "shell-panel-s12-e1",
@@ -798,7 +798,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s12-e1",
-      "EntityId": "1c0b7988-dd1e-48ac-aed7-fab90d5a244a"
+      "EntityId": "6960369b-f003-448b-8c1f-081121448c7a"
     },
     {
       "PartId": "shell-panel-s12-e2",
@@ -811,7 +811,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s12-e2",
-      "EntityId": "89bb33cf-71e4-41ab-9b46-5e646f94213f"
+      "EntityId": "93ff0871-9c73-4a68-a52e-a729ba234a23"
     },
     {
       "PartId": "shell-panel-s12-e3",
@@ -824,7 +824,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s12-e3",
-      "EntityId": "f9a1bbe9-a880-471f-8662-be52698909be"
+      "EntityId": "a640ba28-5cbc-4eee-8649-c5389ea640eb"
     },
     {
       "PartId": "shell-panel-s12-e4",
@@ -837,7 +837,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s12-e4",
-      "EntityId": "e0554308-3942-4ac1-aa65-2da65a45ef17"
+      "EntityId": "86000faf-3a14-4616-9a1b-4cda78468e56"
     },
     {
       "PartId": "shell-panel-s12-e5",
@@ -850,7 +850,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s12-e5",
-      "EntityId": "eadc1b18-5a8e-4a12-a344-eb061b1799d0"
+      "EntityId": "526eb02b-1fea-4729-a346-98c588bb5ba5"
     },
     {
       "PartId": "shell-panel-s12-e6",
@@ -863,7 +863,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s12-e6",
-      "EntityId": "49f85a77-6e6b-4bcd-8917-c3c221e7abd5"
+      "EntityId": "4e53ad9c-1023-45a5-a664-f735f9331f2c"
     },
     {
       "PartId": "shell-panel-s12-e7",
@@ -876,7 +876,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s12-e7",
-      "EntityId": "60f0c0e9-d151-4cc9-a779-c5bfdeadeeed"
+      "EntityId": "8748143c-126a-4402-b2f2-3b6f821ba25a"
     },
     {
       "PartId": "shell-panel-s13-e0",
@@ -889,7 +889,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s13-e0",
-      "EntityId": "9e84907e-a2e4-47b2-b50d-218928ea363c"
+      "EntityId": "1e024783-8f60-4da2-bc5e-26de5821a122"
     },
     {
       "PartId": "shell-panel-s13-e1",
@@ -902,7 +902,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s13-e1",
-      "EntityId": "1f6682be-ce37-4ee7-b5f1-e68d3cbc4a1a"
+      "EntityId": "397c79c0-4c92-4ecf-b7d9-c8f2fd6563ad"
     },
     {
       "PartId": "shell-panel-s13-e2",
@@ -915,7 +915,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s13-e2",
-      "EntityId": "f5f1d995-990b-4a36-8ef9-919647a912e9"
+      "EntityId": "5d5f15ff-6780-4496-9d87-e18cfbe8953d"
     },
     {
       "PartId": "shell-panel-s13-e3",
@@ -928,7 +928,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s13-e3",
-      "EntityId": "2835d71d-ab42-4b44-898e-e0396a7b41f6"
+      "EntityId": "00aed233-9cf4-458e-947c-6fa6f30a36f6"
     },
     {
       "PartId": "shell-panel-s13-e4",
@@ -941,7 +941,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s13-e4",
-      "EntityId": "05a7d050-b948-48a1-baa3-76b0c67631a2"
+      "EntityId": "e42aa275-b9bc-461c-8370-ac254f687fd4"
     },
     {
       "PartId": "shell-panel-s13-e5",
@@ -954,7 +954,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s13-e5",
-      "EntityId": "9350b84d-efde-4c59-ad06-e75ea261e768"
+      "EntityId": "dc53ae77-8c0c-403a-aac1-36b631a4fc34"
     },
     {
       "PartId": "shell-panel-s13-e6",
@@ -967,7 +967,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s13-e6",
-      "EntityId": "0091de9e-3f8e-4c8c-824e-e85998e69ac2"
+      "EntityId": "d657bec5-8642-4189-bd81-66fc9f870160"
     },
     {
       "PartId": "shell-panel-s13-e7",
@@ -980,7 +980,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s13-e7",
-      "EntityId": "65945150-bf83-496b-97f1-aa6689c192b0"
+      "EntityId": "84f8ac21-a202-4fbd-b733-1258ed909cef"
     },
     {
       "PartId": "shell-panel-s14-e0",
@@ -993,7 +993,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s14-e0",
-      "EntityId": "862ecb11-3d44-425c-9ef7-9d78f7a124e6"
+      "EntityId": "5e913fa8-34ba-43b2-99eb-d74494e22ef8"
     },
     {
       "PartId": "shell-panel-s14-e1",
@@ -1006,7 +1006,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s14-e1",
-      "EntityId": "ff1b7e57-5e04-4120-aa6c-0c02ba0898cc"
+      "EntityId": "06a69ae9-1294-4753-a9e1-9ba80cfb130d"
     },
     {
       "PartId": "shell-panel-s14-e2",
@@ -1019,7 +1019,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s14-e2",
-      "EntityId": "00e45523-acf2-4de4-98b6-fe497b44120b"
+      "EntityId": "16b06b13-6598-40ac-aeb4-f644c0f3f835"
     },
     {
       "PartId": "shell-panel-s14-e3",
@@ -1032,7 +1032,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s14-e3",
-      "EntityId": "ba97a303-79c5-46c5-ac78-52ddc78bc73f"
+      "EntityId": "1d4716f3-b8ee-4c1f-a7b2-b5c24108430b"
     },
     {
       "PartId": "shell-panel-s14-e4",
@@ -1045,7 +1045,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s14-e4",
-      "EntityId": "891983c0-cd1b-40b4-ad12-04b25b8feb99"
+      "EntityId": "e80b8c61-c1eb-4276-b16e-ac53caef0459"
     },
     {
       "PartId": "shell-panel-s14-e5",
@@ -1058,7 +1058,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s14-e5",
-      "EntityId": "9de778d5-bd1f-484f-b845-d17ebe051b19"
+      "EntityId": "abd30467-a781-4180-9d83-ab8d6c16f3c6"
     },
     {
       "PartId": "shell-panel-s14-e6",
@@ -1071,7 +1071,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s14-e6",
-      "EntityId": "24bebb9e-7ccc-47ba-9dd6-4dbb5f26e0bc"
+      "EntityId": "48b70f72-daed-48dc-b600-3eaea9dc99ef"
     },
     {
       "PartId": "shell-panel-s14-e7",
@@ -1084,7 +1084,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s14-e7",
-      "EntityId": "0cc393ce-0e1e-4612-95bb-7d69d186ac7c"
+      "EntityId": "40857d3f-0b75-4e80-bb68-ed37d501f861"
     },
     {
       "PartId": "shell-panel-s15-e0",
@@ -1097,7 +1097,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s15-e0",
-      "EntityId": "b1168f57-9f0e-4396-acd3-599d11940212"
+      "EntityId": "14c2ac56-a5d4-4b13-a867-6ae32b5c2cfd"
     },
     {
       "PartId": "shell-panel-s15-e1",
@@ -1110,7 +1110,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s15-e1",
-      "EntityId": "f61179e1-511e-4551-99d8-6ee63a2ddf6e"
+      "EntityId": "210d322f-a093-4781-a9b4-fb5472c9717a"
     },
     {
       "PartId": "shell-panel-s15-e2",
@@ -1123,7 +1123,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s15-e2",
-      "EntityId": "4febbd8d-ef83-42f6-be9b-1f6dfedf0698"
+      "EntityId": "89ec6806-39a6-4118-9942-7d8f235be5e2"
     },
     {
       "PartId": "shell-panel-s15-e3",
@@ -1136,7 +1136,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s15-e3",
-      "EntityId": "39969fb3-1f61-4ea2-8ae9-4888623d7527"
+      "EntityId": "774abd6f-681d-49de-a9a9-e3714107e96e"
     },
     {
       "PartId": "shell-panel-s15-e4",
@@ -1149,7 +1149,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s15-e4",
-      "EntityId": "5f8e552f-3484-4c12-8ac2-006436f01b0d"
+      "EntityId": "94a83c76-71dd-44d7-81ea-d31fe62a3b1f"
     },
     {
       "PartId": "shell-panel-s15-e5",
@@ -1162,7 +1162,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s15-e5",
-      "EntityId": "88960736-3250-42ed-88d7-b1e8eb34e78e"
+      "EntityId": "a5c0bb1d-131b-46aa-bb50-c059eaa7d10a"
     },
     {
       "PartId": "shell-panel-s15-e6",
@@ -1175,7 +1175,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s15-e6",
-      "EntityId": "ca3041b5-4d72-4e75-86a4-3d3fcd72de03"
+      "EntityId": "5d08332b-aac1-4ca2-880a-2c77634b986b"
     },
     {
       "PartId": "shell-panel-s15-e7",
@@ -1188,7 +1188,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s15-e7",
-      "EntityId": "1e101272-d5ed-475f-afc2-0c308615123f"
+      "EntityId": "1094af16-bb2d-45c5-acfd-0df3b3e5362c"
     },
     {
       "PartId": "shell-panel-s16-e0",
@@ -1201,7 +1201,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s16-e0",
-      "EntityId": "234e0c7f-3f66-4e85-861e-e6a9a52582df"
+      "EntityId": "afe53a9d-7ef1-4e7e-84a8-c123728d14a5"
     },
     {
       "PartId": "shell-panel-s16-e1",
@@ -1214,7 +1214,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s16-e1",
-      "EntityId": "ee9587cc-511d-444c-987f-8ae3592c29db"
+      "EntityId": "281dbac5-ebbf-4ead-b803-c4648f172ccc"
     },
     {
       "PartId": "shell-panel-s16-e2",
@@ -1227,7 +1227,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s16-e2",
-      "EntityId": "6dac218d-555f-4851-afe7-ac16711a0786"
+      "EntityId": "666cb6a4-ef30-478d-a721-608af20db299"
     },
     {
       "PartId": "shell-panel-s16-e3",
@@ -1240,7 +1240,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s16-e3",
-      "EntityId": "10b77ecc-d566-4053-bcbc-c0de2a12bdaf"
+      "EntityId": "4823b4e0-325a-46a3-9f9e-9ca5930cc6d5"
     },
     {
       "PartId": "shell-panel-s16-e4",
@@ -1253,7 +1253,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s16-e4",
-      "EntityId": "1e964f81-2ac1-4af6-93ba-daf8d84ee3b9"
+      "EntityId": "754b1d20-ca69-4441-975a-c751a2d4fde1"
     },
     {
       "PartId": "shell-panel-s16-e5",
@@ -1266,7 +1266,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s16-e5",
-      "EntityId": "6a1b93c6-c2db-494d-98cd-c52befaf54e3"
+      "EntityId": "04e1ddf8-416d-4586-a5fd-46e26ea22be8"
     },
     {
       "PartId": "shell-panel-s16-e6",
@@ -1279,7 +1279,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s16-e6",
-      "EntityId": "c627702b-7ac7-40ee-a040-ae95a23b3f82"
+      "EntityId": "cafd059d-4f15-4f6f-aa70-0f5d662fe685"
     },
     {
       "PartId": "shell-panel-s16-e7",
@@ -1292,7 +1292,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s16-e7",
-      "EntityId": "bec517a2-6285-4ffd-bdca-30eefa35dfe1"
+      "EntityId": "df1d4d4f-1d9c-4339-9fdd-9c56948369c4"
     },
     {
       "PartId": "shell-panel-s17-e0",
@@ -1305,7 +1305,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s17-e0",
-      "EntityId": "a66350d9-449f-4da0-a445-e1fd6463d7ed"
+      "EntityId": "604ad2aa-72c6-4ec6-86cf-2bdd39987606"
     },
     {
       "PartId": "shell-panel-s17-e1",
@@ -1318,7 +1318,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s17-e1",
-      "EntityId": "9553a825-9380-429a-9da8-58abc290e37c"
+      "EntityId": "0f32c62d-a6c2-4198-8014-680e6815b1ee"
     },
     {
       "PartId": "shell-panel-s17-e2",
@@ -1331,7 +1331,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s17-e2",
-      "EntityId": "ed88bfd9-705f-4569-bdba-c2535ac5ef39"
+      "EntityId": "a38bc134-f586-45dd-bbe2-c77d298ccb4c"
     },
     {
       "PartId": "shell-panel-s17-e3",
@@ -1344,7 +1344,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s17-e3",
-      "EntityId": "111b297a-80b3-4603-ae5f-418a2e0cccf0"
+      "EntityId": "c71c040f-3be7-4f37-a539-e223abf005c5"
     },
     {
       "PartId": "shell-panel-s17-e4",
@@ -1357,7 +1357,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s17-e4",
-      "EntityId": "f53fd5f1-ae43-4470-9313-0bcdcdb47981"
+      "EntityId": "d49ab06e-0d4c-435c-9193-1b3c01be9f26"
     },
     {
       "PartId": "shell-panel-s17-e5",
@@ -1370,7 +1370,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s17-e5",
-      "EntityId": "82740ccc-7651-4303-877e-02b1be56420c"
+      "EntityId": "ecf08828-e99f-4272-a4d0-a4e4d95bd50b"
     },
     {
       "PartId": "shell-panel-s17-e6",
@@ -1383,7 +1383,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s17-e6",
-      "EntityId": "867af9d3-0695-4c04-97e5-48be543a957e"
+      "EntityId": "26be694c-316a-4ad5-a1d5-bfb4f1ceecdf"
     },
     {
       "PartId": "shell-panel-s17-e7",
@@ -1396,7 +1396,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s17-e7",
-      "EntityId": "d33cabb9-ec17-4069-a804-786e61992140"
+      "EntityId": "84d17325-b5b3-444c-8181-ed8b44a07cd8"
     },
     {
       "PartId": "shell-panel-s18-e0",
@@ -1409,7 +1409,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s18-e0",
-      "EntityId": "b4246035-6124-4762-a91e-5bbe2a6d55f0"
+      "EntityId": "ddcaa3f2-4844-43b1-b1f9-b941a70053be"
     },
     {
       "PartId": "shell-panel-s18-e1",
@@ -1422,7 +1422,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s18-e1",
-      "EntityId": "28325494-1849-466c-a3ef-9261b95acd93"
+      "EntityId": "48f068e8-29ff-4f91-a635-2e4691d5d14e"
     },
     {
       "PartId": "shell-panel-s18-e2",
@@ -1435,7 +1435,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s18-e2",
-      "EntityId": "fbacbdca-ea60-4a88-b78a-5d9ce5ac710f"
+      "EntityId": "6d255ef9-9ae5-4bfa-a0ee-a225191c505b"
     },
     {
       "PartId": "shell-panel-s18-e3",
@@ -1448,7 +1448,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s18-e3",
-      "EntityId": "3bb8de62-58ce-4a2b-bcb4-55241056b78c"
+      "EntityId": "ce1133e7-4eee-4766-b08e-8f6a57ad66e0"
     },
     {
       "PartId": "shell-panel-s18-e4",
@@ -1461,7 +1461,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s18-e4",
-      "EntityId": "75abd3f7-1777-4b82-ab8d-773bfd0a9af0"
+      "EntityId": "f4b58dfd-c3e7-48ef-aa94-0221119d1a6d"
     },
     {
       "PartId": "shell-panel-s18-e5",
@@ -1474,7 +1474,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s18-e5",
-      "EntityId": "c5a02539-d6c9-4cc6-9f5e-97e25337d825"
+      "EntityId": "0cf3bfb9-3caf-41f5-9db1-710376cb4895"
     },
     {
       "PartId": "shell-panel-s18-e6",
@@ -1487,7 +1487,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s18-e6",
-      "EntityId": "2eddba26-463a-4be9-861b-d17dda343722"
+      "EntityId": "ca2772ba-7772-41c0-840b-d8d5fb435a56"
     },
     {
       "PartId": "shell-panel-s18-e7",
@@ -1500,7 +1500,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s18-e7",
-      "EntityId": "97fd071c-cbb0-4358-8a12-61e341eabdf2"
+      "EntityId": "8d2ff24d-879c-4f24-ab97-02acdb265f72"
     },
     {
       "PartId": "shell-panel-s19-e0",
@@ -1513,7 +1513,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s19-e0",
-      "EntityId": "ecc77220-1746-45e7-af6a-4513aca1a6f1"
+      "EntityId": "52231e04-5735-44fb-a61a-36882c67c5e8"
     },
     {
       "PartId": "shell-panel-s19-e1",
@@ -1526,7 +1526,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s19-e1",
-      "EntityId": "80752112-bb9b-419d-8ca1-77d81828deef"
+      "EntityId": "eaac9a86-cde2-4bbf-88bb-7932a3456e5f"
     },
     {
       "PartId": "shell-panel-s19-e2",
@@ -1539,7 +1539,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s19-e2",
-      "EntityId": "3f1aa099-7235-44d7-bb97-59dcf6eaf741"
+      "EntityId": "3638c074-1c42-479b-9baf-98a03c21fc31"
     },
     {
       "PartId": "shell-panel-s19-e3",
@@ -1552,7 +1552,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s19-e3",
-      "EntityId": "a96a7efb-e6f0-4b03-8184-59be88d6e7da"
+      "EntityId": "6c90cf90-d2f7-4065-a7b2-f2f3a41ee58a"
     },
     {
       "PartId": "shell-panel-s19-e4",
@@ -1565,7 +1565,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s19-e4",
-      "EntityId": "4c25c44c-9f09-4151-89ce-61bd948edc09"
+      "EntityId": "c245238b-f18b-471c-85fd-fab92cb90b40"
     },
     {
       "PartId": "shell-panel-s19-e5",
@@ -1578,7 +1578,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s19-e5",
-      "EntityId": "c82cb9a6-fe57-4aac-b96c-d1de0be49368"
+      "EntityId": "81dbbe40-0d66-4961-8075-019329af9de0"
     },
     {
       "PartId": "shell-panel-s19-e6",
@@ -1591,7 +1591,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s19-e6",
-      "EntityId": "17712cd4-ef31-41cb-a57f-f47dbb3fd376"
+      "EntityId": "abb9dc6d-d84c-4092-af30-06c3457dd764"
     },
     {
       "PartId": "shell-panel-s19-e7",
@@ -1604,7 +1604,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s19-e7",
-      "EntityId": "689ef898-ca76-444f-bc0c-955a499e24bf"
+      "EntityId": "7cd2f972-4ba1-4c5a-88f6-554fe5f45276"
     },
     {
       "PartId": "shell-panel-s2-e0",
@@ -1617,7 +1617,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s2-e0",
-      "EntityId": "3c533314-597c-4e0d-bf3f-446dc8a7d9cf"
+      "EntityId": "24b5e16a-31a6-44b5-b06e-acb306aad7e9"
     },
     {
       "PartId": "shell-panel-s2-e1",
@@ -1630,7 +1630,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s2-e1",
-      "EntityId": "35970b96-6898-4cfa-b7e2-f8ba6cf59dfb"
+      "EntityId": "56cfb7e2-9a91-45b7-b424-86f378ad49d0"
     },
     {
       "PartId": "shell-panel-s2-e2",
@@ -1643,7 +1643,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s2-e2",
-      "EntityId": "28de92aa-cd65-4ca6-876e-5573b4aff90a"
+      "EntityId": "394efcf7-42d3-4271-b43d-c21dbea85d2f"
     },
     {
       "PartId": "shell-panel-s2-e3",
@@ -1656,7 +1656,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s2-e3",
-      "EntityId": "14e72c0c-6541-4622-87a4-fbe8daabb28a"
+      "EntityId": "c9fb97e0-9684-4b9c-8fca-57d4970cc492"
     },
     {
       "PartId": "shell-panel-s2-e4",
@@ -1669,7 +1669,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s2-e4",
-      "EntityId": "790fa1f3-d1d2-44b3-a578-79bd514b5a48"
+      "EntityId": "0daa0c05-3f1b-4def-a8fa-62b0f73245ec"
     },
     {
       "PartId": "shell-panel-s2-e5",
@@ -1682,7 +1682,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s2-e5",
-      "EntityId": "9b940eb1-c653-40a8-86bd-e560d85edb9a"
+      "EntityId": "445fa844-59b5-463a-bf04-7830c6a360fe"
     },
     {
       "PartId": "shell-panel-s2-e6",
@@ -1695,7 +1695,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s2-e6",
-      "EntityId": "2ed1258a-d6cb-460e-9174-c972934b3613"
+      "EntityId": "369a2968-c10c-44fe-8dda-5863ea833ec3"
     },
     {
       "PartId": "shell-panel-s2-e7",
@@ -1708,7 +1708,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s2-e7",
-      "EntityId": "229c32e0-209f-472e-a57e-c2b179742b0b"
+      "EntityId": "61ae78f9-ea23-447f-9cd7-c69ea4edd2e7"
     },
     {
       "PartId": "shell-panel-s3-e0",
@@ -1721,7 +1721,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s3-e0",
-      "EntityId": "00256aaa-be94-4a80-b069-705b28022c4b"
+      "EntityId": "2cce325e-e792-4ca2-bb77-9bc6f238c5b9"
     },
     {
       "PartId": "shell-panel-s3-e1",
@@ -1734,7 +1734,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s3-e1",
-      "EntityId": "5ffe6107-a773-4f82-8fe3-7bccaeb2487a"
+      "EntityId": "91edb836-030a-4e5f-9590-06ffe06f7e2e"
     },
     {
       "PartId": "shell-panel-s3-e2",
@@ -1747,7 +1747,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s3-e2",
-      "EntityId": "24488d9a-2569-417a-aaaa-cad6eb674f66"
+      "EntityId": "febd8432-9c8e-4d43-af7c-98dad4a38b05"
     },
     {
       "PartId": "shell-panel-s3-e3",
@@ -1760,7 +1760,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s3-e3",
-      "EntityId": "8c881d8b-650b-446b-b03f-05359de73f9b"
+      "EntityId": "284a6d2e-9eca-4095-8a30-a0f595dea243"
     },
     {
       "PartId": "shell-panel-s3-e4",
@@ -1773,7 +1773,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s3-e4",
-      "EntityId": "74714dd3-dc85-407e-b12b-466b37ca5397"
+      "EntityId": "72b42fa9-d432-45dd-a1a3-92235ffd64dc"
     },
     {
       "PartId": "shell-panel-s3-e5",
@@ -1786,7 +1786,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s3-e5",
-      "EntityId": "1ea0162a-6fda-4109-875e-fbdc842013e0"
+      "EntityId": "8ec05680-dcc7-41e7-a9bd-9b1a9b97bd33"
     },
     {
       "PartId": "shell-panel-s3-e6",
@@ -1799,7 +1799,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s3-e6",
-      "EntityId": "dbf4cff5-16a9-4008-a0f8-71b8a29b31c6"
+      "EntityId": "f29029b9-8377-4917-91ef-9774033da1e3"
     },
     {
       "PartId": "shell-panel-s3-e7",
@@ -1812,7 +1812,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s3-e7",
-      "EntityId": "89ca8f12-4831-4386-b9c6-7c5b864221c2"
+      "EntityId": "7c9ee366-fe15-4f16-9076-f972be9d8d2d"
     },
     {
       "PartId": "shell-panel-s4-e0",
@@ -1825,7 +1825,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s4-e0",
-      "EntityId": "56ffb6f3-4053-4335-a393-e2ee1dc7aedf"
+      "EntityId": "b8151076-23ea-4373-920c-38222ea5eb9a"
     },
     {
       "PartId": "shell-panel-s4-e1",
@@ -1838,7 +1838,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s4-e1",
-      "EntityId": "284b0d07-fa02-44ae-a4f2-4353f52ff8ef"
+      "EntityId": "0fe07e5f-0edb-497b-a6b6-4dca64e5f56e"
     },
     {
       "PartId": "shell-panel-s4-e2",
@@ -1851,7 +1851,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s4-e2",
-      "EntityId": "07bd2f89-1f95-498d-a67c-904ad3b79af7"
+      "EntityId": "d3ac2056-cb04-4e19-9cda-6d12f1e33d6f"
     },
     {
       "PartId": "shell-panel-s4-e3",
@@ -1864,7 +1864,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s4-e3",
-      "EntityId": "0059e8d8-afce-423b-84ff-3162048721cf"
+      "EntityId": "dcc69e99-a003-4332-bf15-c4936f69d112"
     },
     {
       "PartId": "shell-panel-s4-e4",
@@ -1877,7 +1877,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s4-e4",
-      "EntityId": "bc989c5d-febd-4e6e-9f82-894f5c1af65b"
+      "EntityId": "dff799fe-60be-4f53-9ef9-79ccd90b2ca0"
     },
     {
       "PartId": "shell-panel-s4-e5",
@@ -1890,7 +1890,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s4-e5",
-      "EntityId": "ed07fae2-a372-4c21-89e5-00acb45b00a1"
+      "EntityId": "9eb64554-bc9d-40e4-8de1-e523caf76bb2"
     },
     {
       "PartId": "shell-panel-s4-e6",
@@ -1903,7 +1903,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s4-e6",
-      "EntityId": "80279498-ab8c-4d6f-bb6e-83eb372f2073"
+      "EntityId": "320cbbf6-0b3e-472c-bf4b-148da775ba47"
     },
     {
       "PartId": "shell-panel-s4-e7",
@@ -1916,7 +1916,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s4-e7",
-      "EntityId": "82a1a4b3-e2c1-4cfc-b27a-c9f4cd5f06c2"
+      "EntityId": "61c50d39-fe1c-4a5d-a1ad-79dbb6f2edb7"
     },
     {
       "PartId": "shell-panel-s5-e0",
@@ -1929,7 +1929,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s5-e0",
-      "EntityId": "3b2f44bc-4957-4cf1-a7ca-5afed6db82ad"
+      "EntityId": "2662c991-0bb9-441f-86ad-df89d7ec2586"
     },
     {
       "PartId": "shell-panel-s5-e1",
@@ -1942,7 +1942,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s5-e1",
-      "EntityId": "6e157a1b-5489-4fee-a590-5118393aed2c"
+      "EntityId": "f8b79346-41de-4c60-b074-1ddc1df4037d"
     },
     {
       "PartId": "shell-panel-s5-e2",
@@ -1955,7 +1955,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s5-e2",
-      "EntityId": "fc450162-d2e7-415e-aaba-fd74d8b0a0e8"
+      "EntityId": "6996293d-107a-4b5f-9db1-3da3e9551bc7"
     },
     {
       "PartId": "shell-panel-s5-e3",
@@ -1968,7 +1968,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s5-e3",
-      "EntityId": "4a9832f4-547e-4698-9c51-0a380b641e6f"
+      "EntityId": "e8f33201-4082-44c2-ae88-2fed7b0f5efe"
     },
     {
       "PartId": "shell-panel-s5-e4",
@@ -1981,7 +1981,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s5-e4",
-      "EntityId": "5555570b-d18d-4072-806f-1b16c3c6751a"
+      "EntityId": "a6b898f1-fbbd-4acb-a436-85ddb2e0d467"
     },
     {
       "PartId": "shell-panel-s5-e5",
@@ -1994,7 +1994,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s5-e5",
-      "EntityId": "30c213d6-2f2d-476f-9105-84ea1b2ff878"
+      "EntityId": "719c0a44-5673-4b95-ae35-367ffd27efe6"
     },
     {
       "PartId": "shell-panel-s5-e6",
@@ -2007,7 +2007,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s5-e6",
-      "EntityId": "99d4ad91-836d-4cc0-a66d-eb45abae7da4"
+      "EntityId": "986589d8-0460-407c-a083-0979b1f27477"
     },
     {
       "PartId": "shell-panel-s5-e7",
@@ -2020,7 +2020,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s5-e7",
-      "EntityId": "9b4c3979-c7d3-46b1-aafe-91afa1328d3e"
+      "EntityId": "62153a32-76cc-4cea-bea4-9baafddc7b43"
     },
     {
       "PartId": "shell-panel-s6-e0",
@@ -2033,7 +2033,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s6-e0",
-      "EntityId": "2ee2ccdd-54f3-4ea2-84e9-ef7a4316dce5"
+      "EntityId": "668e32d1-68a0-41aa-a70e-cf042a39e384"
     },
     {
       "PartId": "shell-panel-s6-e1",
@@ -2046,7 +2046,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s6-e1",
-      "EntityId": "cddd4b7d-e392-4f21-8f04-973f5f0b0237"
+      "EntityId": "f7be3539-5547-4976-b159-05426fd9e0ab"
     },
     {
       "PartId": "shell-panel-s6-e2",
@@ -2059,7 +2059,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s6-e2",
-      "EntityId": "acb18d41-9281-4df2-93cf-62ec32143202"
+      "EntityId": "591dc22c-e783-4a59-ac42-f697d38d1eaf"
     },
     {
       "PartId": "shell-panel-s6-e3",
@@ -2072,7 +2072,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s6-e3",
-      "EntityId": "58dfa51e-0b32-44e0-a9ef-c7e834fc556a"
+      "EntityId": "4cf544dc-c5b9-4f8a-b095-d16dfffc2803"
     },
     {
       "PartId": "shell-panel-s6-e4",
@@ -2085,7 +2085,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s6-e4",
-      "EntityId": "421db56c-4a79-4668-bd1e-ae8da86680ac"
+      "EntityId": "764b284c-665e-44f0-88c3-f123f5e0f037"
     },
     {
       "PartId": "shell-panel-s6-e5",
@@ -2098,7 +2098,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s6-e5",
-      "EntityId": "dcfacc4c-56e7-4fdd-9cd9-cee50216875f"
+      "EntityId": "3f10e510-39e8-4d97-b334-ada7f50d762a"
     },
     {
       "PartId": "shell-panel-s6-e6",
@@ -2111,7 +2111,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s6-e6",
-      "EntityId": "dcd7346c-58fe-413e-acb2-e81390ad2f5f"
+      "EntityId": "406173a4-ea20-428a-9d31-4de950cc9b37"
     },
     {
       "PartId": "shell-panel-s6-e7",
@@ -2124,7 +2124,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s6-e7",
-      "EntityId": "d665da11-3a8d-4cee-a48f-ab4406b4c678"
+      "EntityId": "1844ec82-3998-47b8-b121-dcf80d0d40aa"
     },
     {
       "PartId": "shell-panel-s7-e0",
@@ -2137,7 +2137,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s7-e0",
-      "EntityId": "b4b8e073-7e27-4596-b374-2425f17e31a3"
+      "EntityId": "2757ba4e-564b-4a79-b4d7-7ff79ff02b3f"
     },
     {
       "PartId": "shell-panel-s7-e1",
@@ -2150,7 +2150,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s7-e1",
-      "EntityId": "5af6e160-cf40-4fbd-bc09-9356cc2aaa0d"
+      "EntityId": "6ff57651-b1f1-4102-ae9f-ffeaffdab318"
     },
     {
       "PartId": "shell-panel-s7-e2",
@@ -2163,7 +2163,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s7-e2",
-      "EntityId": "804e87e8-f9ed-4664-ba4c-91f8c639eaf9"
+      "EntityId": "9cb45cf1-4994-4e07-bf56-f5f113918b16"
     },
     {
       "PartId": "shell-panel-s7-e3",
@@ -2176,7 +2176,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s7-e3",
-      "EntityId": "307030c6-9ba3-45c3-ac52-f871b8fac9c9"
+      "EntityId": "b88c0506-3c59-4360-bab3-bab57f332e51"
     },
     {
       "PartId": "shell-panel-s7-e4",
@@ -2189,7 +2189,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s7-e4",
-      "EntityId": "8287ec6a-7d50-4185-9e56-c226226502b1"
+      "EntityId": "69a4eb1f-857f-4e5f-91eb-aa3119d27950"
     },
     {
       "PartId": "shell-panel-s7-e5",
@@ -2202,7 +2202,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s7-e5",
-      "EntityId": "9a417ed9-64dd-4e20-a776-ee41205a792a"
+      "EntityId": "ac0409b3-a3af-4a04-b188-b52b83e06a6a"
     },
     {
       "PartId": "shell-panel-s7-e6",
@@ -2215,7 +2215,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s7-e6",
-      "EntityId": "f9bb5208-e617-4a57-842c-65eeb9d53452"
+      "EntityId": "8f3a5e7f-1348-4104-a23b-48f88a979434"
     },
     {
       "PartId": "shell-panel-s7-e7",
@@ -2228,7 +2228,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s7-e7",
-      "EntityId": "b33b7f6c-603d-4bd2-b1bb-3ead6b7e9818"
+      "EntityId": "b6df4660-573c-4422-8387-a1281b1ad6f2"
     },
     {
       "PartId": "shell-panel-s8-e0",
@@ -2241,7 +2241,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s8-e0",
-      "EntityId": "9ff21443-0e75-47a0-8e53-f6a1c50ac0a3"
+      "EntityId": "6bd76755-11d4-4218-a6fc-c7e5637fdc9f"
     },
     {
       "PartId": "shell-panel-s8-e1",
@@ -2254,7 +2254,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s8-e1",
-      "EntityId": "ca2796ee-93c4-4fe1-b82e-4258d7fb8cac"
+      "EntityId": "3e0f4f11-c722-453d-9f6f-ef50f766250b"
     },
     {
       "PartId": "shell-panel-s8-e2",
@@ -2267,7 +2267,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s8-e2",
-      "EntityId": "9817deef-a337-4748-a83e-ff8b27bcba15"
+      "EntityId": "40ae5538-83a4-4eac-a2d0-76e6fad64d60"
     },
     {
       "PartId": "shell-panel-s8-e3",
@@ -2280,7 +2280,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s8-e3",
-      "EntityId": "6417419f-72a5-4862-8c5d-7fc2828dd46d"
+      "EntityId": "bbbe19dd-9dab-47e0-a47d-cef003b6890c"
     },
     {
       "PartId": "shell-panel-s8-e4",
@@ -2293,7 +2293,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s8-e4",
-      "EntityId": "8ab366f3-4f6e-44aa-a1d5-8aee847e0a69"
+      "EntityId": "fb52b128-2e50-4548-8e57-20a152989718"
     },
     {
       "PartId": "shell-panel-s8-e5",
@@ -2306,7 +2306,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s8-e5",
-      "EntityId": "de4587de-9b15-4a0b-a546-8a1f26290869"
+      "EntityId": "0b406f77-92aa-4956-afb7-501b300b2d40"
     },
     {
       "PartId": "shell-panel-s8-e6",
@@ -2319,7 +2319,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s8-e6",
-      "EntityId": "56ce1d98-940f-4789-9281-971f2ed79e15"
+      "EntityId": "9bfddee1-22c7-47c6-b041-f2cb2d2420c6"
     },
     {
       "PartId": "shell-panel-s8-e7",
@@ -2332,7 +2332,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s8-e7",
-      "EntityId": "0ac8886d-11db-4831-9f52-22896395b90f"
+      "EntityId": "bfa0ae8c-db70-4738-b5c4-d9ccf56dc8b3"
     },
     {
       "PartId": "shell-panel-s9-e0",
@@ -2345,7 +2345,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s9-e0",
-      "EntityId": "4517aa92-9666-429d-9e17-1ee3c28866a4"
+      "EntityId": "069302c8-0952-4a66-adef-41341ad28b75"
     },
     {
       "PartId": "shell-panel-s9-e1",
@@ -2358,7 +2358,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s9-e1",
-      "EntityId": "200700b0-5fc6-4b1f-a5b1-6516f3d0d06e"
+      "EntityId": "c57d619f-da90-426c-92b3-e561e44d6a26"
     },
     {
       "PartId": "shell-panel-s9-e2",
@@ -2371,7 +2371,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s9-e2",
-      "EntityId": "21a7e504-5243-4eb6-ac81-48af27367ba2"
+      "EntityId": "5d171eba-e4dc-476a-a9b5-9849b8c6a8a7"
     },
     {
       "PartId": "shell-panel-s9-e3",
@@ -2384,7 +2384,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s9-e3",
-      "EntityId": "bbf39cc9-21c4-4c3f-88f7-c3fe2120b527"
+      "EntityId": "ff788448-dfa0-4886-a3be-1a1c64e41645"
     },
     {
       "PartId": "shell-panel-s9-e4",
@@ -2397,7 +2397,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s9-e4",
-      "EntityId": "456d3dae-c331-4981-bb05-d8f3b7cf504d"
+      "EntityId": "310918e9-2eda-47f7-bc58-937257b4d252"
     },
     {
       "PartId": "shell-panel-s9-e5",
@@ -2410,7 +2410,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s9-e5",
-      "EntityId": "45192b90-78cd-4393-b14a-1ccf585a272a"
+      "EntityId": "7ec3b97e-7f04-415f-bd03-2129eac0b2ec"
     },
     {
       "PartId": "shell-panel-s9-e6",
@@ -2423,7 +2423,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s9-e6",
-      "EntityId": "6c5e6dd9-0554-4a96-84c9-24fe34346fbd"
+      "EntityId": "952329d3-c6db-45da-aa0a-610489e9a8dc"
     },
     {
       "PartId": "shell-panel-s9-e7",
@@ -2436,7 +2436,7 @@
       "ExpectedBoundary": "See assembly / part kind",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "shell-panel-s9-e7",
-      "EntityId": "d002eeb5-f53b-4580-aaab-fdabb84b0548"
+      "EntityId": "68a8a218-b82f-4bef-b490-9aa528c2766f"
     },
     {
       "PartId": "stringer-knuckle-v0-s0",
@@ -2449,7 +2449,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s0",
-      "EntityId": "fdd5dea6-a49d-4aaf-859b-a9826fcda4c6"
+      "EntityId": "85b8b5ba-232e-453e-9e9b-3c894e860578"
     },
     {
       "PartId": "stringer-knuckle-v0-s1",
@@ -2462,7 +2462,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s1",
-      "EntityId": "b6ee1d09-3374-4b13-b38c-c64f95a0d863"
+      "EntityId": "3f4dc2f5-cbdc-4d13-9285-5e3875069023"
     },
     {
       "PartId": "stringer-knuckle-v0-s10",
@@ -2475,7 +2475,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s10",
-      "EntityId": "bdf99a8c-48b3-4288-814f-53c870aa4952"
+      "EntityId": "8b9fa0a1-ef1e-489b-abb1-6746a38b4266"
     },
     {
       "PartId": "stringer-knuckle-v0-s11",
@@ -2488,7 +2488,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s11",
-      "EntityId": "fecc385a-327b-47ae-b70b-9341ede1a551"
+      "EntityId": "0b3792a4-8004-4519-9fd3-dcf297ddad64"
     },
     {
       "PartId": "stringer-knuckle-v0-s12",
@@ -2501,7 +2501,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s12",
-      "EntityId": "3882434c-a211-4100-8571-a45cd7148607"
+      "EntityId": "a03d0bcf-d523-43c3-9ffd-ecea0a4ab288"
     },
     {
       "PartId": "stringer-knuckle-v0-s13",
@@ -2514,7 +2514,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s13",
-      "EntityId": "38da5ff9-0225-4ad0-9a41-2bdcf42b8d35"
+      "EntityId": "776f2855-2e74-4838-be25-0b22ee100876"
     },
     {
       "PartId": "stringer-knuckle-v0-s14",
@@ -2527,7 +2527,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s14",
-      "EntityId": "7434f6c1-f8f9-4399-9bae-848f300e1ad7"
+      "EntityId": "c3cd0744-42ff-41ee-b47a-c7e35252c885"
     },
     {
       "PartId": "stringer-knuckle-v0-s15",
@@ -2540,7 +2540,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s15",
-      "EntityId": "4229dd37-b340-4715-9192-f174492d48cd"
+      "EntityId": "991c7a30-0937-403a-ac19-e4b5ad19b450"
     },
     {
       "PartId": "stringer-knuckle-v0-s16",
@@ -2553,7 +2553,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s16",
-      "EntityId": "32e4f0b8-76a4-4ddf-8a47-0372169addee"
+      "EntityId": "2d3bbb09-71be-4f51-8202-38d0278b93e2"
     },
     {
       "PartId": "stringer-knuckle-v0-s17",
@@ -2566,7 +2566,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s17",
-      "EntityId": "c466748a-0b39-43e2-841c-dc628ec21bad"
+      "EntityId": "3c4ae7e2-661c-4df1-9ea1-3678eebb7968"
     },
     {
       "PartId": "stringer-knuckle-v0-s18",
@@ -2579,7 +2579,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s18",
-      "EntityId": "8ba6d0f6-e053-4f89-8c82-ad9f8e978415"
+      "EntityId": "35090baa-ff62-4b1b-9ae9-b6f6339ee3f3"
     },
     {
       "PartId": "stringer-knuckle-v0-s19",
@@ -2592,7 +2592,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s19",
-      "EntityId": "3846cf13-6060-4610-91f2-b3599465e536"
+      "EntityId": "8b653c33-277b-4194-8b82-0fdc61e04843"
     },
     {
       "PartId": "stringer-knuckle-v0-s2",
@@ -2605,7 +2605,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s2",
-      "EntityId": "09f04ba1-6204-4485-af34-938ccc877f76"
+      "EntityId": "9832e3f5-c084-4187-894e-756c4ebf52cc"
     },
     {
       "PartId": "stringer-knuckle-v0-s3",
@@ -2618,7 +2618,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s3",
-      "EntityId": "cc9195ae-60f4-4f20-a1de-f9084bf6b80c"
+      "EntityId": "07b4ff8b-cab3-4efa-af71-0e991545ab75"
     },
     {
       "PartId": "stringer-knuckle-v0-s4",
@@ -2631,7 +2631,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s4",
-      "EntityId": "3167d52e-238b-44a8-bc99-f4f7ffbd4c2f"
+      "EntityId": "83b1bbdb-31c0-4ffa-8cf2-ca08669cdc9e"
     },
     {
       "PartId": "stringer-knuckle-v0-s5",
@@ -2644,7 +2644,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s5",
-      "EntityId": "8a76f528-ac5d-4ac9-b292-5960d94013e1"
+      "EntityId": "ef25ed2f-46ec-4061-b4df-d4dbec9b7929"
     },
     {
       "PartId": "stringer-knuckle-v0-s6",
@@ -2657,7 +2657,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s6",
-      "EntityId": "84d204c5-a789-450f-a9b1-5fcb2d246e6c"
+      "EntityId": "50354816-225f-4703-bac8-bd7a19575e97"
     },
     {
       "PartId": "stringer-knuckle-v0-s7",
@@ -2670,7 +2670,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s7",
-      "EntityId": "2f2260ca-e7b5-4311-99da-e8d9c6c29fa2"
+      "EntityId": "4593e835-405b-4e91-9a48-c6e0bb74a5e2"
     },
     {
       "PartId": "stringer-knuckle-v0-s8",
@@ -2683,7 +2683,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s8",
-      "EntityId": "c6ef1228-7537-485d-9361-d2102f33a5a1"
+      "EntityId": "6fff766e-befe-4f84-b57f-2c5356092188"
     },
     {
       "PartId": "stringer-knuckle-v0-s9",
@@ -2696,7 +2696,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v0-s9",
-      "EntityId": "444e3f9f-d333-4aaf-91e8-443b9c3bed0b"
+      "EntityId": "92c6d2ce-cce7-4247-82c8-9578bc240540"
     },
     {
       "PartId": "stringer-knuckle-v1-s0",
@@ -2709,7 +2709,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s0",
-      "EntityId": "0c58f5a8-2c2f-41cc-a01f-18e25ebd7968"
+      "EntityId": "bf7be207-703a-44d8-9bf2-7bedbd3fafdb"
     },
     {
       "PartId": "stringer-knuckle-v1-s1",
@@ -2722,7 +2722,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s1",
-      "EntityId": "11e52da7-34f5-4dcc-b19f-a70042a380fb"
+      "EntityId": "8ad3e2bf-49d2-4b98-83cb-1632fff75992"
     },
     {
       "PartId": "stringer-knuckle-v1-s10",
@@ -2735,7 +2735,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s10",
-      "EntityId": "347b730d-b13b-4f2b-ae17-b46166ad69bc"
+      "EntityId": "c57a299f-5a40-4dca-aab6-c16cc6023a01"
     },
     {
       "PartId": "stringer-knuckle-v1-s11",
@@ -2748,7 +2748,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s11",
-      "EntityId": "f85f84a9-ffcc-47ad-a369-e8fbf17f9710"
+      "EntityId": "29e193f6-80c8-41be-a41e-ef1c9f77ba86"
     },
     {
       "PartId": "stringer-knuckle-v1-s12",
@@ -2761,7 +2761,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s12",
-      "EntityId": "6d71b222-fbf9-41ae-8e99-7ab56bfe6b1f"
+      "EntityId": "29543996-8974-44fd-a0ac-962cbf87cbc3"
     },
     {
       "PartId": "stringer-knuckle-v1-s13",
@@ -2774,7 +2774,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s13",
-      "EntityId": "af73e501-bfda-4567-a15b-9c082342527f"
+      "EntityId": "c8de27be-7422-4912-a9d9-83845236806b"
     },
     {
       "PartId": "stringer-knuckle-v1-s14",
@@ -2787,7 +2787,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s14",
-      "EntityId": "2dc8705e-add0-465e-8b9b-5f3785056cb0"
+      "EntityId": "ab365af9-9f66-49df-8709-093715af72b2"
     },
     {
       "PartId": "stringer-knuckle-v1-s15",
@@ -2800,7 +2800,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s15",
-      "EntityId": "37f4090d-c555-499c-9ec5-5d5ee15bb366"
+      "EntityId": "fb5d4659-a54f-4f62-9973-04996b8e18a2"
     },
     {
       "PartId": "stringer-knuckle-v1-s16",
@@ -2813,7 +2813,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s16",
-      "EntityId": "278e11f6-aa46-4000-8ec2-4fcc5501fc1f"
+      "EntityId": "8fbcee37-b7b6-4e0b-b795-7e2116a0fc0a"
     },
     {
       "PartId": "stringer-knuckle-v1-s17",
@@ -2826,7 +2826,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s17",
-      "EntityId": "152f700f-9062-43ab-983d-f820302ea409"
+      "EntityId": "78666fd8-6fc3-4bc4-8e77-f40d3a3c5b16"
     },
     {
       "PartId": "stringer-knuckle-v1-s18",
@@ -2839,7 +2839,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s18",
-      "EntityId": "fd852fb2-f4c1-4082-a92c-cadf0fa805e2"
+      "EntityId": "19ba5985-c533-425f-ae64-91ce86d8ebd5"
     },
     {
       "PartId": "stringer-knuckle-v1-s19",
@@ -2852,7 +2852,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s19",
-      "EntityId": "1f4b2ca6-2f22-4ec9-aa53-a0322bf65ec6"
+      "EntityId": "d90b8f1a-40c2-454b-8db1-7a37b367b84f"
     },
     {
       "PartId": "stringer-knuckle-v1-s2",
@@ -2865,7 +2865,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s2",
-      "EntityId": "22afbdeb-8d84-42d6-8029-d978cd523981"
+      "EntityId": "ecb570e6-477c-4fa6-b6a9-cd74840937c9"
     },
     {
       "PartId": "stringer-knuckle-v1-s3",
@@ -2878,7 +2878,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s3",
-      "EntityId": "bd147352-694d-42f7-b008-5fe5d30a7a4b"
+      "EntityId": "6164e523-ca55-441f-ad1d-72eceaab91b5"
     },
     {
       "PartId": "stringer-knuckle-v1-s4",
@@ -2891,7 +2891,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s4",
-      "EntityId": "bdbe8a2d-d84c-477c-bbd8-74c17cce229a"
+      "EntityId": "c139431d-825d-4032-b2c1-c7c75440a40c"
     },
     {
       "PartId": "stringer-knuckle-v1-s5",
@@ -2904,7 +2904,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s5",
-      "EntityId": "04e6cc04-32fb-4ebb-8bbd-71728ccb921e"
+      "EntityId": "be35b26d-6441-47a6-a89d-80a16142d9b0"
     },
     {
       "PartId": "stringer-knuckle-v1-s6",
@@ -2917,7 +2917,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s6",
-      "EntityId": "6d774f85-8d26-4f35-a638-50400f577b97"
+      "EntityId": "afcd3c3b-8022-45b8-9649-cb3e88de223f"
     },
     {
       "PartId": "stringer-knuckle-v1-s7",
@@ -2930,7 +2930,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s7",
-      "EntityId": "e7d310df-b3cc-45b7-87de-6c13417518a8"
+      "EntityId": "4be2ce65-a92e-4bed-b01c-5f0f4e38fb22"
     },
     {
       "PartId": "stringer-knuckle-v1-s8",
@@ -2943,7 +2943,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s8",
-      "EntityId": "1d5fd47a-6cd8-49e1-8f4a-c7dfa750dcd4"
+      "EntityId": "490b6561-7690-46ea-9b15-19744b3b7f6e"
     },
     {
       "PartId": "stringer-knuckle-v1-s9",
@@ -2956,7 +2956,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v1-s9",
-      "EntityId": "84736c95-5692-47c7-8db4-32547fef190a"
+      "EntityId": "d6ef5529-e610-4fd3-b6c7-f0ba766fefe7"
     },
     {
       "PartId": "stringer-knuckle-v2-s0",
@@ -2969,7 +2969,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s0",
-      "EntityId": "110f11f1-275e-4674-ba49-1cbd5c10a081"
+      "EntityId": "ea80b201-32f1-4953-ad53-d28a16a2c7e3"
     },
     {
       "PartId": "stringer-knuckle-v2-s1",
@@ -2982,7 +2982,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s1",
-      "EntityId": "c5f4d197-2dcf-42b8-8a12-60aee60d3cc3"
+      "EntityId": "c8ea7c91-3321-4296-b2e3-8d4e0dc1b8c6"
     },
     {
       "PartId": "stringer-knuckle-v2-s10",
@@ -2995,7 +2995,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s10",
-      "EntityId": "7cc03719-d2ad-43f3-bc8f-bf67ab3ec89c"
+      "EntityId": "ba05b5ec-94ce-453e-85e9-96c7f8d1a345"
     },
     {
       "PartId": "stringer-knuckle-v2-s11",
@@ -3008,7 +3008,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s11",
-      "EntityId": "b8b8b752-dc4e-4f6b-85e3-6974948cbcc7"
+      "EntityId": "e26f840e-b926-4477-9631-43c04c5234d0"
     },
     {
       "PartId": "stringer-knuckle-v2-s12",
@@ -3021,7 +3021,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s12",
-      "EntityId": "59b05522-7ac9-4157-a95a-d75605ec3aed"
+      "EntityId": "8a005a45-61cc-4716-9bd6-30bfb945b54e"
     },
     {
       "PartId": "stringer-knuckle-v2-s13",
@@ -3034,7 +3034,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s13",
-      "EntityId": "b8523b05-1bc8-447b-9412-3177a5ede6a4"
+      "EntityId": "c1fd7499-f33c-47f4-8bd0-e21adccc0bdd"
     },
     {
       "PartId": "stringer-knuckle-v2-s14",
@@ -3047,7 +3047,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s14",
-      "EntityId": "7a0ae99a-24c6-4674-8d64-834c0dc7480d"
+      "EntityId": "5e97395a-93fe-4b27-88c6-d8a660dc141d"
     },
     {
       "PartId": "stringer-knuckle-v2-s15",
@@ -3060,7 +3060,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s15",
-      "EntityId": "9742731e-fb7e-40b4-8261-d39b3ef9f399"
+      "EntityId": "ca8a06f2-0a63-4f98-91e3-e859c2848eb8"
     },
     {
       "PartId": "stringer-knuckle-v2-s16",
@@ -3073,7 +3073,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s16",
-      "EntityId": "e88b1657-e5f3-4f4b-9581-8eb0ceecb658"
+      "EntityId": "88fdbbd4-94a2-4ae4-8bc8-533c045cf6c8"
     },
     {
       "PartId": "stringer-knuckle-v2-s17",
@@ -3086,7 +3086,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s17",
-      "EntityId": "0fc3e3c7-e874-4ea8-9177-7b156d51f97e"
+      "EntityId": "0eac1f12-a365-48d7-8710-6cf00baef63a"
     },
     {
       "PartId": "stringer-knuckle-v2-s18",
@@ -3099,7 +3099,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s18",
-      "EntityId": "c0bd3178-af82-4eb4-9f5e-f86f63c4243d"
+      "EntityId": "a2ec00c6-05a0-453c-b4d0-d1652e30495d"
     },
     {
       "PartId": "stringer-knuckle-v2-s19",
@@ -3112,7 +3112,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s19",
-      "EntityId": "24936432-334e-4c1d-9774-973672babbb2"
+      "EntityId": "7b8a4e96-6af5-4738-aaf3-e42bf1c1780b"
     },
     {
       "PartId": "stringer-knuckle-v2-s2",
@@ -3125,7 +3125,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s2",
-      "EntityId": "53ab4fd0-1d62-47cc-98a0-3ad489989b4c"
+      "EntityId": "8b9dd514-ccd9-4938-8733-fed79e97c6c6"
     },
     {
       "PartId": "stringer-knuckle-v2-s3",
@@ -3138,7 +3138,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s3",
-      "EntityId": "908348da-5013-453b-ba9c-3f8ff9824d59"
+      "EntityId": "f13d7ac2-4ba8-436d-997b-e97f6ed2e91c"
     },
     {
       "PartId": "stringer-knuckle-v2-s4",
@@ -3151,7 +3151,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s4",
-      "EntityId": "4a5759d9-7232-48b3-a36e-2edf5a475b5b"
+      "EntityId": "037694af-c6e7-41fc-8b9e-58983cb1f9ef"
     },
     {
       "PartId": "stringer-knuckle-v2-s5",
@@ -3164,7 +3164,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s5",
-      "EntityId": "e9be7faf-3895-4b6e-a2cb-d8aab152c637"
+      "EntityId": "ed499e37-4822-4e63-9396-8d5081ef317b"
     },
     {
       "PartId": "stringer-knuckle-v2-s6",
@@ -3177,7 +3177,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s6",
-      "EntityId": "ef8c8746-9020-43e6-8e5d-5a21165601a8"
+      "EntityId": "d1b10940-5615-45d3-8f18-5b3244b362a9"
     },
     {
       "PartId": "stringer-knuckle-v2-s7",
@@ -3190,7 +3190,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s7",
-      "EntityId": "a9377e0b-5943-4a2c-ae8a-a1e4e757b52f"
+      "EntityId": "a74d95d9-786f-4e47-b518-3c61a6db303e"
     },
     {
       "PartId": "stringer-knuckle-v2-s8",
@@ -3203,7 +3203,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s8",
-      "EntityId": "4c4357a3-42f1-4bb1-bb3b-3bdaed5ee27e"
+      "EntityId": "0ee1dc0e-7e7d-45bc-982e-6f31bb9195e9"
     },
     {
       "PartId": "stringer-knuckle-v2-s9",
@@ -3216,7 +3216,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v2-s9",
-      "EntityId": "caa247a1-f9ab-46fb-9ebd-4e0d5691e616"
+      "EntityId": "418096c0-3c34-4efd-ba7b-be14585d9c2c"
     },
     {
       "PartId": "stringer-knuckle-v3-s0",
@@ -3229,7 +3229,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s0",
-      "EntityId": "f5d128fc-c32e-44b2-b936-7063d8ca6224"
+      "EntityId": "1d944c0b-c148-4c43-8e18-b4cbf4afc728"
     },
     {
       "PartId": "stringer-knuckle-v3-s1",
@@ -3242,7 +3242,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s1",
-      "EntityId": "3679f21a-fe92-4a89-9522-c33f17f2c5b7"
+      "EntityId": "133c4585-38d2-4177-97fd-8ec5ebc3ebaa"
     },
     {
       "PartId": "stringer-knuckle-v3-s10",
@@ -3255,7 +3255,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s10",
-      "EntityId": "7793d195-30a4-4284-aec7-ef7aad2481de"
+      "EntityId": "4ed2a8ea-7caf-4fb8-a3b2-12eb4d74f1f1"
     },
     {
       "PartId": "stringer-knuckle-v3-s11",
@@ -3268,7 +3268,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s11",
-      "EntityId": "602e9afb-2818-40e1-b709-fadf0a2a6b29"
+      "EntityId": "00e2fc83-df71-40b4-9791-419e560fada5"
     },
     {
       "PartId": "stringer-knuckle-v3-s12",
@@ -3281,7 +3281,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s12",
-      "EntityId": "f2824bb4-6d95-4a3c-a3f3-d3307c9b3fa9"
+      "EntityId": "4774c90d-7478-4a7d-94ad-17963d58ad8c"
     },
     {
       "PartId": "stringer-knuckle-v3-s13",
@@ -3294,7 +3294,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s13",
-      "EntityId": "5e1cc26b-c34e-44e2-8085-eaca69d8f8c5"
+      "EntityId": "0417e132-f63b-46c2-8300-d3f3bb3848b8"
     },
     {
       "PartId": "stringer-knuckle-v3-s14",
@@ -3307,7 +3307,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s14",
-      "EntityId": "c55c0ae8-9115-4dad-9a42-9710930a58a1"
+      "EntityId": "f55fd943-5afa-4c44-9914-895b3587d5a3"
     },
     {
       "PartId": "stringer-knuckle-v3-s15",
@@ -3320,7 +3320,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s15",
-      "EntityId": "5312fee8-c41b-427a-a206-1dd392d20f09"
+      "EntityId": "4f60c722-1999-41da-af23-d8c448f33e36"
     },
     {
       "PartId": "stringer-knuckle-v3-s16",
@@ -3333,7 +3333,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s16",
-      "EntityId": "b13f76f6-bb88-4846-a1f3-677b41a3933a"
+      "EntityId": "85e9efca-0cc1-46b7-91b4-cf09fc995e14"
     },
     {
       "PartId": "stringer-knuckle-v3-s17",
@@ -3346,7 +3346,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s17",
-      "EntityId": "fc5b0583-7620-4ce6-9963-66c1346c0c1d"
+      "EntityId": "5a202963-172c-4e4a-bf6f-223b58c430ce"
     },
     {
       "PartId": "stringer-knuckle-v3-s18",
@@ -3359,7 +3359,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s18",
-      "EntityId": "098007f5-eaac-45ad-8e6c-35f1428c0040"
+      "EntityId": "3f7fa7b8-dd6c-4274-80fc-5d9c3d90249a"
     },
     {
       "PartId": "stringer-knuckle-v3-s19",
@@ -3372,7 +3372,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s19",
-      "EntityId": "17b1be23-1daa-4b5c-97d7-97f207c7a7fa"
+      "EntityId": "963c2574-5649-4a7e-88af-9b786ec6fd21"
     },
     {
       "PartId": "stringer-knuckle-v3-s2",
@@ -3385,7 +3385,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s2",
-      "EntityId": "c5244240-89be-458b-8fb1-9dd2b9d28c96"
+      "EntityId": "512fbe0d-854c-4284-8c2e-9cdd5fd6fc3a"
     },
     {
       "PartId": "stringer-knuckle-v3-s3",
@@ -3398,7 +3398,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s3",
-      "EntityId": "cfec5e85-8204-4bd2-9e64-a1a193728db4"
+      "EntityId": "d216487c-055b-44ec-84e6-773b0445a37c"
     },
     {
       "PartId": "stringer-knuckle-v3-s4",
@@ -3411,7 +3411,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s4",
-      "EntityId": "bdd2615c-be48-4bf6-8016-67c8e0db6891"
+      "EntityId": "a61ce06e-4044-4fcf-84da-bb03ecff3c5a"
     },
     {
       "PartId": "stringer-knuckle-v3-s5",
@@ -3424,7 +3424,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s5",
-      "EntityId": "acbfc18c-a32f-4946-9825-240ccdf10c43"
+      "EntityId": "cded8e95-ce19-4a15-92dc-bdceef9c0118"
     },
     {
       "PartId": "stringer-knuckle-v3-s6",
@@ -3437,7 +3437,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s6",
-      "EntityId": "a95da595-0eeb-4824-8359-17797e598e3d"
+      "EntityId": "5051f5bc-7ce7-44f2-97df-36212cc0bd95"
     },
     {
       "PartId": "stringer-knuckle-v3-s7",
@@ -3450,7 +3450,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s7",
-      "EntityId": "96aa4ec3-aaa5-463b-823d-5f70b4ef8b3c"
+      "EntityId": "9e7c349a-0c7d-4802-a553-fd1a6edca6c2"
     },
     {
       "PartId": "stringer-knuckle-v3-s8",
@@ -3463,7 +3463,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s8",
-      "EntityId": "12793c36-40ee-4df7-8204-0fdf921c6cab"
+      "EntityId": "21d3ffc9-9b81-4146-88f7-8aa3039be140"
     },
     {
       "PartId": "stringer-knuckle-v3-s9",
@@ -3476,7 +3476,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v3-s9",
-      "EntityId": "7d327f95-ec0e-4599-b2bd-e84de25213ba"
+      "EntityId": "aa796d9b-cff0-4361-a111-34d615bd4d2f"
     },
     {
       "PartId": "stringer-knuckle-v4-s0",
@@ -3489,7 +3489,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s0",
-      "EntityId": "01d459d0-7033-42c8-9703-d7577cc8fd79"
+      "EntityId": "027d256d-8ce3-41cc-a1ec-d2b34de614ce"
     },
     {
       "PartId": "stringer-knuckle-v4-s1",
@@ -3502,7 +3502,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s1",
-      "EntityId": "037fd10f-99c0-4840-aeeb-86854932b4e4"
+      "EntityId": "f1d2d6c9-2f84-43d2-a91b-207400f23470"
     },
     {
       "PartId": "stringer-knuckle-v4-s10",
@@ -3515,7 +3515,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s10",
-      "EntityId": "eacc1c91-5e97-4fcf-9abf-01937b09f0c2"
+      "EntityId": "c8f62ff0-ef41-4c15-baa1-2dc438eb1a47"
     },
     {
       "PartId": "stringer-knuckle-v4-s11",
@@ -3528,7 +3528,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s11",
-      "EntityId": "de103e0a-2517-491c-9d84-cda2b131dda2"
+      "EntityId": "57f720fb-8269-4539-9d5f-816ecb7cfcff"
     },
     {
       "PartId": "stringer-knuckle-v4-s12",
@@ -3541,7 +3541,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s12",
-      "EntityId": "2a829e5f-9e2f-4ead-b7ca-3f3cbe4f3e20"
+      "EntityId": "059513ff-9cd4-43ec-8114-a222f92f2f8f"
     },
     {
       "PartId": "stringer-knuckle-v4-s13",
@@ -3554,7 +3554,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s13",
-      "EntityId": "e988bf77-9ebc-48b8-b92e-7f2957f5bd41"
+      "EntityId": "31a333c3-d74e-48d7-81a9-75ee5fe3a126"
     },
     {
       "PartId": "stringer-knuckle-v4-s14",
@@ -3567,7 +3567,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s14",
-      "EntityId": "dba80d2f-4eac-41e3-8551-4b84d612cc18"
+      "EntityId": "7712ad1d-0faa-4631-8c62-178951f50107"
     },
     {
       "PartId": "stringer-knuckle-v4-s15",
@@ -3580,7 +3580,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s15",
-      "EntityId": "9c4417be-5798-4079-85b9-868d83d0f80e"
+      "EntityId": "d233dba5-f5a9-41e6-a08c-5e217aad66d3"
     },
     {
       "PartId": "stringer-knuckle-v4-s16",
@@ -3593,7 +3593,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s16",
-      "EntityId": "baa0e0a0-5337-41b3-a505-21b632914d4c"
+      "EntityId": "4e6c5920-c327-430f-a806-aa74a9a74df6"
     },
     {
       "PartId": "stringer-knuckle-v4-s17",
@@ -3606,7 +3606,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s17",
-      "EntityId": "3ce008e6-b1dc-4f0b-8a3e-07516d7ce86e"
+      "EntityId": "c3dccf89-a831-45a8-b378-afdb84051bd0"
     },
     {
       "PartId": "stringer-knuckle-v4-s18",
@@ -3619,7 +3619,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s18",
-      "EntityId": "19e36575-dd73-4454-8d67-4de71e14118e"
+      "EntityId": "2be4582f-60e6-4cf8-ba72-116940ef9f18"
     },
     {
       "PartId": "stringer-knuckle-v4-s19",
@@ -3632,7 +3632,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s19",
-      "EntityId": "b092b0c0-b43c-43c3-a7b0-c58c72e7756c"
+      "EntityId": "acc302d9-7993-4d83-9830-b04955432a68"
     },
     {
       "PartId": "stringer-knuckle-v4-s2",
@@ -3645,7 +3645,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s2",
-      "EntityId": "134e740d-735a-4dfb-a480-97b167c7f2eb"
+      "EntityId": "03a97804-672a-419f-843a-8696b95ebc00"
     },
     {
       "PartId": "stringer-knuckle-v4-s3",
@@ -3658,7 +3658,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s3",
-      "EntityId": "9d764541-0da3-489c-aa41-cdae636ce92f"
+      "EntityId": "9bf69e5e-33e2-4664-8866-58dafed94b0f"
     },
     {
       "PartId": "stringer-knuckle-v4-s4",
@@ -3671,7 +3671,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s4",
-      "EntityId": "1c999a24-e5f7-4021-8db6-0e37c5267106"
+      "EntityId": "3372f2a1-b43a-4e7d-973e-3df4297442a0"
     },
     {
       "PartId": "stringer-knuckle-v4-s5",
@@ -3684,7 +3684,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s5",
-      "EntityId": "7205879f-56fd-4d72-b160-9827f0062207"
+      "EntityId": "57de4e27-b9b8-43a2-840e-784413324eb0"
     },
     {
       "PartId": "stringer-knuckle-v4-s6",
@@ -3697,7 +3697,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s6",
-      "EntityId": "e1d1f0c6-d5b6-4322-b50c-40c9c3a0ecdd"
+      "EntityId": "860d3094-339c-422b-bdd8-67279d644743"
     },
     {
       "PartId": "stringer-knuckle-v4-s7",
@@ -3710,7 +3710,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s7",
-      "EntityId": "060caea5-3250-4293-aa1d-809344b871e3"
+      "EntityId": "ef8b5062-84a3-4056-be2f-586ad40143ba"
     },
     {
       "PartId": "stringer-knuckle-v4-s8",
@@ -3723,7 +3723,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s8",
-      "EntityId": "2c0dac5a-7ac4-43e4-bcc7-85c6d032a7de"
+      "EntityId": "354bc471-4091-4c5f-a762-1de52093d5ce"
     },
     {
       "PartId": "stringer-knuckle-v4-s9",
@@ -3736,7 +3736,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v4-s9",
-      "EntityId": "3d2afda1-6870-4ad4-8887-70010a871199"
+      "EntityId": "a3e1e3c5-631c-4168-8a4a-f72c8e02ee8e"
     },
     {
       "PartId": "stringer-knuckle-v5-s0",
@@ -3749,7 +3749,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s0",
-      "EntityId": "cfa488af-7af9-4dcd-9bcd-6bb4e5f10915"
+      "EntityId": "82e700d8-2a82-4422-9f1a-320f957906be"
     },
     {
       "PartId": "stringer-knuckle-v5-s1",
@@ -3762,7 +3762,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s1",
-      "EntityId": "c9452866-bffa-451b-982a-7ea5a076d281"
+      "EntityId": "bfa000ae-2af1-493e-b124-37429accce1f"
     },
     {
       "PartId": "stringer-knuckle-v5-s10",
@@ -3775,7 +3775,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s10",
-      "EntityId": "82a0b237-a6ee-4445-98ad-e1e494c84b13"
+      "EntityId": "13adc8df-3c59-4b2c-858c-516d55128ca9"
     },
     {
       "PartId": "stringer-knuckle-v5-s11",
@@ -3788,7 +3788,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s11",
-      "EntityId": "e0a6a776-16ea-47f1-94af-e77df8728107"
+      "EntityId": "7c114c31-3c3d-422e-ae7c-a81fea5c5067"
     },
     {
       "PartId": "stringer-knuckle-v5-s12",
@@ -3801,7 +3801,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s12",
-      "EntityId": "1aaadffc-9944-4e33-8f3a-208722a461b4"
+      "EntityId": "ce4382ed-4ef1-4d79-805f-4843efe47436"
     },
     {
       "PartId": "stringer-knuckle-v5-s13",
@@ -3814,7 +3814,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s13",
-      "EntityId": "1969713c-e97e-43ea-9510-7c21f4240b47"
+      "EntityId": "1028b523-a6cd-48ec-a9fe-89efe527a023"
     },
     {
       "PartId": "stringer-knuckle-v5-s14",
@@ -3827,7 +3827,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s14",
-      "EntityId": "ae36c53b-f6f0-4dc6-a14d-2ba09059e2ac"
+      "EntityId": "ea3cb912-c009-4f9b-977f-fb9c4e65cdcb"
     },
     {
       "PartId": "stringer-knuckle-v5-s15",
@@ -3840,7 +3840,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s15",
-      "EntityId": "d1c539a3-5bd9-4062-b1a7-25d4e8c83cb2"
+      "EntityId": "a2416b44-c89f-41e5-ac14-77096fcf716b"
     },
     {
       "PartId": "stringer-knuckle-v5-s16",
@@ -3853,7 +3853,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s16",
-      "EntityId": "aa7fc176-a362-416a-b922-460d281d3dfa"
+      "EntityId": "9eb09c50-59bf-4bbf-b6b3-2291fade3942"
     },
     {
       "PartId": "stringer-knuckle-v5-s17",
@@ -3866,7 +3866,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s17",
-      "EntityId": "5324a58c-5e83-4d7e-a512-5f0c99ed7c58"
+      "EntityId": "a1244266-ef81-4981-92ba-9a51843c3290"
     },
     {
       "PartId": "stringer-knuckle-v5-s18",
@@ -3879,7 +3879,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s18",
-      "EntityId": "d600a02f-39ca-4ddc-8d8a-e42f9a66b779"
+      "EntityId": "24b11b89-9f38-4fb2-8d50-590a2d19e108"
     },
     {
       "PartId": "stringer-knuckle-v5-s19",
@@ -3892,7 +3892,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s19",
-      "EntityId": "c1e24820-fa22-42fb-8ac5-79d8fbd0b8e8"
+      "EntityId": "36d974c4-ba93-448f-bed3-e0b2f6275fc1"
     },
     {
       "PartId": "stringer-knuckle-v5-s2",
@@ -3905,7 +3905,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s2",
-      "EntityId": "07c38262-75d2-4d51-a192-e505bae43d1a"
+      "EntityId": "089a034b-7073-4871-9db5-46c157c2ce08"
     },
     {
       "PartId": "stringer-knuckle-v5-s3",
@@ -3918,7 +3918,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s3",
-      "EntityId": "3b29b6de-c26b-4ab9-a2f8-5bd72490aa43"
+      "EntityId": "bce8d0aa-26f1-42c5-9569-517cd48f04c6"
     },
     {
       "PartId": "stringer-knuckle-v5-s4",
@@ -3931,7 +3931,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s4",
-      "EntityId": "5adcae35-eecb-4783-ac3e-afb88d71d3e3"
+      "EntityId": "26daa057-4d9f-499c-b96e-27c577556b76"
     },
     {
       "PartId": "stringer-knuckle-v5-s5",
@@ -3944,7 +3944,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s5",
-      "EntityId": "524155b2-26be-4943-adb3-6a40d9d6a2e3"
+      "EntityId": "44995b63-9284-437f-b844-ccb67ee51189"
     },
     {
       "PartId": "stringer-knuckle-v5-s6",
@@ -3957,7 +3957,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s6",
-      "EntityId": "e16d68f9-e8c1-452d-bad2-b6e7b346ba09"
+      "EntityId": "7496e372-af1b-4c10-a403-6998d14484f0"
     },
     {
       "PartId": "stringer-knuckle-v5-s7",
@@ -3970,7 +3970,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s7",
-      "EntityId": "8291ac48-47da-4e3c-aa95-956c1ff5d456"
+      "EntityId": "3e40aaa3-77c3-4ab7-85b3-5495f0831523"
     },
     {
       "PartId": "stringer-knuckle-v5-s8",
@@ -3983,7 +3983,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s8",
-      "EntityId": "45ddfb83-0b0c-484f-af71-2f97886fff7c"
+      "EntityId": "746a4fed-41ea-4aec-ad3c-9fc517b6d129"
     },
     {
       "PartId": "stringer-knuckle-v5-s9",
@@ -3996,7 +3996,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v5-s9",
-      "EntityId": "d8dbd68b-79e9-40d8-beff-be307499a0d3"
+      "EntityId": "25212b14-60d1-48d9-8385-1d7b0392adb2"
     },
     {
       "PartId": "stringer-knuckle-v6-s0",
@@ -4009,7 +4009,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s0",
-      "EntityId": "9b90d8e9-03be-4f66-9b0c-78b201ca4e3f"
+      "EntityId": "5952d9d3-c5b6-4b25-a553-915572c48f5b"
     },
     {
       "PartId": "stringer-knuckle-v6-s1",
@@ -4022,7 +4022,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s1",
-      "EntityId": "ea70d960-1fbc-48cc-95e2-1cccd1a1b72f"
+      "EntityId": "f12a5b0b-c987-41c7-9fe1-3e601cc9d56b"
     },
     {
       "PartId": "stringer-knuckle-v6-s10",
@@ -4035,7 +4035,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s10",
-      "EntityId": "d91cbeb3-238b-4450-87d8-add391738b02"
+      "EntityId": "cef84f38-39dc-4270-9c2c-4bb01791dddf"
     },
     {
       "PartId": "stringer-knuckle-v6-s11",
@@ -4048,7 +4048,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s11",
-      "EntityId": "678afc59-fedc-4261-87fa-b7478df23956"
+      "EntityId": "cb6fbf6e-f3d3-4ad1-8de6-b590aff129e2"
     },
     {
       "PartId": "stringer-knuckle-v6-s12",
@@ -4061,7 +4061,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s12",
-      "EntityId": "c5a4b2d8-5650-4a70-877d-d05382a4ecb4"
+      "EntityId": "ae70c57b-344f-470f-bd47-5c1c3871e8c7"
     },
     {
       "PartId": "stringer-knuckle-v6-s13",
@@ -4074,7 +4074,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s13",
-      "EntityId": "b6e52cb7-283c-43b6-83c0-73648696f013"
+      "EntityId": "76f0f206-c169-45d6-8742-9ef534269427"
     },
     {
       "PartId": "stringer-knuckle-v6-s14",
@@ -4087,7 +4087,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s14",
-      "EntityId": "c4c9ee1c-0a87-461f-9eb6-236d1adcbf00"
+      "EntityId": "1060295a-31cd-4d2f-b743-4736e8956072"
     },
     {
       "PartId": "stringer-knuckle-v6-s15",
@@ -4100,7 +4100,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s15",
-      "EntityId": "95fdea34-7796-433d-af84-1716b5f3cb9c"
+      "EntityId": "03fe5888-7fdf-4889-a624-fe6d4e40fb5e"
     },
     {
       "PartId": "stringer-knuckle-v6-s16",
@@ -4113,7 +4113,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s16",
-      "EntityId": "c87334fb-e49d-4090-a1b8-adf4bde52dba"
+      "EntityId": "00162607-de53-4f88-97ff-32d9082093b0"
     },
     {
       "PartId": "stringer-knuckle-v6-s17",
@@ -4126,7 +4126,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s17",
-      "EntityId": "88782f66-ef65-4d92-81c7-f3ff144eb320"
+      "EntityId": "a7fc06a9-1b50-476e-a74a-fca0a4edd876"
     },
     {
       "PartId": "stringer-knuckle-v6-s18",
@@ -4139,7 +4139,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s18",
-      "EntityId": "e0a041e7-a870-4af0-9719-2405747f72ba"
+      "EntityId": "e99f6b8e-7645-498e-8054-780e445147fc"
     },
     {
       "PartId": "stringer-knuckle-v6-s19",
@@ -4152,7 +4152,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s19",
-      "EntityId": "3e332530-c367-46c8-a736-d68f78314051"
+      "EntityId": "2f0bea3a-7701-4319-ae2d-87f1588de016"
     },
     {
       "PartId": "stringer-knuckle-v6-s2",
@@ -4165,7 +4165,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s2",
-      "EntityId": "b93b31cd-5b4d-468b-b318-c6475c16404d"
+      "EntityId": "2293243f-eddf-4764-b55b-3a864552bdcd"
     },
     {
       "PartId": "stringer-knuckle-v6-s3",
@@ -4178,7 +4178,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s3",
-      "EntityId": "db4bfbf6-3d4e-4c94-ae60-01072ae9c63d"
+      "EntityId": "e4a880a2-86ab-4159-b756-e3212d7fb17f"
     },
     {
       "PartId": "stringer-knuckle-v6-s4",
@@ -4191,7 +4191,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s4",
-      "EntityId": "b5e6bbfb-95fe-4533-81f7-fa4ee47cc993"
+      "EntityId": "e16ff20a-2b9f-4bd2-bbd0-d01e31ed315e"
     },
     {
       "PartId": "stringer-knuckle-v6-s5",
@@ -4204,7 +4204,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s5",
-      "EntityId": "a35d08ca-cc41-4b9e-9f95-c26e4f4f0235"
+      "EntityId": "8f158e6a-86b4-4a6f-8cf8-17bd442991fe"
     },
     {
       "PartId": "stringer-knuckle-v6-s6",
@@ -4217,7 +4217,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s6",
-      "EntityId": "64716c3c-067b-409d-be80-7c189e2d99cc"
+      "EntityId": "6ff92f72-47ad-4d85-8aa4-c577dc157a46"
     },
     {
       "PartId": "stringer-knuckle-v6-s7",
@@ -4230,7 +4230,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s7",
-      "EntityId": "0af7fbd7-47ae-4d80-a324-c8f3ed71b206"
+      "EntityId": "49dceaff-1a48-4a72-8795-e89baa1cabbd"
     },
     {
       "PartId": "stringer-knuckle-v6-s8",
@@ -4243,7 +4243,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s8",
-      "EntityId": "3a5568de-8c59-4287-bb14-15fea96b72ba"
+      "EntityId": "20be342c-e61d-4d07-ada1-7b41532ad30f"
     },
     {
       "PartId": "stringer-knuckle-v6-s9",
@@ -4256,7 +4256,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v6-s9",
-      "EntityId": "30fa51cd-36d2-47b7-b102-6e8dbe90f888"
+      "EntityId": "101ced3b-b64c-4650-902b-d18bc0ffbf13"
     },
     {
       "PartId": "stringer-knuckle-v7-s0",
@@ -4269,7 +4269,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s0",
-      "EntityId": "1c649176-20a6-4ffc-b77a-b0c083b413eb"
+      "EntityId": "59cb640a-3cd1-465d-b3cc-5beaf4f74400"
     },
     {
       "PartId": "stringer-knuckle-v7-s1",
@@ -4282,7 +4282,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s1",
-      "EntityId": "0668de35-4482-4e00-951f-5a7abe56c5d4"
+      "EntityId": "e26aa0ab-e33f-4c05-a583-a8907fc7b9c9"
     },
     {
       "PartId": "stringer-knuckle-v7-s10",
@@ -4295,7 +4295,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s10",
-      "EntityId": "53e54d60-a0d3-44a7-8cd4-c0b715c33010"
+      "EntityId": "f9780ae5-8488-4058-8947-b86f8b9707f7"
     },
     {
       "PartId": "stringer-knuckle-v7-s11",
@@ -4308,7 +4308,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s11",
-      "EntityId": "6a0a8a54-6180-4390-9158-d4c4c8363111"
+      "EntityId": "c952a5ba-1f9c-45e3-a218-7b82585acca2"
     },
     {
       "PartId": "stringer-knuckle-v7-s12",
@@ -4321,7 +4321,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s12",
-      "EntityId": "63812fde-45dc-4429-8c7c-08c5390c5bd3"
+      "EntityId": "62228dfd-01c9-411a-8b19-0bcc341a0ac0"
     },
     {
       "PartId": "stringer-knuckle-v7-s13",
@@ -4334,7 +4334,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s13",
-      "EntityId": "cfd01215-fe35-4615-9a0d-2306bba79797"
+      "EntityId": "18ee775b-e56e-428e-9aee-13d7f87bd92d"
     },
     {
       "PartId": "stringer-knuckle-v7-s14",
@@ -4347,7 +4347,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s14",
-      "EntityId": "3b783a10-406e-4262-89c0-75813a1f87c5"
+      "EntityId": "df2cf782-233f-43a8-a6b5-01e40fe63977"
     },
     {
       "PartId": "stringer-knuckle-v7-s15",
@@ -4360,7 +4360,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s15",
-      "EntityId": "5beb1190-3b51-4d09-bbc0-3fd92f48f84a"
+      "EntityId": "ffead7d2-bddd-4b0e-8c78-316286298982"
     },
     {
       "PartId": "stringer-knuckle-v7-s16",
@@ -4373,7 +4373,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s16",
-      "EntityId": "4f2d22b6-bfa2-4c39-ae58-5b1c899fd9f1"
+      "EntityId": "49bb194b-cded-4dc0-89dd-abd1c2f751ea"
     },
     {
       "PartId": "stringer-knuckle-v7-s17",
@@ -4386,7 +4386,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s17",
-      "EntityId": "6db75496-e6b0-4329-bc4c-5d25f3349b00"
+      "EntityId": "38e86572-c38c-457d-ac1f-6d7116ae8650"
     },
     {
       "PartId": "stringer-knuckle-v7-s18",
@@ -4399,7 +4399,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s18",
-      "EntityId": "68532fa1-e7bc-4e77-b78c-730c2d15b3a9"
+      "EntityId": "07f70fcd-b825-47a8-b42d-fdb1a27a7a7c"
     },
     {
       "PartId": "stringer-knuckle-v7-s19",
@@ -4412,7 +4412,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s19",
-      "EntityId": "570065b9-b8a9-4a2d-a858-246b59e0ee6b"
+      "EntityId": "fed59a0b-45f1-45d5-8365-7f24c35b77d3"
     },
     {
       "PartId": "stringer-knuckle-v7-s2",
@@ -4425,7 +4425,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s2",
-      "EntityId": "e14033f4-e3b5-4ff6-a3b7-1e737f62d719"
+      "EntityId": "a8070808-2c2d-4894-9e54-4acb575c53cc"
     },
     {
       "PartId": "stringer-knuckle-v7-s3",
@@ -4438,7 +4438,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s3",
-      "EntityId": "9839283c-598a-4817-8603-9f043b605b4c"
+      "EntityId": "3c86b6a9-85aa-4bb6-9201-6e31533d2a58"
     },
     {
       "PartId": "stringer-knuckle-v7-s4",
@@ -4451,7 +4451,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s4",
-      "EntityId": "a0700934-5d70-461c-9235-593791367b11"
+      "EntityId": "57edc22d-abe4-4d62-b2fe-667d0902ca74"
     },
     {
       "PartId": "stringer-knuckle-v7-s5",
@@ -4464,7 +4464,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s5",
-      "EntityId": "b8f8f1b1-086c-48a8-9880-40627bf9d361"
+      "EntityId": "3a9eb6e0-dc19-4376-9789-0ebfa77d45ba"
     },
     {
       "PartId": "stringer-knuckle-v7-s6",
@@ -4477,7 +4477,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s6",
-      "EntityId": "965b0a90-5efb-4617-8bfb-7f9458ed7cbd"
+      "EntityId": "efb60645-1d98-4423-a668-b4c7be9d9f46"
     },
     {
       "PartId": "stringer-knuckle-v7-s7",
@@ -4490,7 +4490,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s7",
-      "EntityId": "e29767fd-1443-432f-a7fd-2d9ba0e5a9e0"
+      "EntityId": "2fdacd1c-6768-4700-8286-b4ac334c2513"
     },
     {
       "PartId": "stringer-knuckle-v7-s8",
@@ -4503,7 +4503,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s8",
-      "EntityId": "6d91c7ae-e710-457b-ab28-a0d481919e5e"
+      "EntityId": "95a52d23-51b8-4fea-b413-3d725874cff8"
     },
     {
       "PartId": "stringer-knuckle-v7-s9",
@@ -4516,7 +4516,7 @@
       "ExpectedBoundary": "Swept rect section along outer-hull knuckle path",
       "BoundaryMatch": "ok: classified",
       "DisplayName": "stringer-knuckle-v7-s9",
-      "EntityId": "6ebeaf98-06ce-411c-8777-4bcc03dce903"
+      "EntityId": "67106e91-9d1f-42e8-af44-8a6c801dec89"
     }
   ]
 }
