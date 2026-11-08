@@ -625,6 +625,9 @@ internal static class CalypsoAcceptance
         foreach (var (name, ok, detail) in Visibility.HierarchyVisibilityAcceptance.Run())
             Add($"hierarchy visibility · {name}", ok, detail);
 
+        foreach (var (name, ok, detail) in Drawing.UniversalDrawingAcceptance.Run(doc))
+            Add($"universal drawing · {name}", ok, detail);
+
         var deckSeats = entities.Count(e =>
             e.Name?.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase) == true);
         Add("critical deck seats (BH×deck + frame×deck)", deckSeats >= 24, $"deckSeats={deckSeats}");

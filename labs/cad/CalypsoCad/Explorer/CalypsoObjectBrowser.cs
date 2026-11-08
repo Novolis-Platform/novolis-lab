@@ -2,8 +2,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using CalypsoCad.Drawing;
 using CalypsoCad.Export;
 using CalypsoCad.Model;
+using CalypsoCad.Publication;
 using CalypsoCad.Session;
 using CalypsoCad.Visibility;
 using Novolis.Avalonia.GraphicalProfile;
@@ -109,6 +111,15 @@ internal sealed class CalypsoObjectBrowser : UserControl
         root.Children.Add(isolates);
         root.Children.Add(Hint("Presets:"));
         root.Children.Add(presets);
+
+        var drawings = new WrapPanel { Margin = new Thickness(0, 4, 0, 0) };
+        drawings.Children.Add(ActionBtn("Drawing", () => CreateDrawingForSelected(DrawingKind.Assembly)));
+        drawings.Children.Add(ActionBtn("Section", () => CreateDrawingForSelected(DrawingKind.Section)));
+        drawings.Children.Add(ActionBtn("Detail", () => CreateDrawingForSelected(DrawingKind.Detail)));
+        drawings.Children.Add(ActionBtn("Pkg", GenerateDrawingPackage));
+        root.Children.Add(Hint("Drawings (hierarchy subject → universal engine):"));
+        root.Children.Add(drawings);
+
         root.Children.Add(Header("Inspector"));
         root.Children.Add(_inspector);
         Content = root;
@@ -411,6 +422,74 @@ internal sealed class CalypsoObjectBrowser : UserControl
         _controller.Renderer.SetOrbitPose(center.Value, 42f, 0.95f, 0.35f);
         _controller.SetView(CalypsoViewMode.Orbit);
         _controller.Session.StatusText = $"focus:{center.Value.X:0.#},{center.Value.Y:0.#},{center.Value.Z:0.#}";
+    }
+
+    private enum DrawingKind { Assembly, Section, Detail }
+
+    private void CreateDrawingForSelected(DrawingKind kind)
+    {
+        var nodeId = SelectedNodeId();
+        if (nodeId is null)
+        {
+            _controller.Session.StatusText = "drawing:no-selection";
+            return;
+        }
+
+        EnsureRegistry();
+        DrawingRequest request = kind switch
+        {
+            DrawingKind.Section => DrawingTemplates.ArbitrarySection(
+                nodeId,
+                EstimateStationZ(nodeId)),
+            DrawingKind.Detail => DrawingTemplates.AssemblyStandard(
+                nodeId,
+                principal: StandardViewOrientation.PlanSternLeft) with
+            {
+                Title = $"Detail · {nodeId}",
+            },
+            _ => DrawingTemplates.AssemblyStandard(nodeId),
+        };
+
+        // Capture subject IDs into the request — never consult viewport visibility.
+        var result = UniversalDrawingEngine.Render(request, _controller.Session.Document);
+        var outDir = Path.Combine(CalypsoProjectPaths.BlueprintsPackageDirectory, "_preview");
+        Directory.CreateDirectory(outDir);
+        var path = Path.Combine(outDir, $"{SanitizeFile(nodeId)}-{kind}.html");
+        File.WriteAllText(path, result.Html);
+        File.WriteAllText(Path.ChangeExtension(path, ".manifest.json"),
+            UniversalDrawingEngine.RenderManifestJson(result.Manifest));
+        _controller.Session.StatusText =
+            result.Manifest.Ok
+                ? $"drawing:{kind}:{nodeId} → {path}"
+                : $"drawing:warn:{nodeId} geom={result.Resolved.Geometry.Count}";
+    }
+
+    private void GenerateDrawingPackage()
+    {
+        try
+        {
+            Blueprints.DrawingPackage.DrawingPackageEmitter.Emit();
+            _controller.Session.StatusText = "drawing-package:emitted";
+        }
+        catch (Exception ex)
+        {
+            _controller.Session.StatusText = $"drawing-package:{ex.Message}";
+        }
+    }
+
+    private float EstimateStationZ(string nodeId)
+    {
+        var center = ComputeSelectionCenter();
+        if (center is { } c)
+            return c.Z;
+        _ = nodeId;
+        return 34.5f;
+    }
+
+    private static string SanitizeFile(string id)
+    {
+        var chars = id.Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray();
+        return new string(chars);
     }
 
     private HashSet<Guid> SelectedEntityIds()

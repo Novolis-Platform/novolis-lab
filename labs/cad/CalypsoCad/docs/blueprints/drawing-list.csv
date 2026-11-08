@@ -28,10 +28,7 @@ CAL-240-001,MEM-REG-01,Structural members register — sheet 1 (40 ids),Structur
 CAL-240-002,MEM-REG-02,Structural members register — sheet 2 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-002-MEMBERS-02.html,members-2
 CAL-240-003,MEM-REG-03,Structural members register — sheet 3 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-003-MEMBERS-03.html,members-3
 CAL-240-004,MEM-REG-04,Structural members register — sheet 4 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-004-MEMBERS-04.html,members-4
-CAL-240-005,MEM-REG-05,Structural members register — sheet 5 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-005-MEMBERS-05.html,members-5
-CAL-240-006,MEM-REG-06,Structural members register — sheet 6 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-006-MEMBERS-06.html,members-6
-CAL-240-007,MEM-REG-07,Structural members register — sheet 7 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-007-MEMBERS-07.html,members-7
-CAL-240-008,MEM-REG-08,Structural members register — sheet 8 (1 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-008-MEMBERS-08.html,members-8
+CAL-240-005,MEM-REG-05,Structural members register — sheet 5 (21 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-005-MEMBERS-05.html,members-5
 CAL-250-001,KNUCKLE-V0,Hull knuckle stringer v0 — continuous path (20 segments),KnuckleStringers,None,200-structure/250-knuckle-stringers/CAL-250-001-KNUCKLE-V0.html,knuckle-v0
 CAL-250-002,KNUCKLE-V1,Hull knuckle stringer v1 — continuous path (20 segments),KnuckleStringers,None,200-structure/250-knuckle-stringers/CAL-250-002-KNUCKLE-V1.html,knuckle-v1
 CAL-250-003,KNUCKLE-V2,Hull knuckle stringer v2 — continuous path (20 segments),KnuckleStringers,None,200-structure/250-knuckle-stringers/CAL-250-003-KNUCKLE-V2.html,knuckle-v2
