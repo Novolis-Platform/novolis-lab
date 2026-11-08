@@ -158,18 +158,25 @@ internal static class ViewProjector
             _ => -Vector3.UnitX,
         };
 
+    /// <summary>
+    /// Orthographic view coords. For plan/profile, +U is toward the bow so FitAndDraw
+    /// (page X ∝ U) matches ISO 128-15 stern-left / bow-right used by <c>ShipX(zFromStem)</c>.
+    /// CAD +Z points bow-ward from midships — do not treat world.Z as zFromStem.
+    /// </summary>
     public static ViewPoint2 Map(Vector3 world, StandardViewOrientation orientation) =>
         orientation switch
         {
+            // U = world.Z (bow +) → right; V = −X (starboard down when bow is right).
             StandardViewOrientation.PlanSternLeft =>
-                new ViewPoint2(-world.Z, -world.X, world.Y),
+                new ViewPoint2(world.Z, -world.X, world.Y),
             StandardViewOrientation.ProfileSternLeft =>
-                new ViewPoint2(-world.Z, world.Y, world.X),
+                new ViewPoint2(world.Z, world.Y, world.X),
+            // Looking aft: observer toward bow looking −Z; +X stbd → left on page (existing sheets).
             StandardViewOrientation.TransverseLookingAft =>
                 new ViewPoint2(-world.X, world.Y, -world.Z),
             StandardViewOrientation.TransverseLookingForward =>
                 new ViewPoint2(world.X, world.Y, world.Z),
-            _ => new ViewPoint2(-world.Z, world.Y, world.X),
+            _ => new ViewPoint2(world.Z, world.Y, world.X),
         };
 
     private static void AccumulateEdge(

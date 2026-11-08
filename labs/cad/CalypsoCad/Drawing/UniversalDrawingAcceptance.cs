@@ -41,6 +41,12 @@ internal static class UniversalDrawingAcceptance
             Check("A knuckle-v2 uses mesh sources",
                 r.Resolved.Geometry.Any(g => g.Kind == DrawablePrimitiveKind.Mesh),
                 string.Join(",", r.Resolved.Geometry.Select(g => g.Kind).Distinct()));
+
+            // Plan U must increase toward the bow (CAD +Z), matching ShipX stern-left.
+            var loa = CadJsonStructureQuery.Loa(cad);
+            var bow = ViewProjector.Map(new System.Numerics.Vector3(0, 0, CadShipCoords.WorldZFromStem(0, loa)), StandardViewOrientation.PlanSternLeft);
+            var stern = ViewProjector.Map(new System.Numerics.Vector3(0, 0, CadShipCoords.WorldZFromStem(loa, loa)), StandardViewOrientation.PlanSternLeft);
+            Check("plan U increases bow-ward (stern left)", bow.U > stern.U, $"bowU={bow.U:0.##} sternU={stern.U:0.##}");
         }
 
         // B — Ordinary ring frame

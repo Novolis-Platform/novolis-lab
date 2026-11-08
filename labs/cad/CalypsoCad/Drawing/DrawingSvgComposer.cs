@@ -167,12 +167,14 @@ internal static class DrawingSvgComposer
         if (bounds.IsEmpty)
             return;
 
-        var z0 = Math.Clamp(bounds.Min.Z, 0, (float)ship.Loa);
-        var z1 = Math.Clamp(bounds.Max.Z, 0, (float)ship.Loa);
+        var loa = (float)ship.Loa;
+        // World Z is midships-relative — convert before ShipX(zFromStem).
+        var zStem0 = CadShipCoords.ClampZStem(CadShipCoords.ZStemFromWorld(bounds.Min.Z, loa), loa);
+        var zStem1 = CadShipCoords.ClampZStem(CadShipCoords.ZStemFromWorld(bounds.Max.Z, loa), loa);
         var y0 = bounds.Min.X;
         var y1 = bounds.Max.X;
-        var x0 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, z0);
-        var x1 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, z1);
+        var x0 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zStem0);
+        var x1 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zStem1);
         var sy0 = oy - y1 * scale;
         var sy1 = oy - y0 * scale;
         var left = Math.Min(x0, x1);
@@ -181,7 +183,6 @@ internal static class DrawingSvgComposer
         var bot = Math.Max(sy0, sy1);
         sb.AppendLine(
             $"<rect x=\"{F(left)}\" y=\"{F(top)}\" width=\"{F(Math.Max(1, right - left))}\" height=\"{F(Math.Max(1, bot - top))}\" fill=\"#c82828\" fill-opacity=\"0.18\" stroke=\"#c82828\" stroke-width=\"1.4\"/>");
-        // Location context is extent-only — never dump mesh/box triangulation here.
     }
 
     private static void DrawSubjectExtentOnProfile(
@@ -196,12 +197,13 @@ internal static class DrawingSvgComposer
         if (bounds.IsEmpty)
             return;
 
-        var z0 = Math.Clamp(bounds.Min.Z, 0, (float)ship.Loa);
-        var z1 = Math.Clamp(bounds.Max.Z, 0, (float)ship.Loa);
+        var loa = (float)ship.Loa;
+        var zStem0 = CadShipCoords.ClampZStem(CadShipCoords.ZStemFromWorld(bounds.Min.Z, loa), loa);
+        var zStem1 = CadShipCoords.ClampZStem(CadShipCoords.ZStemFromWorld(bounds.Max.Z, loa), loa);
         var u0 = Math.Clamp(bounds.Min.Y, 0, (float)ship.Oah);
         var u1 = Math.Clamp(bounds.Max.Y, 0, (float)ship.Oah);
-        var x0 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, z0);
-        var x1 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, z1);
+        var x0 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zStem0);
+        var x1 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zStem1);
         var yTop = keelY - u1 * scale;
         var yBot = keelY - u0 * scale;
         var left = Math.Min(x0, x1);
