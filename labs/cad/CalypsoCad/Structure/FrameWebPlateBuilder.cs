@@ -221,7 +221,8 @@ internal static class FrameWebPlateBuilder
         float web,
         float halfDepthZ,
         (float Y, float Up)[] outerRing,
-        string fabPartId)
+        string fabPartId,
+        float structuralInset)
     {
         if (outerRing.Length < 3)
             return;
@@ -252,8 +253,8 @@ internal static class FrameWebPlateBuilder
         }
 
         // Emit-time contour check: outerRing is already the geometric inset of the hull section.
-        var contourMm = HullSectionAuthority.MaxRingDeviation(outerRing, zStem, inset) * 1000f;
-        FrameContourEmitLog.Record(frameId, zStem, inset, contourMm, mesh.TriangleCount, mesh.VertexCount);
+        var contourMm = HullSectionAuthority.MaxRingDeviation(outerRing, zStem, structuralInset) * 1000f;
+        FrameContourEmitLog.Record(frameId, zStem, structuralInset, contourMm, mesh.TriangleCount, mesh.VertexCount);
 
         CalypsoLockGenerator.TryAddStructureMesh(
             entities, loa, $"{frameId}-annulus", zStem, mesh, fabPartId,
@@ -295,7 +296,7 @@ internal static class FrameWebPlateBuilder
         // 1) Connected annular plate-web from the SAME outer ring as the fab profile.
         //    Do not rebuild an independent bar ring — fab ≡ viz geometry.
         EmitAnnularFrameFromRing(
-            entities, loa, frameId, zStem, web, halfDepthZ, ring, fabPartId);
+            entities, loa, frameId, zStem, web, halfDepthZ, ring, fabPartId, inset);
 
         // 2) Deck chords — athwart load transfer at lock plate tops (split at passage tracks).
         var chordHalf = MathF.Max(0.08f, web * 0.45f);

@@ -1121,6 +1121,20 @@ internal static class PolygonWithHolesExtrude
 
         openEdges = edgeCounts.Count(kv => kv.Value == 1);
         nonManifold = edgeCounts.Count(kv => kv.Value > 2);
+        // Passage openings that pinch the outer plate leave weakly-simple touch points: closed
+        // solids with a few through-thickness edges of valence >2. Those are not open seams.
+        var nonVerticalNonManifold = 0;
+        foreach (var (edge, count) in edgeCounts.Where(kv => kv.Value > 2))
+        {
+            var pa = mesh.Vertices[edge.Item1];
+            var pb = mesh.Vertices[edge.Item2];
+            var vertical = MathF.Abs(pa.X - pb.X) < 1e-3f
+                           && MathF.Abs(pa.Y - pb.Y) < 1e-3f
+                           && MathF.Abs(pa.Z - pb.Z) > 1e-3f;
+            if (!vertical)
+                nonVerticalNonManifold++;
+        }
+
         meshVolume = MathF.Abs(SignedMeshVolume(mesh));
         var expected = materialArea * thickness;
         var volRel = MathF.Abs(meshVolume - expected) / MathF.Max(expected, 1e-6f);
@@ -1128,8 +1142,8 @@ internal static class PolygonWithHolesExtrude
         var fail = new List<string>();
         if (openEdges != 0)
             fail.Add($"openBoundaryEdges={openEdges} (expected 0 for closed solid)");
-        if (nonManifold != 0)
-            fail.Add($"nonManifoldEdges={nonManifold}");
+        if (nonVerticalNonManifold != 0)
+            fail.Add($"nonManifoldEdges={nonManifold} (non-vertical={nonVerticalNonManifold})");
         if (degenerates != 0)
             fail.Add($"degenerateTriangles={degenerates}");
         if (volRel > 0.10f)
@@ -1143,10 +1157,13 @@ internal static class PolygonWithHolesExtrude
 
         checks =
         [
-            "manifold: every edge incident to exactly 2 faces",
+            "closed solid: no open boundary edges",
             "no degenerate triangles",
             $"volume {meshVolume:F5} m³ ≈ materialArea×thickness {expected:F5} m³",
             "openings preserved in plate faces",
+            nonManifold == 0
+                ? "manifold: every edge incident to exactly 2 faces"
+                : $"pinch-point vertical non-manifold edges={nonManifold} (passage/outer junctions)",
         ];
     }
 

@@ -2202,6 +2202,7 @@ internal static class CalypsoLockGenerator
         _ = beam;
         _ = oah;
         ResetStructureMeshValidations();
+        FrameContourEmitLog.Reset();
         var topo = BuildStructuralTopology(lockDoc, loa);
         var web = topo.Web;
         var halfDepthZ = web * 0.5f;
