@@ -18,6 +18,7 @@
     <LibraryReference Include="Novolis.Cad.Hierarchy" />
     <LibraryReference Include="Novolis.Cad.Visibility" />
     <LibraryReference Include="Novolis.Cad.Drawing" />
+    <LibraryReference Include="Novolis.Cad.Blueprint" />
     <LibraryReference Include="Novolis.Cad.Generation" />
     <LibraryReference Include="Novolis.Avalonia.Cad" />
     <LibraryReference Include="Novolis.Math.Geometry" />

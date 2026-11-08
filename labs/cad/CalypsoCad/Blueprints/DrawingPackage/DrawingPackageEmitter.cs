@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using CalypsoCad.Session;
 using CalypsoCad.Structure;
+using Novolis.Cad.Blueprint;
 using Novolis.Cad.Primitives;
 
 namespace CalypsoCad.Blueprints.DrawingPackage;
@@ -207,9 +208,42 @@ internal static class DrawingPackageEmitter
             JsonSerializer.Serialize(bom, JsonWrite),
             new UTF8Encoding(false));
 
+        EmitCadBlueprintCompanion(cad, outDir);
+
         Console.WriteLine(
             $"Wrote drawing package ({drawings.Count} drawings, {bom.Count} BOM lines) → {outDir}");
         return outDir;
+    }
+
+    /// <summary>
+    /// Golden consumer of <see cref="CadBlueprintExporter"/> — companion JSON + smart HTML
+    /// beside the ISO numbered package (does not replace CAL-xxx chrome).
+    /// </summary>
+    private static void EmitCadBlueprintCompanion(CadDocument cad, string outDir)
+    {
+        var result = CadBlueprintExporter.Export(cad, new CadBlueprintExportOptions
+        {
+            OutputDirectory = outDir,
+            FileStem = "calypso",
+            SmartHtmlSubfolder = "smart",
+            ContextOverride = CadBlueprintContexts.SeagoingShip,
+            CadDocumentHref = "./calypso.cadjson",
+            FailOnError = true,
+            FailOnWarning = false,
+        });
+
+        if (!result.Ok)
+        {
+            throw new InvalidOperationException(
+                "CadBlueprint companion export failed:" + Environment.NewLine + result.FormatDiagnostics());
+        }
+
+        var json = result.WrittenPaths.FirstOrDefault(p =>
+            p.EndsWith(".cadblueprint.json", StringComparison.OrdinalIgnoreCase));
+        var htmlCount = result.WrittenPaths.Count(p =>
+            p.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
+        Console.WriteLine(
+            $"Wrote CadBlueprint companion ({result.Diagnostics.Count} diagnostic(s), {htmlCount} smart sheet(s)) → {json ?? outDir}");
     }
 
     private static void WriteBomArtifacts(

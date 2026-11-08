@@ -3,7 +3,9 @@ using CalypsoCad.Blueprints;
 using CalypsoCad.Blueprints.DrawingPackage;
 using CalypsoCad.Model;
 using CalypsoCad.Publication;
+using CalypsoCad.Session;
 using CalypsoCad.Structure;
+using Novolis.Cad.Blueprint;
 using Novolis.Cad.Primitives;
 
 namespace CalypsoCad.Drawing;
@@ -153,6 +155,79 @@ internal static class UniversalDrawingAcceptance
             }
         }
 
+        // G — CadBlueprint companion export (Novolis.Cad.Blueprint)
+        {
+            using var tmp = new TempScope();
+            var export = CadBlueprintExporter.Export(cad, new CadBlueprintExportOptions
+            {
+                OutputDirectory = tmp.Path,
+                FileStem = "calypso-acceptance",
+                ContextOverride = CadBlueprintContexts.SeagoingShip,
+                FailOnError = true,
+                FailOnWarning = false,
+            });
+            Check("G CadBlueprint export Ok", export.Ok,
+                export.Ok ? $"written={export.WrittenPaths.Count}" : export.FormatDiagnostics());
+            var jsonPath = export.WrittenPaths.FirstOrDefault(p =>
+                p.EndsWith(".cadblueprint.json", StringComparison.OrdinalIgnoreCase));
+            Check("G CadBlueprint JSON written",
+                jsonPath is not null && File.Exists(jsonPath),
+                jsonPath ?? "missing");
+            if (jsonPath is not null)
+            {
+                var loaded = CadBlueprintJson.Load(jsonPath);
+                var diags = CadBlueprintValidator.Validate(loaded);
+                Check("G CadBlueprint validates",
+                    !CadBlueprintValidator.HasErrors(diags),
+                    string.Join("; ", diags.Where(d => d.Severity == CadBlueprintDiagnosticSeverity.Error).Select(d => d.Code)));
+                Check("G CadBlueprint stern-left sheet",
+                    loaded.Sheets.Any(s => s.Orientation.Contains("stern-left", StringComparison.OrdinalIgnoreCase)),
+                    loaded.Sheets.FirstOrDefault()?.Orientation ?? "none");
+            }
+            else
+            {
+                Check("G CadBlueprint validates", false, "no json");
+                Check("G CadBlueprint stern-left sheet", false, "no json");
+            }
+
+            var htmlPath = export.WrittenPaths.FirstOrDefault(p =>
+                p.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
+            Check("G CadBlueprint smart HTML",
+                htmlPath is not null
+                && File.Exists(htmlPath)
+                && File.ReadAllText(htmlPath).Contains(CadBlueprintDom.FormatValue, StringComparison.Ordinal),
+                htmlPath ?? "missing");
+
+            // Package path must also contain companion when blueprints were emitted previously.
+            var pkgJson = Path.Combine(CalypsoProjectPaths.BlueprintsPackageDirectory, "calypso.cadblueprint.json");
+            if (File.Exists(pkgJson))
+            {
+                Check("G package companion present", true, pkgJson);
+            }
+        }
+
         return results;
+    }
+
+    private sealed class TempScope : IDisposable
+    {
+        public string Path { get; } = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(),
+            "calypso-nbp-" + Guid.NewGuid().ToString("N"));
+
+        public TempScope() => Directory.CreateDirectory(Path);
+
+        public void Dispose()
+        {
+            try
+            {
+                if (Directory.Exists(Path))
+                    Directory.Delete(Path, recursive: true);
+            }
+            catch
+            {
+                /* best-effort */
+            }
+        }
     }
 }
