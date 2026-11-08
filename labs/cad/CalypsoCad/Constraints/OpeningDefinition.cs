@@ -1,14 +1,5 @@
 namespace CalypsoCad.Constraints;
 
-internal enum OpeningPurpose
-{
-    Passage,
-    Hatch,
-    CargoDoor,
-    Lightening,
-    DeckOpening,
-}
-
 /// <summary>Material subtraction belonging to an assembly — not a free-floating render cue.</summary>
 internal sealed record OpeningDefinition(
     string Id,

@@ -1,11 +1,5 @@
 namespace CalypsoCad.Constraints;
 
-internal enum StructuralStationKind
-{
-    RingFrame,
-    HeavyBulkhead,
-}
-
 /// <summary>Location that requires a transverse assembly (frame or heavy bulkhead).</summary>
 internal sealed record StructuralStation(
     string Id,

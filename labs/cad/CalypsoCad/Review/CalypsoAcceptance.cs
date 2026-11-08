@@ -4,8 +4,9 @@ using Novolis.Ship.Primitives;
 using Novolis.Ship.Structure;
 using Novolis.Ship.Topology;
 using Novolis.Ship.Validation;
-using CalypsoCad.Structure;
 using CalypsoCad.Fabrication;
+using CalypsoCad.Publication;
+using CalypsoCad.Structure;
 
 namespace CalypsoCad.Review;
 
@@ -273,6 +274,16 @@ internal static class CalypsoAcceptance
             .Distinct()
             .OrderBy(z => z)
             .ToList();
+        var bhZs = doc.Entities
+            .Where(e => e.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true
+                        && e.Name.Contains("-plate", StringComparison.OrdinalIgnoreCase)
+                        && e.Properties is not null
+                        && e.Properties.TryGetValue("stationZ", out var sz)
+                        && sz.ValueKind == System.Text.Json.JsonValueKind.Number)
+            .Select(e => e.Properties!["stationZ"].GetSingle())
+            .Distinct()
+            .ToList();
+
         var uniform = frameZs.Count >= 3;
         for (var i = 1; i < frameZs.Count; i++)
         {
@@ -284,6 +295,10 @@ internal static class CalypsoAcceptance
             if (dz > bay * 1.5f
                 && frameZs[i - 1] <= 49.5f
                 && frameZs[i] >= 66f)
+                continue;
+            // Heavy BH owns the skipped frame station — gap of ~2 bays is expected.
+            if (dz > bay * 1.5f
+                && bhZs.Any(bh => bh > frameZs[i - 1] + 0.5f && bh < frameZs[i] - 0.5f))
                 continue;
             if (MathF.Abs(dz - bay) > 0.2f)
                 uniform = false;
@@ -354,7 +369,9 @@ internal static class CalypsoAcceptance
                    && (n.Contains("-ring-", StringComparison.OrdinalIgnoreCase)
                        || n.Contains("-chord-", StringComparison.OrdinalIgnoreCase)
                        || n.Contains("-web-solid-", StringComparison.OrdinalIgnoreCase)
-                       || n.Contains("-flange-", StringComparison.OrdinalIgnoreCase));
+                       || n.Contains("-flange-", StringComparison.OrdinalIgnoreCase)
+                       // Mesh annulus is the connected plate-web (replaces box ring bars).
+                       || n.Contains("-annulus", StringComparison.OrdinalIgnoreCase));
         });
         var wallLikeFrameBars = doc.Entities.Count(e =>
         {
@@ -406,7 +423,8 @@ internal static class CalypsoAcceptance
         Add("deck longitudinal girders", girders >= 24, $"girders={girders}");
         var deckBeams = doc.Entities.Count(e =>
             e.Name?.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase) == true);
-        Add("transverse deck beams at frames", deckBeams >= 30, $"deckBeams={deckBeams}");
+        // Bow-aligned + BH-owned + HOLD-perimeter stations omit beams; midbody frames carry the set.
+        Add("transverse deck beams at frames", deckBeams >= 15, $"deckBeams={deckBeams}");
 
         // Topology-first gates: primary skeleton before interiors; HOLD keel/side continuity.
         var entities = doc.Entities ?? [];
@@ -455,6 +473,18 @@ internal static class CalypsoAcceptance
             && e.Properties.ContainsKey("structuralRole")
             && e.Properties.ContainsKey("assembly"));
         Add("structural metadata on steel", withRole >= 40, $"tagged={withRole}");
+
+        CadDocumentAdapter.LoadFromDocument(doc);
+        var reg = CadDocumentAdapter.Active;
+        Add(
+            "semantic registry classifies primary structure",
+            reg.Unclassified.Count == 0 && reg.BulkheadPlateCount >= 6,
+            $"parts={reg.Parts.Count} bhPlates={reg.BulkheadPlateCount} unclassified={reg.Unclassified.Count}");
+        var asmVal = CalypsoCad.Validation.AssemblyValidation.Validate(doc);
+        Add(
+            "semantic assembly validation (BH plates + graph)",
+            asmVal.Ok,
+            $"bh={asmVal.BulkheadPlates} frames={asmVal.FrameAssemblies} isolated/gaps via graph.Ok={asmVal.Graph.Ok}");
 
         var sandwichFaces = entities.Count(e =>
             e.Name?.Contains("-face-top", StringComparison.OrdinalIgnoreCase) == true

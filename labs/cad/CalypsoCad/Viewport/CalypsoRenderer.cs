@@ -2445,7 +2445,35 @@ internal sealed class CalypsoRenderer
         var n = box.Name ?? "";
         var outer = IsOuterHullMember(n) ? CalypsoVisualLayers.OuterHull : CalypsoVisualLayers.None;
 
-        // Metadata-first; name-prefix fallback for legacy solids.
+        // Semantic stamps first (CadSystem / CadPartKind) — independent of Name prefixes.
+        if (box.Properties is not null
+            && box.Properties.TryGetValue("cadPartKind", out var kindEl)
+            && kindEl.ValueKind == System.Text.Json.JsonValueKind.String
+            && Enum.TryParse<Model.CadPartKind>(kindEl.GetString(), ignoreCase: true, out var kind))
+        {
+            var fromKind = kind switch
+            {
+                Model.CadPartKind.RingFrame or Model.CadPartKind.WebFrame or Model.CadPartKind.DeckBeam =>
+                    CalypsoVisualLayers.Frames | outer,
+                Model.CadPartKind.BulkheadPlate => CalypsoVisualLayers.Bulkheads,
+                Model.CadPartKind.StructuralBracket => CalypsoVisualLayers.Joinery,
+                Model.CadPartKind.DeckPanel => DeckPlateFlags(box) | outer,
+                Model.CadPartKind.LongitudinalGirder or Model.CadPartKind.ThrustMember =>
+                    CalypsoVisualLayers.Longitudinals | outer,
+                Model.CadPartKind.HullStringer =>
+                    CalypsoVisualLayers.HullShell | CalypsoVisualLayers.OuterHull,
+                Model.CadPartKind.ShellPanel => CalypsoVisualLayers.HullShell,
+                _ => CalypsoVisualLayers.None,
+            };
+            if (fromKind != CalypsoVisualLayers.None)
+                return fromKind;
+        }
+
+        return FallbackStructureFlags(box, n, outer);
+    }
+
+    private static CalypsoVisualLayers FallbackStructureFlags(CadEntity box, string n, CalypsoVisualLayers outer)
+    {
         if (box.Properties is not null
             && box.Properties.TryGetValue("structuralRole", out var roleEl)
             && roleEl.ValueKind == System.Text.Json.JsonValueKind.String)
@@ -2462,7 +2490,6 @@ internal sealed class CalypsoRenderer
             if (string.Equals(role, "LongitudinalGirder", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Longitudinals | outer;
-            // Stiffeners are welded to shell plating — hide with HullShell (Test D).
             if (string.Equals(role, "ShellStiffener", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.HullShell | CalypsoVisualLayers.OuterHull;
             if (string.Equals(role, "ShellPanel", StringComparison.OrdinalIgnoreCase))
@@ -2490,8 +2517,8 @@ internal sealed class CalypsoRenderer
             || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Longitudinals | outer;
-        return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Bulkheads
-               | CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.DeckPlates;
+        // Unclassified structure: do not flood every layer — Joinery as least-surprise inspect bucket.
+        return CalypsoVisualLayers.Joinery;
     }
 
     private static bool DeckSandwichMatchesFilter(string name, int deckFilter)

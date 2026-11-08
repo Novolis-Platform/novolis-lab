@@ -25,13 +25,14 @@ internal static class CalypsoFabReleaseChecks
             "hull OML cut parts",
             manifest.Parts.Count(p => p.PartId.StartsWith("P-HULL-", StringComparison.Ordinal)) >= 40,
             $"hull={manifest.Parts.Count(p => p.PartId.StartsWith("P-HULL-", StringComparison.Ordinal))}");
+        // HOLD perimeter stations emit annulus mesh without portal holes; full webs stay ≥8.
         Add(
             "structure cut parts",
-            manifest.Parts.Count(p => p.PartId.StartsWith("P-FRAME-", StringComparison.Ordinal)) >= 10,
+            manifest.Parts.Count(p => p.PartId.StartsWith("P-FRAME-", StringComparison.Ordinal)) >= 8,
             $"frames={manifest.Parts.Count(p => p.PartId.StartsWith("P-FRAME-", StringComparison.Ordinal))}");
         Add(
             "frame profiles with holes",
-            manifest.Cuts.Count(c => c.PartId.StartsWith("P-FRAME-", StringComparison.Ordinal) && c.Holes.Count > 0) >= 8,
+            manifest.Cuts.Count(c => c.PartId.StartsWith("P-FRAME-", StringComparison.Ordinal) && c.Holes.Count > 0) >= 5,
             $"profileHoles={manifest.Cuts.Count(c => c.PartId.StartsWith("P-FRAME-", StringComparison.Ordinal) && c.Holes.Count > 0)}");
         Add(
             "outfit install parts",

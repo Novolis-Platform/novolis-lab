@@ -2225,105 +2225,25 @@ internal static class CalypsoLockGenerator
         ResetStructureMeshValidations();
         FrameContourEmitLog.Reset();
         var topo = BuildStructuralTopology(lockDoc, loa);
-        var web = topo.Web;
-        var halfDepthZ = web * 0.5f;
-        var deckUps = topo.DeckUps;
-        var tPlate = topo.TPlate;
-        var openAtriums = topo.OpenAtriumSpans;
         var bhStationMap = BulkheadStationMap(lockDoc);
-        var bhSchedule = CalypsoBulkheads.BuildSchedule(loa, bhStationMap);
-
-        var zMax = ActiveStations[^1].Z;
-        var skin = TShell + 0.05f;
-
-        // 1) Heavy bulkheads first — explicit red-plan stations; own their transverse station.
-        CalypsoBulkheads.AddAll(
-            entities,
-            loa,
-            topo.TBh,
-            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
-            deckUps,
-            bhStationMap,
-            hatchPortalsAt: (z, margin) => CollectHatchWebPortals(lockDoc, z, margin, deckUps));
-
-        void PlaceFrame(string id, float zStem, bool bowAligned = false)
-        {
-            // Hull-first: heavy BH owns the station — do not duplicate an ordinary frame there.
-            if (CalypsoBulkheads.OwnsFrameStation(zStem, bhSchedule))
-                return;
-
-            var z = Math.Clamp(zStem, web * 0.5f + skin, zMax - web * 0.5f - skin);
-            if (!HullSectionAuthority.HasStructuralSection(z, minHalf: 0.5f))
-                return;
-            var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
-            var gaps = CollectAthwartPassageGaps(lockDoc, z, margin: 0.28f);
-
-            // Open HOLD: perimeter framing + cargo-floor supports only — never skip the whole station.
-            if (topo.InOpenHoldCell(zStem))
-            {
-                CalypsoShipbuildingFrames.AddHoldPerimeterFrame(
-                    entities, loa, frameName, z, web, halfDepthZ, deckUps, tPlate);
-                return;
-            }
-
-            // Ordinary open frames from local IML section (HullSectionAuthority via FrameWebPlateBuilder).
-            CalypsoShipbuildingFrames.AddTransverseFrameWeb(
-                entities, loa, frameName, z, web, halfDepthZ, gaps, bowAligned, deckUps, hatchPortals: null);
-            if (!bowAligned)
-            {
-                CalypsoShipbuildingFrames.AddTransverseDeckBeams(
-                    entities, loa, z, frameName, web, halfDepthZ, deckUps, gaps, tPlate, openAtriums);
-            }
-        }
-
-        // 2) Ordinary bay frames — schedule excludes stations owned by heavy BHs.
-        var ordinaryFrames = topo.FrameStations
-            .Where(f => !CalypsoBulkheads.OwnsFrameStation(f.ZStem, bhSchedule))
-            .ToList();
-        foreach (var (id, zStem, bowAligned) in ordinaryFrames)
-            PlaceFrame(id, zStem, bowAligned);
-
-        // 3) Continuous longitudinals (keel/sides through HOLD; no upper tiers in cargo void).
-        CalypsoShipbuildingFrames.AddDeckLongitudinalGirders(
-            entities, loa, topo.ZStart, topo.ZEnd, web, topo.FrameBay, deckUps, tPlate, openAtriums);
-
-        // 3a) Outer-hull plating-join stringers + shell facets (same recipe as two-bay proof).
-        CalypsoShipbuildingFrames.AddOuterHullStringers(
-            entities, loa, topo.ZStart, topo.ZEnd, web, topo.FrameBay, ordinaryFrames);
-
-        // 3b) Explicit frame ↔ girder weld stubs at crossings (ordinary frames only).
-        CalypsoShipbuildingFrames.AddFrameGirderJoinStubs(
-            entities, loa, ordinaryFrames, web, halfDepthZ, deckUps, tPlate,
-            topo.InOpenHoldCell, openAtriums);
-
-        // 4) Cellular sandwich decks — bay edges on frame stations, joins to frames/BHs.
-        var bhStations = bhSchedule.Select(b => (b.Id, b.ZStem)).ToList();
-        CalypsoShipbuildingFrames.AddCellularSandwichDecks(
-            entities, loa, topo.ZStart, topo.ZEnd, topo.FrameBay, topo.SandwichDecks, tPlate, openAtriums,
-            web, ordinaryFrames, bhStations);
-
-        // 4b) Critical structure seats: BH×deck + frame×deck + BH×nearest frame joints.
-        var joints = CriticalStructureConnectivity.Connect(
-            entities, loa, topo,
-            bhSchedule.Select(b => (b.Id, b.ZStem, b.ThicknessScale)).ToList());
-
-        // 5) Aft coaming / ramp (thrust / stern aperture).
         var doorW = lockDoc.Hold?.DoorW is > 0 ? (float)lockDoc.Hold.DoorW : 14f;
         var doorH = lockDoc.Hold?.DoorH is > 0 ? (float)lockDoc.Hold.DoorH : 8.5f;
         var sill = lockDoc.Hold?.Sill is > 0 ? (float)lockDoc.Hold.Sill : 0.25f;
         var apron = lockDoc.Hold?.ApronD is > 0 ? (float)lockDoc.Hold.ApronD : 12.25f;
-        var stern = loa - TShell - web * 0.5f - 0.04f;
-        var halfW = doorW * 0.5f;
-        var coamingMeta = new StructuralSolidMeta(StructuralRoles.ThrustStructure, "coaming-aft", StationZ: stern);
-        TryAddBar(entities, loa, "coaming-aft-sill", 0f, sill + web * 0.5f, stern, halfW, web * 0.5f, web * 0.5f, meta: coamingMeta);
-        TryAddBar(entities, loa, "coaming-aft-head", 0f, sill + doorH - web * 0.5f, stern, halfW, web * 0.5f, web * 0.5f, meta: coamingMeta);
-        TryAddBar(entities, loa, "coaming-aft-port", -halfW, sill + doorH * 0.5f, stern, web * 0.5f, doorH * 0.5f - web, web * 0.5f, meta: coamingMeta);
-        TryAddBar(entities, loa, "coaming-aft-stbd", halfW, sill + doorH * 0.5f, stern, web * 0.5f, doorH * 0.5f - web, web * 0.5f, meta: coamingMeta);
-        var rampHalf = MathF.Max(0.3f, (apron - 0.2f) * 0.5f);
-        var rampZ = stern - web - rampHalf;
-        TryAddBar(entities, loa, "ramp-aft", 0f, sill + 0.06f, rampZ, halfW, 0.04f, rampHalf,
-            meta: new StructuralSolidMeta(StructuralRoles.ThrustStructure, "ramp-aft", StationZ: rampZ));
-        return joints;
+
+        // Semantic pipeline: define assemblies → generate geometry → validate → publish via entities list.
+        return Generation.ShipGenerationPipeline.RunStructure(
+            entities,
+            loa,
+            topo,
+            bhStationMap,
+            (z, margin) => CollectAthwartPassageGaps(lockDoc, z, margin),
+            (z, margin) => CollectHatchWebPortals(lockDoc, z, margin, topo.DeckUps),
+            doorW,
+            doorH,
+            sill,
+            apron,
+            TShell);
     }
 
     private static List<float> DeckStructureElevations(CalypsoLockDocument lockDoc)
@@ -2742,70 +2662,19 @@ internal static class CalypsoLockGenerator
 
     internal static StructuralSolidMeta InferStructuralMeta(string name, float zFromStem, float up)
     {
-        if (name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
+        // Prefer shared StructuralRoleMap — no silent invention of new roles for unknown names.
+        var classified = Model.StructuralRoleMap.TryClassifyFromName(name);
+        if (classified is { } c)
         {
-            // bh-ENG-AFT-plate / bh-ENG-AFT-web-0 → assembly bh-ENG-AFT
-            var plate = name.IndexOf("-plate", StringComparison.OrdinalIgnoreCase);
-            if (plate > 0)
-                return new StructuralSolidMeta(
-                    StructuralRoles.PressureBulkhead, name[..plate], StationZ: zFromStem, DeckUp: up);
-            var dash = name.IndexOf("-web-", StringComparison.OrdinalIgnoreCase);
-            var assembly = dash > 0
-                ? name[..dash]
-                : string.Join('-', name.Split('-').Take(3));
-            return new StructuralSolidMeta(StructuralRoles.PressureBulkhead, assembly, StationZ: zFromStem, DeckUp: up);
+            return new StructuralSolidMeta(c.LegacyRole, c.Assembly, StationZ: zFromStem, DeckUp: up);
         }
 
-        if (name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
-        {
-            var segs = name.Split('-');
-            var assembly = segs.Length >= 2 ? $"frame-{segs[1]}" : name;
-            return new StructuralSolidMeta(StructuralRoles.TransverseFrame, assembly, StationZ: zFromStem, DeckUp: up);
-        }
+        // Non-primary emit (outfit hatches, furniture): do not invent a structural role.
+        // Primary-looking names that miss the map are reported unclassified.
+        if (IsPrimaryStructureName(name))
+            Publication.CadDocumentAdapter.Active.ReportUnclassified(name);
 
-        if (name.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
-            || name.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)
-            || name.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase))
-        {
-            var segs = name.Split('-');
-            var assembly = segs.Length >= 2 ? $"{segs[0]}-{segs[1]}" : name;
-            return new StructuralSolidMeta(StructuralRoles.LongitudinalGirder, assembly, StationZ: zFromStem, DeckUp: up);
-        }
-
-        if (name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase))
-        {
-            var segs = name.Split('-');
-            // deck-sandwich-dk0-… → deck-dk0
-            var deckTag = segs.Length >= 3 ? segs[2] : "dk";
-            return new StructuralSolidMeta(
-                StructuralRoles.StructuralDeck, $"deck-{deckTag}", StationZ: zFromStem, DeckUp: up);
-        }
-
-        if (name.StartsWith("shell-panel-", StringComparison.OrdinalIgnoreCase))
-        {
-            return new StructuralSolidMeta(StructuralRoles.ShellPanel, "bay-shell", StationZ: zFromStem, DeckUp: up);
-        }
-
-        if (name.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
-        {
-            return new StructuralSolidMeta(StructuralRoles.ShellStiffener, "bay-shell", StationZ: zFromStem, DeckUp: up);
-        }
-
-        if (name.Contains("-join-", StringComparison.OrdinalIgnoreCase))
-        {
-            var segs = name.Split('-');
-            var assembly = segs.Length >= 2 ? $"frame-{segs[1]}" : name;
-            return new StructuralSolidMeta(
-                StructuralRoles.StructuralBracket, assembly, StationZ: zFromStem, DeckUp: up);
-        }
-
-        if (name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
-            || name.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase))
-        {
-            return new StructuralSolidMeta(StructuralRoles.ThrustStructure, name.Split('-')[0], StationZ: zFromStem);
-        }
-
-        return new StructuralSolidMeta(StructuralRoles.TransverseFrame, name, StationZ: zFromStem, DeckUp: up);
+        return new StructuralSolidMeta("", name, StationZ: zFromStem, DeckUp: up);
     }
 
     private static void AddOutfit(List<CadEntity> entities, CalypsoLockDocument lockDoc, float loa)
@@ -3223,7 +3092,8 @@ internal static class CalypsoLockGenerator
             Properties = props,
         };
 
-        if (structural is { } stamped)
+        // Only stamp classified structure — empty Role means non-primary / unclassified emit.
+        if (structural is { Role.Length: > 0 } stamped)
         {
             Publication.CadDocumentAdapter.StampAndRegister(
                 entity,

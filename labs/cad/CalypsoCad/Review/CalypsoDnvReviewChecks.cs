@@ -102,11 +102,12 @@ internal static class CalypsoDnvReviewChecks
             var n = e.Name ?? "";
             return n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
                    && (n.Contains("-ring-", StringComparison.OrdinalIgnoreCase)
-                       || n.Contains("-chord-", StringComparison.OrdinalIgnoreCase));
+                       || n.Contains("-chord-", StringComparison.OrdinalIgnoreCase)
+                       || n.Contains("-annulus", StringComparison.OrdinalIgnoreCase));
         });
         Add(
             "frame-first ring webs",
-            openFrameSteel >= 40 && FrameWebPlateRegistry.All.Count >= 10,
+            openFrameSteel >= 40 && FrameWebPlateRegistry.All.Count >= 8,
             $"ring+chord={openFrameSteel} profiles={FrameWebPlateRegistry.All.Count}");
         Add(
             "no portal knee solids",

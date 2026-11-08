@@ -4,6 +4,7 @@ using Novolis.Cad.Primitives;
 using Novolis.Ship.Primitives;
 using Novolis.Ship.Structure;
 using CalypsoCad.Structure;
+using CalypsoCad.Publication;
 
 namespace CalypsoCad.Fabrication;
 
@@ -48,11 +49,23 @@ internal static class CadFabPartCollector
                 && e.Name.Contains("-webplate-", StringComparison.OrdinalIgnoreCase))
                 continue;
 
+            // Prefer stamped partId when present (semantic model); Name remains display / fallback key.
+            var semanticId = e.Properties is not null
+                             && e.Properties.TryGetValue(CadDocumentAdapter.PropPartId, out var pid)
+                             && pid.ValueKind == JsonValueKind.String
+                ? pid.GetString()
+                : null;
+
             if (e.Name.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
                 || e.Name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
-                || e.Name.StartsWith("ramp-", StringComparison.OrdinalIgnoreCase))
+                || e.Name.StartsWith("ramp-", StringComparison.OrdinalIgnoreCase)
+                || (semanticId is not null
+                    && e.Properties!.TryGetValue(CadDocumentAdapter.PropCadPartKind, out var kindEl)
+                    && kindEl.ValueKind == JsonValueKind.String
+                    && (string.Equals(kindEl.GetString(), "LongitudinalGirder", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(kindEl.GetString(), "ThrustMember", StringComparison.OrdinalIgnoreCase))))
             {
-                var fabId = GetFabPartId(e) ?? $"P-STRUCT-{Sanitize(e.Name)}";
+                var fabId = GetFabPartId(e) ?? $"P-STRUCT-{Sanitize(semanticId ?? e.Name)}";
                 if (!seenParts.Add(fabId))
                     continue;
                 ExportStructureBar(doc, e, loa, fabId, cutStructDir, parts, cuts, bomLines, sequence, ref sequenceIndex,

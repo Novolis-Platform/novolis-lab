@@ -1,12 +1,5 @@
 namespace CalypsoCad.Constraints;
 
-internal enum ClearanceKind
-{
-    CargoClearance,
-    PassageClearance,
-    MachineryClearance,
-}
-
 /// <summary>Reserved space that constrains physical parts — not a part itself.</summary>
 internal sealed record ClearanceVolume(
     string Id,

@@ -167,13 +167,27 @@ internal static class StructuralAssemblyGraph
     private static bool IsPrimarySteel(CadEntity e)
     {
         var n = e.Name ?? "";
-        return n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+        // Graph membership stays name-gated so outfit/closures stamped via MakeSolid do not
+        // inflate the primary steel set. Migrated kinds refine identity once admitted.
+        var namePrimary = n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("shell-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase)
                || n.Contains("-join-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase);
+        if (!namePrimary)
+            return false;
+
+        if (e.Properties is not null
+            && e.Properties.TryGetValue("cadPartKind", out var kindEl)
+            && kindEl.ValueKind == JsonValueKind.String
+            && Enum.TryParse<Model.CadPartKind>(kindEl.GetString(), ignoreCase: true, out var kind))
+        {
+            return kind is not (Model.CadPartKind.Unknown or Model.CadPartKind.Partition or Model.CadPartKind.Hatch);
+        }
+
+        return true;
     }
 
     private static bool IsShellEntity(CadEntity e)

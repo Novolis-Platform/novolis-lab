@@ -1,3 +1,4 @@
+using CalypsoCad.Constraints;
 using Novolis.Cad.Primitives;
 
 namespace CalypsoCad.Structure;
@@ -16,7 +17,8 @@ internal static class CriticalStructureConnectivity
         List<CadEntity> entities,
         float loa,
         StructuralTopology topo,
-        IReadOnlyList<(string Id, float ZStem, float ThicknessScale)> bulkheads)
+        IReadOnlyList<(string Id, float ZStem, float ThicknessScale)> bulkheads,
+        DesignConstraints? constraints = null)
     {
         var joints = new List<StructuralJoint>();
         var web = topo.Web;
@@ -24,6 +26,17 @@ internal static class CriticalStructureConnectivity
         var inset = CalypsoShipbuildingFrames.DefaultSkinInset + 0.22f;
         var seatHu = MathF.Max(0.05f, web * 0.32f);
         var seatHz = MathF.Max(web * 0.55f, tPlate * 0.6f);
+        DesignConstraints dc;
+        if (constraints is not null)
+        {
+            dc = constraints;
+        }
+        else
+        {
+            var map = bulkheads.ToDictionary(b => b.Id, b => b.ZStem, StringComparer.OrdinalIgnoreCase);
+            dc = DesignConstraintsBuilder.Build(
+                loa, topo, CalypsoBulkheads.BuildSchedule(loa, map), topo.FrameStations);
+        }
 
         foreach (var (id, zStem, scale) in bulkheads)
         {
@@ -32,8 +45,7 @@ internal static class CriticalStructureConnectivity
             var bhAsm = $"bh-{id}";
             foreach (var deckUp in topo.DeckUps)
             {
-                if (CalypsoShipbuildingFrames.IsOpenAtriumDeck(z, deckUp, topo.OpenAtriumSpans)
-                    && !IsHoldFloor(deckUp, topo.DeckUps))
+                if (dc.IsOpenAtriumDeck(z, deckUp) && !dc.IsHoldFloor(deckUp, topo.DeckUps))
                     continue;
 
                 var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(z, deckUp, inset) - 0.2f;
@@ -65,14 +77,18 @@ internal static class CriticalStructureConnectivity
             var z = Math.Clamp(zStem, web * 0.5f, loa - web * 0.5f);
             var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
             var frameAsm = FrameAssembly(frameName);
-            var hold = topo.InOpenHoldCell(zStem);
+            if (!AssemblyHasEntity(entities, frameAsm))
+                continue;
+
+            var hold = dc.InCargoClearance(zStem);
             var floorDeck = topo.DeckUps.Count > 0 ? topo.DeckUps[0] : 0.5f;
+            var seats = 0;
 
             foreach (var deckUp in topo.DeckUps)
             {
                 if (hold && deckUp > floorDeck + 0.15f)
                     continue;
-                if (!hold && CalypsoShipbuildingFrames.IsOpenAtriumDeck(z, deckUp, topo.OpenAtriumSpans))
+                if (!hold && dc.IsOpenAtriumDeck(z, deckUp))
                     continue;
 
                 var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(z, deckUp, inset) - 0.2f;
@@ -91,16 +107,32 @@ internal static class CriticalStructureConnectivity
                 if (!placed)
                     continue;
 
+                seats++;
                 joints.Add(Fillet(seatName, frameAsm, deckAsm, 0f, up, z, "frame×deck seat"));
+            }
+
+            // Bow/stern rings that cannot seat to a deck still attach through the shell.
+            if (seats == 0 && AssemblyHasEntity(entities, "bay-shell"))
+            {
+                joints.Add(Fillet(
+                    $"j-{frameAsm}-shell", frameAsm, "bay-shell",
+                    0f, floorDeck, z, "frame×shell (no deck seat)"));
             }
         }
 
-        // Nearest ordinary frame ↔ BH (exclude stations owned by the BH itself).
+        // Nearest ordinary frame ↔ BH (only when that frame was actually emitted).
         foreach (var (id, zStem, _) in bulkheads)
         {
             var bhAsm = $"bh-{id}";
             var nearest = topo.FrameStations
                 .Where(f => MathF.Abs(f.ZStem - zStem) > 2.05f)
+                .Where(f =>
+                {
+                    var name = f.Id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+                        ? f.Id
+                        : $"frame-{f.Id}";
+                    return AssemblyHasEntity(entities, FrameAssembly(name));
+                })
                 .Select(f => (f.Id, f.ZStem, Dist: MathF.Abs(f.ZStem - zStem)))
                 .OrderBy(f => f.Dist)
                 .FirstOrDefault();
@@ -119,6 +151,16 @@ internal static class CriticalStructureConnectivity
 
         return joints;
     }
+
+    private static bool AssemblyHasEntity(List<CadEntity> entities, string assemblyKey) =>
+        entities.Any(e =>
+            e.Name is not null
+            && (string.Equals(e.Name, assemblyKey, StringComparison.OrdinalIgnoreCase)
+                || e.Name.StartsWith(assemblyKey + "-", StringComparison.OrdinalIgnoreCase)
+                || (e.Properties is not null
+                    && e.Properties.TryGetValue("assembly", out var a)
+                    && a.ValueKind == System.Text.Json.JsonValueKind.String
+                    && string.Equals(a.GetString(), assemblyKey, StringComparison.OrdinalIgnoreCase))));
 
     /// <summary>
     /// Critical subgraph OK when every BH and every non-HOLD frame assembly has a path to a deck assembly.
@@ -241,6 +283,4 @@ internal static class CriticalStructureConnectivity
         return "deck-dk0";
     }
 
-    private static bool IsHoldFloor(float deckUp, IReadOnlyList<float> deckUps) =>
-        deckUps.Count > 0 && MathF.Abs(deckUp - deckUps[0]) < 0.08f;
 }

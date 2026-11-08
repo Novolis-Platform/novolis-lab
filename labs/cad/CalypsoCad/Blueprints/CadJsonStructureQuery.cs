@@ -402,19 +402,33 @@ internal static class CadJsonStructureQuery
         var byId = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
         foreach (var e in doc.Entities ?? [])
         {
-            if (e.Name is null
-                || !e.Name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
-                || !e.Name.Contains("-plate", StringComparison.OrdinalIgnoreCase)
-                || e.Name.Contains("-deckseat", StringComparison.OrdinalIgnoreCase)
-                || !TryBox(e, out var center, out _))
+            if (e.Name is null || !TryBox(e, out var center, out _))
                 continue;
 
-            // bh-ENG-AFT-plate → ENG-AFT (ignore deckseat / web fragments)
-            var rest = e.Name["bh-".Length..];
-            var cut = rest.IndexOf("-plate", StringComparison.OrdinalIgnoreCase);
-            if (cut <= 0)
+            // Prefer semantic stamps (assemblyId / cadPartKind) over name prefixes.
+            string? id = null;
+            if (e.Properties is not null
+                && e.Properties.TryGetValue("cadPartKind", out var kindEl)
+                && kindEl.ValueKind == System.Text.Json.JsonValueKind.String
+                && string.Equals(kindEl.GetString(), "BulkheadPlate", StringComparison.OrdinalIgnoreCase)
+                && e.Properties.TryGetValue("assemblyId", out var aidEl)
+                && aidEl.ValueKind == System.Text.Json.JsonValueKind.String)
+            {
+                var aid = aidEl.GetString() ?? "";
+                id = aid.StartsWith("BH-", StringComparison.OrdinalIgnoreCase) ? aid[3..] : aid;
+            }
+            else if (e.Name.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
+                     && e.Name.Contains("-plate", StringComparison.OrdinalIgnoreCase)
+                     && !e.Name.Contains("-deckseat", StringComparison.OrdinalIgnoreCase))
+            {
+                var rest = e.Name["bh-".Length..];
+                var cut = rest.IndexOf("-plate", StringComparison.OrdinalIgnoreCase);
+                if (cut > 0)
+                    id = rest[..cut];
+            }
+
+            if (id is null)
                 continue;
-            var id = rest[..cut];
             var zStem = loa * 0.5f - center.Z;
             if (!byId.TryGetValue(id, out var existing) || MathF.Abs(zStem) < MathF.Abs(existing))
                 byId[id] = zStem;

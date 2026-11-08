@@ -135,6 +135,7 @@ internal static class StructureAuditExporter
                 unclassifiedCount = reg.Unclassified.Count,
                 unclassified = reg.Unclassified.Take(40).ToArray(),
             },
+            assemblyValidation = Validation.AssemblyValidation.Validate(doc),
         };
 
         var jsonPath = Path.Combine(outDir, "structure-audit.json");
@@ -151,6 +152,8 @@ internal static class StructureAuditExporter
             // bh-ENG-FORE-plate / bh-ENG-FORE-web-solid-0 → bh-ENG-FORE
             var rest = name["bh-".Length..];
             var cut = rest.IndexOf("-plate", StringComparison.OrdinalIgnoreCase);
+            if (cut < 0)
+                cut = rest.IndexOf("-deckseat", StringComparison.OrdinalIgnoreCase);
             if (cut < 0)
                 cut = rest.IndexOf("-web-", StringComparison.OrdinalIgnoreCase);
             if (cut < 0)

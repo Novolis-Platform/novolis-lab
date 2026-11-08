@@ -46,6 +46,22 @@ internal static class CalypsoAcceptanceGates
             Console.WriteLine(failures == 0
                 ? "structure-audit: all bh-* groups pierce spine"
                 : $"structure-audit: {failures} group(s) off spine");
+            var asm = Validation.AssemblyValidation.Validate(doc);
+            var unclassified = Publication.CadDocumentAdapter.Active.Unclassified.Count;
+            Console.WriteLine(
+                $"semantic registry: parts={asm.RegistryParts} bhPlates={asm.BulkheadPlates} frames={asm.FrameAssemblies} unclassified={unclassified} ok={asm.Ok}");
+            if (asm.BulkheadPlates < 6)
+            {
+                Console.WriteLine("structure-audit FAIL: expected ≥6 semantic bulkhead plates");
+                return 2;
+            }
+
+            if (unclassified > 0)
+            {
+                Console.WriteLine($"structure-audit FAIL: {unclassified} unclassified primary structure entit(y/ies)");
+                return 3;
+            }
+
             return failures == 0 ? 0 : 1;
         }
         catch (Exception ex)
