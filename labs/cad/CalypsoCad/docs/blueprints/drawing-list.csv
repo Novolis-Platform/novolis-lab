@@ -1,0 +1,43 @@
+drawingNumber,label,title,category,volume,path,subjectId
+CAL-100-001,PKG-INDEX,Drawing package index,General,None,100-general/CAL-100-001-INDEX.html,PACKAGE
+CAL-210-001,BH-BOW-COLLISION,Bulkhead BOW-COLLISION @ z=13 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-001-BH-BOW-COLLISION.html,BOW-COLLISION
+CAL-210-002,BH-CROSS-FORE,Bulkhead CROSS-FORE @ z=19 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-002-BH-CROSS-FORE.html,CROSS-FORE
+CAL-210-003,BH-CROSS-AFT,Bulkhead CROSS-AFT @ z=23 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-003-BH-CROSS-AFT.html,CROSS-AFT
+CAL-210-004,BH-CREW-AFT,Bulkhead CREW-AFT @ z=30.28 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-004-BH-CREW-AFT.html,CREW-AFT
+CAL-210-005,BH-ENG-FORE,Bulkhead ENG-FORE @ z=41 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-005-BH-ENG-FORE.html,ENG-FORE
+CAL-210-006,BH-ENG-AFT,Bulkhead ENG-AFT @ z=49.25 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-006-BH-ENG-AFT.html,ENG-AFT
+CAL-220-001,FRM-Z0,Transverse frame web @ z=0 m,Frames,None,200-structure/220-frames/CAL-220-001-FRAME-z0.html,z0
+CAL-220-002,FRM-Z12,Transverse frame web @ z=12 m,Frames,None,200-structure/220-frames/CAL-220-002-FRAME-z12.html,z12
+CAL-220-003,FRM-Z20,Transverse frame web @ z=20 m,Frames,None,200-structure/220-frames/CAL-220-003-FRAME-z20.html,z20
+CAL-220-004,FRM-Z24,Transverse frame web @ z=24 m,Frames,None,200-structure/220-frames/CAL-220-004-FRAME-z24.html,z24
+CAL-220-005,FRM-Z28,Transverse frame web @ z=28 m,Frames,None,200-structure/220-frames/CAL-220-005-FRAME-z28.html,z28
+CAL-220-006,FRM-Z32,Transverse frame web @ z=32 m,Frames,None,200-structure/220-frames/CAL-220-006-FRAME-z32.html,z32
+CAL-220-007,FRM-Z40,Transverse frame web @ z=40 m,Frames,None,200-structure/220-frames/CAL-220-007-FRAME-z40.html,z40
+CAL-220-008,FRM-Z48,Transverse frame web @ z=48 m,Frames,None,200-structure/220-frames/CAL-220-008-FRAME-z48.html,z48
+CAL-220-009,FRM-Z52,Transverse frame web @ z=52 m,Frames,None,200-structure/220-frames/CAL-220-009-FRAME-z52.html,z52
+CAL-220-010,FRM-Z56,Transverse frame web @ z=56 m,Frames,None,200-structure/220-frames/CAL-220-010-FRAME-z56.html,z56
+CAL-220-011,FRM-Z60,Transverse frame web @ z=60 m,Frames,None,200-structure/220-frames/CAL-220-011-FRAME-z60.html,z60
+CAL-230-001,DECK-DK−1,Deck plates — DK−1 sandwich face schedule (11 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-001-DECK-DKM1.html,deck:-1:DK−1
+CAL-230-002,DECK-DK0,Deck plates — DK0 sandwich face schedule (11 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-002-DECK-DK0.html,deck:0:DK0
+CAL-230-003,DECK-DK+1,Deck plates — DK+1 sandwich face schedule (11 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-003-DECK-DKP1.html,deck:1:DK+1
+CAL-240-001,MEM-REG-01,Structural members register — sheet 1 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-001-MEMBERS-01.html,members-1
+CAL-240-002,MEM-REG-02,Structural members register — sheet 2 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-002-MEMBERS-02.html,members-2
+CAL-240-003,MEM-REG-03,Structural members register — sheet 3 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-003-MEMBERS-03.html,members-3
+CAL-240-004,MEM-REG-04,Structural members register — sheet 4 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-004-MEMBERS-04.html,members-4
+CAL-240-005,MEM-REG-05,Structural members register — sheet 5 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-005-MEMBERS-05.html,members-5
+CAL-240-006,MEM-REG-06,Structural members register — sheet 6 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-006-MEMBERS-06.html,members-6
+CAL-240-007,MEM-REG-07,Structural members register — sheet 7 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-007-MEMBERS-07.html,members-7
+CAL-240-008,MEM-REG-08,Structural members register — sheet 8 (32 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-008-MEMBERS-08.html,members-8
+CAL-310-001,ACCESS,Shirt-sleeves — ACCESS,ShirtSleeves,ShirtSleeves,300-volumes/310-shirt-sleeves/CAL-310-001-ACCESS.html,ACCESS
+CAL-320-001,AIRLOCK_A_port,Airlock anteroom — AIRLOCK_A_port,AirlockAnteroom,AirlockAnteroom,300-volumes/320-airlock-anteroom/CAL-320-001-AIRLOCK_A_port.html,AIRLOCK_A_port
+CAL-320-002,AIRLOCK_A_stbd,Airlock anteroom — AIRLOCK_A_stbd,AirlockAnteroom,AirlockAnteroom,300-volumes/320-airlock-anteroom/CAL-320-002-AIRLOCK_A_stbd.html,AIRLOCK_A_stbd
+CAL-330-001,AIRLOCK_B_port,Airlock — AIRLOCK_B_port,Airlock,Airlock,300-volumes/330-airlock/CAL-330-001-AIRLOCK_B_port.html,AIRLOCK_B_port
+CAL-330-002,AIRLOCK_B_stbd,Airlock — AIRLOCK_B_stbd,Airlock,Airlock,300-volumes/330-airlock/CAL-330-002-AIRLOCK_B_stbd.html,AIRLOCK_B_stbd
+CAL-310-002,CORR_P,Shirt-sleeves — CORR_P,ShirtSleeves,ShirtSleeves,300-volumes/310-shirt-sleeves/CAL-310-002-CORR_P.html,CORR_P
+CAL-310-003,CORR_S,Shirt-sleeves — CORR_S,ShirtSleeves,ShirtSleeves,300-volumes/310-shirt-sleeves/CAL-310-003-CORR_S.html,CORR_S
+CAL-310-004,CROSSING,Shirt-sleeves — CROSSING,ShirtSleeves,ShirtSleeves,300-volumes/310-shirt-sleeves/CAL-310-004-CROSSING.html,CROSSING
+CAL-340-001,ELEV_S,Hybrid circulation — ELEV_S,Hybrid,Hybrid,300-volumes/340-hybrid/CAL-340-001-ELEV_S.html,ELEV_S
+CAL-340-002,STAIRS_P,Hybrid circulation — STAIRS_P,Hybrid,Hybrid,300-volumes/340-hybrid/CAL-340-002-STAIRS_P.html,STAIRS_P
+CAL-900-001,BOM-MASTER,Master bill of materials,Bom,None,900-bom/CAL-900-001-MASTER.html,master
+CAL-900-002,BOM-STR,Structure BOM — bulkheads / frames / decks / members,Bom,None,900-bom/CAL-900-002-STRUCTURE.html,structure
+CAL-900-003,BOM-VOL,Volume circulation BOM — shirt-sleeves / airlocks / hybrid,Bom,None,900-bom/CAL-900-003-VOLUMES.html,volumes

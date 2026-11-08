@@ -1,0 +1,122 @@
+[
+  {
+    "LineId": "VOL-001",
+    "Category": "Shirt-sleeves",
+    "PartOrSpaceId": "ACCESS",
+    "Description": "Shirt-sleeves volume \u00B7 footprint 18 m\u00B2 \u00B7 \u2248192.6 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 18,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-310-001"
+  },
+  {
+    "LineId": "VOL-002",
+    "Category": "Airlock anteroom",
+    "PartOrSpaceId": "AIRLOCK_A_port",
+    "Description": "Airlock anteroom volume \u00B7 footprint 6.4 m\u00B2 \u00B7 \u224820.48 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 6.4000015,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-320-001"
+  },
+  {
+    "LineId": "VOL-003",
+    "Category": "Airlock anteroom",
+    "PartOrSpaceId": "AIRLOCK_A_stbd",
+    "Description": "Airlock anteroom volume \u00B7 footprint 6.4 m\u00B2 \u00B7 \u224820.48 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 6.4000015,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-320-002"
+  },
+  {
+    "LineId": "VOL-004",
+    "Category": "Airlock",
+    "PartOrSpaceId": "AIRLOCK_B_port",
+    "Description": "Airlock volume \u00B7 footprint 5.6 m\u00B2 \u00B7 \u224817.92 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 5.6000013,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-330-001"
+  },
+  {
+    "LineId": "VOL-005",
+    "Category": "Airlock",
+    "PartOrSpaceId": "AIRLOCK_B_stbd",
+    "Description": "Airlock volume \u00B7 footprint 5.6 m\u00B2 \u00B7 \u224817.92 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 5.6000013,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-330-002"
+  },
+  {
+    "LineId": "VOL-006",
+    "Category": "Shirt-sleeves",
+    "PartOrSpaceId": "CORR_P",
+    "Description": "Shirt-sleeves volume \u00B7 footprint 78.75 m\u00B2 \u00B7 \u2248842.63 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 78.75,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-310-002"
+  },
+  {
+    "LineId": "VOL-007",
+    "Category": "Shirt-sleeves",
+    "PartOrSpaceId": "CORR_S",
+    "Description": "Shirt-sleeves volume \u00B7 footprint 78.75 m\u00B2 \u00B7 \u2248842.63 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 78.75,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-310-003"
+  },
+  {
+    "LineId": "VOL-008",
+    "Category": "Shirt-sleeves",
+    "PartOrSpaceId": "CROSSING",
+    "Description": "Shirt-sleeves volume \u00B7 footprint 64 m\u00B2 \u00B7 \u2248684.8 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 64,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-310-004"
+  },
+  {
+    "LineId": "VOL-009",
+    "Category": "Hybrid circulation",
+    "PartOrSpaceId": "ELEV_S",
+    "Description": "Hybrid circulation volume \u00B7 footprint 17.4 m\u00B2 \u00B7 \u2248186.18 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 17.400002,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-340-001"
+  },
+  {
+    "LineId": "VOL-010",
+    "Category": "Hybrid circulation",
+    "PartOrSpaceId": "STAIRS_P",
+    "Description": "Hybrid circulation volume \u00B7 footprint 17.4 m\u00B2 \u00B7 \u2248186.18 m\u00B3",
+    "Unit": "space",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": 17.400002,
+    "Material": "habitable / pressure boundary",
+    "DrawingNumber": "CAL-340-002"
+  }
+]

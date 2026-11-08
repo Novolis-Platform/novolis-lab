@@ -21,7 +21,9 @@
     <None Include="scripts\**\*" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="SkiaSharp" />
+    <LibraryReference Include="Novolis.Messaging.Channels" />
     <LibraryReference Include="Novolis.Silk" />
     <LibraryReference Include="Novolis.Game.MenuFlows" />
     <LibraryReference Include="Novolis.Math.Geometry" />

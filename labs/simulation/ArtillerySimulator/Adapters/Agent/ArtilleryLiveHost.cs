@@ -1,22 +1,25 @@
 using System.Globalization;
+using System.Threading.Channels;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Novolis.Agent.Core;
 using Novolis.Physics.Ballistics;
 
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Agent host for the windowed range. Commands accept immediately on the frame thread;
-/// fire returns a receipt without waiting for impact (impact arrives as a later ActionResult).
+/// Agent adapter: HTTP/MCP → <see cref="ChannelWriter{BattleCommand}"/> → frame pump.
+/// Reads state only through <see cref="IPlayQuery"/>. No MediatR; no direct BattleWorld mutation.
 /// </summary>
 internal sealed class ArtilleryLiveHost : IArtillerySurface
 {
     private const string GunResource = "artillery.gun";
     private const int MaxCompleted = 256;
 
-    private readonly ArtilleryApp _game;
+    private readonly IPlayQuery _play;
+    private readonly ChannelWriter<BattleCommand> _commands;
+    private readonly ILogger<ArtilleryLiveHost> _log;
     private readonly object _gate = new();
-    private readonly Queue<Pending> _queue = new();
-    private readonly Dictionary<string, Pending> _inflightByCorrelation = new(StringComparer.Ordinal);
     private readonly Dictionary<string, AgentCommandResult> _completed = new(StringComparer.Ordinal);
     private readonly Queue<string> _completedOrder = new();
     private readonly List<TrackedImpact> _awaitingImpact = [];
@@ -26,9 +29,14 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
     private AgentReceipt? _receipt;
     private AgentLastAction? _last;
 
-    public ArtilleryLiveHost(ArtilleryApp game)
+    public ArtilleryLiveHost(
+        IPlayQuery play,
+        ChannelWriter<BattleCommand> commands,
+        ILogger<ArtilleryLiveHost>? log = null)
     {
-        _game = game;
+        _play = play;
+        _commands = commands;
+        _log = log ?? NullLogger<ArtilleryLiveHost>.Instance;
     }
 
 #pragma warning disable CS0067
@@ -41,21 +49,16 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
 
     public void RunFrame(Action step)
     {
-        List<Pending> finished = [];
+        // Do not hold _gate across step(): BattleCommandPump completes agent TCSs during Drain,
+        // and Execute waits on those TCSs then needs _gate for Accept — lock-through-step deadlocks.
+        step();
+
         List<AgentActionResultEvent> impactEvents = [];
-        AgentChangedEvent? changed = null;
+        AgentChangedEvent? changed;
         lock (_gate)
         {
-            Drain(finished);
-            step();
             CollectImpacts(impactEvents);
             changed = NoteChange();
-        }
-
-        foreach (var item in finished)
-        {
-            if (item.Result is { } result)
-                item.Done.TrySetResult(result);
         }
 
         foreach (var evt in impactEvents)
@@ -77,7 +80,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 AppTitle = ProductIdentity.Title,
                 ProcessId = Environment.ProcessId,
                 SurfaceId = "artillery",
-                Description = $"{ProductIdentity.Title}: {ProductIdentity.Subtitle}. Level: {_game.Level.DisplayName}. Educational sandbox — {ProductLegal.Tagline}",
+                Description = $"{ProductIdentity.Title}: {ProductIdentity.Subtitle}. Level: {_play.Level.DisplayName}. Educational sandbox — {ProductLegal.Tagline}",
                 HttpPort = 18770,
                 TcpPort = 18771,
                 Capabilities =
@@ -109,45 +112,46 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
 
     public AgentCommandResult Execute(AgentCommand command)
     {
-        TaskCompletionSource<AgentCommandResult> done;
         lock (_gate)
         {
             if (!string.IsNullOrEmpty(command.CorrelationId))
             {
                 if (_completed.TryGetValue(command.CorrelationId, out var prior))
                     return prior;
-
-                if (_inflightByCorrelation.TryGetValue(command.CorrelationId, out var inflight))
-                {
-                    done = inflight.Done;
-                    goto Wait;
-                }
             }
-
-            done = new TaskCompletionSource<AgentCommandResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var pending = new Pending(command, done);
-            _queue.Enqueue(pending);
-            if (!string.IsNullOrEmpty(command.CorrelationId))
-                _inflightByCorrelation[command.CorrelationId] = pending;
         }
 
-    Wait:
-        if (!done.Task.Wait(TimeSpan.FromSeconds(30)))
+        if (command.ActionId is "artillery.pace")
         {
             lock (_gate)
+                return Accept(command, "Realtime only — fixed battle clock.");
+        }
+
+        if (!TryBuildBattleCommand(command, out var battleCmd, out var reject))
+            return reject!;
+
+        var battleDone = battleCmd.Completion
+            ?? throw new InvalidOperationException("Battle command missing completion source.");
+
+        if (!_commands.TryWrite(battleCmd))
+        {
+            // Bounded Wait mode rarely fails TryWrite; fall back to async write wait.
+            if (!_commands.WaitToWriteAsync().AsTask().Wait(TimeSpan.FromSeconds(30))
+                || !_commands.TryWrite(battleCmd))
             {
-                foreach (var item in _queue)
+                return new AgentCommandResult
                 {
-                    if (!ReferenceEquals(item.Done, done))
-                        continue;
-                    item.Cancelled = true;
-                    break;
-                }
-
-                if (!string.IsNullOrEmpty(command.CorrelationId))
-                    _inflightByCorrelation.Remove(command.CorrelationId);
+                    Ok = false,
+                    ActionId = command.ActionId,
+                    CorrelationId = command.CorrelationId,
+                    ErrorCode = "timeout",
+                    Message = "Battle command channel did not accept the write within 30 s.",
+                };
             }
+        }
 
+        if (!battleDone.Task.Wait(TimeSpan.FromSeconds(30)))
+        {
             return new AgentCommandResult
             {
                 Ok = false,
@@ -158,7 +162,23 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             };
         }
 
-        return done.Task.Result;
+        var battle = battleDone.Task.Result;
+        lock (_gate)
+        {
+            if (!battle.Succeeded)
+                return Reject(command, battle.ErrorCode ?? "unavailable", battle.Message);
+
+            if (command.ActionId is "artillery.fire" && battle.FiredRound is { } round)
+                _awaitingImpact.Add(new TrackedImpact(round, command.CorrelationId));
+
+            var result = Accept(command, battle.Message);
+            _log.LogDebug(
+                "Agent {ActionId} ok={Ok} corr={CorrelationId}",
+                command.ActionId,
+                result.Ok,
+                command.CorrelationId);
+            return result;
+        }
     }
 
     public AgentCommandResult Continue() =>
@@ -168,27 +188,60 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
     {
     }
 
-    private void Drain(List<Pending> finished)
+    private bool TryBuildBattleCommand(
+        AgentCommand command,
+        out BattleCommand battleCommand,
+        out AgentCommandResult? reject)
     {
-        while (_queue.Count > 0)
+        battleCommand = null!;
+        reject = null;
+        var done = new TaskCompletionSource<BattleCommandResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        switch (command.ActionId)
         {
-            var item = _queue.Peek();
-            if (item.Cancelled)
-            {
-                _queue.Dequeue();
-                if (!string.IsNullOrEmpty(item.Command.CorrelationId))
-                    _inflightByCorrelation.Remove(item.Command.CorrelationId);
-                continue;
-            }
+            case "artillery.aim":
+                if (!TryNumber(command, "elevation", out var elevation)
+                    || !TryNumber(command, "azimuth", out var azimuth)
+                    || !IsFinite(elevation)
+                    || !IsFinite(azimuth))
+                {
+                    reject = Reject(command, "invalid-arguments", "Aim needs finite elevation and azimuth.");
+                    return false;
+                }
 
-            _queue.Dequeue();
-            item.Result = Apply(item.Command);
-            if (!string.IsNullOrEmpty(item.Command.CorrelationId))
-                _inflightByCorrelation.Remove(item.Command.CorrelationId);
+                battleCommand = BattleCommand.Aim((float)elevation, (float)azimuth, command.CorrelationId, done);
+                return true;
 
-            // Fire never blocks the queue on impact — Apply returns Accept immediately.
-            Remember(item);
-            finished.Add(item);
+            case "artillery.charge":
+                if (!TryNumber(command, "index", out var index) || !IsFinite(index))
+                {
+                    reject = Reject(command, "invalid-arguments", "Charge needs a finite index.");
+                    return false;
+                }
+
+                battleCommand = BattleCommand.Charge((int)Math.Round(index), command.CorrelationId, done);
+                return true;
+
+            case "artillery.camera":
+                if (!command.Params.TryGetValue("mode", out var mode))
+                {
+                    reject = Reject(command, "invalid-arguments", "Camera needs mode shell|follow or gun.");
+                    return false;
+                }
+
+                var followShell = mode.Equals("shell", StringComparison.OrdinalIgnoreCase)
+                    || mode.Equals("follow", StringComparison.OrdinalIgnoreCase)
+                    || mode.Equals("projectile", StringComparison.OrdinalIgnoreCase);
+                battleCommand = BattleCommand.FollowCamera(followShell, command.CorrelationId, done);
+                return true;
+
+            case "artillery.fire":
+                battleCommand = BattleCommand.Fire(command.CorrelationId, done);
+                return true;
+
+            default:
+                reject = Reject(command, "unavailable", "Unknown action.");
+                return false;
         }
     }
 
@@ -205,7 +258,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             var message = impact is { } hit
                 ? string.Create(
                     CultureInfo.InvariantCulture,
-                    $"Impact {hit.HorizontalRangeMeters / 1000f:F2} km after {hit.TimeSeconds:F1} s ({hit.Reason}), {hit.ImpactSpeedMps:F0} m/s. {_game.Mission?.ResultPhrase()}")
+                    $"Impact {hit.HorizontalRangeMeters / 1000f:F2} km after {hit.TimeSeconds:F1} s ({hit.Reason}), {hit.ImpactSpeedMps:F0} m/s. {_play.Mission?.ResultPhrase()}")
                 : "The shot did not impact.";
 
             _revision++;
@@ -221,68 +274,6 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 Severity = AgentSeverity.Info,
                 Snapshot = snapshot,
             });
-        }
-    }
-
-    private AgentCommandResult? Apply(AgentCommand command)
-    {
-        var action = Catalog().FirstOrDefault(candidate => candidate.Id == command.ActionId);
-        var rejected = AgentCommandGate.Reject(action, command, _revision);
-        if (rejected is not null)
-            return rejected;
-
-        if (action is not { Enabled: true })
-            return Reject(command, "unavailable", action?.DisabledReason ?? "Unknown action.");
-
-        if (_game.IsPaused && command.ActionId is "artillery.aim" or "artillery.charge" or "artillery.fire")
-            return Reject(command, "paused", "Battle clock paused — resume in the window (Esc) before commanding the gun.");
-
-        switch (command.ActionId)
-        {
-            case "artillery.aim":
-                if (!TryNumber(command, "elevation", out var elevation)
-                    || !TryNumber(command, "azimuth", out var azimuth)
-                    || !IsFinite(elevation)
-                    || !IsFinite(azimuth))
-                    return Reject(command, "invalid-arguments", "Aim needs finite elevation and azimuth.");
-                elevation = Math.Clamp(elevation, _game.Gun.Spec.MinElevationDegrees, _game.Gun.Spec.MaxElevationDegrees);
-                _game.OrderAim((float)elevation, (float)azimuth);
-                var gun = _game.Gun;
-                var crew = _game.Crew;
-                var message = crew.Ready(gun)
-                    ? string.Create(CultureInfo.InvariantCulture, $"On lay at {crew.OrderedElevation:F1}° elevation, {crew.OrderedAzimuth:F1}° azimuth.")
-                    : string.Create(CultureInfo.InvariantCulture, $"Laying to {crew.OrderedElevation:F1}° / {crew.OrderedAzimuth:F1}°. Tube at {gun.ElevationDegrees:F1}° / {gun.AzimuthDegrees:F1}°.");
-                return Accept(command, message);
-            case "artillery.charge":
-                if (!TryNumber(command, "index", out var index) || !IsFinite(index))
-                    return Reject(command, "invalid-arguments", "Charge needs a finite index.");
-                var chargeIndex = (int)Math.Round(index);
-                if (chargeIndex < 0 || chargeIndex >= _game.Gun.Spec.Charges.Count)
-                    return Reject(command, "invalid-arguments", $"Charge index must be 0..{_game.Gun.Spec.Charges.Count - 1}.");
-                _game.OrderCharge(chargeIndex);
-                var seated = _game.Crew.Ready(_game.Gun)
-                    ? string.Create(CultureInfo.InvariantCulture, $"Charge {_game.Gun.ChargeLabel} ({_game.Gun.MuzzleSpeedMps:F0} m/s).")
-                    : string.Create(CultureInfo.InvariantCulture, $"Charge {_game.Gun.ChargeLabel} ({_game.Gun.MuzzleSpeedMps:F0} m/s). {_game.Crew.Phrase(_game.Gun)}");
-                return Accept(command, seated);
-            case "artillery.pace":
-                return Accept(command, "Realtime only — fixed battle clock.");
-            case "artillery.camera":
-                if (!command.Params.TryGetValue("mode", out var mode))
-                    return Reject(command, "invalid-arguments", "Camera needs mode shell|follow or gun.");
-                var followShell = mode.Equals("shell", StringComparison.OrdinalIgnoreCase)
-                    || mode.Equals("follow", StringComparison.OrdinalIgnoreCase)
-                    || mode.Equals("projectile", StringComparison.OrdinalIgnoreCase);
-                _game.SetFollowCamera(followShell);
-                return Accept(command, followShell ? "Camera follows the shell." : "Camera follows the gun.");
-            case "artillery.fire":
-                if (_game.FireBlockReason() is { } blocked)
-                    return Reject(command, "unavailable", blocked);
-                if (!_game.TryFire())
-                    return Reject(command, "unavailable", _game.FireBlockReason() ?? "Could not fire.");
-                _awaitingImpact.Add(new TrackedImpact(_game.Shot, command.CorrelationId));
-                return Accept(command, "Round away. Impact will arrive as artillery.impact.");
-            default:
-                return Reject(command, "unavailable", "Unknown action.");
         }
     }
 
@@ -303,6 +294,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             Receipt = _receipt,
             Snapshot = snapshot,
         };
+        Remember(command.CorrelationId, result);
         ActionResult?.Invoke(new AgentActionResultEvent
         {
             Sequence = _sequence,
@@ -320,10 +312,10 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
 
     private AgentChangedEvent? NoteChange()
     {
-        var gun = _game.Gun;
-        var shot = _game.Shot;
-        var mission = _game.Mission;
-        var crew = _game.Crew;
+        var gun = _play.Gun;
+        var shot = _play.Shot;
+        var mission = _play.Mission;
+        var crew = _play.Crew;
         var defense = mission is null
             ? ""
             : string.Create(
@@ -331,7 +323,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
                 $"|{mission.Remaining}|{(int)(mission.NearestMeters / 25f)}|{mission.ObjectiveLost}|{mission.Held}|{mission.PostureToken()}|{crew.Token(gun)}|{(int)MathF.Ceiling(crew.BusySeconds(gun))}");
         var key = string.Create(
             CultureInfo.InvariantCulture,
-            $"{shot.Phase}|{gun.ElevationDegrees:F0}|{gun.AzimuthDegrees:F0}|{crew.OrderedElevation:F0}|{crew.OrderedAzimuth:F0}|{crew.OrderedCharge}|{_game.CameraModeName}|{_game.PaceText}|{shot.Impact?.HorizontalRangeMeters:F0}{defense}");
+            $"{shot.Phase}|{gun.ElevationDegrees:F0}|{gun.AzimuthDegrees:F0}|{crew.OrderedElevation:F0}|{crew.OrderedAzimuth:F0}|{crew.OrderedCharge}|{_play.CameraModeName}|{_play.PaceText}|{shot.Impact?.HorizontalRangeMeters:F0}{defense}");
         if (key == _seen)
             return null;
 
@@ -346,13 +338,13 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
         };
     }
 
-    private void Remember(Pending item)
+    private void Remember(string? correlationId, AgentCommandResult result)
     {
-        if (item.Result is not { } result || string.IsNullOrEmpty(item.Command.CorrelationId) || !result.Ok)
+        if (string.IsNullOrEmpty(correlationId) || !result.Ok)
             return;
 
-        _completed[item.Command.CorrelationId] = result;
-        _completedOrder.Enqueue(item.Command.CorrelationId);
+        _completed[correlationId] = result;
+        _completedOrder.Enqueue(correlationId);
         while (_completedOrder.Count > MaxCompleted)
         {
             var old = _completedOrder.Dequeue();
@@ -378,9 +370,9 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
 
     private AgentSnapshot Capture()
     {
-        var gun = _game.Gun;
-        var shot = _game.Shot;
-        var terrain = _game.Terrain;
+        var gun = _play.Gun;
+        var shot = _play.Shot;
+        var terrain = _play.Terrain;
         var impact = shot.Impact;
         var lines = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -389,27 +381,27 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             ["charge"] = gun.ChargeLabel,
             ["muzzleMps"] = gun.MuzzleSpeedMps.ToString("F0", CultureInfo.InvariantCulture),
             ["phase"] = shot.Phase.ToString(),
-            ["camera"] = _game.CameraModeName,
-            ["pace"] = _game.PaceText,
-            ["orderedElevation"] = _game.Crew.OrderedElevation.ToString("F1", CultureInfo.InvariantCulture),
-            ["orderedAzimuth"] = _game.Crew.OrderedAzimuth.ToString("F1", CultureInfo.InvariantCulture),
-            ["crew"] = _game.Crew.Token(gun),
-            ["reload"] = _game.Crew.Ready(gun) ? "ready" : MathF.Ceiling(_game.Crew.BusySeconds(gun)).ToString("F0", CultureInfo.InvariantCulture),
-            ["predictedMeters"] = _game.PredictedRangeMeters.ToString("F0", CultureInfo.InvariantCulture),
+            ["camera"] = _play.CameraModeName,
+            ["pace"] = _play.PaceText,
+            ["orderedElevation"] = _play.Crew.OrderedElevation.ToString("F1", CultureInfo.InvariantCulture),
+            ["orderedAzimuth"] = _play.Crew.OrderedAzimuth.ToString("F1", CultureInfo.InvariantCulture),
+            ["crew"] = _play.Crew.Token(gun),
+            ["reload"] = _play.Crew.Ready(gun) ? "ready" : MathF.Ceiling(_play.Crew.BusySeconds(gun)).ToString("F0", CultureInfo.InvariantCulture),
+            ["predictedMeters"] = _play.PredictedRangeMeters.ToString("F0", CultureInfo.InvariantCulture),
             ["gunX"] = terrain.GunBaseline.X.ToString("F0", CultureInfo.InvariantCulture),
             ["gunZ"] = terrain.GunBaseline.Z.ToString("F0", CultureInfo.InvariantCulture),
             ["terrain"] = "Kristiansand",
             ["latitude"] = KristiansandHeightSampler.MeanLatitudeDegrees.ToString("F2", CultureInfo.InvariantCulture),
-            ["windMps"] = _game.Atmosphere.WindSpeedMetersPerSecond.ToString("F1", CultureInfo.InvariantCulture),
-            ["windFrom"] = _game.Atmosphere.WindFromDegrees.ToString("F0", CultureInfo.InvariantCulture),
-            ["windToward"] = _game.Atmosphere.WindTowardDegrees.ToString("F0", CultureInfo.InvariantCulture),
-            ["tempC"] = (_game.Atmosphere.ReferenceTemperatureKelvin - 273.15).ToString("F1", CultureInfo.InvariantCulture),
-            ["rh"] = (_game.Atmosphere.RelativeHumidity * 100.0).ToString("F0", CultureInfo.InvariantCulture),
-            ["qnh"] = (_game.Atmosphere.ReferencePressurePa / 100.0).ToString("F0", CultureInfo.InvariantCulture),
-            ["metAge"] = _game.Atmosphere.BattleAgeSeconds.ToString("F0", CultureInfo.InvariantCulture),
-            ["level"] = _game.Level.Id,
-            ["levelName"] = _game.Level.DisplayName,
-            ["levelSite"] = _game.Level.SiteName,
+            ["windMps"] = _play.Atmosphere.WindSpeedMetersPerSecond.ToString("F1", CultureInfo.InvariantCulture),
+            ["windFrom"] = _play.Atmosphere.WindFromDegrees.ToString("F0", CultureInfo.InvariantCulture),
+            ["windToward"] = _play.Atmosphere.WindTowardDegrees.ToString("F0", CultureInfo.InvariantCulture),
+            ["tempC"] = (_play.Atmosphere.ReferenceTemperatureKelvin - 273.15).ToString("F1", CultureInfo.InvariantCulture),
+            ["rh"] = (_play.Atmosphere.RelativeHumidity * 100.0).ToString("F0", CultureInfo.InvariantCulture),
+            ["qnh"] = (_play.Atmosphere.ReferencePressurePa / 100.0).ToString("F0", CultureInfo.InvariantCulture),
+            ["metAge"] = _play.Atmosphere.BattleAgeSeconds.ToString("F0", CultureInfo.InvariantCulture),
+            ["level"] = _play.Level.Id,
+            ["levelName"] = _play.Level.DisplayName,
+            ["levelSite"] = _play.Level.SiteName,
             ["piece"] = gun.Spec.Id,
             ["pieceName"] = gun.Spec.ShortName,
             ["peElevMils"] = gun.Spec.Errors.ElevationPeMils.ToString("F2", CultureInfo.InvariantCulture),
@@ -418,15 +410,15 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             ["heCaughtM"] = gun.Spec.Warhead.CaughtMeters.ToString("F0", CultureInfo.InvariantCulture),
             ["hePinnedM"] = gun.Spec.Warhead.PinnedMeters.ToString("F0", CultureInfo.InvariantCulture),
             ["heAirburstM"] = gun.Spec.Warhead.AirburstHeightMeters.ToString("F0", CultureInfo.InvariantCulture),
-            ["seed"] = _game.Session.SeedHash,
+            ["seed"] = _play.Session.SeedHash,
         };
-        if (_game.Delivery.LastFire is { } last)
+        if (_play.Delivery.LastFire is { } last)
         {
             lines["fireElevResMils"] = last.ElevationResidualMils.ToString("F2", CultureInfo.InvariantCulture);
             lines["fireDeflResMils"] = last.DeflectionResidualMils.ToString("F2", CultureInfo.InvariantCulture);
             lines["fireMvResFrac"] = last.MuzzleResidualFraction.ToString("F4", CultureInfo.InvariantCulture);
         }
-        if (_game.Mission is { } mission)
+        if (_play.Mission is { } mission)
         {
             lines["deflection"] = gun.DeflectionDegrees.ToString("F1", CultureInfo.InvariantCulture);
             lines["trail"] = gun.CenterAzimuthDegrees.ToString("F1", CultureInfo.InvariantCulture);
@@ -451,11 +443,11 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             lines["impact"] = hit.Reason.ToString();
         }
 
-        var defense = _game.Mission?.Observation();
-        var crewNote = _game.Crew.Ready(gun) ? "" : " " + _game.Crew.Phrase(gun);
+        var defense = _play.Mission?.Observation();
+        var crewNote = _play.Crew.Ready(gun) ? "" : " " + _play.Crew.Phrase(gun);
         var summary = impact is { } recorded
             ? string.Create(CultureInfo.InvariantCulture, $"{shot.Phase}: aim {gun.ElevationDegrees:F0}° {gun.ChargeLabel}, impact {recorded.HorizontalRangeMeters / 1000f:F2} km ({recorded.Reason}). {defense}{crewNote}")
-            : string.Create(CultureInfo.InvariantCulture, $"{shot.Phase}: aim {_game.Crew.OrderedElevation:F0}° / {_game.Crew.OrderedAzimuth:F0}°, {gun.ChargeLabel}, predicted {_game.PredictedRangeMeters / 1000f:F2} km. {defense}{crewNote}");
+            : string.Create(CultureInfo.InvariantCulture, $"{shot.Phase}: aim {_play.Crew.OrderedElevation:F0}° / {_play.Crew.OrderedAzimuth:F0}°, {gun.ChargeLabel}, predicted {_play.PredictedRangeMeters / 1000f:F2} km. {defense}{crewNote}");
 
         return new AgentSnapshot
         {
@@ -463,7 +455,7 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
             HubId = GunResource,
             HubName = "155 mm gun",
             DocumentName = $"{ProductIdentity.Title} — {ProductIdentity.Subtitle}",
-            SeedHash = _game.Session.SeedHash,
+            SeedHash = _play.Session.SeedHash,
             PauseReason = shot.Phase.ToString(),
             StateRevision = _revision,
             MetadataVersion = AgentMetadata.Version,
@@ -490,10 +482,10 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
 
     private AgentEntity[] BuildEntities()
     {
-        if (_game.Mission is not { } mission)
+        if (_play.Mission is not { } mission)
             return [];
 
-        var gun = _game.Terrain.GunBaseline;
+        var gun = _play.Terrain.GunBaseline;
         var reports = mission.Reports(gun);
         var entities = new List<AgentEntity>(reports.Length + 12);
         foreach (var threat in reports)
@@ -541,13 +533,12 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
         }
 
         entities.AddRange(KristiansandMapFeatures.MapEntities());
-
         return entities.ToArray();
     }
 
     private AgentAction[] Catalog()
     {
-        var blocked = _game.FireBlockReason();
+        var blocked = _play.FireBlockReason();
         return
         [
             Action("artillery.aim", "Aim", "Order elevation and world azimuth. The crew lays the tube on the handwheels. Trails clamp the azimuth.", AgentActionSchema.Object(["elevation", "azimuth"], ("elevation", "number"), ("azimuth", "number")), true, null),
@@ -583,14 +574,6 @@ internal sealed class ArtilleryLiveHost : IArtillerySurface
 
     private static bool IsFinite(double value) =>
         !double.IsNaN(value) && !double.IsInfinity(value);
-
-    private sealed class Pending(AgentCommand command, TaskCompletionSource<AgentCommandResult> done)
-    {
-        public AgentCommand Command { get; } = command;
-        public TaskCompletionSource<AgentCommandResult> Done { get; } = done;
-        public AgentCommandResult? Result { get; set; }
-        public bool Cancelled { get; set; }
-    }
 
     private readonly record struct TrackedImpact(BallisticTrajectoryRunner Round, string? CorrelationId);
 }

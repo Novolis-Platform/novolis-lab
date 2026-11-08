@@ -1,4 +1,5 @@
 using CalypsoCad.Blueprints;
+using CalypsoCad.Blueprints.DrawingPackage;
 using CalypsoCad.Session;
 using CalypsoCad.Structure;
 using CalypsoCad.Viewport;
@@ -19,7 +20,8 @@ internal static class CalypsoAcceptanceGates
             InternalsBlueprintEmitter.Emit(cadJsonPath: cadPath);
             ManufacturerSheetEmitter.Emit();
             if (emitDetails)
-                StructureDetailBlueprintEmitter.Emit(cadJsonPath: cadPath);
+                DrawingPackageEmitter.Emit(cadJsonPath: cadPath); // refreshes details/ + docs/blueprints/
+
             return 0;
         }
         catch (Exception ex)

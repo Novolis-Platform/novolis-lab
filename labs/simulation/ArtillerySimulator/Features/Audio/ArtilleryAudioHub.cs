@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Novolis.Audio;
 
 namespace ArtillerySimulator;
@@ -10,6 +12,7 @@ internal sealed class ArtilleryAudioHub : IDisposable
     private readonly ArtillerySfx _sfx;
     private readonly ArtilleryVoice _voice;
     private readonly BatteryChatter _chatter;
+    private readonly ILogger _log;
     private ISoundHandle? _score;
     private float _scoreReplayIn = -1f;
     private bool _missionAnnounced;
@@ -17,23 +20,28 @@ internal sealed class ArtilleryAudioHub : IDisposable
     private bool _started;
     private bool _scoreLoaded;
 
-    private ArtilleryAudioHub(IAudioEngine engine, string assetsDir, Random rng)
+    private ArtilleryAudioHub(IAudioEngine engine, string assetsDir, Random rng, ILogger log)
     {
         _engine = engine;
         _assetsDir = assetsDir;
         _sfx = new ArtillerySfx(engine, assetsDir);
         _voice = ArtilleryVoice.TryCreate();
         _chatter = new BatteryChatter(rng);
+        _log = log;
     }
 
     public string? RadioLine => _chatter.CurrentLine;
 
     public string? RadioSpeaker => _chatter.CurrentSpeaker;
 
-    public static ArtilleryAudioHub? TryCreate(int seed, bool enabled)
+    public static ArtilleryAudioHub? TryCreate(int seed, bool enabled, ILogger? log = null)
     {
+        log ??= NullLogger.Instance;
         if (!enabled)
+        {
+            log.LogDebug("Audio hub skipped (shell disabled)");
             return null;
+        }
 
         try
         {
@@ -41,16 +49,21 @@ internal sealed class ArtilleryAudioHub : IDisposable
             if (!engine.Start())
             {
                 engine.Dispose();
+                log.LogWarning("Miniaudio engine failed to start — audio disabled");
                 return null;
             }
 
             var assets = Path.Combine(AppContext.BaseDirectory, "assets");
-            var hub = new ArtilleryAudioHub(engine, assets, new Random(seed ^ 0xA11D10));
+            var hub = new ArtilleryAudioHub(engine, assets, new Random(seed ^ 0xA11D10), log);
             hub._sfx.EnsureReady();
+            log.LogInformation(
+                "Audio hub ready (voice={VoiceAvailable})",
+                hub._voice.IsAvailable);
             return hub;
         }
-        catch
+        catch (Exception ex)
         {
+            log.LogWarning(ex, "Audio hub unavailable");
             return null;
         }
     }
@@ -142,9 +155,11 @@ internal sealed class ArtilleryAudioHub : IDisposable
         {
             var path = ArtilleryScoreBake.EnsureBaked(_assetsDir);
             _score = _engine.LoadSound(path);
+            _log.LogDebug("Score loaded from {Path}", path);
         }
-        catch
+        catch (Exception ex)
         {
+            _log.LogWarning(ex, "Score bake/load failed");
             _score = null;
         }
     }

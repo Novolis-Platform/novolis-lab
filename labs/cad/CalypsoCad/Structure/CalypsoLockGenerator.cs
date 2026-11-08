@@ -546,6 +546,9 @@ internal static class CalypsoLockGenerator
                 ["transform"] = "CAD = (y, up, LOA/2 − zFromStem)",
             });
 
+        // Drafting payload — blueprints / package sheets read calypso.cadjson only (not a second CAD).
+        StampDraftingAuthority(cad, lockDoc);
+
         AssertInteriorsInsideManufacturerHull(entities, loa, beam, oah);
 
         var spec = PlateMaterialSpec.Aisi316L_8mm;
@@ -2073,6 +2076,59 @@ internal static class CalypsoLockGenerator
         if (hold is not null)
             lines.Add($"door={N(hold.DoorW)}x{N(hold.DoorH)} sill={N(hold.Sill)}");
         return string.Join(Environment.NewLine, lines);
+    }
+
+    /// <summary>
+    /// Embeds loft / decks / station keys into <see cref="CadDocument.Properties"/> so drafting
+    /// consumers operate on one CAD model (lock remains generate input only).
+    /// </summary>
+    private static void StampDraftingAuthority(CadDocument cad, CalypsoLockDocument lockDoc)
+    {
+        cad.Properties ??= new Dictionary<string, JsonElement>();
+        cad.Properties["decks"] = JsonSerializer.SerializeToElement(new
+        {
+            m1 = lockDoc.Decks?.M1 is > 0 ? lockDoc.Decks.M1 : 0.5,
+            d0 = lockDoc.Decks?.D0 is > 0 ? lockDoc.Decks.D0 : 4.4,
+            d1 = lockDoc.Decks?.D1 is > 0 ? lockDoc.Decks.D1 : 8.0,
+            roomH = lockDoc.Decks?.RoomH is > 1 ? lockDoc.Decks.RoomH : 3.2,
+            tPlate = lockDoc.Decks?.TPlate is > 0.02 ? lockDoc.Decks.TPlate : 0.1,
+        });
+
+        if (lockDoc.Stations is not null)
+        {
+            var stations = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+            void Put(string key, double? value)
+            {
+                if (value is > 0)
+                    stations[key] = value.Value;
+            }
+
+            Put("Z_BRIDGE_AFT", lockDoc.Stations.ZBridgeAft);
+            Put("Z_CROSS_FORE", lockDoc.Stations.ZCrossFore);
+            Put("Z_CROSS_AFT", lockDoc.Stations.ZCrossAft);
+            Put("Z_CREW_AFT", lockDoc.Stations.ZCrewAft);
+            Put("Z_ENG_FORE", lockDoc.Stations.ZEngFore);
+            Put("Z_ENG_AFT", lockDoc.Stations.ZEngAft);
+            if (stations.Count > 0)
+                cad.Properties["stations"] = JsonSerializer.SerializeToElement(stations);
+        }
+
+        if (lockDoc.HullLoft?.Stations is { Count: > 0 } loftStations)
+        {
+            cad.Properties["hullLoft"] = JsonSerializer.SerializeToElement(new
+            {
+                stations = loftStations.Select(s => new
+                {
+                    id = s.Id,
+                    zFromStem = s.ZFromStem,
+                    halfBeam = s.HalfBeam,
+                    halfHeight = s.HalfHeight,
+                    verts = (s.Verts ?? []).Select(v => new { y = v.Y, up = v.Up }),
+                }),
+            });
+        }
+
+        cad.Properties["draftingModel"] = JsonSerializer.SerializeToElement("calypso.cadjson");
     }
 
     private static void UseLoftStations(CalypsoLockDocument lockDoc)

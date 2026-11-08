@@ -1,0 +1,102 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
+<title>CAL-100-001 — Calypso drawing package</title>
+<style>
+:root { --ink:#1a1f24; --muted:#5a6570; --line:#c9d0d6; --paper:#f7f5f1; --accent:#2f5d50; --card:#fff; }
+* { box-sizing:border-box; }
+body { margin:0; font:15px/1.45 "Segoe UI",system-ui,sans-serif; color:var(--ink); background:
+  radial-gradient(1200px 600px at 10% -10%, #d9e6e1 0%, transparent 55%),
+  linear-gradient(180deg, #ebe6dc, var(--paper)); }
+.hero { padding:2.5rem 2rem 1.5rem; border-bottom:1px solid var(--line); background:rgba(255,255,255,.55); }
+.eyebrow { letter-spacing:.14em; text-transform:uppercase; font-size:11px; color:var(--accent); margin:0 0 .5rem; }
+h1 { font:700 1.85rem/1.15 "Segoe UI Semibold",system-ui,sans-serif; margin:0 0 .6rem; }
+.lede { max-width:62rem; color:var(--muted); }
+.meta,.crumb,.std { color:var(--muted); font-size:12px; }
+.cats { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:.6rem; padding:1.2rem 2rem; }
+.cats a { display:flex; justify-content:space-between; gap:.5rem; padding:.85rem 1rem; background:var(--card);
+  border:1px solid var(--line); text-decoration:none; color:var(--ink); }
+.cats a:hover { border-color:var(--accent); }
+.cats span { color:var(--muted); }
+section { padding:0 2rem 2rem; }
+table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); }
+th,td { padding:.45rem .55rem; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; font-size:13px; }
+th { background:#eef2f0; font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+a { color:var(--accent); }
+.sheet { padding:1.2rem 2rem 2rem; }
+.tb { float:right; width:min(360px,100%); margin:0 0 1rem 1rem; background:var(--card); border:1px solid var(--ink); }
+.tb table { border:0; }
+.tb th { width:28%; background:#e8eee9; color:var(--ink); text-transform:none; letter-spacing:0; }
+.meta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:.5rem 1rem; clear:both; }
+.meta-grid dt { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.meta-grid dd { margin:.1rem 0 0; font-weight:600; }
+iframe.detail { width:100%; height:72vh; border:1px solid var(--line); background:#fff; margin-top:.5rem; }
+.members { columns:2; gap:1.5rem; }
+code { font:12px/1.3 ui-monospace,Consolas,monospace; }
+footer { padding:1rem 2rem 2rem; color:var(--muted); font-size:12px; }
+body > h1, body > .lede, body > .meta, body > .crumb, body > table, body > p { margin-left:2rem; margin-right:2rem; }
+</style>
+</head>
+<body>
+<header class="hero">
+<p class="eyebrow">CALYPSO · TRAMP FREIGHTER · DRAWING PACKAGE</p>
+<h1>CAL-100-001 Drawing package</h1>
+<p class="lede">DNV/ISO-style numbered register: structure (bulkheads, frames, deck plates, members) and people-movement volumes (shirt-sleeves, airlock anteroom, airlock, hybrid).</p>
+<p class="meta">Rev A · 42 drawings · 373 BOM lines · INTERPRET PER ISO 128-15 / ISO 5457 / ISO 7200. UNITS: METRES. STERN LEFT, BOW RIGHT. NOT DNV PLAN APPROVAL — CLASSIFICATION-STYLE DRAWING REGISTER FOR CALYPSO.</p>
+</header>
+<nav class="cats">
+<a href="100-general/index.html"><strong>100</strong> General arrangement <span>1</span></a>
+<a href="200-structure/210-bulkheads/index.html"><strong>210</strong> Bulkheads <span>6</span></a>
+<a href="200-structure/220-frames/index.html"><strong>220</strong> Frames <span>11</span></a>
+<a href="200-structure/230-deck-plates/index.html"><strong>230</strong> Deck plates <span>3</span></a>
+<a href="200-structure/240-structural-members/index.html"><strong>240</strong> Structural members <span>8</span></a>
+<a href="300-volumes/310-shirt-sleeves/index.html"><strong>310</strong> Shirt-sleeves <span>4</span></a>
+<a href="300-volumes/320-airlock-anteroom/index.html"><strong>320</strong> Airlock anteroom <span>2</span></a>
+<a href="300-volumes/330-airlock/index.html"><strong>330</strong> Airlock <span>2</span></a>
+<a href="300-volumes/340-hybrid/index.html"><strong>340</strong> Hybrid circulation <span>2</span></a>
+<a href="900-bom/index.html"><strong>900</strong> Bills of materials <span>3</span></a>
+</nav>
+<section><h2>Drawing list</h2>
+<table><thead><tr><th>No.</th><th>Label</th><th>Title</th><th>Category</th><th>Volume</th></tr></thead><tbody>
+<tr><td><a href="100-general/CAL-100-001-INDEX.html">CAL-100-001</a></td><td>PKG-INDEX</td><td>Drawing package index</td><td>General arrangement</td><td>—</td></tr>
+<tr><td><a href="200-structure/210-bulkheads/CAL-210-001-BH-BOW-COLLISION.html">CAL-210-001</a></td><td>BH-BOW-COLLISION</td><td>Bulkhead BOW-COLLISION @ z=13 m from stem</td><td>Bulkheads</td><td>—</td></tr>
+<tr><td><a href="200-structure/210-bulkheads/CAL-210-002-BH-CROSS-FORE.html">CAL-210-002</a></td><td>BH-CROSS-FORE</td><td>Bulkhead CROSS-FORE @ z=19 m from stem</td><td>Bulkheads</td><td>—</td></tr>
+<tr><td><a href="200-structure/210-bulkheads/CAL-210-003-BH-CROSS-AFT.html">CAL-210-003</a></td><td>BH-CROSS-AFT</td><td>Bulkhead CROSS-AFT @ z=23 m from stem</td><td>Bulkheads</td><td>—</td></tr>
+<tr><td><a href="200-structure/210-bulkheads/CAL-210-004-BH-CREW-AFT.html">CAL-210-004</a></td><td>BH-CREW-AFT</td><td>Bulkhead CREW-AFT @ z=30.28 m from stem</td><td>Bulkheads</td><td>—</td></tr>
+<tr><td><a href="200-structure/210-bulkheads/CAL-210-005-BH-ENG-FORE.html">CAL-210-005</a></td><td>BH-ENG-FORE</td><td>Bulkhead ENG-FORE @ z=41 m from stem</td><td>Bulkheads</td><td>—</td></tr>
+<tr><td><a href="200-structure/210-bulkheads/CAL-210-006-BH-ENG-AFT.html">CAL-210-006</a></td><td>BH-ENG-AFT</td><td>Bulkhead ENG-AFT @ z=49.25 m from stem</td><td>Bulkheads</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-001-FRAME-z0.html">CAL-220-001</a></td><td>FRM-Z0</td><td>Transverse frame web @ z=0 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-002-FRAME-z12.html">CAL-220-002</a></td><td>FRM-Z12</td><td>Transverse frame web @ z=12 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-003-FRAME-z20.html">CAL-220-003</a></td><td>FRM-Z20</td><td>Transverse frame web @ z=20 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-004-FRAME-z24.html">CAL-220-004</a></td><td>FRM-Z24</td><td>Transverse frame web @ z=24 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-005-FRAME-z28.html">CAL-220-005</a></td><td>FRM-Z28</td><td>Transverse frame web @ z=28 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-006-FRAME-z32.html">CAL-220-006</a></td><td>FRM-Z32</td><td>Transverse frame web @ z=32 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-007-FRAME-z40.html">CAL-220-007</a></td><td>FRM-Z40</td><td>Transverse frame web @ z=40 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-008-FRAME-z48.html">CAL-220-008</a></td><td>FRM-Z48</td><td>Transverse frame web @ z=48 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-009-FRAME-z52.html">CAL-220-009</a></td><td>FRM-Z52</td><td>Transverse frame web @ z=52 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-010-FRAME-z56.html">CAL-220-010</a></td><td>FRM-Z56</td><td>Transverse frame web @ z=56 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/220-frames/CAL-220-011-FRAME-z60.html">CAL-220-011</a></td><td>FRM-Z60</td><td>Transverse frame web @ z=60 m</td><td>Frames</td><td>—</td></tr>
+<tr><td><a href="200-structure/230-deck-plates/CAL-230-001-DECK-DKM1.html">CAL-230-001</a></td><td>DECK-DK−1</td><td>Deck plates — DK−1 sandwich face schedule (11 panels)</td><td>Deck plates</td><td>—</td></tr>
+<tr><td><a href="200-structure/230-deck-plates/CAL-230-002-DECK-DK0.html">CAL-230-002</a></td><td>DECK-DK0</td><td>Deck plates — DK0 sandwich face schedule (11 panels)</td><td>Deck plates</td><td>—</td></tr>
+<tr><td><a href="200-structure/230-deck-plates/CAL-230-003-DECK-DKP1.html">CAL-230-003</a></td><td>DECK-DK+1</td><td>Deck plates — DK+1 sandwich face schedule (11 panels)</td><td>Deck plates</td><td>—</td></tr>
+<tr><td><a href="200-structure/240-structural-members/CAL-240-001-MEMBERS-01.html">CAL-240-001</a></td><td>MEM-REG-01</td><td>Structural members register — sheet 1 (40 ids)</td><td>Structural members</td><td>—</td></tr>
+<tr><td><a href="200-structure/240-structural-members/CAL-240-002-MEMBERS-02.html">CAL-240-002</a></td><td>MEM-REG-02</td><td>Structural members register — sheet 2 (40 ids)</td><td>Structural members</td><td>—</td></tr>
+<tr><td><a href="200-structure/240-structural-members/CAL-240-003-MEMBERS-03.html">CAL-240-003</a></td><td>MEM-REG-03</td><td>Structural members register — sheet 3 (40 ids)</td><td>Structural members</td><td>—</td></tr>
+<tr><td><a href="200-structure/240-structural-members/CAL-240-004-MEMBERS-04.html">CAL-240-004</a></td><td>MEM-REG-04</td><td>Structural members register — sheet 4 (40 ids)</td><td>Structural members</td><td>—</td></tr>
+<tr><td><a href="200-structure/240-structural-members/CAL-240-005-MEMBERS-05.html">CAL-240-005</a></td><td>MEM-REG-05</td><td>Structural members register — sheet 5 (40 ids)</td><td>Structural members</td><td>—</td></tr>
+<tr><td><a href="200-structure/240-structural-members/CAL-240-006-MEMBERS-06.html">CAL-240-006</a></td><td>MEM-REG-06</td><td>Structural members register — sheet 6 (40 ids)</td><td>Structural members</td><td>—</td></tr>
+<tr><td><a href="200-structure/240-structural-members/CAL-240-007-MEMBERS-07.html">CAL-240-007</a></td><td>MEM-REG-07</td><td>Structural members register — sheet 7 (40 ids)</td><td>Structural members</td><td>—</td></tr>
+<tr><td><a href="200-structure/240-structural-members/CAL-240-008-MEMBERS-08.html">CAL-240-008</a></td><td>MEM-REG-08</td><td>Structural members register — sheet 8 (32 ids)</td><td>Structural members</td><td>—</td></tr>
+<tr><td><a href="300-volumes/310-shirt-sleeves/CAL-310-001-ACCESS.html">CAL-310-001</a></td><td>ACCESS</td><td>Shirt-sleeves — ACCESS</td><td>Shirt-sleeves</td><td>Shirt-sleeves</td></tr>
+<tr><td><a href="300-volumes/310-shirt-sleeves/CAL-310-002-CORR_P.html">CAL-310-002</a></td><td>CORR_P</td><td>Shirt-sleeves — CORR_P</td><td>Shirt-sleeves</td><td>Shirt-sleeves</td></tr>
+<tr><td><a href="300-volumes/310-shirt-sleeves/CAL-310-003-CORR_S.html">CAL-310-003</a></td><td>CORR_S</td><td>Shirt-sleeves — CORR_S</td><td>Shirt-sleeves</td><td>Shirt-sleeves</td></tr>
+<tr><td><a href="300-volumes/310-shirt-sleeves/CAL-310-004-CROSSING.html">CAL-310-004</a></td><td>CROSSING</td><td>Shirt-sleeves — CROSSING</td><td>Shirt-sleeves</td><td>Shirt-sleeves</td></tr>
+<tr><td><a href="300-volumes/320-airlock-anteroom/CAL-320-001-AIRLOCK_A_port.html">CAL-320-001</a></td><td>AIRLOCK_A_port</td><td>Airlock anteroom — AIRLOCK_A_port</td><td>Airlock anteroom</td><td>Airlock anteroom</td></tr>
+<tr><td><a href="300-volumes/320-airlock-anteroom/CAL-320-002-AIRLOCK_A_stbd.html">CAL-320-002</a></td><td>AIRLOCK_A_stbd</td><td>Airlock anteroom — AIRLOCK_A_stbd</td><td>Airlock anteroom</td><td>Airlock anteroom</td></tr>
+<tr><td><a href="300-volumes/330-airlock/CAL-330-001-AIRLOCK_B_port.html">CAL-330-001</a></td><td>AIRLOCK_B_port</td><td>Airlock — AIRLOCK_B_port</td><td>Airlock</td><td>Airlock</td></tr>
+<tr><td><a href="300-volumes/330-airlock/CAL-330-002-AIRLOCK_B_stbd.html">CAL-330-002</a></td><td>AIRLOCK_B_stbd</td><td>Airlock — AIRLOCK_B_stbd</td><td>Airlock</td><td>Airlock</td></tr>
+<tr><td><a href="300-volumes/340-hybrid/CAL-340-001-ELEV_S.html">CAL-340-001</a></td><td>ELEV_S</td><td>Hybrid circulation — ELEV_S</td><td>Hybrid circulation</td><td>Hybrid circulation</td></tr>
+<tr><td><a href="300-volumes/340-hybrid/CAL-340-002-STAIRS_P.html">CAL-340-002</a></td><td>STAIRS_P</td><td>Hybrid circulation — STAIRS_P</td><td>Hybrid circulation</td><td>Hybrid circulation</td></tr>
+<tr><td><a href="900-bom/CAL-900-001-MASTER.html">CAL-900-001</a></td><td>BOM-MASTER</td><td>Master bill of materials</td><td>Bills of materials</td><td>—</td></tr>
+<tr><td><a href="900-bom/CAL-900-002-STRUCTURE.html">CAL-900-002</a></td><td>BOM-STR</td><td>Structure BOM — bulkheads / frames / decks / members</td><td>Bills of materials</td><td>—</td></tr>
+<tr><td><a href="900-bom/CAL-900-003-VOLUMES.html">CAL-900-003</a></td><td>BOM-VOL</td><td>Volume circulation BOM — shirt-sleeves / airlocks / hybrid</td><td>Bills of materials</td><td>—</td></tr>
+</tbody></table></section>
+<footer>CalypsoCad drawing package · ISO 5457 / 7200 chrome · Novolis Platform</footer></body></html>

@@ -48,7 +48,7 @@ internal static class HeadlessExportSuite
         if (jsonOnly)
             return failures == 0 ? 0 : 1;
 
-        Step("blueprints + manufacturer sheets", () => CalypsoAcceptanceGates.Blueprints());
+        Step("blueprints + drawing package + manufacturer sheets", () => CalypsoAcceptanceGates.Blueprints());
         Step("fabrication release (CAL-MFG-002)", () =>
         {
             var html = CalypsoFabReleaseEmitter.Emit();

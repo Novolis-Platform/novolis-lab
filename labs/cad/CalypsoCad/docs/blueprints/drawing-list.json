@@ -1,0 +1,704 @@
+{
+  "package": "CAL-DWG-PACKAGE",
+  "rev": "A",
+  "generatedUtc": "2026-11-08T00:36:44.3002915Z",
+  "standards": [
+    "ISO 5457",
+    "ISO 7200",
+    "ISO 128-15"
+  ],
+  "model": "calypso.cadjson",
+  "note": "Classification-style drawing register from one CAD model \u2014 not DNV plan approval.",
+  "categories": [
+    {
+      "code": "100",
+      "folder": "100-general",
+      "title": "General arrangement",
+      "discipline": "GA"
+    },
+    {
+      "code": "210",
+      "folder": "200-structure/210-bulkheads",
+      "title": "Bulkheads",
+      "discipline": "Structure"
+    },
+    {
+      "code": "220",
+      "folder": "200-structure/220-frames",
+      "title": "Frames",
+      "discipline": "Structure"
+    },
+    {
+      "code": "230",
+      "folder": "200-structure/230-deck-plates",
+      "title": "Deck plates",
+      "discipline": "Structure"
+    },
+    {
+      "code": "240",
+      "folder": "200-structure/240-structural-members",
+      "title": "Structural members",
+      "discipline": "Structure"
+    },
+    {
+      "code": "310",
+      "folder": "300-volumes/310-shirt-sleeves",
+      "title": "Shirt-sleeves",
+      "discipline": "Volumes"
+    },
+    {
+      "code": "320",
+      "folder": "300-volumes/320-airlock-anteroom",
+      "title": "Airlock anteroom",
+      "discipline": "Volumes"
+    },
+    {
+      "code": "330",
+      "folder": "300-volumes/330-airlock",
+      "title": "Airlock",
+      "discipline": "Volumes"
+    },
+    {
+      "code": "340",
+      "folder": "300-volumes/340-hybrid",
+      "title": "Hybrid circulation",
+      "discipline": "Volumes"
+    },
+    {
+      "code": "900",
+      "folder": "900-bom",
+      "title": "Bills of materials",
+      "discipline": "BOM"
+    }
+  ],
+  "drawings": [
+    {
+      "DrawingNumber": "CAL-100-001",
+      "Label": "PKG-INDEX",
+      "Title": "Drawing package index",
+      "category": "General",
+      "categoryCode": "100",
+      "RelativePath": "100-general/CAL-100-001-INDEX.html",
+      "SubjectId": "PACKAGE",
+      "volume": "None",
+      "Tags": [
+        "iso-7200",
+        "drawing-list",
+        "cadjson"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-210-001",
+      "Label": "BH-BOW-COLLISION",
+      "Title": "Bulkhead BOW-COLLISION @ z=13 m from stem",
+      "category": "Bulkheads",
+      "categoryCode": "210",
+      "RelativePath": "200-structure/210-bulkheads/CAL-210-001-BH-BOW-COLLISION.html",
+      "SubjectId": "BOW-COLLISION",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "bulkhead",
+        "z=13",
+        "Bow collision / BRIDGE aft \u2014 follows tapered IML at this station"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-210-002",
+      "Label": "BH-CROSS-FORE",
+      "Title": "Bulkhead CROSS-FORE @ z=19 m from stem",
+      "category": "Bulkheads",
+      "categoryCode": "210",
+      "RelativePath": "200-structure/210-bulkheads/CAL-210-002-BH-CROSS-FORE.html",
+      "SubjectId": "CROSS-FORE",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "bulkhead",
+        "z=19",
+        "CROSS fore face \u2014 ACCESS/CROSS passageway openings"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-210-003",
+      "Label": "BH-CROSS-AFT",
+      "Title": "Bulkhead CROSS-AFT @ z=23 m from stem",
+      "category": "Bulkheads",
+      "categoryCode": "210",
+      "RelativePath": "200-structure/210-bulkheads/CAL-210-003-BH-CROSS-AFT.html",
+      "SubjectId": "CROSS-AFT",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "bulkhead",
+        "z=23",
+        "CROSS aft face \u2014 CORR openings"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-210-004",
+      "Label": "BH-CREW-AFT",
+      "Title": "Bulkhead CREW-AFT @ z=30.28 m from stem",
+      "category": "Bulkheads",
+      "categoryCode": "210",
+      "RelativePath": "200-structure/210-bulkheads/CAL-210-004-BH-CREW-AFT.html",
+      "SubjectId": "CREW-AFT",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "bulkhead",
+        "z=30.28",
+        "Crew cabin band aft diaphragm"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-210-005",
+      "Label": "BH-ENG-FORE",
+      "Title": "Bulkhead ENG-FORE @ z=41 m from stem",
+      "category": "Bulkheads",
+      "categoryCode": "210",
+      "RelativePath": "200-structure/210-bulkheads/CAL-210-005-BH-ENG-FORE.html",
+      "SubjectId": "ENG-FORE",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "bulkhead",
+        "z=41",
+        "Engineering atrium fore \u2014 machinery pressure wall"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-210-006",
+      "Label": "BH-ENG-AFT",
+      "Title": "Bulkhead ENG-AFT @ z=49.25 m from stem",
+      "category": "Bulkheads",
+      "categoryCode": "210",
+      "RelativePath": "200-structure/210-bulkheads/CAL-210-006-BH-ENG-AFT.html",
+      "SubjectId": "ENG-AFT",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "bulkhead",
+        "z=49.25",
+        "Engineering / HOLD interface \u2014 machinery pressure wall"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-001",
+      "Label": "FRM-Z0",
+      "Title": "Transverse frame web @ z=0 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-001-FRAME-z0.html",
+      "SubjectId": "z0",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=0"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-002",
+      "Label": "FRM-Z12",
+      "Title": "Transverse frame web @ z=12 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-002-FRAME-z12.html",
+      "SubjectId": "z12",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=12"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-003",
+      "Label": "FRM-Z20",
+      "Title": "Transverse frame web @ z=20 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-003-FRAME-z20.html",
+      "SubjectId": "z20",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=20"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-004",
+      "Label": "FRM-Z24",
+      "Title": "Transverse frame web @ z=24 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-004-FRAME-z24.html",
+      "SubjectId": "z24",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=24"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-005",
+      "Label": "FRM-Z28",
+      "Title": "Transverse frame web @ z=28 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-005-FRAME-z28.html",
+      "SubjectId": "z28",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=28"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-006",
+      "Label": "FRM-Z32",
+      "Title": "Transverse frame web @ z=32 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-006-FRAME-z32.html",
+      "SubjectId": "z32",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=32"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-007",
+      "Label": "FRM-Z40",
+      "Title": "Transverse frame web @ z=40 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-007-FRAME-z40.html",
+      "SubjectId": "z40",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=40"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-008",
+      "Label": "FRM-Z48",
+      "Title": "Transverse frame web @ z=48 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-008-FRAME-z48.html",
+      "SubjectId": "z48",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=48"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-009",
+      "Label": "FRM-Z52",
+      "Title": "Transverse frame web @ z=52 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-009-FRAME-z52.html",
+      "SubjectId": "z52",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=52"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-010",
+      "Label": "FRM-Z56",
+      "Title": "Transverse frame web @ z=56 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-010-FRAME-z56.html",
+      "SubjectId": "z56",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=56"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-220-011",
+      "Label": "FRM-Z60",
+      "Title": "Transverse frame web @ z=60 m",
+      "category": "Frames",
+      "categoryCode": "220",
+      "RelativePath": "200-structure/220-frames/CAL-220-011-FRAME-z60.html",
+      "SubjectId": "z60",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "frame",
+        "z=60"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-230-001",
+      "Label": "DECK-DK\u22121",
+      "Title": "Deck plates \u2014 DK\u22121 sandwich face schedule (11 panels)",
+      "category": "DeckPlates",
+      "categoryCode": "230",
+      "RelativePath": "200-structure/230-deck-plates/CAL-230-001-DECK-DKM1.html",
+      "SubjectId": "deck:-1:DK\u22121",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "deck-plate",
+        "DK\u22121",
+        "deckNum=-1"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-230-002",
+      "Label": "DECK-DK0",
+      "Title": "Deck plates \u2014 DK0 sandwich face schedule (11 panels)",
+      "category": "DeckPlates",
+      "categoryCode": "230",
+      "RelativePath": "200-structure/230-deck-plates/CAL-230-002-DECK-DK0.html",
+      "SubjectId": "deck:0:DK0",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "deck-plate",
+        "DK0",
+        "deckNum=0"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-230-003",
+      "Label": "DECK-DK\u002B1",
+      "Title": "Deck plates \u2014 DK\u002B1 sandwich face schedule (11 panels)",
+      "category": "DeckPlates",
+      "categoryCode": "230",
+      "RelativePath": "200-structure/230-deck-plates/CAL-230-003-DECK-DKP1.html",
+      "SubjectId": "deck:1:DK\u002B1",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "deck-plate",
+        "DK\u002B1",
+        "deckNum=1"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-001",
+      "Label": "MEM-REG-01",
+      "Title": "Structural members register \u2014 sheet 1 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-001-MEMBERS-01.html",
+      "SubjectId": "members-1",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-002",
+      "Label": "MEM-REG-02",
+      "Title": "Structural members register \u2014 sheet 2 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-002-MEMBERS-02.html",
+      "SubjectId": "members-2",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-003",
+      "Label": "MEM-REG-03",
+      "Title": "Structural members register \u2014 sheet 3 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-003-MEMBERS-03.html",
+      "SubjectId": "members-3",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-004",
+      "Label": "MEM-REG-04",
+      "Title": "Structural members register \u2014 sheet 4 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-004-MEMBERS-04.html",
+      "SubjectId": "members-4",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-005",
+      "Label": "MEM-REG-05",
+      "Title": "Structural members register \u2014 sheet 5 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-005-MEMBERS-05.html",
+      "SubjectId": "members-5",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-006",
+      "Label": "MEM-REG-06",
+      "Title": "Structural members register \u2014 sheet 6 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-006-MEMBERS-06.html",
+      "SubjectId": "members-6",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-007",
+      "Label": "MEM-REG-07",
+      "Title": "Structural members register \u2014 sheet 7 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-007-MEMBERS-07.html",
+      "SubjectId": "members-7",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-008",
+      "Label": "MEM-REG-08",
+      "Title": "Structural members register \u2014 sheet 8 (32 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-008-MEMBERS-08.html",
+      "SubjectId": "members-8",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-310-001",
+      "Label": "ACCESS",
+      "Title": "Shirt-sleeves \u2014 ACCESS",
+      "category": "ShirtSleeves",
+      "categoryCode": "310",
+      "RelativePath": "300-volumes/310-shirt-sleeves/CAL-310-001-ACCESS.html",
+      "SubjectId": "ACCESS",
+      "volume": "ShirtSleeves",
+      "Tags": [
+        "volume",
+        "ShirtSleeves",
+        "deck=-1"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-320-001",
+      "Label": "AIRLOCK_A_port",
+      "Title": "Airlock anteroom \u2014 AIRLOCK_A_port",
+      "category": "AirlockAnteroom",
+      "categoryCode": "320",
+      "RelativePath": "300-volumes/320-airlock-anteroom/CAL-320-001-AIRLOCK_A_port.html",
+      "SubjectId": "AIRLOCK_A_port",
+      "volume": "AirlockAnteroom",
+      "Tags": [
+        "volume",
+        "AirlockAnteroom",
+        "deck=0"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-320-002",
+      "Label": "AIRLOCK_A_stbd",
+      "Title": "Airlock anteroom \u2014 AIRLOCK_A_stbd",
+      "category": "AirlockAnteroom",
+      "categoryCode": "320",
+      "RelativePath": "300-volumes/320-airlock-anteroom/CAL-320-002-AIRLOCK_A_stbd.html",
+      "SubjectId": "AIRLOCK_A_stbd",
+      "volume": "AirlockAnteroom",
+      "Tags": [
+        "volume",
+        "AirlockAnteroom",
+        "deck=0"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-330-001",
+      "Label": "AIRLOCK_B_port",
+      "Title": "Airlock \u2014 AIRLOCK_B_port",
+      "category": "Airlock",
+      "categoryCode": "330",
+      "RelativePath": "300-volumes/330-airlock/CAL-330-001-AIRLOCK_B_port.html",
+      "SubjectId": "AIRLOCK_B_port",
+      "volume": "Airlock",
+      "Tags": [
+        "volume",
+        "Airlock",
+        "deck=0"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-330-002",
+      "Label": "AIRLOCK_B_stbd",
+      "Title": "Airlock \u2014 AIRLOCK_B_stbd",
+      "category": "Airlock",
+      "categoryCode": "330",
+      "RelativePath": "300-volumes/330-airlock/CAL-330-002-AIRLOCK_B_stbd.html",
+      "SubjectId": "AIRLOCK_B_stbd",
+      "volume": "Airlock",
+      "Tags": [
+        "volume",
+        "Airlock",
+        "deck=0"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-310-002",
+      "Label": "CORR_P",
+      "Title": "Shirt-sleeves \u2014 CORR_P",
+      "category": "ShirtSleeves",
+      "categoryCode": "310",
+      "RelativePath": "300-volumes/310-shirt-sleeves/CAL-310-002-CORR_P.html",
+      "SubjectId": "CORR_P",
+      "volume": "ShirtSleeves",
+      "Tags": [
+        "volume",
+        "ShirtSleeves",
+        "deck=-1"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-310-003",
+      "Label": "CORR_S",
+      "Title": "Shirt-sleeves \u2014 CORR_S",
+      "category": "ShirtSleeves",
+      "categoryCode": "310",
+      "RelativePath": "300-volumes/310-shirt-sleeves/CAL-310-003-CORR_S.html",
+      "SubjectId": "CORR_S",
+      "volume": "ShirtSleeves",
+      "Tags": [
+        "volume",
+        "ShirtSleeves",
+        "deck=-1"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-310-004",
+      "Label": "CROSSING",
+      "Title": "Shirt-sleeves \u2014 CROSSING",
+      "category": "ShirtSleeves",
+      "categoryCode": "310",
+      "RelativePath": "300-volumes/310-shirt-sleeves/CAL-310-004-CROSSING.html",
+      "SubjectId": "CROSSING",
+      "volume": "ShirtSleeves",
+      "Tags": [
+        "volume",
+        "ShirtSleeves",
+        "deck=-1"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-340-001",
+      "Label": "ELEV_S",
+      "Title": "Hybrid circulation \u2014 ELEV_S",
+      "category": "Hybrid",
+      "categoryCode": "340",
+      "RelativePath": "300-volumes/340-hybrid/CAL-340-001-ELEV_S.html",
+      "SubjectId": "ELEV_S",
+      "volume": "Hybrid",
+      "Tags": [
+        "volume",
+        "Hybrid",
+        "deck=-1"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-340-002",
+      "Label": "STAIRS_P",
+      "Title": "Hybrid circulation \u2014 STAIRS_P",
+      "category": "Hybrid",
+      "categoryCode": "340",
+      "RelativePath": "300-volumes/340-hybrid/CAL-340-002-STAIRS_P.html",
+      "SubjectId": "STAIRS_P",
+      "volume": "Hybrid",
+      "Tags": [
+        "volume",
+        "Hybrid",
+        "deck=-1"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-900-001",
+      "Label": "BOM-MASTER",
+      "Title": "Master bill of materials",
+      "category": "Bom",
+      "categoryCode": "900",
+      "RelativePath": "900-bom/CAL-900-001-MASTER.html",
+      "SubjectId": "master",
+      "volume": "None",
+      "Tags": [
+        "bom",
+        "master"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-900-002",
+      "Label": "BOM-STR",
+      "Title": "Structure BOM \u2014 bulkheads / frames / decks / members",
+      "category": "Bom",
+      "categoryCode": "900",
+      "RelativePath": "900-bom/CAL-900-002-STRUCTURE.html",
+      "SubjectId": "structure",
+      "volume": "None",
+      "Tags": [
+        "bom",
+        "structure"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-900-003",
+      "Label": "BOM-VOL",
+      "Title": "Volume circulation BOM \u2014 shirt-sleeves / airlocks / hybrid",
+      "category": "Bom",
+      "categoryCode": "900",
+      "RelativePath": "900-bom/CAL-900-003-VOLUMES.html",
+      "SubjectId": "volumes",
+      "volume": "None",
+      "Tags": [
+        "bom",
+        "volumes"
+      ]
+    }
+  ]
+}

@@ -27,6 +27,9 @@ internal static class CalypsoProjectPaths
     /// <summary>Interchange meshes (OBJ / STL / FBX / GLB) from the ship CAD.</summary>
     public static string MeshesDirectory => Path.Combine(RendersDirectory, "meshes");
 
+    /// <summary>DNV/ISO-style numbered blueprint package (structure + volumes + BOM).</summary>
+    public static string BlueprintsPackageDirectory => Path.Combine(ProjectRoot, "docs", "blueprints");
+
     /// <summary>Curated visual-gate baselines (subset of renders).</summary>
     public static string PreviewDirectory => Path.Combine(ProjectRoot, "docs", "preview");
 

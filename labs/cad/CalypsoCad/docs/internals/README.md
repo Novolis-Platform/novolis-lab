@@ -28,6 +28,7 @@ dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoInternalsCad\Calypso
 | `CAL-INT-HOLD-001.html` | Cargo hold arrangement |
 | `CAL-INT-PASS-001.html` | Passageways / corridors (DK0 + DK+1) |
 | `details/` | Modular BH / frame / space crops |
+| `../blueprints/` | DNV/ISO-style numbered package (structure + volumes + BOM) |
 
 Standards: ISO 5457 A1 landscape, ISO 7200-style title block, ISO 128-15 stern-left/bow-right.
 

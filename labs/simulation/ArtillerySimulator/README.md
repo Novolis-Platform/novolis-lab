@@ -46,21 +46,25 @@ dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\A
 
 Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force, or government. Ballistic PE / MV / met / warhead radii are open approximations — not firing tables. Kristiansand geography is a fictional defense-exercise map. See `assets/NOTICE.txt`.
 
-## Layout
+## Layout (single assembly, clean rings)
 
 | Folder | Role |
 | --- | --- |
-| `Host/` | `ArtilleryApp`, `BattleSession`, `FixedStepClock`, profiler |
-| `Features/Battery/` | Howitzer, crew drill, mil-tech specs |
-| `Features/Product/` | Title, legal copy, `Novolis.Game.MenuFlows` shell screens |
+| `Host/` | `Program`, DI modules, CLI, `ArtilleryGameRunner`, shell/profiler |
+| `Domain/` | `BattleSession`, `FixedStepClock` |
+| `Application/` | `BattleWorld`, `BattleCommand` + pump, `IPlayQuery` / `IBatteryApplier` |
+| `Adapters/Silk/` | `FrameDirector` — drains channel, Silk loop |
+| `Adapters/Agent/` | `ArtilleryLiveHost` → `ChannelWriter<BattleCommand>` (no MediatR) |
+| `Features/Battery/` | Gun, crew, round pool, aim, battle loop, player input |
+| `Features/Product/` | Title, legal, MenuFlows shell screens |
 | `Features/Levels/` | `IGameLevel`, catalog, Kristiansand level |
 | `Features/Defense/` | Mission loop, outcomes, columns, opening fire plan |
-| `Features/Presentation/` | Camera, HUD, splash/pause overlays |
-| `Features/Agent/` | Live agent surface |
+| `Features/Presentation/` | Camera, scene renderer, HUD, particles |
+| `Features/Audio/` | SFX, score bake, voice chatter |
 | `Kristiansand/` | Geodesy, terrain, roads, atmosphere |
-| `assets/` | Splash, icons, NOTICE.txt, sfx (+ LICENSE) |
-| `map/` | Runtime layers + pipeline sources (see `map/README.md`) |
-| `scripts/` | Map rebuild + icon bake + agent play |
+| `assets/` / `map/` / `scripts/` | Runtime assets, layers, bake tools |
+
+Commands use `Novolis.Messaging.Channels` (`AddChannel<BattleCommand>`). The 120 Hz battle loop stays synchronous; continuous WASD lay never allocates channel messages.
 
 ## Icons
 
