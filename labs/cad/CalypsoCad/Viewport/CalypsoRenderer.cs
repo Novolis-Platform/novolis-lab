@@ -2503,7 +2503,8 @@ internal sealed class CalypsoRenderer
         if (n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.HullShell | CalypsoVisualLayers.OuterHull;
         if (n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
-            || n.StartsWith("stringer-join-", StringComparison.OrdinalIgnoreCase))
+            || n.StartsWith("stringer-join-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.OuterHull;
         if (n.Contains("-join-", StringComparison.OrdinalIgnoreCase)
             || n.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase))
@@ -2566,7 +2567,8 @@ internal sealed class CalypsoRenderer
     /// </summary>
     private static bool IsOuterHullMember(string n)
     {
-        if (n.StartsWith("stringer-join-", StringComparison.OrdinalIgnoreCase))
+        if (n.StartsWith("stringer-join-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase))
             return true;
         if (n.Contains("-ring-", StringComparison.OrdinalIgnoreCase))
             return true;

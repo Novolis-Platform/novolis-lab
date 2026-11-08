@@ -1,5 +1,5 @@
 {
-  "generatedUtc": "2026-11-08T02:58:04.8356867Z",
+  "generatedUtc": "2026-11-08T03:16:41.3892146Z",
   "loa": 69,
   "spine": "mid athwart (X=0) \u00D7 mid height (SectionAt.mid) \u00D7 stem\u2192stern",
   "tolX": 0.05,
@@ -134,8 +134,8 @@
     }
   ],
   "semanticRegistry": {
-    "partCount": 1337,
-    "assemblyCount": 40,
+    "partCount": 1425,
+    "assemblyCount": 47,
     "bulkheadPlates": 6,
     "frameAssemblies": 15,
     "transverseParts": 207,
@@ -2250,52 +2250,964 @@
           "IsShell": false
         },
         {
-          "Name": "stringer-join-v0-b4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
+          "Name": "stringer-knuckle-v0-s0",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
         },
         {
-          "Name": "stringer-join-v1-b4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
+          "Name": "stringer-knuckle-v0-s1",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
         },
         {
-          "Name": "stringer-join-v2-b4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
+          "Name": "stringer-knuckle-v0-s2",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
         },
         {
-          "Name": "stringer-join-v3-b4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
+          "Name": "stringer-knuckle-v0-s3",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
         },
         {
-          "Name": "stringer-join-v4-b4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
+          "Name": "stringer-knuckle-v0-s4",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
         },
         {
-          "Name": "stringer-join-v5-b4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
+          "Name": "stringer-knuckle-v0-s5",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
         },
         {
-          "Name": "stringer-join-v6-b4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
+          "Name": "stringer-knuckle-v0-s6",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
         },
         {
-          "Name": "stringer-join-v7-b4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
+          "Name": "stringer-knuckle-v0-s7",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s8",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s9",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s10",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s11",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s12",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s13",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s14",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s15",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s16",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s17",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s18",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v0-s19",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v0",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s0",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s1",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s2",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s3",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s4",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s5",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s6",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s7",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s8",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s9",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s10",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s11",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s12",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s13",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s14",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s15",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s16",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s17",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s18",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v1-s19",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v1",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s0",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s1",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s2",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s3",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s4",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s5",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s6",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s7",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s8",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s9",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s10",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s11",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s12",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s13",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s14",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s15",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s16",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s17",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s18",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v2-s19",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v2",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s0",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s1",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s2",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s3",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s4",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s5",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s6",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s7",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s8",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s9",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s10",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s11",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s12",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s13",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s14",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s15",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s16",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s17",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s18",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v3-s19",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v3",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s0",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s1",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s2",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s3",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s4",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s5",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s6",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s7",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s8",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s9",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s10",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s11",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s12",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s13",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s14",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s15",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s16",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s17",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s18",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v4-s19",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v4",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s0",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s1",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s2",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s3",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s4",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s5",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s6",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s7",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s8",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s9",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s10",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s11",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s12",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s13",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s14",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s15",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s16",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s17",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s18",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v5-s19",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v5",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s0",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s1",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s2",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s3",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s4",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s5",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s6",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s7",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s8",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s9",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s10",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s11",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s12",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s13",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s14",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s15",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s16",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s17",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s18",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v6-s19",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v6",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s0",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s1",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s2",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s3",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s4",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s5",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s6",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s7",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s8",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s9",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s10",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s11",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s12",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s13",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s14",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s15",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s16",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s17",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s18",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
+        },
+        {
+          "Name": "stringer-knuckle-v7-s19",
+          "Role": "ShellStiffener",
+          "Assembly": "knuckle-v7",
+          "IsShell": true
         },
         {
           "Name": "shell-panel-b4-e0",
@@ -2310,54 +3222,6 @@
           "IsShell": true
         },
         {
-          "Name": "stringer-join-v0-b5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v1-b5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v2-b5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v3-b5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v4-b5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v5-b5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v6-b5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v7-b5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
           "Name": "shell-panel-b5-e0",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
@@ -2368,54 +3232,6 @@
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
-        },
-        {
-          "Name": "stringer-join-v0-b6",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v1-b6",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v2-b6",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v3-b6",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v4-b6",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v5-b6",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v6-b6",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v7-b6",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
         },
         {
           "Name": "shell-panel-b6-e0",
@@ -2430,54 +3246,6 @@
           "IsShell": true
         },
         {
-          "Name": "stringer-join-v0-b7",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v1-b7",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v2-b7",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v3-b7",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v4-b7",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v5-b7",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v6-b7",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v7-b7",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
           "Name": "shell-panel-b7-e0",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
@@ -2488,54 +3256,6 @@
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
-        },
-        {
-          "Name": "stringer-join-v0-b8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v1-b8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v2-b8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v3-b8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v4-b8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v5-b8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v6-b8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v7-b8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
         },
         {
           "Name": "shell-panel-b8-e0",
@@ -2550,54 +3270,6 @@
           "IsShell": true
         },
         {
-          "Name": "stringer-join-v0-b9",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v1-b9",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v2-b9",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v3-b9",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v4-b9",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v5-b9",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v6-b9",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v7-b9",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
           "Name": "shell-panel-b9-e0",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
@@ -2608,54 +3280,6 @@
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
-        },
-        {
-          "Name": "stringer-join-v0-b10",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v1-b10",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v2-b10",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v3-b10",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v4-b10",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v5-b10",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v6-b10",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v7-b10",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
         },
         {
           "Name": "shell-panel-b10-e0",
@@ -2670,54 +3294,6 @@
           "IsShell": true
         },
         {
-          "Name": "stringer-join-v0-b11",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v1-b11",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v2-b11",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v3-b11",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v4-b11",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v5-b11",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v6-b11",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v7-b11",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
           "Name": "shell-panel-b11-e0",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
@@ -2728,54 +3304,6 @@
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
-        },
-        {
-          "Name": "stringer-join-v0-b12",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v1-b12",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v2-b12",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v3-b12",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v4-b12",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v5-b12",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v6-b12",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
-        },
-        {
-          "Name": "stringer-join-v7-b12",
-          "Role": "LongitudinalGirder",
-          "Assembly": "plating-join",
-          "IsShell": false
         },
         {
           "Name": "shell-panel-b12-e0",
@@ -8562,7 +9090,7 @@
       "GirderGaps": [],
       "Ok": true
     },
-    "RegistryParts": 1337,
+    "RegistryParts": 1425,
     "BulkheadPlates": 6,
     "FrameAssemblies": 15,
     "MissingBulkheads": [],

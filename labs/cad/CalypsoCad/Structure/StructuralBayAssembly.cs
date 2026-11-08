@@ -1,4 +1,10 @@
 using System.Text.Json;
+using CalypsoCad.Constraints;
+using CalypsoCad.Generation;
+using CalypsoCad.Generation.Longitudinal;
+using CalypsoCad.Geometry;
+using CalypsoCad.Model;
+using CalypsoCad.Publication;
 using Novolis.Cad.Primitives;
 
 namespace CalypsoCad.Structure;
@@ -33,6 +39,9 @@ internal static class StructuralBayAssembly
 
         foreach (var (frameId, z) in stations)
             EmitOpenFrame(entities, joints, loa, frameId, z, web, halfDepth, deckUp);
+
+        // Path-swept knuckle stringers across both bays (24→28→32) — not mid-bay boxes.
+        EmitKnuckleStringers(entities, joints, loa, web, deckUp, tPlate);
 
         EmitBayLongitudinals(entities, joints, loa, Bay0Z0, Bay0Z1, web, deckUp, tPlate, "bay0", "frame-F24", "frame-F28");
         EmitBayLongitudinals(entities, joints, loa, Bay0Z1, Bay1Z1, web, deckUp, tPlate, "bay1", "frame-F28", "frame-F32");
@@ -133,6 +142,60 @@ internal static class StructuralBayAssembly
         joints.Add(Fillet($"j-{chordName}-ring", chordName, frameId, cy, deckUp, zStem, "chord×ring"));
     }
 
+    private static void EmitKnuckleStringers(
+        List<CadEntity> entities,
+        List<StructuralJoint> joints,
+        float loa,
+        float web,
+        float deckUp,
+        float tPlate)
+    {
+        var hull = HullGeometry.RequireActive();
+        var paths = HullKnucklePath.Build(
+            hull,
+            CalypsoShipbuildingFrames.PlatingJoinInset,
+            [Bay0Z0, Bay0Z1, Bay1Z1]);
+        var ctx = new ShipGeometryContext
+        {
+            Ship = CadDocumentAdapter.Active.Ship
+                   ?? new ShipDefinition("CALYPSO", loa, 20.8f, 12.4f, [deckUp - 3.9f, deckUp, deckUp + 3.6f],
+                       new Dictionary<string, float>()),
+            Hull = hull,
+            Registry = CadDocumentAdapter.Active,
+            Constraints = new DesignConstraints(),
+            Loa = loa,
+            Web = web,
+            TBh = web,
+            TPlate = tPlate,
+            DeckUps = [deckUp - 3.9f, deckUp, deckUp + 3.6f],
+        };
+        _ = HullKnuckleStringerGenerator.Generate(paths, loa, web, ctx, entities);
+        foreach (var e in entities.Where(x =>
+                     x.Name?.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase) == true))
+        {
+            if (e.Properties is null
+                || !e.Properties.TryGetValue("z0", out var z0El)
+                || !e.Properties.TryGetValue("z1", out var z1El))
+                continue;
+            var z0 = z0El.GetSingle();
+            var z1 = z1El.GetSingle();
+            var fore = NearestFrameName(z0);
+            var aft = NearestFrameName(z1);
+            joints.Add(Fillet($"j-{e.Name}-fore", e.Name!, fore, 0f, deckUp, z0, "knuckle×frame"));
+            joints.Add(Fillet($"j-{e.Name}-aft", e.Name!, aft, 0f, deckUp, z1, "knuckle×frame"));
+        }
+    }
+
+    private static string NearestFrameName(float zStem)
+    {
+        if (MathF.Abs(zStem - Bay0Z0) <= MathF.Abs(zStem - Bay0Z1)
+            && MathF.Abs(zStem - Bay0Z0) <= MathF.Abs(zStem - Bay1Z1))
+            return "frame-F24";
+        if (MathF.Abs(zStem - Bay0Z1) <= MathF.Abs(zStem - Bay1Z1))
+            return "frame-F28";
+        return "frame-F32";
+    }
+
     private static void EmitBayLongitudinals(
         List<CadEntity> entities,
         List<StructuralJoint> joints,
@@ -148,16 +211,9 @@ internal static class StructuralBayAssembly
     {
         var zc = (z0 + z1) * 0.5f;
         var halfLenZ = (z1 - z0) * 0.5f + web * 0.45f;
-        CalypsoShipbuildingFrames.AddPlatingJoinStringersBetweenFrames(
-            entities, loa, z0, z1, web, bayTag, foreFrame, aftFrame);
-        for (var i = 0; i < 8; i++)
-        {
-            var name = $"stringer-join-v{i}-{bayTag}";
-            if (entities.All(e => !string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase)))
-                continue;
-            joints.Add(Fillet($"j-{name}-fore", name, foreFrame, 0f, deckUp, z0, "plating-join×frame"));
-            joints.Add(Fillet($"j-{name}-aft", name, aftFrame, 0f, deckUp, z1, "plating-join×frame"));
-        }
+        _ = bayTag;
+        _ = foreFrame;
+        _ = aftFrame;
 
         // Deck girders — exact bay span with web overlap into frames.
         var webH = web * 0.35f;

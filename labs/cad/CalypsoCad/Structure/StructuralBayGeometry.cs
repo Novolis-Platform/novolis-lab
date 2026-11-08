@@ -44,16 +44,17 @@ internal static class StructuralBayGeometry
         checks.Add(new("two open frames present", rings.Count >= 16, $"ringBars={rings.Count} (expect ≥16 for 3×8)"));
         checks.Add(new("no wall-like ordinary frames / BH in bay proof", wallLike == 0, $"wallLike={wallLike}"));
         checks.Add(new("longitudinal girders present", girders.Count >= 6, $"girders={girders.Count}"));
-        var joinStringers = entities.Count(e =>
-            e.Name?.StartsWith("stringer-join-", StringComparison.OrdinalIgnoreCase) == true
+        var knuckleStringers = entities.Count(e =>
+            e.Name?.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase) == true
+            || e.Name?.StartsWith("stringer-join-", StringComparison.OrdinalIgnoreCase) == true
             || (e.Properties is not null
                 && e.Properties.TryGetValue("platingJoin", out var pj)
                 && pj.ValueKind == JsonValueKind.True));
-        checks.Add(new("hull stringers present", stringers.Count >= 12 || joinStringers >= 12,
-            $"stringers={stringers.Count} platingJoins={joinStringers}"));
+        checks.Add(new("hull stringers present", stringers.Count >= 12 || knuckleStringers >= 12,
+            $"stringers={stringers.Count} knuckleSegs={knuckleStringers}"));
         checks.Add(new("shell panels present", shells.Count >= 8, $"shell={shells.Count}"));
 
-        // Every outer-hull plating join (8 octagon vertices) carries a longitudinal per bay.
+        // Path-swept knuckles: each vertex has a segment whose stamped span covers mid-bay Z.
         var joinMiss = 0;
         var platingInset = CalypsoShipbuildingFrames.PlatingJoinInset;
         foreach (var zStem in new[] { 26f, 30f }) // bay mid-stations F24–28 and F28–32
@@ -65,9 +66,12 @@ internal static class StructuralBayGeometry
                 var vx = ring[i].Y;
                 var vu = ring[i].Up;
                 var member = entities.FirstOrDefault(e =>
-                    e.Name?.Contains($"stringer-join-v{i}-", StringComparison.OrdinalIgnoreCase) == true
-                    && e.Points is { Count: >= 1 }
-                    && MathF.Abs((loa * 0.5f - e.Points[0][2]) - zStem) < 2.2f);
+                    e.Name?.Contains($"stringer-knuckle-v{i}-", StringComparison.OrdinalIgnoreCase) == true
+                    && e.Properties is not null
+                    && e.Properties.TryGetValue("z0", out var z0)
+                    && e.Properties.TryGetValue("z1", out var z1)
+                    && z0.GetSingle() - 0.05f <= zStem
+                    && zStem <= z1.GetSingle() + 0.05f);
                 if (member?.Points is not { Count: >= 1 })
                 {
                     joinMiss++;
@@ -75,12 +79,12 @@ internal static class StructuralBayGeometry
                 }
 
                 var c = member.Points[0];
-                // Member must lie on the inward ray from the plating join (not float mid-volume).
+                // Member center must lie near the inward ray from the plating join at mid-bay.
                 var toC = (c[0] - vx, c[1] - vu);
                 var toIn = (cy - vx, cu - vu);
                 var inLen = MathF.Sqrt(toIn.Item1 * toIn.Item1 + toIn.Item2 * toIn.Item2);
                 var dist = MathF.Sqrt(toC.Item1 * toC.Item1 + toC.Item2 * toC.Item2);
-                if (inLen < 1e-4f || dist > 0.55f)
+                if (inLen < 1e-4f || dist > 0.85f)
                 {
                     joinMiss++;
                     continue;
@@ -88,7 +92,7 @@ internal static class StructuralBayGeometry
 
                 var align = (toC.Item1 * toIn.Item1 + toC.Item2 * toIn.Item2)
                             / (dist * inLen);
-                if (align < 0.85f)
+                if (align < 0.75f)
                     joinMiss++;
             }
         }

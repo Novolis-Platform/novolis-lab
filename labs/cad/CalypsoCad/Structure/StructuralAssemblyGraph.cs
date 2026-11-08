@@ -81,6 +81,7 @@ internal static class StructuralAssemblyGraph
         }
 
         var girderGaps = FindGirderGaps(entities);
+        girderGaps.AddRange(FindKnuckleStringerGaps(entities));
         var isolated = new List<string>();
         var freeEnds = new List<string>();
 
@@ -308,6 +309,47 @@ internal static class StructuralAssemblyGraph
                     continue; // heavy overlap / distant region
                 // Only positive clearance is a discontinuity (overlap into frame web is intentional).
                 if (gap > 0.05f)
+                    fails.Add($"{g.Key}: {segs[i - 1].Name}‥{segs[i].Name} gap={gap:0.###}m");
+            }
+        }
+
+        return fails;
+    }
+
+    /// <summary>
+    /// Continuity of path-swept knuckle stringers using stamped z0/z1 (not AABB Z).
+    /// </summary>
+    private static List<string> FindKnuckleStringerGaps(List<CadEntity> entities)
+    {
+        var fails = new List<string>();
+        var groups = entities
+            .Where(e => e.Name?.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase) == true
+                        && e.Properties is not null
+                        && e.Properties.TryGetValue("z0", out var z0)
+                        && z0.ValueKind == JsonValueKind.Number
+                        && e.Properties.TryGetValue("z1", out var z1)
+                        && z1.ValueKind == JsonValueKind.Number)
+            .Select(e =>
+            {
+                var z0 = e.Properties!["z0"].GetSingle();
+                var z1 = e.Properties!["z1"].GetSingle();
+                var asm = e.Properties.TryGetValue("assembly", out var a) && a.ValueKind == JsonValueKind.String
+                    ? a.GetString() ?? ReadAssembly(e)
+                    : ReadAssembly(e);
+                return (Asm: asm, Name: e.Name!, Z0: MathF.Min(z0, z1), Z1: MathF.Max(z0, z1));
+            })
+            .GroupBy(g => g.Asm, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var g in groups)
+        {
+            var segs = g.OrderBy(s => s.Z0).ToList();
+            if (segs.Count == 0)
+                continue;
+            for (var i = 1; i < segs.Count; i++)
+            {
+                var gap = segs[i].Z0 - segs[i - 1].Z1;
+                // Path segments share joint stations — tiny positive gap is a discontinuity.
+                if (gap > 0.08f)
                     fails.Add($"{g.Key}: {segs[i - 1].Name}‥{segs[i].Name} gap={gap:0.###}m");
             }
         }

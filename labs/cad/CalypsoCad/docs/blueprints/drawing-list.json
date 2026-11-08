@@ -1,7 +1,7 @@
 {
   "package": "CAL-DWG-PACKAGE",
   "rev": "A",
-  "generatedUtc": "2026-11-08T03:04:52.4757161Z",
+  "generatedUtc": "2026-11-08T03:16:40.4752797Z",
   "standards": [
     "ISO 5457",
     "ISO 7200",
@@ -586,11 +586,53 @@
     {
       "DrawingNumber": "CAL-240-009",
       "Label": "MEM-REG-09",
-      "Title": "Structural members register \u2014 sheet 9 (33 ids)",
+      "Title": "Structural members register \u2014 sheet 9 (40 ids)",
       "category": "StructuralMembers",
       "categoryCode": "240",
       "RelativePath": "200-structure/240-structural-members/CAL-240-009-MEMBERS-09.html",
       "SubjectId": "members-9",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-010",
+      "Label": "MEM-REG-10",
+      "Title": "Structural members register \u2014 sheet 10 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-010-MEMBERS-10.html",
+      "SubjectId": "members-10",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-011",
+      "Label": "MEM-REG-11",
+      "Title": "Structural members register \u2014 sheet 11 (40 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-011-MEMBERS-11.html",
+      "SubjectId": "members-11",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "member-register"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-240-012",
+      "Label": "MEM-REG-12",
+      "Title": "Structural members register \u2014 sheet 12 (1 ids)",
+      "category": "StructuralMembers",
+      "categoryCode": "240",
+      "RelativePath": "200-structure/240-structural-members/CAL-240-012-MEMBERS-12.html",
+      "SubjectId": "members-12",
       "volume": "None",
       "Tags": [
         "structure",

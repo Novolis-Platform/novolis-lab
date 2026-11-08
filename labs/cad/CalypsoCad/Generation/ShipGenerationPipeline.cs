@@ -140,8 +140,10 @@ internal static class ShipGenerationPipeline
             _ = TransverseStructureGenerator.GenerateRingFrame(spec, context, entities, PlaceFrame);
         }
 
-        // Stage 4 — longitudinal
-        LongitudinalStructureGenerator.Generate(entities, loa, topo, ordinaryFrames, context);
+        // Stage 4 — longitudinal (path-swept knuckle stringers + deck girders)
+        LongitudinalStructureGenerator.Generate(
+            entities, loa, topo, ordinaryFrames, context,
+            bhSchedule.Select(b => (b.Id, b.ZStem)).ToList());
 
         // Stage 5 — decks
         DeckStructureGenerator.Generate(entities, loa, topo, ordinaryFrames, bhSchedule, context);

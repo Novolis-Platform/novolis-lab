@@ -15,7 +15,12 @@ internal enum CadAssemblyKind
     PressureBulkhead,
     RingBulkhead,
 
-    // —— Other systems ——
+    // —— Longitudinal ——
     LongitudinalRun,
+
+    /// <summary>One continuous outer-hull plating knuckle stringer (vertex 0…7).</summary>
+    HullKnuckleStringer,
+
+    // —— Deck ——
     DeckBay,
 }

@@ -207,9 +207,35 @@ internal static class CalypsoShipbuildingFrames
         Geometry.HullGeometry.RequireActive().InnerOctagonRing(zStem, skinInset);
 
     /// <summary>
-    /// Outer-hull plating-join longitudinals: one knuckle stringer at each of the 8 IML octagon
-    /// vertices between consecutive frame stations (same construction as the two-bay proof).
+    /// Shell plating strips between consecutive ordinary-frame stations.
+    /// Knuckle stringers are emitted by <c>HullKnuckleStringerGenerator</c> (path-swept).
     /// </summary>
+    public static void AddOuterHullShellPlating(
+        List<CadEntity> entities,
+        float loa,
+        float web,
+        IReadOnlyList<(string Id, float ZStem, bool BowAligned)>? frameStations = null)
+    {
+        if (frameStations is not { Count: >= 2 })
+            return;
+        for (var i = 0; i < frameStations.Count - 1; i++)
+        {
+            var (id0, z0, _) = frameStations[i];
+            var (id1, z1, _) = frameStations[i + 1];
+            if (z1 - z0 < 0.4f)
+                continue;
+            var fore = id0.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id0 : $"frame-{id0}";
+            var aft = id1.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id1 : $"frame-{id1}";
+            AddShellPlatingStripsBetweenFrames(
+                entities, loa, z0, z1, web, $"b{i}", fore, aft);
+        }
+    }
+
+    /// <summary>
+    /// Obsolete mid-bay axis-aligned knuckle bars — retained only for StructuralBayAssembly proof
+    /// callers. Prefer <c>HullKnuckleStringerGenerator</c> for whole-ship emit.
+    /// </summary>
+    [Obsolete("Use HullKnuckleStringerGenerator / HullKnucklePath — mid-bay boxes do not follow 3D diagonals.")]
     public static void AddOuterHullStringers(
         List<CadEntity> entities,
         float loa,
@@ -219,47 +245,17 @@ internal static class CalypsoShipbuildingFrames
         float frameBay,
         IReadOnlyList<(string Id, float ZStem, bool BowAligned)>? frameStations = null)
     {
-        if (frameStations is { Count: >= 2 })
-        {
-            for (var i = 0; i < frameStations.Count - 1; i++)
-            {
-                var (id0, z0, _) = frameStations[i];
-                var (id1, z1, _) = frameStations[i + 1];
-                if (z1 - z0 < 0.4f)
-                    continue;
-                var fore = id0.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id0 : $"frame-{id0}";
-                var aft = id1.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id1 : $"frame-{id1}";
-                AddPlatingJoinStringersBetweenFrames(
-                    entities, loa, z0, z1, web, $"b{i}", fore, aft);
-                AddShellPlatingStripsBetweenFrames(
-                    entities, loa, z0, z1, web, $"b{i}", fore, aft);
-            }
-
-            return;
-        }
-
-        // Fallback: uniform bay pitch when frame schedule unavailable.
-        if (zEnd <= zStart + 1f)
-            return;
-        var bayIndex = 0;
-        for (var z = zStart; z < zEnd - 0.35f; z += frameBay)
-        {
-            var z0 = z;
-            var z1 = MathF.Min(z + frameBay, zEnd);
-            if (z1 - z0 < 0.4f)
-                break;
-            AddPlatingJoinStringersBetweenFrames(
-                entities, loa, z0, z1, web, $"d{bayIndex}", $"frame-F{z0:0}", $"frame-F{z1:0}");
-            AddShellPlatingStripsBetweenFrames(
-                entities, loa, z0, z1, web, $"d{bayIndex}", $"frame-F{z0:0}", $"frame-F{z1:0}");
-            bayIndex++;
-        }
+        _ = zStart;
+        _ = zEnd;
+        _ = frameBay;
+        AddOuterHullShellPlating(entities, loa, web, frameStations);
     }
 
     /// <summary>
-    /// Longitudinal at each outer-hull plating join (octagon vertex) spanning one frame bay.
-    /// Outer face coincides with the plate seam — shrink section before pulling into the volume.
+    /// Obsolete mid-bay plating-join bar. Prefer path-swept knuckle segments via
+    /// <c>HullKnuckleStringerGenerator</c>. No-op — kept so old call sites compile until removed.
     /// </summary>
+    [Obsolete("Use HullKnuckleStringerGenerator — mid-bay boxes cannot follow knuckle diagonals.")]
     public static void AddPlatingJoinStringersBetweenFrames(
         List<CadEntity> entities,
         float loa,
@@ -270,52 +266,14 @@ internal static class CalypsoShipbuildingFrames
         string foreFrame,
         string aftFrame)
     {
-        var zc = (z0 + z1) * 0.5f;
-        var halfLenZ = (z1 - z0) * 0.5f + web * 0.45f;
-        var ring = InnerOctagonRing(zc, PlatingJoinInset);
-        var (cy, cu) = ring.GetSectionCenter();
-        for (var i = 0; i < ring.Length; i++)
-        {
-            var vx = ring[i].Y;
-            var vu = ring[i].Up;
-            var inwardY = cy - vx;
-            var inwardU = cu - vu;
-            var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
-            var ny = inwardLen > 1e-4f ? inwardY / inwardLen : 0f;
-            var nu = inwardLen > 1e-4f ? inwardU / inwardLen : 0f;
-            var stiffHy = MathF.Max(0.04f, web * 0.22f);
-            var stiffHu = MathF.Max(0.045f, web * 0.24f);
-            var name = $"stringer-join-v{i}-{bayTag}";
-            for (var shrink = 0; shrink < 8; shrink++)
-            {
-                var hy = stiffHy * MathF.Pow(0.88f, shrink);
-                var hu = stiffHu * MathF.Pow(0.88f, shrink);
-                if (hy < 0.028f || hu < 0.028f)
-                    break;
-                var pull = MathF.Max(hy, hu) * 1.42f;
-                var y = vx + ny * pull;
-                var up = vu + nu * pull;
-                var before = entities.Count;
-                if (!CalypsoLockGenerator.TryAddStructureBar(
-                        entities, loa, name, y, up, zc, hy, hu, halfLenZ,
-                        meta: new StructuralSolidMeta(
-                            StructuralRoles.LongitudinalGirder, "plating-join",
-                            StationZ: zc, DeckUp: up, Joins: [foreFrame, aftFrame])))
-                    continue;
-                for (var e = before; e < entities.Count; e++)
-                {
-                    var props = entities[e].Properties
-                                ?? new Dictionary<string, System.Text.Json.JsonElement>();
-                    props["platingJoinVertex"] =
-                        System.Text.Json.JsonSerializer.SerializeToElement(i);
-                    props["platingJoin"] =
-                        System.Text.Json.JsonSerializer.SerializeToElement(true);
-                    entities[e].Properties = props;
-                }
-
-                break;
-            }
-        }
+        _ = entities;
+        _ = loa;
+        _ = z0;
+        _ = z1;
+        _ = web;
+        _ = bayTag;
+        _ = foreFrame;
+        _ = aftFrame;
     }
 
     /// <summary>Shell plate facets between plating-join vertices for one frame bay.</summary>

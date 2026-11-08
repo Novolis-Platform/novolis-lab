@@ -32,7 +32,10 @@ CAL-240-005,MEM-REG-05,Structural members register — sheet 5 (40 ids),Structur
 CAL-240-006,MEM-REG-06,Structural members register — sheet 6 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-006-MEMBERS-06.html,members-6
 CAL-240-007,MEM-REG-07,Structural members register — sheet 7 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-007-MEMBERS-07.html,members-7
 CAL-240-008,MEM-REG-08,Structural members register — sheet 8 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-008-MEMBERS-08.html,members-8
-CAL-240-009,MEM-REG-09,Structural members register — sheet 9 (33 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-009-MEMBERS-09.html,members-9
+CAL-240-009,MEM-REG-09,Structural members register — sheet 9 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-009-MEMBERS-09.html,members-9
+CAL-240-010,MEM-REG-10,Structural members register — sheet 10 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-010-MEMBERS-10.html,members-10
+CAL-240-011,MEM-REG-11,Structural members register — sheet 11 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-011-MEMBERS-11.html,members-11
+CAL-240-012,MEM-REG-12,Structural members register — sheet 12 (1 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-012-MEMBERS-12.html,members-12
 CAL-310-001,ACCESS,Shirt-sleeves — ACCESS,ShirtSleeves,ShirtSleeves,300-volumes/310-shirt-sleeves/CAL-310-001-ACCESS.html,ACCESS
 CAL-320-001,AIRLOCK_A_port,Airlock anteroom — AIRLOCK_A_port,AirlockAnteroom,AirlockAnteroom,300-volumes/320-airlock-anteroom/CAL-320-001-AIRLOCK_A_port.html,AIRLOCK_A_port
 CAL-320-002,AIRLOCK_A_stbd,Airlock anteroom — AIRLOCK_A_stbd,AirlockAnteroom,AirlockAnteroom,300-volumes/320-airlock-anteroom/CAL-320-002-AIRLOCK_A_stbd.html,AIRLOCK_A_stbd

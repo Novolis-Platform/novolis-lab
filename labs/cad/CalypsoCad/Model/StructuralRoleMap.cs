@@ -111,6 +111,14 @@ internal static class StructuralRoleMap
                 StructuralRoles.StructuralDeck, asm);
         }
 
+        if (name.StartsWith("stringer-knuckle-v", StringComparison.OrdinalIgnoreCase))
+        {
+            var asm = KnuckleAssemblyFromName(name);
+            return (CadSystem.Hull, CadPartKind.HullStringer,
+                PartFunction.LoadBearing | PartFunction.HullAttached,
+                StructuralRoles.ShellStiffener, asm);
+        }
+
         if (name.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
             || name.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
         {
@@ -153,6 +161,14 @@ internal static class StructuralRoleMap
             _ when functions.HasFlag(PartFunction.PressureTight) => StructuralRoles.PressureBulkhead,
             _ => StructuralRoles.TransverseFrame,
         };
+
+    /// <summary><c>stringer-knuckle-v3-s12</c> → <c>knuckle-v3</c>.</summary>
+    public static string KnuckleAssemblyFromName(string name)
+    {
+        var m = System.Text.RegularExpressions.Regex.Match(
+            name, @"stringer-knuckle-v(\d+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        return m.Success ? $"knuckle-v{m.Groups[1].Value}" : "knuckle";
+    }
 
     public static string AssemblyFromBhName(string name)
     {

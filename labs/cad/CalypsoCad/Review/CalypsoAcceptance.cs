@@ -151,7 +151,20 @@ internal static class CalypsoAcceptance
         Add("frame rings (octagon + bays)", frames >= 40, $"frames={frames}");
         var stringers = doc.Entities.Count(e => e.Name?.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase) == true);
         var shellStringers = doc.Entities.Count(e => e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) == true);
-        Add("longitudinal girders (was stringer bays)", stringers + shellStringers >= 24, $"girders={shellStringers} legacyStringers={stringers}");
+        var knuckleSegs = doc.Entities.Count(e =>
+            e.Name?.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase) == true);
+        var knuckleAsm = doc.Entities
+            .Where(e => e.Name?.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase) == true
+                        && e.Properties is not null
+                        && e.Properties.TryGetValue("platingJoinVertex", out var v)
+                        && v.ValueKind == System.Text.Json.JsonValueKind.Number)
+            .Select(e => e.Properties!["platingJoinVertex"].GetInt32())
+            .Distinct()
+            .Count();
+        Add("longitudinal girders (was stringer bays)", stringers + shellStringers >= 24,
+            $"girders={shellStringers} stringers={stringers}");
+        Add("hull knuckle stringers (8 paths)", knuckleAsm == 8 && knuckleSegs >= 40,
+            $"assemblies={knuckleAsm} segments={knuckleSegs}");
         var outfit = doc.Entities.Count(e => e.Name?.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase) == true);
         Add("outfit solids", outfit >= 45, $"outfit={outfit}");
         foreach (var cabin in crew.Concat(pax))
