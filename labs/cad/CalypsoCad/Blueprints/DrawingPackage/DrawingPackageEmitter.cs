@@ -92,9 +92,17 @@ internal static class DrawingPackageEmitter
                     break;
                 }
                 case DrawingCategoryId.Frames:
+                {
+                    var frameId = entry.SubjectId;
+                    var z = ParseZFromTags(entry.Tags);
+                    if (frameId is not null
+                        && frameId.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase)
+                        && float.TryParse(frameId["frame-F".Length..], NumberStyles.Float, CultureInfo.InvariantCulture, out var zFromId))
+                        z = zFromId;
                     Write(outDir, entry.RelativePath,
-                        FrameDrawingSheet.Build(entry, cad, ParseZFromTags(entry.Tags)));
+                        FrameDrawingSheet.Build(entry, cad, z, frameId));
                     break;
+                }
                 case DrawingCategoryId.DeckPlates:
                 {
                     ParseDeckSubject(entry.SubjectId, out var deckNum, out var deckLabel);

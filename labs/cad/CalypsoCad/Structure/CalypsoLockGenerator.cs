@@ -2201,6 +2201,7 @@ internal static class CalypsoLockGenerator
     {
         _ = beam;
         _ = oah;
+        ResetStructureMeshValidations();
         var topo = BuildStructuralTopology(lockDoc, loa);
         var web = topo.Web;
         var halfDepthZ = web * 0.5f;
@@ -2527,6 +2528,7 @@ internal static class CalypsoLockGenerator
     /// <summary>
     /// Adds a polygonal structure solid (<c>kind=mesh</c>) — used for heavy bulkhead plates.
     /// Bounding box is stored in Points for selection/broad-phase; mesh is authoritative.
+    /// Rejects non-manifold / incomplete / open meshes — never stores invalid structure as success.
     /// </summary>
     internal static bool TryAddStructureMesh(
         List<CadEntity> entities,
@@ -2535,13 +2537,24 @@ internal static class CalypsoLockGenerator
         float zFromStem,
         Novolis.Math.Geometry.EditableMesh mesh,
         string? fabPartId = null,
-        StructuralSolidMeta? meta = null)
+        StructuralSolidMeta? meta = null,
+        PolygonWithHolesExtrude.ExtrudeReport? extrudeReport = null,
+        int? expectedOpenings = null)
     {
         ArgumentNullException.ThrowIfNull(entities);
         ArgumentNullException.ThrowIfNull(mesh);
-        if (mesh.VertexCount < 3 || mesh.TriangleCount < 1)
+        _ = loa;
+
+        var validation = StructureMeshValidation.Validate(
+            name, zFromStem, mesh, extrudeReport, expectedOpenings);
+        LastStructureMeshValidations.Add(validation);
+        if (!validation.Passed)
         {
-            StructurePlacementLog.Record(name, 0f, 0f, zFromStem, 0f, 0f, 0f, "empty structure mesh");
+            var detail = string.Join("; ", validation.Failures);
+            StructurePlacementLog.Record(
+                name, 0f, 0f, zFromStem, 0f, 0f, 0f,
+                $"structure mesh validation failed: {detail}");
+            Console.Error.WriteLine($"  FAIL {name} @zStem={zFromStem:0.##}: {detail}");
             return false;
         }
 
@@ -2570,6 +2583,11 @@ internal static class CalypsoLockGenerator
         entities.Add(entity);
         return true;
     }
+
+    /// <summary>Validation results for the most recent generate pass (bulkhead geometry gate).</summary>
+    internal static List<StructureMeshValidation.Result> LastStructureMeshValidations { get; } = [];
+
+    internal static void ResetStructureMeshValidations() => LastStructureMeshValidations.Clear();
 
     /// <summary>
     /// Oriented structure bar in the Y–Up plane: local +X along the edge after <paramref name="orientZ"/>

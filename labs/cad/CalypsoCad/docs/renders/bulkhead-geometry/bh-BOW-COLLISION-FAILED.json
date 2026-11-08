@@ -1,0 +1,21 @@
+[
+  {
+    "partId": "bh-BOW-COLLISION",
+    "stationZStem": 13,
+    "expectedOpenings": 3,
+    "generatedOpenings": -1,
+    "materialAreaM2": 0,
+    "meshVolumeM3": 0,
+    "expectedVolumeM3": 0,
+    "openBoundaryEdges": -1,
+    "nonManifoldEdges": -1,
+    "degenerateTriangles": -1,
+    "triangleCount": 0,
+    "vertexCount": 0,
+    "passed": false,
+    "failures": [
+      "bh-BOW-COLLISION: watertight solid validation failed \u2014 nonManifoldEdges=4."
+    ],
+    "checks": []
+  }
+]

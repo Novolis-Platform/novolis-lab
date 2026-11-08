@@ -12,10 +12,16 @@ internal static class DrawingPackageBom
         IReadOnlyList<DrawingEntry> drawings)
     {
         var lines = new List<DrawingPackageBomLine>();
-        var bySubject = drawings
-            .Where(d => d.SubjectId is not null)
-            .GroupBy(d => d.SubjectId!, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.First().DrawingNumber, StringComparer.OrdinalIgnoreCase);
+        var deckDrawing = drawings
+            .Where(d => d.Category == DrawingCategoryId.DeckPlates && d.SubjectId is not null)
+            .ToDictionary(
+                d => ParseDeckNumFromSubject(d.SubjectId!),
+                d => d.DrawingNumber);
+
+        var memberSheets = drawings
+            .Where(d => d.Category == DrawingCategoryId.StructuralMembers)
+            .OrderBy(d => d.Sequence)
+            .ToList();
 
         if (ShipStructureDocument.TryGetBom(cad, out var shipBom) && shipBom is not null)
         {
@@ -33,49 +39,52 @@ internal static class DrawingPackageBom
                     row.MassKg,
                     row.AreaM2,
                     row.MaterialDesignation ?? "AISI 316L",
-                    bySubject.GetValueOrDefault(row.PartId)));
+                    null));
             }
         }
 
-        var loa = CadJsonStructureQuery.Loa(cad);
-        var sandwiches = CadJsonStructureQuery.SandwichPanels(cad, loa);
-        var deckSeq = 0;
-        foreach (var s in sandwiches.OrderBy(s => s.DeckNum).ThenBy(s => s.Z0))
+        // Deck sandwich: steel volume of faces + peri + ribs (not solid stack depth).
+        foreach (var (deckNum, deckLabel) in new[] { (-1, "DK−1"), (0, "DK0"), (1, "DK+1") })
         {
-            deckSeq++;
-            var deckLabel = s.DeckNum switch { -1 => "DK−1", 0 => "DK0", 1 => "DK+1", _ => $"DK{s.DeckNum}" };
-            var area = MathF.Abs(s.Z1 - s.Z0) * MathF.Abs(s.HalfY) * 2f;
-            var mass = area * s.TPlate * 8000f;
+            var steel = CadJsonStructureQuery.SandwichSteelMass(cad, deckNum);
+            var faces = CadJsonStructureQuery.SandwichPanels(cad, CadJsonStructureQuery.Loa(cad))
+                .Count(p => p.DeckNum == deckNum);
+            deckDrawing.TryGetValue(deckNum, out var dwg);
             lines.Add(new DrawingPackageBomLine(
-                $"STR-DECK-{deckSeq:D3}",
+                $"STR-DECK-{deckLabel}",
                 "deck-plates",
-                $"deck-sandwich-{deckLabel}-z{s.Z0:0}",
-                $"{deckLabel} sandwich face · z={s.Z0:0.##}–{s.Z1:0.##} m · t={s.TPlate:0.###} m",
-                "ea",
+                $"deck-sandwich-{deckLabel}",
+                $"{deckLabel} cellular sandwich steel · {faces} face-top bays · {steel.PartCount} steel parts " +
+                $"(faces+peri+ribs) · V={steel.SteelVolumeM3.ToString("0.###", CultureInfo.InvariantCulture)} m³ · " +
+                "hollow core excluded",
+                "assy",
                 1,
-                mass,
-                area,
+                steel.MassKg,
+                steel.FaceTopAreaM2,
                 "AISI 316L",
-                bySubject.GetValueOrDefault(deckLabel)));
+                dwg));
         }
 
+        // Structural members — each line maps to the register sheet that lists it.
         var members = DrawingPackageCatalog.StructuralMemberNames(cad);
         var memSeq = 0;
         foreach (var name in members)
         {
             memSeq++;
+            var sheetIndex = (memSeq - 1) / 40;
+            var dwg = sheetIndex < memberSheets.Count ? memberSheets[sheetIndex].DrawingNumber : null;
             var kind = name.Split('-', 2)[0];
             lines.Add(new DrawingPackageBomLine(
                 $"STR-MEM-{memSeq:D3}",
                 "structural-members",
                 name,
-                $"Primary member · {kind}",
+                $"Primary member · {kind} · mass unresolved (no section properties on entity)",
                 "ea",
                 1,
                 null,
                 null,
                 "AISI 316L",
-                drawings.FirstOrDefault(d => d.Category == DrawingCategoryId.StructuralMembers)?.DrawingNumber));
+                dwg));
         }
 
         foreach (var d in drawings.Where(d => d.Category is DrawingCategoryId.Bulkheads or DrawingCategoryId.Frames))
@@ -84,7 +93,7 @@ internal static class DrawingPackageBom
                 $"STR-DWG-{d.DrawingNumber}",
                 d.Category == DrawingCategoryId.Bulkheads ? "bulkheads" : "frames",
                 d.SubjectId ?? d.Label,
-                d.Title,
+                $"{d.Title} · mass unresolved (see CAD plate/frame solids)",
                 "dwg",
                 1,
                 null,
@@ -103,6 +112,8 @@ internal static class DrawingPackageBom
             volSeq++;
             var area = MathF.Abs((sp.Z1 - sp.Z0) * (sp.Y1 - sp.Y0));
             var volume = area * MathF.Abs(sp.Up1 - sp.Up0);
+            var dwg = drawings.FirstOrDefault(d =>
+                string.Equals(d.SubjectId, sp.Id, StringComparison.OrdinalIgnoreCase))?.DrawingNumber;
             lines.Add(new DrawingPackageBomLine(
                 $"VOL-{volSeq:D3}",
                 VolumeCirculation.DisplayName(kind),
@@ -113,7 +124,7 @@ internal static class DrawingPackageBom
                 null,
                 area,
                 "habitable / pressure boundary",
-                bySubject.GetValueOrDefault(sp.Id)));
+                dwg));
         }
 
         return lines;
@@ -125,4 +136,18 @@ internal static class DrawingPackageBom
 
     public static IReadOnlyList<DrawingPackageBomLine> FilterVolumes(IReadOnlyList<DrawingPackageBomLine> all) =>
         all.Where(l => l.LineId.StartsWith("VOL-", StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private static int ParseDeckNumFromSubject(string subjectId)
+    {
+        // "deck:{num}:{label}"
+        if (subjectId.StartsWith("deck:", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = subjectId.Split(':', 3);
+            if (parts.Length >= 2
+                && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var n))
+                return n;
+        }
+
+        return 0;
+    }
 }

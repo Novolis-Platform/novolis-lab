@@ -34,6 +34,11 @@ internal sealed class ArtilleryAudioHub : IDisposable
 
     public string? RadioSpeaker => _chatter.CurrentSpeaker;
 
+    public bool VoiceAvailable => _voice.IsAvailable;
+
+    /// <summary>True once a score loop is loaded; false after a failed bake; null-ish pending until first play.</summary>
+    public bool ScoreAvailable => !_scoreLoaded || _score is not null;
+
     public static ArtilleryAudioHub? TryCreate(int seed, bool enabled, ILogger? log = null)
     {
         log ??= NullLogger.Instance;

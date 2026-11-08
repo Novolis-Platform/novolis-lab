@@ -60,10 +60,19 @@ internal sealed class ArtilleryShellController
             {
                 _loadingStatus = $"Building {_level.DisplayName}…";
                 _log.LogInformation("Loading world for {LevelId}", _level.Id);
-                loadWorld();
-                _loadingStatus = "Ready";
-                _menus.ClearToPlaying();
-                _log.LogInformation("World ready — entering play");
+                try
+                {
+                    loadWorld();
+                    _loadingStatus = "Ready";
+                    _menus.ClearToPlaying();
+                    _log.LogInformation("World ready — entering play");
+                }
+                catch (Exception ex)
+                {
+                    _loadingStatus = $"Load failed: {ex.Message}";
+                    _log.LogError(ex, "World load failed for {LevelId}", _level.Id);
+                    Console.Error.WriteLine($"World load failed: {ex.Message}");
+                }
             }
 
             return true;

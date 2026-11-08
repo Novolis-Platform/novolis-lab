@@ -1,0 +1,21 @@
+[
+  {
+    "partId": "bh-ENG-AFT",
+    "stationZStem": 49.25,
+    "expectedOpenings": 6,
+    "generatedOpenings": -1,
+    "materialAreaM2": 0,
+    "meshVolumeM3": 0,
+    "expectedVolumeM3": 0,
+    "openBoundaryEdges": -1,
+    "nonManifoldEdges": -1,
+    "degenerateTriangles": -1,
+    "triangleCount": 0,
+    "vertexCount": 0,
+    "passed": false,
+    "failures": [
+      "bh-ENG-AFT: watertight solid validation failed \u2014 nonManifoldEdges=5; volume 28.22159 vs expected 99.09221 (rel 71.5 %)."
+    ],
+    "checks": []
+  }
+]

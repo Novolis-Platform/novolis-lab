@@ -1,0 +1,21 @@
+[
+  {
+    "partId": "bh-CREW-AFT",
+    "stationZStem": 30.28,
+    "expectedOpenings": 6,
+    "generatedOpenings": -1,
+    "materialAreaM2": 0,
+    "meshVolumeM3": 0,
+    "expectedVolumeM3": 0,
+    "openBoundaryEdges": -1,
+    "nonManifoldEdges": -1,
+    "degenerateTriangles": -1,
+    "triangleCount": 0,
+    "vertexCount": 0,
+    "passed": false,
+    "failures": [
+      "bh-CREW-AFT: watertight solid validation failed \u2014 nonManifoldEdges=5; volume 11.30956 vs expected 39.11535 (rel 71.1 %)."
+    ],
+    "checks": []
+  }
+]

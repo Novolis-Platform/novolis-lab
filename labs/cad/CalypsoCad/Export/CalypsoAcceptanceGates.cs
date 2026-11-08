@@ -138,7 +138,59 @@ internal static class CalypsoAcceptanceGates
                     $"Bulkhead-mesh PNGs ({stills.Count}) → {Path.Combine(CalypsoProjectPaths.RendersDirectory, "bulkhead-mesh")}");
                 foreach (var path in stills)
                     Console.WriteLine($"  {path}");
-                return stills.Count >= 4 ? 0 : 2;
+
+                var validationPath = Path.Combine(
+                    CalypsoProjectPaths.RendersDirectory,
+                    "bulkhead-geometry",
+                    "bulkhead-geometry-validation.json");
+                if (!File.Exists(validationPath))
+                {
+                    Console.WriteLine("  FAIL missing bulkhead-geometry-validation.json (geometry gate skipped)");
+                    return 3;
+                }
+
+                var failed = CalypsoLockGenerator.LastStructureMeshValidations
+                    .Where(r => r.PartId.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) && !r.Passed)
+                    .ToList();
+                if (failed.Count > 0)
+                {
+                    foreach (var f in failed)
+                        Console.WriteLine($"  FAIL {f.PartId}: {string.Join("; ", f.Failures)}");
+                    return 4;
+                }
+
+                var bhOk = CalypsoLockGenerator.LastStructureMeshValidations
+                    .Count(r => r.PartId.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) && r.Passed);
+                Console.WriteLine($"  geometry gate: {bhOk} validated bh plates → {validationPath}");
+                if (bhOk < 6)
+                {
+                    Console.WriteLine("  FAIL expected ≥6 validated bulkhead plates");
+                    return 5;
+                }
+
+                // Face-on stills for all six + whole-ship pair.
+                var need = new[]
+                {
+                    "00-whole-ship-no-cutaway.png",
+                    "00-whole-ship-cutaway.png",
+                    "bow-collision-01-face-on-solid.png",
+                    "cross-fore-01-face-on-solid.png",
+                    "cross-aft-01-face-on-solid.png",
+                    "crew-aft-01-face-on-solid.png",
+                    "eng-fore-01-face-on-solid.png",
+                    "eng-aft-01-face-on-solid.png",
+                };
+                var meshDir = Path.Combine(CalypsoProjectPaths.RendersDirectory, "bulkhead-mesh");
+                foreach (var n in need)
+                {
+                    if (!File.Exists(Path.Combine(meshDir, n)))
+                    {
+                        Console.WriteLine($"  FAIL missing diagnostic still {n}");
+                        return 6;
+                    }
+                }
+
+                return stills.Count >= need.Length ? 0 : 2;
             });
         }
         catch (Exception ex)

@@ -16,9 +16,11 @@ internal sealed class FrameDirector : IDisposable
     private readonly ArtilleryLiveHost _agent;
     private readonly ArtillerySceneRenderer _renderer;
     private readonly ProfileOverlay _profileOverlay;
+    private readonly ArtilleryRunOptions _options;
     private readonly FrameProfiler _liveProfiler = new(warmupFrames: 5);
     private readonly ILogger<FrameDirector> _log;
     private readonly Stopwatch _wall = Stopwatch.StartNew();
+    private readonly ArtillerySmokeDriver? _smoke;
 
     private AgentSurface? _surface;
     private FrameProfiler? _profiler;
@@ -27,7 +29,7 @@ internal sealed class FrameDirector : IDisposable
     private bool _showProfile;
     private string _profileFlash = "";
     private float _profileFlashAge = -1f;
-    private bool _agentAttached;
+    private bool _agentAttachAttempted;
     private long _lastWallTimestamp;
 
     public FrameDirector(
@@ -36,6 +38,8 @@ internal sealed class FrameDirector : IDisposable
         ArtilleryLiveHost agent,
         ArtillerySceneRenderer renderer,
         ProfileOverlay profileOverlay,
+        ArtilleryRunOptions options,
+        ILoggerFactory logs,
         ILogger<FrameDirector> log)
     {
         _world = world;
@@ -43,11 +47,16 @@ internal sealed class FrameDirector : IDisposable
         _agent = agent;
         _renderer = renderer;
         _profileOverlay = profileOverlay;
+        _options = options;
         _log = log;
         _lastWallTimestamp = _wall.ElapsedTicks;
+        if (options.Smoke)
+            _smoke = new ArtillerySmokeDriver(world, logs.CreateLogger<ArtillerySmokeDriver>());
     }
 
     public BattleSession Session => _world.Session;
+
+    public int SmokeExitCode => _smoke?.ExitCode ?? 1;
 
     public void EnableProfile(int frames, string? jsonPath = null)
     {
@@ -63,7 +72,7 @@ internal sealed class FrameDirector : IDisposable
         frame.SetTitle(ProductIdentity.WindowTitle);
         WindowIconLoader.TryApply(frame);
         if (_world.Options.SkipShell)
-            LoadWorldAndAttachAgent();
+            LoadWorldAndMaybeAttachAgent();
         _lastWallTimestamp = _wall.ElapsedTicks;
     }
 
@@ -82,13 +91,13 @@ internal sealed class FrameDirector : IDisposable
         _world.Shell.HandleKeys(frame, _world.WorldReady, _world.SelectLevel);
         HandleProfileHotkeys(frame);
 
-        if (_world.Shell.TryHandlePreWorldFrame(frame, _world.WorldReady, LoadWorldAndAttachAgent))
+        if (_world.Shell.TryHandlePreWorldFrame(frame, _world.WorldReady, LoadWorldAndMaybeAttachAgent))
             return;
 
         var active = ActiveProfiler();
-        active?.BeginFrame();
         if (active is not null)
         {
+            active.BeginFrame();
             active.Time("simulate", () => _agent.RunFrame(() => TickAndInput(frame, wallSeconds)));
             active.Time("present", () => _world.PresentFrame(frame, wallSeconds));
             active.Time("render", () => Render(frame));
@@ -115,6 +124,7 @@ internal sealed class FrameDirector : IDisposable
             Render(frame);
         }
 
+        _smoke?.Tick(frame);
         _world.Shell.DrawOverlayIfNeeded(frame);
 
         if (_profileFlashAge >= 0f)
@@ -124,18 +134,32 @@ internal sealed class FrameDirector : IDisposable
     private void TickAndInput(SilkFrame frame, float wallSeconds)
     {
         _ = _commands.Drain();
-        _world.HandleInput(frame, _world);
+        if (_smoke is null)
+            _world.HandleInput(frame, _world);
         _ = _commands.Drain();
         _ = _world.TickPhysics(wallSeconds);
     }
 
-    private void LoadWorldAndAttachAgent()
+    private void LoadWorldAndMaybeAttachAgent()
     {
         _world.LoadWorld();
-        if (_agentAttached)
-            return;
+        TryAttachAgent();
+        _lastWallTimestamp = _wall.ElapsedTicks;
+    }
 
-        _agentAttached = true;
+    private void TryAttachAgent()
+    {
+        if (_agentAttachAttempted)
+            return;
+        _agentAttachAttempted = true;
+
+        if (!ShouldAttachAgent())
+        {
+            _log.LogInformation(
+                "Agent surface skipped (set ARTILLERY_ATTACH_AGENT=1 or use --headless / --attach-agent)");
+            return;
+        }
+
         var def = AgentSurfaceDefinition.From<IArtillerySurface>();
         _surface = AgentSurface.AttachAll(
             _agent,
@@ -154,11 +178,23 @@ internal sealed class FrameDirector : IDisposable
 
         Console.WriteLine(ProductLegal.Tagline);
         Console.WriteLine($"Session seed={_world.Session.SeedHash}  level={_world.Level.Id}  piece={_world.Session.Piece.Id}");
-        _lastWallTimestamp = _wall.ElapsedTicks;
+    }
+
+    private bool ShouldAttachAgent()
+    {
+        if (_options.AttachAgent || _options.Headless)
+            return true;
+
+        var env = Environment.GetEnvironmentVariable("ARTILLERY_ATTACH_AGENT");
+        return string.Equals(env, "1", StringComparison.Ordinal)
+            || string.Equals(env, "true", StringComparison.OrdinalIgnoreCase);
     }
 
     private void Render(SilkFrame frame)
     {
+        if (_options.Smoke)
+            return;
+
         var vm = _world.CreateFrameViewModel();
         _renderer.DrawPlaying(frame, vm, ActiveProfiler());
 

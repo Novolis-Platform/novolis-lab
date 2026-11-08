@@ -1327,27 +1327,215 @@ internal sealed class CalypsoRenderer
 
         if (!boundaryOnly)
         {
+            var showTriIds = _session.StatusText?.Contains("bh-tri-ids", StringComparison.OrdinalIgnoreCase) == true;
+            var capEdges = cutaway ? new List<(Vector3 A, Vector3 B)>() : null;
             for (var i = 0; i < mesh.Indices.Count; i += 3)
             {
                 var a = mesh.Vertices[mesh.Indices[i]];
                 var b = mesh.Vertices[mesh.Indices[i + 1]];
                 var c = mesh.Vertices[mesh.Indices[i + 2]];
-                if (cutaway
-                    && CulledByCutPlane(a, cutPt, cutN)
-                    && CulledByCutPlane(b, cutPt, cutN)
-                    && CulledByCutPlane(c, cutPt, cutN))
-                    continue;
-                _world.DrawTriangle(a, b, c, body);
+                if (cutaway)
+                {
+                    ClipTriangleToCutPlane(a, b, c, cutPt, cutN, body, capEdges!);
+                }
+                else
+                {
+                    _world.DrawTriangle(a, b, c, body);
+                }
+
+                if (showTriIds && !cutaway)
+                {
+                    var mid = (a + b + c) / 3f;
+                    // Tiny cross at triangle centroid — diagnostic triangulation IDs via status index.
+                    var tip = mid + Vector3.UnitY * 0.04f;
+                    _world.DrawLine(mid, tip, edge);
+                }
+            }
+
+            if (cutaway && capEdges is { Count: > 0 })
+            {
+                var capColor = ShadeColor(color, 0.55f, 0.85f, cutN.LengthSquared() > 1e-8f ? Vector3.Normalize(cutN) : Vector3.UnitX, LightDir);
+                EmitSectionCaps(capEdges, cutPt, cutN, capColor);
             }
         }
 
-        foreach (var (i0, i1) in mesh.FindBoundaryEdges())
+        // Physical boundaries only: after weld, FindBoundaryEdges is empty on a closed solid.
+        // Diagnostic wire mode still draws true open boundaries (should be none) plus optional
+        // perimeter loops derived from outer/opening topology — never every triangulation edge.
+        if (boundaryOnly || _session.StatusText?.Contains("bh-edges", StringComparison.OrdinalIgnoreCase) == true)
         {
-            var a = mesh.Vertices[i0];
-            var b = mesh.Vertices[i1];
-            if (cutaway && CulledByCutPlane(a, cutPt, cutN) && CulledByCutPlane(b, cutPt, cutN))
+            foreach (var (i0, i1) in mesh.FindBoundaryEdges())
+            {
+                var a = mesh.Vertices[i0];
+                var b = mesh.Vertices[i1];
+                if (cutaway && CulledByCutPlane(a, cutPt, cutN) && CulledByCutPlane(b, cutPt, cutN))
+                    continue;
+                _world.DrawLine(a, b, edge);
+            }
+        }
+        else if (!cutaway)
+        {
+            // Shaded mode: outline only true mesh boundary edges (none when watertight).
+            foreach (var (i0, i1) in mesh.FindBoundaryEdges())
+            {
+                var a = mesh.Vertices[i0];
+                var b = mesh.Vertices[i1];
+                _world.DrawLine(a, b, edge);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Geometric cut-plane clip: retain only the permitted portion of a triangle.
+    /// Crossing edges produce intersection points; retained polygon is re-triangulated.
+    /// Cap edges (on the plane) are collected for section-face generation.
+    /// Does not mutate the CAD mesh.
+    /// </summary>
+    private void ClipTriangleToCutPlane(
+        Vector3 a, Vector3 b, Vector3 c,
+        Vector3 cutPt, Vector3 cutN,
+        Color body,
+        List<(Vector3 A, Vector3 B)> capEdges)
+    {
+        Span<float> d = stackalloc float[3];
+        Span<Vector3> p = stackalloc Vector3[3];
+        p[0] = a; p[1] = b; p[2] = c;
+        d[0] = Vector3.Dot(a - cutPt, cutN);
+        d[1] = Vector3.Dot(b - cutPt, cutN);
+        d[2] = Vector3.Dot(c - cutPt, cutN);
+
+        const float eps = 1e-5f;
+        var keep = 0;
+        for (var i = 0; i < 3; i++)
+        {
+            if (d[i] <= eps)
+                keep++;
+        }
+
+        if (keep == 0)
+            return;
+        if (keep == 3)
+        {
+            _world.DrawTriangle(a, b, c, body);
+            return;
+        }
+
+        // Build retained polygon (3 or 4 verts).
+        Span<Vector3> poly = stackalloc Vector3[4];
+        var n = 0;
+        Vector3? capA = null;
+        Vector3? capB = null;
+
+        for (var i = 0; i < 3; i++)
+        {
+            var j = (i + 1) % 3;
+            var di = d[i];
+            var dj = d[j];
+            var insideI = di <= eps;
+            var insideJ = dj <= eps;
+
+            if (insideI)
+                poly[n++] = p[i];
+
+            if (insideI == insideJ)
                 continue;
-            _world.DrawLine(a, b, edge);
+
+            // Edge crosses the plane.
+            var t = di / (di - dj);
+            t = Math.Clamp(t, 0f, 1f);
+            var hit = p[i] + (p[j] - p[i]) * t;
+            poly[n++] = hit;
+            if (capA is null)
+                capA = hit;
+            else
+                capB = hit;
+        }
+
+        if (capA is { } ca && capB is { } cb)
+            capEdges.Add((ca, cb));
+
+        if (n == 3)
+        {
+            _world.DrawTriangle(poly[0], poly[1], poly[2], body);
+        }
+        else if (n == 4)
+        {
+            _world.DrawTriangle(poly[0], poly[1], poly[2], body);
+            _world.DrawTriangle(poly[0], poly[2], poly[3], body);
+        }
+    }
+
+    /// <summary>Fan-fill closed section loops produced by cut-plane intersections.</summary>
+    private void EmitSectionCaps(
+        List<(Vector3 A, Vector3 B)> edges,
+        Vector3 cutPt,
+        Vector3 cutN,
+        Color capColor)
+    {
+        if (edges.Count < 3)
+            return;
+
+        // Greedy loop stitch in the cut plane.
+        var unused = new List<(Vector3 A, Vector3 B)>(edges);
+        const float snap = 1e-3f;
+        while (unused.Count >= 3)
+        {
+            var loop = new List<Vector3> { unused[0].A, unused[0].B };
+            unused.RemoveAt(0);
+            var progressed = true;
+            while (progressed)
+            {
+                progressed = false;
+                var tip = loop[^1];
+                for (var i = 0; i < unused.Count; i++)
+                {
+                    var (ea, eb) = unused[i];
+                    if (Vector3.DistanceSquared(tip, ea) <= snap * snap)
+                    {
+                        loop.Add(eb);
+                        unused.RemoveAt(i);
+                        progressed = true;
+                        break;
+                    }
+
+                    if (Vector3.DistanceSquared(tip, eb) <= snap * snap)
+                    {
+                        loop.Add(ea);
+                        unused.RemoveAt(i);
+                        progressed = true;
+                        break;
+                    }
+                }
+
+                if (loop.Count > 2
+                    && Vector3.DistanceSquared(loop[0], loop[^1]) <= snap * snap)
+                    break;
+            }
+
+            if (loop.Count >= 3
+                && Vector3.DistanceSquared(loop[0], loop[^1]) <= snap * snap)
+            {
+                loop.RemoveAt(loop.Count - 1);
+                // Project onto plane basis and fan from centroid.
+                var nrm = cutN.LengthSquared() > 1e-12f ? Vector3.Normalize(cutN) : Vector3.UnitX;
+                var centroid = Vector3.Zero;
+                foreach (var v in loop)
+                    centroid += v;
+                centroid /= loop.Count;
+                // Nudge slightly onto kept side so caps are visible and don't z-fight.
+                centroid -= nrm * 0.002f;
+                for (var i = 0; i < loop.Count; i++)
+                {
+                    var a = loop[i] - nrm * 0.002f;
+                    var b = loop[(i + 1) % loop.Count] - nrm * 0.002f;
+                    _world.DrawTriangle(centroid, a, b, capColor);
+                }
+            }
+            else if (unused.Count == edges.Count - 1)
+            {
+                // Could not close any loop from this seed — drop seed remnants.
+                break;
+            }
         }
     }
 

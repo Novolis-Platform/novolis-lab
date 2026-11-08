@@ -61,19 +61,18 @@ internal static class DrawingPackageCatalog
                 note ?? "heavy bulkhead");
         }
 
-        // —— Structure: frames ——
-        var bayM = CadJsonStructureQuery.FrameBayM(cad);
-        foreach (var z in SampleFrameStations(loa, bayM))
+        // —— Structure: frames (only stations with physical CAD ring assemblies) ——
+        foreach (var fr in CadJsonStructureQuery.PhysicalFrameStations(cad))
         {
-            var zLabel = z.ToString("0", CultureInfo.InvariantCulture);
+            var zLabel = fr.ZStem.ToString("0", CultureInfo.InvariantCulture);
             Add(DrawingCategoryId.Frames,
-                $"Transverse frame web @ z={zLabel} m",
+                $"Transverse frame {fr.FrameId} @ z={zLabel} m ({fr.PartCount} ring parts)",
                 $"FRM-Z{zLabel}",
                 $"FRAME-z{zLabel}",
                 detailSource: null,
-                $"z{zLabel}",
+                fr.FrameId,
                 VolumeCirculationKind.None,
-                "structure", "frame", $"z={zLabel}");
+                "structure", "frame", $"z={zLabel}", fr.FrameId);
         }
 
         // —— Structure: deck plates ——
@@ -169,20 +168,6 @@ internal static class DrawingPackageCatalog
         || name.StartsWith("frm-", StringComparison.OrdinalIgnoreCase)
         || (name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
             && !name.Contains("-web", StringComparison.OrdinalIgnoreCase));
-
-    private static IEnumerable<float> SampleFrameStations(float loa, float bayM)
-    {
-        var bay = bayM > 0.5f ? bayM : 4f;
-        var set = new SortedSet<float>();
-        foreach (var mult in new[] { 0, 3, 5, 6, 7, 8, 10, 12, 13, 14, 15 })
-        {
-            var z = bay * mult;
-            if (z <= loa - 0.5f)
-                set.Add(z);
-        }
-
-        return set;
-    }
 
     private static string Sanitize(string raw)
     {

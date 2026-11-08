@@ -151,7 +151,7 @@ internal static class DrawingPackageHtml
         sb.AppendLine("<body>");
         sb.AppendLine($"<p class=\"crumb\"><a href=\"../index.html\">Package</a> / BOM / {WebUtility.HtmlEncode(drawingNumber)}</p>");
         sb.AppendLine($"<h1>{WebUtility.HtmlEncode(drawingNumber)} · {WebUtility.HtmlEncode(title)}</h1>");
-        sb.AppendLine($"<p class=\"meta\">Rev {Rev} · {lines.Count} lines · mass where known from plate area × t × density</p>");
+        sb.AppendLine($"<p class=\"meta\">Rev {Rev} · {lines.Count} lines · deck mass = CAD steel box volumes × density (faces+peri+ribs); unresolved masses marked explicitly</p>");
         sb.AppendLine("<table><thead><tr>" +
                       "<th>Line</th><th>Category</th><th>Id</th><th>Description</th><th>Qty</th>" +
                       "<th>Area m²</th><th>Mass kg</th><th>Material</th><th>Drawing</th>" +

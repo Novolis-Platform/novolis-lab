@@ -19,6 +19,8 @@ internal sealed class ArtillerySceneRenderer
     private readonly SilkWireBatch _wires = new();
     private readonly WorldSolidBatch _solids = new();
     private readonly SmoothedFps _fps = new();
+    private WorldSolidGpuMesh? _skyMesh;
+    private Vector3 _skyCenter;
 
     public SilkWireBatch Wires => _wires;
     public float Fps => _fps.Value;
@@ -38,9 +40,9 @@ internal sealed class ArtillerySceneRenderer
             far);
         var mvp = view * proj;
 
-        _solids.Clear();
-        DrawAtmosphere(_solids, cam.Position, vm.Terrain.GunBaseline);
-        frame.DrawWorldTriangles(_solids.Triangles, mvp);
+        EnsureSkyMesh(frame, cam.Position, vm.Terrain.GunBaseline);
+        if (_skyMesh is not null)
+            frame.DrawWorldSolidMesh(_skyMesh, mvp);
 
         if (profiler is not null)
             profiler.Time("draw.static", () => vm.Terrain.DrawStatic(frame, mvp));
@@ -104,7 +106,10 @@ internal sealed class ArtillerySceneRenderer
                 vm.SolutionUnsafe,
                 vm.LaunchDetonation,
                 vm.Audio?.RadioLine,
-                vm.Audio?.RadioSpeaker);
+                vm.Audio?.RadioSpeaker,
+                vm.Audio?.VoiceAvailable == true,
+                vm.Audio?.ScoreAvailable == true,
+                audioHubPresent: vm.Audio is not null);
         }
 
         if (profiler is not null)
@@ -113,10 +118,17 @@ internal sealed class ArtillerySceneRenderer
             DrawHud();
     }
 
-    private static void DrawAtmosphere(WorldSolidBatch solids, Vector3 camera, Vector3 gunBaseline)
+    private void EnsureSkyMesh(SilkFrame frame, Vector3 camera, Vector3 gunBaseline)
     {
         var center = new Vector3(camera.X, MathF.Min(camera.Y, gunBaseline.Y + 40f), camera.Z);
-        solids.SkyDome(center, radius: 28_000f, SkyZenith, SkyHorizon, slices: 28, stacks: 10);
+        if (_skyMesh is not null && Vector3.DistanceSquared(center, _skyCenter) < 500f * 500f)
+            return;
+
+        _skyMesh?.Dispose();
+        _solids.Clear();
+        _solids.SkyDome(center, radius: 28_000f, SkyZenith, SkyHorizon, slices: 24, stacks: 8);
+        _skyMesh = frame.CreateWorldSolidMesh(_solids.Triangles);
+        _skyCenter = center;
     }
 
     private static void DrawSkyHaze(SilkWireBatch wires, Vector3 camera, TerrainWorld terrain)

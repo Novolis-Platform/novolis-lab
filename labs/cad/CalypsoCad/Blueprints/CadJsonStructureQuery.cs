@@ -17,13 +17,32 @@ internal static class CadJsonStructureQuery
         @"^deck-sandwich-dk(m1|-1|0|1)-",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
+    private static readonly Regex FrameAssembly = new(
+        @"^frame-F(\d+)",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    public const float SteelDensityKgPerM3 = 8000f;
+
     public sealed record SandwichPanel(
         int DeckNum,
         float PlateTop,
-        float TPlate,
+        float FaceThicknessM,
         float Z0,
         float Z1,
-        float HalfY);
+        float Y0,
+        float Y1,
+        string EntityName);
+
+    public sealed record DeckSteelMass(
+        int DeckNum,
+        float SteelVolumeM3,
+        float MassKg,
+        int PartCount,
+        float FaceTopAreaM2);
+
+    public sealed record FrameStation(string FrameId, float ZStem, int PartCount);
+
+    public sealed record FramePartBox(string Name, float Y0, float Y1, float Up0, float Up1);
 
     public sealed record BhStation(string Id, float ZStem);
 
@@ -195,50 +214,148 @@ internal static class CadJsonStructureQuery
         {
             if (e.Name is null || !SandwichName.IsMatch(e.Name))
                 continue;
-            // Prefer face-top (or legacy single slab); skip ribs / peri / face-bot duplicates.
+            // Footprints = face-top boxes only (actual plan extents, not solid-stack proxies).
             var n = e.Name;
-            if (n.Contains("-rib-", StringComparison.OrdinalIgnoreCase)
-                || n.Contains("-peri-", StringComparison.OrdinalIgnoreCase)
-                || n.Contains("-core", StringComparison.OrdinalIgnoreCase)
-                || n.Contains("-face-bot", StringComparison.OrdinalIgnoreCase))
+            if (!n.Contains("-face-top", StringComparison.OrdinalIgnoreCase))
                 continue;
             if (!TryBox(e, out var center, out var half))
                 continue;
 
             var deckNum = ParseDeckNum(e.Name);
-            float plateTop;
-            float tPlate;
-            if (e.Properties is not null
+            var faceT = MathF.Abs(half.Y) * 2f;
+            var plateTop = e.Properties is not null
                 && e.Properties.TryGetValue("deckUp", out var duEl)
-                && duEl.ValueKind == JsonValueKind.Number)
-            {
-                plateTop = (float)duEl.GetDouble();
-                // face-top half-height is thin; recover stack thickness from name convention (~tPlate).
-                tPlate = n.Contains("-face-top", StringComparison.OrdinalIgnoreCase)
-                    ? MathF.Max(0.08f, MathF.Abs(half.Y) * 2f / 0.22f)
-                    : MathF.Abs(half.Y) * 2f;
-            }
-            else
-            {
-                var upCenter = center.Y;
-                var halfUp = MathF.Abs(half.Y);
-                plateTop = upCenter + halfUp;
-                tPlate = halfUp * 2f;
-            }
+                && duEl.ValueKind == JsonValueKind.Number
+                ? (float)duEl.GetDouble()
+                : center.Y + MathF.Abs(half.Y);
 
             var zStem = loa * 0.5f - center.Z;
             var halfZ = MathF.Abs(half.Z);
+            var halfY = MathF.Abs(half.X);
             list.Add(new SandwichPanel(
                 deckNum,
                 plateTop,
-                tPlate,
+                faceT,
                 zStem - halfZ,
                 zStem + halfZ,
-                MathF.Abs(half.X)));
+                center.X - halfY,
+                center.X + halfY,
+                e.Name));
+        }
+
+        return list.OrderBy(p => p.DeckNum).ThenBy(p => p.Z0).ThenBy(p => p.Y0).ToList();
+    }
+
+    /// <summary>
+    /// Cellular sandwich steel mass from face sheets + peri + ribs (box volumes × density).
+    /// Does not invent solid-stack thickness for the hollow core.
+    /// </summary>
+    public static DeckSteelMass SandwichSteelMass(CadDocument doc, int deckNum)
+    {
+        float volume = 0f;
+        float faceArea = 0f;
+        var parts = 0;
+        foreach (var e in doc.Entities ?? [])
+        {
+            if (e.Name is null || !SandwichName.IsMatch(e.Name) || ParseDeckNum(e.Name) != deckNum)
+                continue;
+            if (!IsSandwichSteelPart(e.Name) || !TryBox(e, out _, out var half))
+                continue;
+
+            volume += BoxVolumeM3(half);
+            parts++;
+            if (e.Name.Contains("-face-top", StringComparison.OrdinalIgnoreCase))
+                faceArea += 4f * MathF.Abs(half.X) * MathF.Abs(half.Z);
+        }
+
+        return new DeckSteelMass(deckNum, volume, volume * SteelDensityKgPerM3, parts, faceArea);
+    }
+
+    public static IReadOnlyList<FrameStation> PhysicalFrameStations(CadDocument doc)
+    {
+        var counts = new Dictionary<string, (float Z, int N)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var e in doc.Entities ?? [])
+        {
+            if (e.Name is null)
+                continue;
+            var m = FrameAssembly.Match(e.Name);
+            if (!m.Success)
+                continue;
+            if (!e.Name.Contains("-ring-", StringComparison.OrdinalIgnoreCase))
+                continue;
+            var id = $"frame-F{m.Groups[1].Value}";
+            if (!float.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var z))
+                continue;
+            if (counts.TryGetValue(id, out var cur))
+                counts[id] = (z, cur.N + 1);
+            else
+                counts[id] = (z, 1);
+        }
+
+        return counts
+            .Select(kv => new FrameStation(kv.Key, kv.Value.Z, kv.Value.N))
+            .OrderBy(f => f.ZStem)
+            .ToList();
+    }
+
+    public static IReadOnlyList<FramePartBox> FramePartsAt(CadDocument doc, string frameId)
+    {
+        var list = new List<FramePartBox>();
+        var prefix = frameId.EndsWith('-') ? frameId : frameId + "-";
+        foreach (var e in doc.Entities ?? [])
+        {
+            if (e.Name is null
+                || !e.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                || !TryBox(e, out var center, out var half))
+                continue;
+            // Skip join/connector bars that are mostly longitudinal (deep Z, thin Y/Up).
+            if (e.Name.Contains("-join-", StringComparison.OrdinalIgnoreCase)
+                && MathF.Abs(half.Z) > MathF.Max(MathF.Abs(half.X), MathF.Abs(half.Y)) * 2f)
+                continue;
+
+            list.Add(new FramePartBox(
+                e.Name,
+                center.X - MathF.Abs(half.X),
+                center.X + MathF.Abs(half.X),
+                center.Y - MathF.Abs(half.Y),
+                center.Y + MathF.Abs(half.Y)));
         }
 
         return list;
     }
+
+    public static bool TryBhPlateMesh(
+        CadDocument doc,
+        string bhId,
+        out IReadOnlyList<float[]> vertices,
+        out IReadOnlyList<int> indices)
+    {
+        var needle = $"bh-{bhId}-plate";
+        var ent = doc.Entities.FirstOrDefault(e =>
+            e.Name is not null
+            && e.Name.Equals(needle, StringComparison.OrdinalIgnoreCase)
+            && e.MeshVertices is { Count: >= 3 }
+            && e.MeshIndices is { Count: >= 3 });
+        if (ent?.MeshVertices is null || ent.MeshIndices is null)
+        {
+            vertices = Array.Empty<float[]>();
+            indices = Array.Empty<int>();
+            return false;
+        }
+
+        vertices = ent.MeshVertices;
+        indices = ent.MeshIndices;
+        return true;
+    }
+
+    private static bool IsSandwichSteelPart(string name) =>
+        name.Contains("-face-top", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("-face-bot", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("-peri-", StringComparison.OrdinalIgnoreCase)
+        || name.Contains("-rib-", StringComparison.OrdinalIgnoreCase);
+
+    private static float BoxVolumeM3(System.Numerics.Vector3 half) =>
+        8f * MathF.Abs(half.X) * MathF.Abs(half.Y) * MathF.Abs(half.Z);
 
     public static IReadOnlyList<(float Z0, float Z1)> MergedPlateSpans(
         IReadOnlyList<SandwichPanel> panels, int deckNum, float mergeGap = 0.35f)
@@ -277,7 +394,7 @@ internal static class CadJsonStructureQuery
         var match = panels.Where(p => p.DeckNum == deckNum).ToList();
         if (match.Count == 0)
             return null;
-        return match.Average(p => p.TPlate);
+        return match.Average(p => p.FaceThicknessM);
     }
 
     public static IReadOnlyList<BhStation> BulkheadStations(CadDocument doc, float loa)

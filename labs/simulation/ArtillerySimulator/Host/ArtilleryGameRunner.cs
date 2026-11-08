@@ -42,6 +42,25 @@ internal sealed class ArtilleryGameRunner
             return 0;
         }
 
+        if (_options.Smoke)
+        {
+            _log.LogInformation(
+                "Smoke: level={LevelId} seed={Seed}",
+                _options.Level.Id,
+                _frame.Session.SeedHash);
+            Console.WriteLine($"{ProductIdentity.Title} smoke — level={_options.Level.Id}");
+            SilkGame.Run(
+                $"{ProductIdentity.Title} smoke",
+                1280,
+                720,
+                _frame.Initialize,
+                _frame.Update,
+                renderOverlay: null,
+                captureSession: null,
+                visible: false);
+            return _frame.SmokeExitCode;
+        }
+
         if (_options.Headless)
         {
             _log.LogInformation(

@@ -44,6 +44,9 @@ internal static class ArtilleryCli
     {
         var headless = args.Any(a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase)
             || string.Equals(a, "--agent", StringComparison.OrdinalIgnoreCase));
+        var smoke = args.Any(a => string.Equals(a, "--smoke", StringComparison.OrdinalIgnoreCase));
+        var attachAgent = headless
+            || args.Any(a => string.Equals(a, "--attach-agent", StringComparison.OrdinalIgnoreCase));
         var verbose = args.Any(a => a is "-v" or "--verbose");
 
         return new ArtilleryRunOptions
@@ -51,6 +54,8 @@ internal static class ArtilleryCli
             Level = ResolveLevel(args),
             Seed = ParseSeed(args),
             Headless = headless,
+            Smoke = smoke,
+            AttachAgent = attachAgent,
             ProfileFrames = ParseProfileFrames(args),
             ProfileJsonPath = ParseJsonPath(args),
             Verbose = verbose,
@@ -68,7 +73,9 @@ internal static class ArtilleryCli
               ArtillerySimulator --list-levels
               ArtillerySimulator --dump-sites [--level <id>]
               ArtillerySimulator --headless [--level <id>] [--seed <int>]
+              ArtillerySimulator --smoke [--level <id>] [--seed <int>]
               ArtillerySimulator --profile [frames] [--json path]
+              ArtillerySimulator --attach-agent   (desktop + HTTP agent; or ARTILLERY_ATTACH_AGENT=1)
 
             Splash: ← → change level, Enter begin, L licenses.
             Play:   WASD/arrows lay, Space fire, 1-4 charge, Esc/P pause, L licenses.

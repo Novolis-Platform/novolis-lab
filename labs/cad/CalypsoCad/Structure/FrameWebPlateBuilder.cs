@@ -1,3 +1,4 @@
+using CalypsoCad.Session;
 using Novolis.Ship.Structure;
 using Novolis.Cad.Primitives;
 using Novolis.Math.Geometry;
@@ -96,16 +97,41 @@ internal static class FrameWebPlateBuilder
             .ToList();
         var zCad = loa * 0.5f - zStem;
         EditableMesh mesh;
+        PolygonWithHolesExtrude.ExtrudeReport extrudeReport;
         try
         {
-            mesh = PolygonWithHolesExtrude.ExtrudeAlongZ(outer, holes, zCad, halfDepthZ);
+            mesh = PolygonWithHolesExtrude.ExtrudeAlongZ(
+                outer, holes, zCad, halfDepthZ, bulkheadId, out extrudeReport);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"  WARN {bulkheadId} polygon extrude: {ex.Message}");
+            Console.Error.WriteLine($"  FAIL {bulkheadId} polygon extrude: {ex.Message}");
             StructurePlacementLog.Record(
                 bulkheadId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
                 $"polygon extrude failed: {ex.Message}");
+            StructureMeshValidation.WriteJsonReport(
+                Path.Combine(
+                    CalypsoProjectPaths.RendersDirectory,
+                    "bulkhead-geometry",
+                    $"{SanitizeFileToken(bulkheadId)}-FAILED.json"),
+                [
+                    new StructureMeshValidation.Result(
+                        bulkheadId,
+                        zStem,
+                        holes.Count,
+                        -1,
+                        0f,
+                        0f,
+                        0f,
+                        -1,
+                        -1,
+                        -1,
+                        0,
+                        0,
+                        false,
+                        [ex.Message],
+                        []),
+                ]);
             return;
         }
 
@@ -115,8 +141,13 @@ internal static class FrameWebPlateBuilder
             $"{bulkheadId}-plate",
             zStem,
             mesh,
-            fabPartId);
+            fabPartId,
+            extrudeReport: extrudeReport,
+            expectedOpenings: holes.Count);
     }
+
+    private static string SanitizeFileToken(string id) =>
+        string.Concat(id.Select(ch => char.IsLetterOrDigit(ch) || ch is '-' or '_' ? ch : '-'));
 
     private static bool TryPreparePlate(
         float zStem,
