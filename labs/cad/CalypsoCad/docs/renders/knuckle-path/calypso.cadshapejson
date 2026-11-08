@@ -1,0 +1,329 @@
+{
+  "format": "novolis.cad.shape",
+  "schemaVersion": 1,
+  "name": "Calypso Rev H lock shapes",
+  "generator": {
+    "name": "Novolis.Cad",
+    "version": "2026.1.0"
+  },
+  "createdAt": "2026-11-08T03:30:34.1993325Z",
+  "modifiedAt": "2026-11-08T03:30:34.1993325Z",
+  "baseDocument": "calypso.cadjson",
+  "shapes": [
+    {
+      "id": "e0000000-0000-4000-8000-000000000001",
+      "name": "hull-exterior",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.42,
+              0.48,
+              0.55
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.42,
+              0.48,
+              0.55
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "hull-steel",
+          "albedo": [
+            0.42,
+            0.48,
+            0.55
+          ],
+          "roughness": 0.4,
+          "metalness": 0.65
+        }
+      }
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000002",
+      "name": "hull-interior",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.62,
+              0.64,
+              0.66
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.62,
+              0.64,
+              0.66
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "hull-lining",
+          "albedo": [
+            0.62,
+            0.64,
+            0.66
+          ],
+          "roughness": 0.72,
+          "metalness": 0.08
+        }
+      }
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000003",
+      "name": "corridor-deck",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.28,
+              0.3,
+              0.32
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.28,
+              0.3,
+              0.32
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "corridor-plate",
+          "albedo": [
+            0.28,
+            0.3,
+            0.32
+          ],
+          "roughness": 0.78,
+          "metalness": 0.12
+        }
+      }
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000004",
+      "name": "cargo-plate",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.3,
+              0.33,
+              0.3
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.3,
+              0.33,
+              0.3
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "cargo-deck-plate",
+          "albedo": [
+            0.3,
+            0.33,
+            0.3
+          ],
+          "roughness": 0.62,
+          "metalness": 0.2
+        }
+      }
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000005",
+      "name": "hab-fill",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.48,
+              0.52,
+              0.56
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.48,
+              0.52,
+              0.56
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "hab-finish",
+          "albedo": [
+            0.48,
+            0.52,
+            0.56
+          ],
+          "roughness": 0.7,
+          "metalness": 0.05
+        }
+      }
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000006",
+      "name": "eng-fill",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.42,
+              0.34,
+              0.32
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.42,
+              0.34,
+              0.32
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "eng-deck",
+          "albedo": [
+            0.42,
+            0.34,
+            0.32
+          ],
+          "roughness": 0.55,
+          "metalness": 0.18
+        }
+      }
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000007",
+      "name": "util-fill",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.38,
+              0.4,
+              0.46
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.38,
+              0.4,
+              0.46
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "util-deck",
+          "albedo": [
+            0.38,
+            0.4,
+            0.46
+          ],
+          "roughness": 0.65,
+          "metalness": 0.1
+        }
+      }
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000008",
+      "name": "bridge-fill",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.36,
+              0.38,
+              0.42
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.36,
+              0.38,
+              0.42
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "bridge-console-deck",
+          "albedo": [
+            0.36,
+            0.38,
+            0.42
+          ],
+          "roughness": 0.48,
+          "metalness": 0.22
+        }
+      }
+    },
+    {
+      "id": "e0000000-0000-4000-8000-000000000009",
+      "name": "interior-lining",
+      "extensions": {
+        "appearance": {
+          "fill": {
+            "enabled": true,
+            "color": [
+              0.7,
+              0.72,
+              0.74
+            ]
+          },
+          "stroke": {
+            "color": [
+              0.7,
+              0.72,
+              0.74
+            ],
+            "lineWeightMm": 0.25,
+            "linetype": "Continuous"
+          }
+        },
+        "material": {
+          "preset": "cabin-lining",
+          "albedo": [
+            0.7,
+            0.72,
+            0.74
+          ],
+          "roughness": 0.82,
+          "metalness": 0.04
+        }
+      }
+    }
+  ]
+}

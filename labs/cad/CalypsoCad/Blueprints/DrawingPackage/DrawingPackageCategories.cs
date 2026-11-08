@@ -15,6 +15,8 @@ internal static class DrawingPackageCategories
             "Cellular sandwich deck face plates by deck."),
         new(DrawingCategoryId.StructuralMembers, "200-structure/240-structural-members", "Structural members", "Structure",
             "Longitudinals, girders, coamings, and related primary members."),
+        new(DrawingCategoryId.KnuckleStringers, "200-structure/250-knuckle-stringers", "Knuckle stringers", "Structure",
+            "Eight continuous outer-hull plating knuckle paths — swept segment geometry."),
         new(DrawingCategoryId.ShirtSleeves, "300-volumes/310-shirt-sleeves", "Shirt-sleeves", "Volumes",
             "Habitable passageway spine: ACCESS + CROSSING + CORR_P/S."),
         new(DrawingCategoryId.AirlockAnteroom, "300-volumes/320-airlock-anteroom", "Airlock anteroom", "Volumes",

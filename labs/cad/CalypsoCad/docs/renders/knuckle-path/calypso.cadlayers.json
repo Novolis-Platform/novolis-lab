@@ -1,0 +1,183 @@
+{
+  "format": "novolis.cad.layers",
+  "schemaVersion": 1,
+  "name": "Calypso ship layers",
+  "standard": "custom",
+  "standardVersion": "1",
+  "generator": {
+    "name": "Novolis.Cad",
+    "version": "2026.1.0"
+  },
+  "createdAt": "2026-11-08T03:30:34.1993325Z",
+  "modifiedAt": "2026-11-08T03:30:34.1993325Z",
+  "layers": [
+    {
+      "id": "d1000000-0000-4000-8000-000000000001",
+      "name": "S-HULL",
+      "discipline": "S",
+      "major": "HULL",
+      "description": "Outer / inner hull shell",
+      "defaultColor": [
+        0.42,
+        0.48,
+        0.55
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-000000000002",
+      "name": "A-WALL",
+      "discipline": "A",
+      "major": "WALL",
+      "description": "Interior partitions",
+      "defaultColor": [
+        0.45,
+        0.55,
+        0.7
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-000000000003",
+      "name": "A-DOOR",
+      "discipline": "A",
+      "major": "DOOR",
+      "description": "Doors and hatches",
+      "defaultColor": [
+        0.7,
+        0.55,
+        0.3
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-000000000004",
+      "name": "A-CORR",
+      "discipline": "A",
+      "major": "CORR",
+      "description": "Corridors",
+      "defaultColor": [
+        0.35,
+        0.55,
+        0.4
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-000000000005",
+      "name": "A-ZONE-CARGO",
+      "discipline": "A",
+      "major": "ZONE",
+      "minor": [
+        "CARG"
+      ],
+      "description": "Cargo",
+      "defaultColor": [
+        0.3,
+        0.4,
+        0.32
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-000000000006",
+      "name": "A-ZONE-HAB",
+      "discipline": "A",
+      "major": "ZONE",
+      "minor": [
+        "HAB"
+      ],
+      "description": "Habitability",
+      "defaultColor": [
+        0.45,
+        0.52,
+        0.58
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-000000000007",
+      "name": "A-ZONE-ENG",
+      "discipline": "A",
+      "major": "ZONE",
+      "minor": [
+        "ENG"
+      ],
+      "description": "Engineering",
+      "defaultColor": [
+        0.55,
+        0.38,
+        0.35
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-000000000008",
+      "name": "A-ZONE-UTIL",
+      "discipline": "A",
+      "major": "ZONE",
+      "minor": [
+        "UTIL"
+      ],
+      "description": "Utilities",
+      "defaultColor": [
+        0.42,
+        0.44,
+        0.55
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-000000000009",
+      "name": "A-ZONE-BRIDGE",
+      "discipline": "A",
+      "major": "ZONE",
+      "minor": [
+        "BRDG"
+      ],
+      "description": "Bridge",
+      "defaultColor": [
+        0.4,
+        0.42,
+        0.48
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    },
+    {
+      "id": "d1000000-0000-4000-8000-00000000000a",
+      "name": "S-STRUCT",
+      "discipline": "S",
+      "major": "STRUCT",
+      "minor": [
+        "FRM"
+      ],
+      "description": "Frames, stringers, coaming",
+      "defaultColor": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "defaultLineWeightMm": 0.35,
+      "defaultLinetype": "Continuous",
+      "plot": true
+    }
+  ]
+}

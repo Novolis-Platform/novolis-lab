@@ -1,0 +1,1451 @@
+{
+  "pathCount": 8,
+  "segmentCount": 160,
+  "failures": 0,
+  "maxDeviationM": 0.00739967,
+  "maxAllowedM": 0.35,
+  "passed": true,
+  "method": "Independent loft re-sample at segment mid-Z; lateral deviation from knuckle inward ray",
+  "segments": [
+    {
+      "partId": "stringer-knuckle-v0-s0",
+      "vertex": 0,
+      "z0": 0,
+      "z1": 3.25,
+      "midZ": 1.625,
+      "deviationM": 0.0013023611,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s1",
+      "vertex": 0,
+      "z0": 3.25,
+      "z1": 6.5,
+      "midZ": 4.875,
+      "deviationM": 9.986961E-05,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s2",
+      "vertex": 0,
+      "z0": 6.5,
+      "z1": 9.75,
+      "midZ": 8.125,
+      "deviationM": 4.8563885E-05,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s3",
+      "vertex": 0,
+      "z0": 9.75,
+      "z1": 13,
+      "midZ": 11.375,
+      "deviationM": 0.0067439037,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s4",
+      "vertex": 0,
+      "z0": 13,
+      "z1": 16,
+      "midZ": 14.5,
+      "deviationM": 2.383819E-06,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s5",
+      "vertex": 0,
+      "z0": 16,
+      "z1": 19,
+      "midZ": 17.5,
+      "deviationM": 0.00739967,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s6",
+      "vertex": 0,
+      "z0": 19,
+      "z1": 23,
+      "midZ": 21,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s7",
+      "vertex": 0,
+      "z0": 23,
+      "z1": 26.64,
+      "midZ": 24.82,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s8",
+      "vertex": 0,
+      "z0": 26.64,
+      "z1": 30.28,
+      "midZ": 28.46,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s9",
+      "vertex": 0,
+      "z0": 30.28,
+      "z1": 33.853333,
+      "midZ": 32.066666,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s10",
+      "vertex": 0,
+      "z0": 33.853333,
+      "z1": 37.426666,
+      "midZ": 35.64,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s11",
+      "vertex": 0,
+      "z0": 37.426666,
+      "z1": 41,
+      "midZ": 39.213333,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s12",
+      "vertex": 0,
+      "z0": 41,
+      "z1": 43.75,
+      "midZ": 42.375,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s13",
+      "vertex": 0,
+      "z0": 43.75,
+      "z1": 46.5,
+      "midZ": 45.125,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s14",
+      "vertex": 0,
+      "z0": 46.5,
+      "z1": 49.25,
+      "midZ": 47.875,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s15",
+      "vertex": 0,
+      "z0": 49.25,
+      "z1": 53.19,
+      "midZ": 51.22,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s16",
+      "vertex": 0,
+      "z0": 53.19,
+      "z1": 57.129997,
+      "midZ": 55.159996,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s17",
+      "vertex": 0,
+      "z0": 57.129997,
+      "z1": 61.07,
+      "midZ": 59.1,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s18",
+      "vertex": 0,
+      "z0": 61.07,
+      "z1": 65.009995,
+      "midZ": 63.039997,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v0-s19",
+      "vertex": 0,
+      "z0": 65.009995,
+      "z1": 68.95,
+      "midZ": 66.979996,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s0",
+      "vertex": 1,
+      "z0": 0,
+      "z1": 3.25,
+      "midZ": 1.625,
+      "deviationM": 0.0013018416,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s1",
+      "vertex": 1,
+      "z0": 3.25,
+      "z1": 6.5,
+      "midZ": 4.875,
+      "deviationM": 9.9553115E-05,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s2",
+      "vertex": 1,
+      "z0": 6.5,
+      "z1": 9.75,
+      "midZ": 8.125,
+      "deviationM": 4.8871574E-05,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s3",
+      "vertex": 1,
+      "z0": 9.75,
+      "z1": 13,
+      "midZ": 11.375,
+      "deviationM": 0.0067441994,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s4",
+      "vertex": 1,
+      "z0": 13,
+      "z1": 16,
+      "midZ": 14.5,
+      "deviationM": 1.5059069E-06,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s5",
+      "vertex": 1,
+      "z0": 16,
+      "z1": 19,
+      "midZ": 17.5,
+      "deviationM": 0.00739967,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s6",
+      "vertex": 1,
+      "z0": 19,
+      "z1": 23,
+      "midZ": 21,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s7",
+      "vertex": 1,
+      "z0": 23,
+      "z1": 26.64,
+      "midZ": 24.82,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s8",
+      "vertex": 1,
+      "z0": 26.64,
+      "z1": 30.28,
+      "midZ": 28.46,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s9",
+      "vertex": 1,
+      "z0": 30.28,
+      "z1": 33.853333,
+      "midZ": 32.066666,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s10",
+      "vertex": 1,
+      "z0": 33.853333,
+      "z1": 37.426666,
+      "midZ": 35.64,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s11",
+      "vertex": 1,
+      "z0": 37.426666,
+      "z1": 41,
+      "midZ": 39.213333,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s12",
+      "vertex": 1,
+      "z0": 41,
+      "z1": 43.75,
+      "midZ": 42.375,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s13",
+      "vertex": 1,
+      "z0": 43.75,
+      "z1": 46.5,
+      "midZ": 45.125,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s14",
+      "vertex": 1,
+      "z0": 46.5,
+      "z1": 49.25,
+      "midZ": 47.875,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s15",
+      "vertex": 1,
+      "z0": 49.25,
+      "z1": 53.19,
+      "midZ": 51.22,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s16",
+      "vertex": 1,
+      "z0": 53.19,
+      "z1": 57.129997,
+      "midZ": 55.159996,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s17",
+      "vertex": 1,
+      "z0": 57.129997,
+      "z1": 61.07,
+      "midZ": 59.1,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s18",
+      "vertex": 1,
+      "z0": 61.07,
+      "z1": 65.009995,
+      "midZ": 63.039997,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v1-s19",
+      "vertex": 1,
+      "z0": 65.009995,
+      "z1": 68.95,
+      "midZ": 66.979996,
+      "deviationM": 4.7706994E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s0",
+      "vertex": 2,
+      "z0": 0,
+      "z1": 3.25,
+      "midZ": 1.625,
+      "deviationM": 0.00063061324,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s1",
+      "vertex": 2,
+      "z0": 3.25,
+      "z1": 6.5,
+      "midZ": 4.875,
+      "deviationM": 0.00017839158,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s2",
+      "vertex": 2,
+      "z0": 6.5,
+      "z1": 9.75,
+      "midZ": 8.125,
+      "deviationM": 0.00012256629,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s3",
+      "vertex": 2,
+      "z0": 9.75,
+      "z1": 13,
+      "midZ": 11.375,
+      "deviationM": 0.0051226583,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s4",
+      "vertex": 2,
+      "z0": 13,
+      "z1": 16,
+      "midZ": 14.5,
+      "deviationM": 7.1602813E-06,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s5",
+      "vertex": 2,
+      "z0": 16,
+      "z1": 19,
+      "midZ": 17.5,
+      "deviationM": 0.006016583,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s6",
+      "vertex": 2,
+      "z0": 19,
+      "z1": 23,
+      "midZ": 21,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s7",
+      "vertex": 2,
+      "z0": 23,
+      "z1": 26.64,
+      "midZ": 24.82,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s8",
+      "vertex": 2,
+      "z0": 26.64,
+      "z1": 30.28,
+      "midZ": 28.46,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s9",
+      "vertex": 2,
+      "z0": 30.28,
+      "z1": 33.853333,
+      "midZ": 32.066666,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s10",
+      "vertex": 2,
+      "z0": 33.853333,
+      "z1": 37.426666,
+      "midZ": 35.64,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s11",
+      "vertex": 2,
+      "z0": 37.426666,
+      "z1": 41,
+      "midZ": 39.213333,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s12",
+      "vertex": 2,
+      "z0": 41,
+      "z1": 43.75,
+      "midZ": 42.375,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s13",
+      "vertex": 2,
+      "z0": 43.75,
+      "z1": 46.5,
+      "midZ": 45.125,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s14",
+      "vertex": 2,
+      "z0": 46.5,
+      "z1": 49.25,
+      "midZ": 47.875,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s15",
+      "vertex": 2,
+      "z0": 49.25,
+      "z1": 53.19,
+      "midZ": 51.22,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s16",
+      "vertex": 2,
+      "z0": 53.19,
+      "z1": 57.129997,
+      "midZ": 55.159996,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s17",
+      "vertex": 2,
+      "z0": 57.129997,
+      "z1": 61.07,
+      "midZ": 59.1,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s18",
+      "vertex": 2,
+      "z0": 61.07,
+      "z1": 65.009995,
+      "midZ": 63.039997,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v2-s19",
+      "vertex": 2,
+      "z0": 65.009995,
+      "z1": 68.95,
+      "midZ": 66.979996,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s0",
+      "vertex": 3,
+      "z0": 0,
+      "z1": 3.25,
+      "midZ": 1.625,
+      "deviationM": 0.0006318894,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s1",
+      "vertex": 3,
+      "z0": 3.25,
+      "z1": 6.5,
+      "midZ": 4.875,
+      "deviationM": 0.00017882805,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s2",
+      "vertex": 3,
+      "z0": 6.5,
+      "z1": 9.75,
+      "midZ": 8.125,
+      "deviationM": 0.00012212023,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s3",
+      "vertex": 3,
+      "z0": 9.75,
+      "z1": 13,
+      "midZ": 11.375,
+      "deviationM": 0.005123097,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s4",
+      "vertex": 3,
+      "z0": 13,
+      "z1": 16,
+      "midZ": 14.5,
+      "deviationM": 7.1567647E-06,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s5",
+      "vertex": 3,
+      "z0": 16,
+      "z1": 19,
+      "midZ": 17.5,
+      "deviationM": 0.0060168155,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s6",
+      "vertex": 3,
+      "z0": 19,
+      "z1": 23,
+      "midZ": 21,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s7",
+      "vertex": 3,
+      "z0": 23,
+      "z1": 26.64,
+      "midZ": 24.82,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s8",
+      "vertex": 3,
+      "z0": 26.64,
+      "z1": 30.28,
+      "midZ": 28.46,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s9",
+      "vertex": 3,
+      "z0": 30.28,
+      "z1": 33.853333,
+      "midZ": 32.066666,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s10",
+      "vertex": 3,
+      "z0": 33.853333,
+      "z1": 37.426666,
+      "midZ": 35.64,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s11",
+      "vertex": 3,
+      "z0": 37.426666,
+      "z1": 41,
+      "midZ": 39.213333,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s12",
+      "vertex": 3,
+      "z0": 41,
+      "z1": 43.75,
+      "midZ": 42.375,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s13",
+      "vertex": 3,
+      "z0": 43.75,
+      "z1": 46.5,
+      "midZ": 45.125,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s14",
+      "vertex": 3,
+      "z0": 46.5,
+      "z1": 49.25,
+      "midZ": 47.875,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s15",
+      "vertex": 3,
+      "z0": 49.25,
+      "z1": 53.19,
+      "midZ": 51.22,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s16",
+      "vertex": 3,
+      "z0": 53.19,
+      "z1": 57.129997,
+      "midZ": 55.159996,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s17",
+      "vertex": 3,
+      "z0": 57.129997,
+      "z1": 61.07,
+      "midZ": 59.1,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s18",
+      "vertex": 3,
+      "z0": 61.07,
+      "z1": 65.009995,
+      "midZ": 63.039997,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v3-s19",
+      "vertex": 3,
+      "z0": 65.009995,
+      "z1": 68.95,
+      "midZ": 66.979996,
+      "deviationM": 2.0147588E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s0",
+      "vertex": 4,
+      "z0": 0,
+      "z1": 3.25,
+      "midZ": 1.625,
+      "deviationM": 0.0013019813,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s1",
+      "vertex": 4,
+      "z0": 3.25,
+      "z1": 6.5,
+      "midZ": 4.875,
+      "deviationM": 9.9692676E-05,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s2",
+      "vertex": 4,
+      "z0": 6.5,
+      "z1": 9.75,
+      "midZ": 8.125,
+      "deviationM": 4.7919904E-05,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s3",
+      "vertex": 4,
+      "z0": 9.75,
+      "z1": 13,
+      "midZ": 11.375,
+      "deviationM": 0.006743312,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s4",
+      "vertex": 4,
+      "z0": 13,
+      "z1": 16,
+      "midZ": 14.5,
+      "deviationM": 2.7324465E-06,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s5",
+      "vertex": 4,
+      "z0": 16,
+      "z1": 19,
+      "midZ": 17.5,
+      "deviationM": 0.007399375,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s6",
+      "vertex": 4,
+      "z0": 19,
+      "z1": 23,
+      "midZ": 21,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s7",
+      "vertex": 4,
+      "z0": 23,
+      "z1": 26.64,
+      "midZ": 24.82,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s8",
+      "vertex": 4,
+      "z0": 26.64,
+      "z1": 30.28,
+      "midZ": 28.46,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s9",
+      "vertex": 4,
+      "z0": 30.28,
+      "z1": 33.853333,
+      "midZ": 32.066666,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s10",
+      "vertex": 4,
+      "z0": 33.853333,
+      "z1": 37.426666,
+      "midZ": 35.64,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s11",
+      "vertex": 4,
+      "z0": 37.426666,
+      "z1": 41,
+      "midZ": 39.213333,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s12",
+      "vertex": 4,
+      "z0": 41,
+      "z1": 43.75,
+      "midZ": 42.375,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s13",
+      "vertex": 4,
+      "z0": 43.75,
+      "z1": 46.5,
+      "midZ": 45.125,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s14",
+      "vertex": 4,
+      "z0": 46.5,
+      "z1": 49.25,
+      "midZ": 47.875,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s15",
+      "vertex": 4,
+      "z0": 49.25,
+      "z1": 53.19,
+      "midZ": 51.22,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s16",
+      "vertex": 4,
+      "z0": 53.19,
+      "z1": 57.129997,
+      "midZ": 55.159996,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s17",
+      "vertex": 4,
+      "z0": 57.129997,
+      "z1": 61.07,
+      "midZ": 59.1,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s18",
+      "vertex": 4,
+      "z0": 61.07,
+      "z1": 65.009995,
+      "midZ": 63.039997,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v4-s19",
+      "vertex": 4,
+      "z0": 65.009995,
+      "z1": 68.95,
+      "midZ": 66.979996,
+      "deviationM": 7.543138E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s0",
+      "vertex": 5,
+      "z0": 0,
+      "z1": 3.25,
+      "midZ": 1.625,
+      "deviationM": 0.0013019968,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s1",
+      "vertex": 5,
+      "z0": 3.25,
+      "z1": 6.5,
+      "midZ": 4.875,
+      "deviationM": 9.933658E-05,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s2",
+      "vertex": 5,
+      "z0": 6.5,
+      "z1": 9.75,
+      "midZ": 8.125,
+      "deviationM": 4.8135575E-05,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s3",
+      "vertex": 5,
+      "z0": 9.75,
+      "z1": 13,
+      "midZ": 11.375,
+      "deviationM": 0.00674429,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s4",
+      "vertex": 5,
+      "z0": 13,
+      "z1": 16,
+      "midZ": 14.5,
+      "deviationM": 1.961361E-06,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s5",
+      "vertex": 5,
+      "z0": 16,
+      "z1": 19,
+      "midZ": 17.5,
+      "deviationM": 0.0073989937,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s6",
+      "vertex": 5,
+      "z0": 19,
+      "z1": 23,
+      "midZ": 21,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s7",
+      "vertex": 5,
+      "z0": 23,
+      "z1": 26.64,
+      "midZ": 24.82,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s8",
+      "vertex": 5,
+      "z0": 26.64,
+      "z1": 30.28,
+      "midZ": 28.46,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s9",
+      "vertex": 5,
+      "z0": 30.28,
+      "z1": 33.853333,
+      "midZ": 32.066666,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s10",
+      "vertex": 5,
+      "z0": 33.853333,
+      "z1": 37.426666,
+      "midZ": 35.64,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s11",
+      "vertex": 5,
+      "z0": 37.426666,
+      "z1": 41,
+      "midZ": 39.213333,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s12",
+      "vertex": 5,
+      "z0": 41,
+      "z1": 43.75,
+      "midZ": 42.375,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s13",
+      "vertex": 5,
+      "z0": 43.75,
+      "z1": 46.5,
+      "midZ": 45.125,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s14",
+      "vertex": 5,
+      "z0": 46.5,
+      "z1": 49.25,
+      "midZ": 47.875,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s15",
+      "vertex": 5,
+      "z0": 49.25,
+      "z1": 53.19,
+      "midZ": 51.22,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s16",
+      "vertex": 5,
+      "z0": 53.19,
+      "z1": 57.129997,
+      "midZ": 55.159996,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s17",
+      "vertex": 5,
+      "z0": 57.129997,
+      "z1": 61.07,
+      "midZ": 59.1,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s18",
+      "vertex": 5,
+      "z0": 61.07,
+      "z1": 65.009995,
+      "midZ": 63.039997,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v5-s19",
+      "vertex": 5,
+      "z0": 65.009995,
+      "z1": 68.95,
+      "midZ": 66.979996,
+      "deviationM": 7.6436564E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s0",
+      "vertex": 6,
+      "z0": 0,
+      "z1": 3.25,
+      "midZ": 1.625,
+      "deviationM": 0.0006314762,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s1",
+      "vertex": 6,
+      "z0": 3.25,
+      "z1": 6.5,
+      "midZ": 4.875,
+      "deviationM": 0.0001786088,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s2",
+      "vertex": 6,
+      "z0": 6.5,
+      "z1": 9.75,
+      "midZ": 8.125,
+      "deviationM": 0.00012256629,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s3",
+      "vertex": 6,
+      "z0": 9.75,
+      "z1": 13,
+      "midZ": 11.375,
+      "deviationM": 0.0051226504,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s4",
+      "vertex": 6,
+      "z0": 13,
+      "z1": 16,
+      "midZ": 14.5,
+      "deviationM": 6.710215E-06,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s5",
+      "vertex": 6,
+      "z0": 16,
+      "z1": 19,
+      "midZ": 17.5,
+      "deviationM": 0.0060170367,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s6",
+      "vertex": 6,
+      "z0": 19,
+      "z1": 23,
+      "midZ": 21,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s7",
+      "vertex": 6,
+      "z0": 23,
+      "z1": 26.64,
+      "midZ": 24.82,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s8",
+      "vertex": 6,
+      "z0": 26.64,
+      "z1": 30.28,
+      "midZ": 28.46,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s9",
+      "vertex": 6,
+      "z0": 30.28,
+      "z1": 33.853333,
+      "midZ": 32.066666,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s10",
+      "vertex": 6,
+      "z0": 33.853333,
+      "z1": 37.426666,
+      "midZ": 35.64,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s11",
+      "vertex": 6,
+      "z0": 37.426666,
+      "z1": 41,
+      "midZ": 39.213333,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s12",
+      "vertex": 6,
+      "z0": 41,
+      "z1": 43.75,
+      "midZ": 42.375,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s13",
+      "vertex": 6,
+      "z0": 43.75,
+      "z1": 46.5,
+      "midZ": 45.125,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s14",
+      "vertex": 6,
+      "z0": 46.5,
+      "z1": 49.25,
+      "midZ": 47.875,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s15",
+      "vertex": 6,
+      "z0": 49.25,
+      "z1": 53.19,
+      "midZ": 51.22,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s16",
+      "vertex": 6,
+      "z0": 53.19,
+      "z1": 57.129997,
+      "midZ": 55.159996,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s17",
+      "vertex": 6,
+      "z0": 57.129997,
+      "z1": 61.07,
+      "midZ": 59.1,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s18",
+      "vertex": 6,
+      "z0": 61.07,
+      "z1": 65.009995,
+      "midZ": 63.039997,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v6-s19",
+      "vertex": 6,
+      "z0": 65.009995,
+      "z1": 68.95,
+      "midZ": 66.979996,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s0",
+      "vertex": 7,
+      "z0": 0,
+      "z1": 3.25,
+      "midZ": 1.625,
+      "deviationM": 0.0006310347,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s1",
+      "vertex": 7,
+      "z0": 3.25,
+      "z1": 6.5,
+      "midZ": 4.875,
+      "deviationM": 0.00017926563,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s2",
+      "vertex": 7,
+      "z0": 6.5,
+      "z1": 9.75,
+      "midZ": 8.125,
+      "deviationM": 0.00012256629,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s3",
+      "vertex": 7,
+      "z0": 9.75,
+      "z1": 13,
+      "midZ": 11.375,
+      "deviationM": 0.0051226467,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s4",
+      "vertex": 7,
+      "z0": 13,
+      "z1": 16,
+      "midZ": 14.5,
+      "deviationM": 6.2596196E-06,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s5",
+      "vertex": 7,
+      "z0": 16,
+      "z1": 19,
+      "midZ": 17.5,
+      "deviationM": 0.006016583,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s6",
+      "vertex": 7,
+      "z0": 19,
+      "z1": 23,
+      "midZ": 21,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s7",
+      "vertex": 7,
+      "z0": 23,
+      "z1": 26.64,
+      "midZ": 24.82,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s8",
+      "vertex": 7,
+      "z0": 26.64,
+      "z1": 30.28,
+      "midZ": 28.46,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s9",
+      "vertex": 7,
+      "z0": 30.28,
+      "z1": 33.853333,
+      "midZ": 32.066666,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s10",
+      "vertex": 7,
+      "z0": 33.853333,
+      "z1": 37.426666,
+      "midZ": 35.64,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s11",
+      "vertex": 7,
+      "z0": 37.426666,
+      "z1": 41,
+      "midZ": 39.213333,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s12",
+      "vertex": 7,
+      "z0": 41,
+      "z1": 43.75,
+      "midZ": 42.375,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s13",
+      "vertex": 7,
+      "z0": 43.75,
+      "z1": 46.5,
+      "midZ": 45.125,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s14",
+      "vertex": 7,
+      "z0": 46.5,
+      "z1": 49.25,
+      "midZ": 47.875,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s15",
+      "vertex": 7,
+      "z0": 49.25,
+      "z1": 53.19,
+      "midZ": 51.22,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s16",
+      "vertex": 7,
+      "z0": 53.19,
+      "z1": 57.129997,
+      "midZ": 55.159996,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s17",
+      "vertex": 7,
+      "z0": 57.129997,
+      "z1": 61.07,
+      "midZ": 59.1,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s18",
+      "vertex": 7,
+      "z0": 61.07,
+      "z1": 65.009995,
+      "midZ": 63.039997,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    },
+    {
+      "partId": "stringer-knuckle-v7-s19",
+      "vertex": 7,
+      "z0": 65.009995,
+      "z1": 68.95,
+      "midZ": 66.979996,
+      "deviationM": 1.8626451E-08,
+      "passed": true
+    }
+  ]
+}

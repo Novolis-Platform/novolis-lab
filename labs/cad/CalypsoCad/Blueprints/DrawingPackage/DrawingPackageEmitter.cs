@@ -124,6 +124,17 @@ internal static class DrawingPackageEmitter
                         StructuralMemberDrawingSheet.Build(entry, cad, chunk));
                     break;
                 }
+                case DrawingCategoryId.KnuckleStringers:
+                {
+                    var vertex = 0;
+                    if (entry.SubjectId is { } sid
+                        && sid.StartsWith("knuckle-v", StringComparison.OrdinalIgnoreCase)
+                        && int.TryParse(sid["knuckle-v".Length..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var v))
+                        vertex = v;
+                    Write(outDir, entry.RelativePath,
+                        KnuckleStringerDrawingSheet.Build(entry, cad, vertex));
+                    break;
+                }
                 case DrawingCategoryId.ShirtSleeves:
                 case DrawingCategoryId.AirlockAnteroom:
                 case DrawingCategoryId.Airlock:

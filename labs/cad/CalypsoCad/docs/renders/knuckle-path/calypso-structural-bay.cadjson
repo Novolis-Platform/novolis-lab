@@ -1,0 +1,6957 @@
+{
+  "format": "novolis.cad",
+  "schemaVersion": 1,
+  "name": "Calypso \u2014 two-bay structural proof (F24\u2013F32)",
+  "generator": {
+    "name": "CalypsoCad.StructuralBayAssembly",
+    "version": "2026.1.0"
+  },
+  "createdAt": "2026-11-07T21:45:48.1679433Z",
+  "modifiedAt": "2026-11-07T21:45:48.1679433Z",
+  "unitScaleMeters": 1,
+  "linearUnit": "meter",
+  "angleUnit": "radian",
+  "coordinateSystem": {
+    "handedness": "right",
+    "upAxis": "y",
+    "forwardAxis": "z"
+  },
+  "layersDocument": "calypso.cadlayers.json",
+  "shapesDocument": "calypso.cadshapejson",
+  "layers": [],
+  "linetypes": [
+    {
+      "name": "Continuous"
+    }
+  ],
+  "entities": [
+    {
+      "id": "4f2d4b64-f21c-45ca-af10-1d0a7f86f4ea",
+      "name": "frame-F24-ring-0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 15.36,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          12.0988,
+          10.5
+        ],
+        [
+          7.68,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 12.0988,
+        "joins": [
+          "frame-F24-ring-7",
+          "frame-F24-ring-1"
+        ],
+        "orientZ": 0,
+        "edgeLength": 15.36
+      }
+    },
+    {
+      "id": "6506149d-5dec-40b8-8723-d2779ca91001",
+      "name": "frame-F24-ring-1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.865928,
+          10.899671,
+          10.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 10.899671,
+        "joins": [
+          "frame-F24-ring-0",
+          "frame-F24-ring-2"
+        ],
+        "orientZ": -0.7820266,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "fcf072d3-187e-4855-a19a-af1bc19ece01",
+      "name": "frame-F24-ring-2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 6.993334,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.0988,
+          6.2,
+          10.5
+        ],
+        [
+          3.496667,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F24-ring-1",
+          "frame-F24-ring-3"
+        ],
+        "orientZ": -1.5707964,
+        "edgeLength": 6.993334
+      }
+    },
+    {
+      "id": "eea4960e-028e-47a0-abb8-d774dd399acb",
+      "name": "frame-F24-ring-3",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.865928,
+          1.5003294,
+          10.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 1.5003294,
+        "joins": [
+          "frame-F24-ring-2",
+          "frame-F24-ring-4"
+        ],
+        "orientZ": -2.359566,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "f44efde7-9acb-481e-91f5-ea5afc387ec8",
+      "name": "frame-F24-ring-4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 15.36,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          0.30119976,
+          10.5
+        ],
+        [
+          7.68,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 0.30119976,
+        "joins": [
+          "frame-F24-ring-3",
+          "frame-F24-ring-5"
+        ],
+        "orientZ": 3.1415927,
+        "edgeLength": 15.36
+      }
+    },
+    {
+      "id": "14915b2a-04a0-4495-9418-8a0211b1e620",
+      "name": "frame-F24-ring-5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.865928,
+          1.5003294,
+          10.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 1.5003294,
+        "joins": [
+          "frame-F24-ring-4",
+          "frame-F24-ring-6"
+        ],
+        "orientZ": 2.359566,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "6b24dcf8-39e2-4694-8e8d-d2672a808581",
+      "name": "frame-F24-ring-6",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 6.993334,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.0988,
+          6.2,
+          10.5
+        ],
+        [
+          3.496667,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F24-ring-5",
+          "frame-F24-ring-7"
+        ],
+        "orientZ": 1.5707964,
+        "edgeLength": 6.993334
+      }
+    },
+    {
+      "id": "a63502c8-b7a1-447f-9f65-aced56efb101",
+      "name": "frame-F24-ring-7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.865928,
+          10.899671,
+          10.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 10.899671,
+        "joins": [
+          "frame-F24-ring-6",
+          "frame-F24-ring-0"
+        ],
+        "orientZ": 0.7820266,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "bd3d99a3-9623-4b98-8f4b-4a9b77521a5c",
+      "name": "frame-F24-chord-dk0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.16,
+      "thickness": 20.275,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.4,
+          10.5
+        ],
+        [
+          10.1375,
+          0.08,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F24",
+        "stationZ": 24,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F24"
+        ]
+      }
+    },
+    {
+      "id": "18a2256b-26f8-4d2b-bb8a-0e92fc933917",
+      "name": "frame-F28-ring-0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 15.36,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          12.0988,
+          6.5
+        ],
+        [
+          7.68,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 12.0988,
+        "joins": [
+          "frame-F28-ring-7",
+          "frame-F28-ring-1"
+        ],
+        "orientZ": 0,
+        "edgeLength": 15.36
+      }
+    },
+    {
+      "id": "be703db8-6e9a-4745-a423-3d86afa55117",
+      "name": "frame-F28-ring-1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.865928,
+          10.899671,
+          6.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 10.899671,
+        "joins": [
+          "frame-F28-ring-0",
+          "frame-F28-ring-2"
+        ],
+        "orientZ": -0.7820266,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "15133102-77da-4c7a-9ee6-5135dae7e8e0",
+      "name": "frame-F28-ring-2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 6.993334,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.0988,
+          6.2,
+          6.5
+        ],
+        [
+          3.496667,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F28-ring-1",
+          "frame-F28-ring-3"
+        ],
+        "orientZ": -1.5707964,
+        "edgeLength": 6.993334
+      }
+    },
+    {
+      "id": "f839fb4f-f6d5-49a7-aee0-820047cb3129",
+      "name": "frame-F28-ring-3",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.865928,
+          1.5003294,
+          6.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 1.5003294,
+        "joins": [
+          "frame-F28-ring-2",
+          "frame-F28-ring-4"
+        ],
+        "orientZ": -2.359566,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "0b776702-9ad4-4c28-85df-d10fce1f9087",
+      "name": "frame-F28-ring-4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 15.36,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          0.30119976,
+          6.5
+        ],
+        [
+          7.68,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 0.30119976,
+        "joins": [
+          "frame-F28-ring-3",
+          "frame-F28-ring-5"
+        ],
+        "orientZ": 3.1415927,
+        "edgeLength": 15.36
+      }
+    },
+    {
+      "id": "fa4b0959-f5bc-41ad-8af9-db80523cb0c5",
+      "name": "frame-F28-ring-5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.865928,
+          1.5003294,
+          6.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 1.5003294,
+        "joins": [
+          "frame-F28-ring-4",
+          "frame-F28-ring-6"
+        ],
+        "orientZ": 2.359566,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "d8ce4fed-b2cf-4cea-bae8-6a8c633db727",
+      "name": "frame-F28-ring-6",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 6.993334,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.0988,
+          6.2,
+          6.5
+        ],
+        [
+          3.496667,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F28-ring-5",
+          "frame-F28-ring-7"
+        ],
+        "orientZ": 1.5707964,
+        "edgeLength": 6.993334
+      }
+    },
+    {
+      "id": "38d85064-c95e-48c0-b1cc-7c81bc51c733",
+      "name": "frame-F28-ring-7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.865928,
+          10.899671,
+          6.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 10.899671,
+        "joins": [
+          "frame-F28-ring-6",
+          "frame-F28-ring-0"
+        ],
+        "orientZ": 0.7820266,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "970ec2c8-2d86-4a49-b805-0b38be1587b1",
+      "name": "frame-F28-chord-dk0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.16,
+      "thickness": 20.275,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.4,
+          6.5
+        ],
+        [
+          10.1375,
+          0.08,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F28",
+        "stationZ": 28,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F28"
+        ]
+      }
+    },
+    {
+      "id": "b3e5cc34-e656-4598-b32d-bbb2f9a0c423",
+      "name": "frame-F32-ring-0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 15.36,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          12.0988,
+          2.5
+        ],
+        [
+          7.68,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 12.0988,
+        "joins": [
+          "frame-F32-ring-7",
+          "frame-F32-ring-1"
+        ],
+        "orientZ": 0,
+        "edgeLength": 15.36
+      }
+    },
+    {
+      "id": "d6e5edbb-953a-4c3c-8176-f206e0d599dc",
+      "name": "frame-F32-ring-1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.865928,
+          10.899671,
+          2.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 10.899671,
+        "joins": [
+          "frame-F32-ring-0",
+          "frame-F32-ring-2"
+        ],
+        "orientZ": -0.7820266,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "b8a1f20e-d6dd-4d1c-821b-4d57b2794c40",
+      "name": "frame-F32-ring-2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 6.993334,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.0988,
+          6.2,
+          2.5
+        ],
+        [
+          3.496667,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F32-ring-1",
+          "frame-F32-ring-3"
+        ],
+        "orientZ": -1.5707964,
+        "edgeLength": 6.993334
+      }
+    },
+    {
+      "id": "87a22786-8a59-454e-877f-25f5dd57a576",
+      "name": "frame-F32-ring-3",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.865928,
+          1.5003294,
+          2.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 1.5003294,
+        "joins": [
+          "frame-F32-ring-2",
+          "frame-F32-ring-4"
+        ],
+        "orientZ": -2.359566,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "c837154b-98fc-4e5c-b34d-649a6a113ff3",
+      "name": "frame-F32-ring-4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 15.36,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          0.30119976,
+          2.5
+        ],
+        [
+          7.68,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 0.30119976,
+        "joins": [
+          "frame-F32-ring-3",
+          "frame-F32-ring-5"
+        ],
+        "orientZ": 3.1415927,
+        "edgeLength": 15.36
+      }
+    },
+    {
+      "id": "b8cb7ca8-7f7e-47b3-9d04-0c3c8d50ab41",
+      "name": "frame-F32-ring-5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.865928,
+          1.5003294,
+          2.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 1.5003294,
+        "joins": [
+          "frame-F32-ring-4",
+          "frame-F32-ring-6"
+        ],
+        "orientZ": 2.359566,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "672109e5-2cff-48a8-a404-cc7999a2862c",
+      "name": "frame-F32-ring-6",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 6.993334,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.0988,
+          6.2,
+          2.5
+        ],
+        [
+          3.496667,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F32-ring-5",
+          "frame-F32-ring-7"
+        ],
+        "orientZ": 1.5707964,
+        "edgeLength": 6.993334
+      }
+    },
+    {
+      "id": "5370c28d-5550-4f14-a52e-1100cead500f",
+      "name": "frame-F32-ring-7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.102000006,
+      "thickness": 3.4954844,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.865928,
+          10.899671,
+          2.5
+        ],
+        [
+          1.7477422,
+          0.051000003,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 10.899671,
+        "joins": [
+          "frame-F32-ring-6",
+          "frame-F32-ring-0"
+        ],
+        "orientZ": 0.7820266,
+        "edgeLength": 3.4954844
+      }
+    },
+    {
+      "id": "62499e94-aad8-4c7c-8725-c4a76d9f0420",
+      "name": "frame-F32-chord-dk0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.16,
+      "thickness": 20.275,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.4,
+          2.5
+        ],
+        [
+          10.1375,
+          0.08,
+          0.075
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "TransverseFrame",
+        "assembly": "frame-F32",
+        "stationZ": 32,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F32"
+        ]
+      }
+    },
+    {
+      "id": "1b2b6d61-26c3-4b0e-9c58-e5abdf7ca6f4",
+      "name": "stringer-join-v0-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -7.6295176,
+          12.120824,
+          8.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 26,
+        "deckUp": 12.120824,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "platingJoinVertex": 0,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "4aa503a0-db34-4ccc-ade1-99a2b03ef07d",
+      "name": "stringer-join-v1-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          7.6295176,
+          12.120824,
+          8.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 26,
+        "deckUp": 12.120824,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "platingJoinVertex": 1,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "9497c0fe-3dc0-484d-bf80-57fa9f8aefce",
+      "name": "stringer-join-v2-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.099578,
+          9.675872,
+          8.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 26,
+        "deckUp": 9.675872,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "platingJoinVertex": 2,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "d954c924-cb01-4128-8e70-d2a98513df1b",
+      "name": "stringer-join-v3-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.099578,
+          2.7241278,
+          8.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 26,
+        "deckUp": 2.7241278,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "platingJoinVertex": 3,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "91b89032-cd08-42fc-b1d7-4a89cf374bbc",
+      "name": "stringer-join-v4-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          7.6295176,
+          0.27917594,
+          8.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 26,
+        "deckUp": 0.27917594,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "platingJoinVertex": 4,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "b03e1a19-9c51-4018-a0f7-be4e51a6e4e3",
+      "name": "stringer-join-v5-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -7.6295176,
+          0.27917594,
+          8.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 26,
+        "deckUp": 0.27917594,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "platingJoinVertex": 5,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "031f0614-1218-44f6-9ae5-4e00cfc5b32a",
+      "name": "stringer-join-v6-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.099578,
+          2.7241278,
+          8.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 26,
+        "deckUp": 2.7241278,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "platingJoinVertex": 6,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "ad2221bf-c30b-46e9-85e0-88eabc7c9f9a",
+      "name": "stringer-join-v7-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.099578,
+          9.675872,
+          8.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 26,
+        "deckUp": 9.675872,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "platingJoinVertex": 7,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "2e1111fc-a00b-4989-aa3b-54ebc2663a99",
+      "name": "girder-keel-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.105000004,
+      "thickness": 0.24,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.2475004,
+          8.5
+        ],
+        [
+          0.12,
+          0.052500002,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "girder-keel",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ]
+      }
+    },
+    {
+      "id": "21550a7f-b00a-4108-8506-746f97fd7d9c",
+      "name": "girder-port-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.105000004,
+      "thickness": 0.120000005,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -9.8125,
+          4.2475004,
+          8.5
+        ],
+        [
+          0.060000002,
+          0.052500002,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "girder-port",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ]
+      }
+    },
+    {
+      "id": "44714979-1b3b-4fde-812e-6ed999c0c341",
+      "name": "girder-stbd-bay0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.105000004,
+      "thickness": 0.120000005,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          9.8125,
+          4.2475004,
+          8.5
+        ],
+        [
+          0.060000002,
+          0.052500002,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "girder-stbd",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ]
+      }
+    },
+    {
+      "id": "7fc2b5e1-427b-4317-9e98-ec99817979de",
+      "name": "stringer-join-v0-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -7.6295176,
+          12.120824,
+          4.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 30,
+        "deckUp": 12.120824,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "platingJoinVertex": 0,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "3d3b4b57-1df1-4308-9d7d-0cf02ff08d9e",
+      "name": "stringer-join-v1-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          7.6295176,
+          12.120824,
+          4.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 30,
+        "deckUp": 12.120824,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "platingJoinVertex": 1,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "5ba1ba87-5733-411d-bdbd-7d984dfc85ab",
+      "name": "stringer-join-v2-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.099578,
+          9.675872,
+          4.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 30,
+        "deckUp": 9.675872,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "platingJoinVertex": 2,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "93e4fb68-9342-492c-aac5-242f37ea1c50",
+      "name": "stringer-join-v3-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.099578,
+          2.7241278,
+          4.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 30,
+        "deckUp": 2.7241278,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "platingJoinVertex": 3,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "38b74efb-1339-45e3-85cc-7c20b3608ef7",
+      "name": "stringer-join-v4-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          7.6295176,
+          0.27917594,
+          4.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 30,
+        "deckUp": 0.27917594,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "platingJoinVertex": 4,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "fbaa26b5-f065-493f-bc97-eccef31ea443",
+      "name": "stringer-join-v5-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -7.6295176,
+          0.27917594,
+          4.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 30,
+        "deckUp": 0.27917594,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "platingJoinVertex": 5,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "d51f2dc9-5ca5-40e3-9884-7e2531ccbfa2",
+      "name": "stringer-join-v6-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.099578,
+          2.7241278,
+          4.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 30,
+        "deckUp": 2.7241278,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "platingJoinVertex": 6,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "59b3d1a1-5153-40a2-aee8-1d149ced5c6b",
+      "name": "stringer-join-v7-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.09,
+      "thickness": 0.08,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.099578,
+          9.675872,
+          4.5
+        ],
+        [
+          0.04,
+          0.045,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "plating-join",
+        "stationZ": 30,
+        "deckUp": 9.675872,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "platingJoinVertex": 7,
+        "platingJoin": true
+      }
+    },
+    {
+      "id": "e60efda0-996f-4066-a885-90f0e79b2563",
+      "name": "girder-keel-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.105000004,
+      "thickness": 0.24,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.2475004,
+          4.5
+        ],
+        [
+          0.12,
+          0.052500002,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "girder-keel",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ]
+      }
+    },
+    {
+      "id": "a317cfcb-98d8-4061-a66e-7b66aab8a448",
+      "name": "girder-port-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.105000004,
+      "thickness": 0.120000005,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -9.8125,
+          4.2475004,
+          4.5
+        ],
+        [
+          0.060000002,
+          0.052500002,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "girder-port",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ]
+      }
+    },
+    {
+      "id": "c34248d2-7088-435a-b0db-e7b5eabcf05c",
+      "name": "girder-stbd-bay1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.105000004,
+      "thickness": 0.120000005,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          9.8125,
+          4.2475004,
+          4.5
+        ],
+        [
+          0.060000002,
+          0.052500002,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "LongitudinalGirder",
+        "assembly": "girder-stbd",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ]
+      }
+    },
+    {
+      "id": "c309e8c8-9fb6-42fb-9531-e87e42225e22",
+      "name": "shell-panel-bay0-e0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 14.7456,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          12.136,
+          8.5
+        ],
+        [
+          7.3728,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 26,
+        "deckUp": 12.136,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "orientZ": 0,
+        "edgeLength": 14.7456
+      }
+    },
+    {
+      "id": "a387ff07-da48-4dc8-aa63-600b3150269f",
+      "name": "shell-panel-bay0-e1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 3.355665,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.898795,
+          10.917093,
+          8.5
+        ],
+        [
+          1.6778325,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 26,
+        "deckUp": 10.917093,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "orientZ": -0.7820266,
+        "edgeLength": 3.355665
+      }
+    },
+    {
+      "id": "1e233550-2821-4001-b671-ddec94dca5f7",
+      "name": "shell-panel-bay0-e2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 6.7136,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.136,
+          6.2,
+          8.5
+        ],
+        [
+          3.3568,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 26,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "orientZ": -1.5707964,
+        "edgeLength": 6.7136
+      }
+    },
+    {
+      "id": "56f1bbfc-0981-4f60-8326-a74427248472",
+      "name": "shell-panel-bay0-e3",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 3.355665,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.898795,
+          1.4829067,
+          8.5
+        ],
+        [
+          1.6778325,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 26,
+        "deckUp": 1.4829067,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "orientZ": -2.359566,
+        "edgeLength": 3.355665
+      }
+    },
+    {
+      "id": "a3e604b9-f7ec-42dc-80e2-e66fccdf9276",
+      "name": "shell-panel-bay0-e4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 14.7456,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          0.26399976,
+          8.5
+        ],
+        [
+          7.3728,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 26,
+        "deckUp": 0.26399976,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "orientZ": 3.1415927,
+        "edgeLength": 14.7456
+      }
+    },
+    {
+      "id": "688d1240-445b-4740-97f5-92bfc937848e",
+      "name": "shell-panel-bay0-e5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 3.355665,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.898795,
+          1.4829067,
+          8.5
+        ],
+        [
+          1.6778325,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 26,
+        "deckUp": 1.4829067,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "orientZ": 2.359566,
+        "edgeLength": 3.355665
+      }
+    },
+    {
+      "id": "49dc632f-cab3-4fd3-a3f7-9b045ae47b4d",
+      "name": "shell-panel-bay0-e6",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 6.7136,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.136,
+          6.2,
+          8.5
+        ],
+        [
+          3.3568,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 26,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "orientZ": 1.5707964,
+        "edgeLength": 6.7136
+      }
+    },
+    {
+      "id": "ff9d39b5-b257-4ee8-94cd-e68a100594f1",
+      "name": "shell-panel-bay0-e7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 3.355665,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.898795,
+          10.917093,
+          8.5
+        ],
+        [
+          1.6778325,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 26,
+        "deckUp": 10.917093,
+        "joins": [
+          "frame-F24",
+          "frame-F28"
+        ],
+        "orientZ": 0.7820266,
+        "edgeLength": 3.355665
+      }
+    },
+    {
+      "id": "42b1b581-9524-48f2-a850-ea96f95ec107",
+      "name": "shell-panel-bay1-e0",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 14.7456,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          12.136,
+          4.5
+        ],
+        [
+          7.3728,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 30,
+        "deckUp": 12.136,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "orientZ": 0,
+        "edgeLength": 14.7456
+      }
+    },
+    {
+      "id": "b20fa190-082b-4437-aa4d-847f487908b8",
+      "name": "shell-panel-bay1-e1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 3.355665,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.898795,
+          10.917093,
+          4.5
+        ],
+        [
+          1.6778325,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 30,
+        "deckUp": 10.917093,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "orientZ": -0.7820266,
+        "edgeLength": 3.355665
+      }
+    },
+    {
+      "id": "8bea0d4a-ed69-445d-a237-03af52e85afd",
+      "name": "shell-panel-bay1-e2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 6.7136,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          10.136,
+          6.2,
+          4.5
+        ],
+        [
+          3.3568,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 30,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "orientZ": -1.5707964,
+        "edgeLength": 6.7136
+      }
+    },
+    {
+      "id": "022600aa-2f05-40fc-a7ee-937ed6f9b898",
+      "name": "shell-panel-bay1-e3",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 3.355665,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.898795,
+          1.4829067,
+          4.5
+        ],
+        [
+          1.6778325,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 30,
+        "deckUp": 1.4829067,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "orientZ": -2.359566,
+        "edgeLength": 3.355665
+      }
+    },
+    {
+      "id": "ba57af8d-82c5-42c6-bcb5-1842e1d7952b",
+      "name": "shell-panel-bay1-e4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 14.7456,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          0.26399976,
+          4.5
+        ],
+        [
+          7.3728,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 30,
+        "deckUp": 0.26399976,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "orientZ": 3.1415927,
+        "edgeLength": 14.7456
+      }
+    },
+    {
+      "id": "ad877f80-cd5a-4381-b9a0-ec3580c716d4",
+      "name": "shell-panel-bay1-e5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 3.355665,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.898795,
+          1.4829067,
+          4.5
+        ],
+        [
+          1.6778325,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 30,
+        "deckUp": 1.4829067,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "orientZ": 2.359566,
+        "edgeLength": 3.355665
+      }
+    },
+    {
+      "id": "e54abd76-9189-47b1-97fa-c1db8bc8831a",
+      "name": "shell-panel-bay1-e6",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 6.7136,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -10.136,
+          6.2,
+          4.5
+        ],
+        [
+          3.3568,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 30,
+        "deckUp": 6.2,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "orientZ": 1.5707964,
+        "edgeLength": 6.7136
+      }
+    },
+    {
+      "id": "ce74f4ce-cb00-4c8a-af1e-510cb9c8e5e4",
+      "name": "shell-panel-bay1-e7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04,
+      "thickness": 3.355665,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -8.898795,
+          10.917093,
+          4.5
+        ],
+        [
+          1.6778325,
+          0.02,
+          2.03
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "ShellPanel",
+        "assembly": "bay-shell",
+        "stationZ": 30,
+        "deckUp": 10.917093,
+        "joins": [
+          "frame-F28",
+          "frame-F32"
+        ],
+        "orientZ": 0.7820266,
+        "edgeLength": 3.355665
+      }
+    },
+    {
+      "id": "491cc10f-2ef4-4be3-a1a0-df7d7d929a9d",
+      "name": "deck-sandwich-dk0-bay0-face-top",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.026,
+      "thickness": 18.584,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.387,
+          8.5
+        ],
+        [
+          9.292,
+          0.013,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-rib",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "face"
+      }
+    },
+    {
+      "id": "96edc87f-9bbd-4528-a1e6-9358674da042",
+      "name": "deck-sandwich-dk0-bay0-face-bot",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.026,
+      "thickness": 18.584,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.313,
+          8.5
+        ],
+        [
+          9.292,
+          0.013,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-rib",
+          "deck-sandwich-dk0-bay0-face-top",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "face"
+      }
+    },
+    {
+      "id": "a57862a7-fbfd-49ed-892d-8df54898c04e",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y-8",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -7.9736404,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "4b2d7c6d-7b30-4975-bda7-06becd6d882f",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y-6.8",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -6.8236403,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "716795db-bda4-4951-9d00-13f36d5010b4",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y-5.7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -5.6736403,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "bb7c12be-1354-4567-88e2-1ff0ac3e4ee2",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y-4.5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -4.52364,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "47100174-8a22-4b71-9a84-584806bb4930",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y-3.4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -3.37364,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "35eb1e5f-8f8e-4748-aae8-27b0f84ff38d",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y-2.2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -2.22364,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "a2c2b485-554b-4d93-ad61-37862f89caa5",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y-1.1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -1.07364,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "38a118e4-47f4-4774-8b65-0848639853e9",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y0.1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0.07635999,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "f19edb68-576a-48f6-90ed-64aad11eee43",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y1.2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          1.22636,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "fd62fadf-7e03-489c-9e78-27c0f41f476f",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y2.4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          2.37636,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "d4b767fa-7e56-4de0-b143-e73d4b3071b6",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y3.5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          3.52636,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "079d6d03-774a-4385-999b-9d5f89668f78",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y4.7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          4.67636,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "2cfb6110-4ace-4f66-9eed-7761d60370e7",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y5.8",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          5.82636,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "d1a93065-81dc-4d23-9d3d-3e6e0b666f1a",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          6.9763603,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "28ecf766-1af0-4c3c-902d-148bd0ce953c",
+      "name": "deck-sandwich-dk0-bay0-rib-long-y8.1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.12636,
+          4.35,
+          8.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "6c883955-f05b-4761-8a4e-2b5793da3972",
+      "name": "deck-sandwich-dk0-bay0-rib-ath-z24.7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 16.7256,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          9.827099
+        ],
+        [
+          8.3628,
+          0.02304,
+          0.0125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 24.672901,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "bf612c2d-8356-4a5b-84ea-b7a7f4b67a2e",
+      "name": "deck-sandwich-dk0-bay0-rib-ath-z25.8",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 16.7256,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          8.677099
+        ],
+        [
+          8.3628,
+          0.02304,
+          0.0125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 25.8229,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "b40c6f49-53c4-4d8c-b973-71bdd94cbebf",
+      "name": "deck-sandwich-dk0-bay0-rib-ath-z27",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 16.7256,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          7.5270996
+        ],
+        [
+          8.3628,
+          0.02304,
+          0.0125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26.9729,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "1afd3d5f-92c7-4ea3-9f8b-41b6a7ba9402",
+      "name": "deck-sandwich-dk0-bay0-peri-port",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.03,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -9.276999,
+          4.35,
+          8.5
+        ],
+        [
+          0.015,
+          0.02304,
+          1.964125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "7e5bb47a-07d3-46f2-86e4-824fc143d105",
+      "name": "deck-sandwich-dk0-bay0-peri-stbd",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.03,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          9.276999,
+          4.35,
+          8.5
+        ],
+        [
+          0.015,
+          0.02304,
+          1.964125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 26,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "5c6487dd-50c4-4a73-bc34-1a409beac29e",
+      "name": "deck-sandwich-dk0-bay0-peri-fore",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 17.654799,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          6.4474983
+        ],
+        [
+          8.827399,
+          0.02304,
+          0.015
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 28.052502,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "72226d62-c8e5-4fcd-b252-6477c712f995",
+      "name": "deck-sandwich-dk0-bay0-peri-aft",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 17.654799,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          10.552502
+        ],
+        [
+          8.827399,
+          0.02304,
+          0.015
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 23.947498,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay0-face-top",
+          "deck-sandwich-dk0-bay0-face-bot",
+          "frame-F24",
+          "frame-F28",
+          "frame-F24"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "ec374f20-7ebb-450a-a105-f68dcf11eb03",
+      "name": "deck-sandwich-dk0-bay1-face-top",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.026,
+      "thickness": 18.584,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.387,
+          4.5
+        ],
+        [
+          9.292,
+          0.013,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-rib",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "face"
+      }
+    },
+    {
+      "id": "51715d8c-c609-4a1c-bed1-f17acd13e63e",
+      "name": "deck-sandwich-dk0-bay1-face-bot",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.026,
+      "thickness": 18.584,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.313,
+          4.5
+        ],
+        [
+          9.292,
+          0.013,
+          2.0675
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-rib",
+          "deck-sandwich-dk0-bay1-face-top",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "face"
+      }
+    },
+    {
+      "id": "0cfe6143-b4c2-4fd8-9c3e-6dd2305e520b",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y-8",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -7.9736404,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "546fc8b3-3d0e-4c42-820f-4ccd937873ba",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y-6.8",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -6.8236403,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "5080e378-5e3d-4f80-bb64-20a0c70a50dd",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y-5.7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -5.6736403,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "6bb6754d-9f9a-4896-9205-182d8196f744",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y-4.5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -4.52364,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "55c38875-7257-49b4-9206-5a780cb3d948",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y-3.4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -3.37364,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "048b015c-47b9-4ef7-9b57-b176599ad99a",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y-2.2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -2.22364,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "32897d70-b2f5-4abf-ab94-232f6337d8a6",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y-1.1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -1.07364,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "4ce64432-e161-4106-804f-183eceae67ac",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y0.1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0.07635999,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "32f36bd9-25b2-435e-be03-5b49475b76bb",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y1.2",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          1.22636,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "64f21399-3ef3-487d-9c7c-80b8fb2326f6",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y2.4",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          2.37636,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "0778259f-16c9-411d-823c-f3fff769916e",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y3.5",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          3.52636,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "c3f32515-2f7d-46be-b930-a7f97c82da1a",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y4.7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          4.67636,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "cc94e69f-e67f-4bb6-be8b-2b1268105075",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y5.8",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          5.82636,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "44bd6c9d-63ab-4794-8c12-60cbcf95dbd4",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          6.9763603,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "c4b99b52-0185-424a-93f5-7fa4906cd8f6",
+      "name": "deck-sandwich-dk0-bay1-rib-long-y8.1",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.025,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          8.12636,
+          4.35,
+          4.5
+        ],
+        [
+          0.0125,
+          0.02304,
+          1.8607501
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "51b6c8a8-72d3-4970-bcc7-69b99ed2016b",
+      "name": "deck-sandwich-dk0-bay1-rib-ath-z28.7",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 16.7256,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          5.827099
+        ],
+        [
+          8.3628,
+          0.02304,
+          0.0125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 28.672901,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "2a54ac9b-3902-4cc5-9187-d57403eb4c4c",
+      "name": "deck-sandwich-dk0-bay1-rib-ath-z29.8",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 16.7256,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          4.677099
+        ],
+        [
+          8.3628,
+          0.02304,
+          0.0125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 29.8229,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "fce846e8-548d-4ba4-9fe1-a9239346c609",
+      "name": "deck-sandwich-dk0-bay1-rib-ath-z31",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 16.7256,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          3.5270996
+        ],
+        [
+          8.3628,
+          0.02304,
+          0.0125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30.9729,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "368865d6-69ed-468c-835a-b84af8c6a357",
+      "name": "deck-sandwich-dk0-bay1-peri-port",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.03,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          -9.276999,
+          4.35,
+          4.5
+        ],
+        [
+          0.015,
+          0.02304,
+          1.964125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "67b455f8-2e8c-4d49-a742-093c9cf4518f",
+      "name": "deck-sandwich-dk0-bay1-peri-stbd",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 0.03,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          9.276999,
+          4.35,
+          4.5
+        ],
+        [
+          0.015,
+          0.02304,
+          1.964125
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 30,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "90ddc8f1-f61e-47fe-ad2b-67693bf7ec11",
+      "name": "deck-sandwich-dk0-bay1-peri-fore",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 17.654799,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          2.4474983
+        ],
+        [
+          8.827399,
+          0.02304,
+          0.015
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 32.0525,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32",
+          "frame-F32"
+        ],
+        "deckSurface": "core"
+      }
+    },
+    {
+      "id": "88f07299-cb90-4f1e-ac9e-8df1814a8ba2",
+      "name": "deck-sandwich-dk0-bay1-peri-aft",
+      "layerId": "d1000000-0000-4000-8000-00000000000a",
+      "kind": "box",
+      "shapeId": "e0000000-0000-4000-8000-000000000002",
+      "color": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "radius": 0,
+      "height": 0.04608,
+      "thickness": 17.654799,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "points": [
+        [
+          0,
+          4.35,
+          6.5525017
+        ],
+        [
+          8.827399,
+          0.02304,
+          0.015
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false,
+      "properties": {
+        "interiorOnly": true,
+        "exterior": false,
+        "role": "structure",
+        "structuralRole": "StructuralDeck",
+        "assembly": "deck-dk0",
+        "stationZ": 27.947498,
+        "deckUp": 4.4,
+        "joins": [
+          "deck-sandwich-dk0-bay1-face-top",
+          "deck-sandwich-dk0-bay1-face-bot",
+          "frame-F28",
+          "frame-F32",
+          "frame-F28"
+        ],
+        "deckSurface": "core"
+      }
+    }
+  ],
+  "camera": {
+    "yaw": 0.9,
+    "pitch": 0.42,
+    "distance": 22,
+    "target": [
+      0,
+      4.4,
+      6.5
+    ]
+  },
+  "properties": {
+    "structuralBay": {
+      "stations": [
+        24,
+        28,
+        32
+      ],
+      "bayPitchM": 4,
+      "deckUp": 4.4,
+      "proof": "two-bay-F24-F32"
+    },
+    "structuralJoints": [
+      {
+        "id": "j-frame-F24-chord-dk0-ring",
+        "memberA": "frame-F24-chord-dk0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "chord\u00D7ring"
+        }
+      },
+      {
+        "id": "j-frame-F28-chord-dk0-ring",
+        "memberA": "frame-F28-chord-dk0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "chord\u00D7ring"
+        }
+      },
+      {
+        "id": "j-frame-F32-chord-dk0-ring",
+        "memberA": "frame-F32-chord-dk0",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "chord\u00D7ring"
+        }
+      },
+      {
+        "id": "j-stringer-join-v0-bay0-fore",
+        "memberA": "stringer-join-v0-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v0-bay0-aft",
+        "memberA": "stringer-join-v0-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v1-bay0-fore",
+        "memberA": "stringer-join-v1-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v1-bay0-aft",
+        "memberA": "stringer-join-v1-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v2-bay0-fore",
+        "memberA": "stringer-join-v2-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v2-bay0-aft",
+        "memberA": "stringer-join-v2-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v3-bay0-fore",
+        "memberA": "stringer-join-v3-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v3-bay0-aft",
+        "memberA": "stringer-join-v3-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v4-bay0-fore",
+        "memberA": "stringer-join-v4-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v4-bay0-aft",
+        "memberA": "stringer-join-v4-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v5-bay0-fore",
+        "memberA": "stringer-join-v5-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v5-bay0-aft",
+        "memberA": "stringer-join-v5-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v6-bay0-fore",
+        "memberA": "stringer-join-v6-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v6-bay0-aft",
+        "memberA": "stringer-join-v6-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v7-bay0-fore",
+        "memberA": "stringer-join-v7-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v7-bay0-aft",
+        "memberA": "stringer-join-v7-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-keel-bay0-fore",
+        "memberA": "girder-keel-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.2475004,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-keel-bay0-aft",
+        "memberA": "girder-keel-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.2475004,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-port-bay0-fore",
+        "memberA": "girder-port-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": -9.8125,
+          "up": 4.2475004,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-port-bay0-aft",
+        "memberA": "girder-port-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": -9.8125,
+          "up": 4.2475004,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-stbd-bay0-fore",
+        "memberA": "girder-stbd-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 9.8125,
+          "up": 4.2475004,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-stbd-bay0-aft",
+        "memberA": "girder-stbd-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 9.8125,
+          "up": 4.2475004,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v0-bay1-fore",
+        "memberA": "stringer-join-v0-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v0-bay1-aft",
+        "memberA": "stringer-join-v0-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v1-bay1-fore",
+        "memberA": "stringer-join-v1-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v1-bay1-aft",
+        "memberA": "stringer-join-v1-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v2-bay1-fore",
+        "memberA": "stringer-join-v2-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v2-bay1-aft",
+        "memberA": "stringer-join-v2-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v3-bay1-fore",
+        "memberA": "stringer-join-v3-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v3-bay1-aft",
+        "memberA": "stringer-join-v3-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v4-bay1-fore",
+        "memberA": "stringer-join-v4-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v4-bay1-aft",
+        "memberA": "stringer-join-v4-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v5-bay1-fore",
+        "memberA": "stringer-join-v5-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v5-bay1-aft",
+        "memberA": "stringer-join-v5-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v6-bay1-fore",
+        "memberA": "stringer-join-v6-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v6-bay1-aft",
+        "memberA": "stringer-join-v6-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v7-bay1-fore",
+        "memberA": "stringer-join-v7-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-stringer-join-v7-bay1-aft",
+        "memberA": "stringer-join-v7-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "plating-join\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-keel-bay1-fore",
+        "memberA": "girder-keel-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.2475004,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-keel-bay1-aft",
+        "memberA": "girder-keel-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.2475004,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-port-bay1-fore",
+        "memberA": "girder-port-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": -9.8125,
+          "up": 4.2475004,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-port-bay1-aft",
+        "memberA": "girder-port-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": -9.8125,
+          "up": 4.2475004,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-stbd-bay1-fore",
+        "memberA": "girder-stbd-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 9.8125,
+          "up": 4.2475004,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-girder-stbd-bay1-aft",
+        "memberA": "girder-stbd-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 9.8125,
+          "up": 4.2475004,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "girder\u00D7frame"
+        }
+      },
+      {
+        "id": "j-deck-sandwich-dk0-bay0-fore",
+        "memberA": "deck-sandwich-dk0-bay0",
+        "memberB": "frame-F24",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 24,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "deck\u00D7frame"
+        }
+      },
+      {
+        "id": "j-deck-sandwich-dk0-bay0-aft",
+        "memberA": "deck-sandwich-dk0-bay0",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "deck\u00D7frame"
+        }
+      },
+      {
+        "id": "j-deck-sandwich-dk0-bay1-fore",
+        "memberA": "deck-sandwich-dk0-bay1",
+        "memberB": "frame-F28",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "deck\u00D7frame"
+        }
+      },
+      {
+        "id": "j-deck-sandwich-dk0-bay1-aft",
+        "memberA": "deck-sandwich-dk0-bay1",
+        "memberB": "frame-F32",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.4,
+          "zStem": 32,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "deck\u00D7frame"
+        }
+      },
+      {
+        "id": "j-bay-boundary-F28",
+        "memberA": "frame-F28",
+        "memberB": "girder-keel",
+        "type": "FilletWeld",
+        "geometryValid": true,
+        "interface": {
+          "y": 0,
+          "up": 4.2475004,
+          "zStem": 28,
+          "toleranceM": 0.12
+        },
+        "specification": {
+          "weldClass": "fillet",
+          "notes": "bay0\u2194bay1 at F28"
+        }
+      }
+    ]
+  }
+}

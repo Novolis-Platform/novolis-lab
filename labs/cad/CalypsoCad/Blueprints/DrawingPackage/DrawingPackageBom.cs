@@ -102,6 +102,27 @@ internal static class DrawingPackageBom
                 d.DrawingNumber));
         }
 
+        // Eight continuous knuckle assemblies — one BOM line each, traced to CAL-250 drawing.
+        for (var v = 0; v < 8; v++)
+        {
+            var segs = cad.Entities?.Count(e =>
+                e.Name?.StartsWith($"stringer-knuckle-v{v}-", StringComparison.OrdinalIgnoreCase) == true) ?? 0;
+            var dwg = drawings.FirstOrDefault(d =>
+                d.Category == DrawingCategoryId.KnuckleStringers
+                && string.Equals(d.SubjectId, $"knuckle-v{v}", StringComparison.OrdinalIgnoreCase))?.DrawingNumber;
+            lines.Add(new DrawingPackageBomLine(
+                $"STR-KNUCKLE-V{v}",
+                "knuckle-stringers",
+                $"knuckle-v{v}",
+                $"Continuous hull knuckle stringer · {segs} swept segments · path-driven",
+                "assy",
+                1,
+                null,
+                null,
+                "AISI 316L",
+                dwg));
+        }
+
         var volSeq = 0;
         foreach (var sp in CadJsonStructureQuery.Spaces(cad))
         {
@@ -131,7 +152,8 @@ internal static class DrawingPackageBom
     }
 
     public static IReadOnlyList<DrawingPackageBomLine> FilterStructure(IReadOnlyList<DrawingPackageBomLine> all) =>
-        all.Where(l => l.Category is "structure" or "deck-plates" or "structural-members" or "bulkheads" or "frames")
+        all.Where(l => l.Category is "structure" or "deck-plates" or "structural-members"
+            or "bulkheads" or "frames" or "knuckle-stringers")
             .ToList();
 
     public static IReadOnlyList<DrawingPackageBomLine> FilterVolumes(IReadOnlyList<DrawingPackageBomLine> all) =>

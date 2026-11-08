@@ -1,5 +1,5 @@
 {
-  "generatedUtc": "2026-11-08T03:16:41.3892146Z",
+  "generatedUtc": "2026-11-08T03:31:02.5034882Z",
   "loa": 69,
   "spine": "mid athwart (X=0) \u00D7 mid height (SectionAt.mid) \u00D7 stem\u2192stern",
   "tolX": 0.05,
@@ -134,7 +134,7 @@
     }
   ],
   "semanticRegistry": {
-    "partCount": 1425,
+    "partCount": 1511,
     "assemblyCount": 47,
     "bulkheadPlates": 6,
     "frameAssemblies": 15,
@@ -3210,121 +3210,961 @@
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b4-e0",
+          "Name": "shell-panel-s0-e0",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b4-e4",
+          "Name": "shell-panel-s0-e1",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b5-e0",
+          "Name": "shell-panel-s0-e2",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b5-e4",
+          "Name": "shell-panel-s0-e3",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b6-e0",
+          "Name": "shell-panel-s0-e4",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b6-e4",
+          "Name": "shell-panel-s0-e5",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b7-e0",
+          "Name": "shell-panel-s0-e6",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b7-e4",
+          "Name": "shell-panel-s0-e7",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b8-e0",
+          "Name": "shell-panel-s1-e0",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b8-e4",
+          "Name": "shell-panel-s1-e1",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b9-e0",
+          "Name": "shell-panel-s1-e2",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b9-e4",
+          "Name": "shell-panel-s1-e3",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b10-e0",
+          "Name": "shell-panel-s1-e4",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b10-e4",
+          "Name": "shell-panel-s1-e5",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b11-e0",
+          "Name": "shell-panel-s1-e6",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b11-e4",
+          "Name": "shell-panel-s1-e7",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b12-e0",
+          "Name": "shell-panel-s2-e0",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b12-e4",
+          "Name": "shell-panel-s2-e1",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b13-e0",
+          "Name": "shell-panel-s2-e2",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
         },
         {
-          "Name": "shell-panel-b13-e4",
+          "Name": "shell-panel-s2-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s2-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s2-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s2-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s2-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s3-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s3-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s3-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s3-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s3-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s3-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s3-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s3-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s4-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s4-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s4-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s4-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s4-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s4-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s4-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s4-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s5-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s5-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s5-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s5-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s5-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s5-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s5-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s5-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s6-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s6-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s6-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s6-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s6-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s6-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s6-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s6-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s7-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s7-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s7-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s7-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s7-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s7-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s7-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s7-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s8-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s8-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s8-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s8-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s8-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s8-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s8-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s8-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s9-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s9-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s9-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s9-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s9-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s9-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s9-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s9-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s10-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s10-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s10-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s10-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s10-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s10-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s10-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s10-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s11-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s11-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s11-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s11-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s11-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s11-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s11-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s11-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s12-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s12-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s12-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s12-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s12-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s12-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s12-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s12-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s13-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s13-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s13-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s13-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s13-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s13-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s13-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s13-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s14-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s14-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s14-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s14-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s14-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s14-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s14-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s14-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s15-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s15-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s15-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s15-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s15-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s15-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s15-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s15-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s16-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s16-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s16-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s16-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s16-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s16-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s16-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s16-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s17-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s17-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s17-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s17-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s17-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s17-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s17-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s17-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s18-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s18-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s18-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s18-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s18-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s18-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s18-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s18-e7",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s19-e0",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s19-e1",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s19-e2",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s19-e3",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s19-e4",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s19-e5",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s19-e6",
+          "Role": "ShellPanel",
+          "Assembly": "bay-shell",
+          "IsShell": true
+        },
+        {
+          "Name": "shell-panel-s19-e7",
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
@@ -9090,7 +9930,7 @@
       "GirderGaps": [],
       "Ok": true
     },
-    "RegistryParts": 1425,
+    "RegistryParts": 1511,
     "BulkheadPlates": 6,
     "FrameAssemblies": 15,
     "MissingBulkheads": [],

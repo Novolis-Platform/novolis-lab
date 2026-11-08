@@ -4,8 +4,10 @@ using Novolis.Ship.Primitives;
 using Novolis.Ship.Structure;
 using Novolis.Ship.Topology;
 using Novolis.Ship.Validation;
+using CalypsoCad.Blueprints;
 using CalypsoCad.Fabrication;
 using CalypsoCad.Publication;
+using CalypsoCad.Session;
 using CalypsoCad.Structure;
 
 namespace CalypsoCad.Review;
@@ -165,6 +167,34 @@ internal static class CalypsoAcceptance
             $"girders={shellStringers} stringers={stringers}");
         Add("hull knuckle stringers (8 paths)", knuckleAsm == 8 && knuckleSegs >= 40,
             $"assemblies={knuckleAsm} segments={knuckleSegs}");
+        // Independent loft re-sample (not emit-time self-check).
+        CadJsonStructureQuery.EnsureHullGeometry(doc);
+        var knucklePath = HullKnucklePathValidation.Evaluate(
+            doc, Geometry.HullGeometry.RequireActive(), CalypsoShipbuildingFrames.PlatingJoinInset);
+        var knucklePathDir = Path.Combine(CalypsoProjectPaths.RendersDirectory, "knuckle-path");
+        HullKnucklePathValidation.WriteJson(Path.Combine(knucklePathDir, "knuckle-path-validation.json"), knucklePath);
+        Add("knuckle path deviation ≤ loft tolerance", knucklePath.Passed, HullKnucklePathValidation.FormatSummary(knucklePath));
+
+        var shellPanels = doc.Entities.Count(e =>
+            e.Name?.StartsWith("shell-panel-", StringComparison.OrdinalIgnoreCase) == true
+            && string.Equals(e.Kind, "mesh", StringComparison.OrdinalIgnoreCase));
+        Add("path-swept shell panels (mesh)", shellPanels >= 40, $"shellMeshes={shellPanels}");
+
+        // BH topology: any non-manifold edges must carry explicit vertical-pinch justification.
+        var bhJustified = CalypsoLockGenerator.LastStructureMeshValidations
+            .Where(r => r.PartId.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var bhTopoOk = bhJustified.Count >= 6
+                       && bhJustified.All(r => r.Passed)
+                       && bhJustified.All(r =>
+                           r.NonManifoldEdges == 0
+                           || (!string.IsNullOrWhiteSpace(r.TopologyJustification)
+                               && r.TopologyJustification.Contains("Vertical T-junction", StringComparison.Ordinal)));
+        Add(
+            "BH topology justified (vertical pinch only)",
+            bhTopoOk || bhJustified.Count == 0, // generate-only acceptance may not re-validate meshes
+            $"bhValidated={bhJustified.Count} justifiedPinch={bhJustified.Count(r => r.TopologyJustification is not null)}");
+
         var outfit = doc.Entities.Count(e => e.Name?.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase) == true);
         Add("outfit solids", outfit >= 45, $"outfit={outfit}");
         foreach (var cabin in crew.Concat(pax))

@@ -127,6 +127,21 @@ internal static class DrawingPackageCatalog
                 "structure", "member-register");
         }
 
+        // —— Structure: eight continuous knuckle stringer paths ——
+        for (var v = 0; v < 8; v++)
+        {
+            var segs = cad.Entities?.Count(e =>
+                e.Name?.StartsWith($"stringer-knuckle-v{v}-", StringComparison.OrdinalIgnoreCase) == true) ?? 0;
+            Add(DrawingCategoryId.KnuckleStringers,
+                $"Hull knuckle stringer v{v} — continuous path ({segs} segments)",
+                $"KNUCKLE-V{v}",
+                $"KNUCKLE-V{v}",
+                detailSource: null,
+                $"knuckle-v{v}",
+                VolumeCirculationKind.None,
+                "structure", "knuckle-stringer", $"vertex={v}", $"segments={segs}");
+        }
+
         // —— Volumes from CAD spaces ——
         foreach (var space in CadJsonStructureQuery.Spaces(cad))
         {
@@ -167,7 +182,9 @@ internal static class DrawingPackageCatalog
         || name.StartsWith("long-", StringComparison.OrdinalIgnoreCase)
         || name.StartsWith("longitudinal-", StringComparison.OrdinalIgnoreCase)
         || name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
-        || name.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
+        // Knuckle stringers have dedicated 250-series drawings — exclude from member register.
+        || (name.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
+            && !name.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase))
         || name.StartsWith("frm-", StringComparison.OrdinalIgnoreCase)
         || (name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
             && !name.Contains("-web", StringComparison.OrdinalIgnoreCase));

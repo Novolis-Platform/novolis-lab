@@ -1,0 +1,568 @@
+﻿{
+  "package": "CAL-DNV-REVIEW-001",
+  "generatedUtc": "2026-11-08 03:16 UTC",
+  "lockAuthority": "CAL-INT-GA-001 rev H",
+  "cadModel": "calypso.cadjson",
+  "exportsDirectory": "exports",
+  "acceptanceOk": false,
+  "reviewOk": true,
+  "acceptance": [
+    {
+      "Name": "LOA 69",
+      "Ok": true,
+      "Detail": "got 69"
+    },
+    {
+      "Name": "faceted OML mesh (not blob box)",
+      "Ok": true,
+      "Detail": "kind=mesh inds=336"
+    },
+    {
+      "Name": "IML nest shell present",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "no fake exterior pods",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "fore interiors clipped into hull",
+      "Ok": true,
+      "Detail": "clipped=4"
+    },
+    {
+      "Name": "outerHull property = manufacturer",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "five CREW_1..5 (DK-001 C1\u2013C5)",
+      "Ok": true,
+      "Detail": "CREW_1,CREW_2,CREW_3,CREW_4,CREW_5"
+    },
+    {
+      "Name": "five PAX_1..5 (DK-001 P1\u2013P5)",
+      "Ok": true,
+      "Detail": "PAX_1,PAX_2,PAX_3,PAX_4,PAX_5"
+    },
+    {
+      "Name": "CREW_1 clear W \u2248 1.92",
+      "Ok": true,
+      "Detail": "got 1,92"
+    },
+    {
+      "Name": "CREW_1 clear F\u2013A \u2248 7.2",
+      "Ok": true,
+      "Detail": "got 7,2"
+    },
+    {
+      "Name": "CORR_P clear \u2265 3 m (DK-001)",
+      "Ok": true,
+      "Detail": "got 3"
+    },
+    {
+      "Name": "deck drawing property",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "structure mass attached",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "D3 vacuum-assisted",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "D3 closed under vacuum",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "HOLD-P-DKM1 standard open hatch",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "walk tour from HOLD aft",
+      "Ok": true,
+      "Detail": "waypoints=974"
+    },
+    {
+      "Name": "walk eyes clamped (no wall pass-through)",
+      "Ok": true,
+      "Detail": "waypoints=974"
+    },
+    {
+      "Name": "topology has spaces",
+      "Ok": true,
+      "Detail": "count=41"
+    },
+    {
+      "Name": "validator no errors",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "frame rings (octagon \u002B bays)",
+      "Ok": true,
+      "Detail": "frames=184"
+    },
+    {
+      "Name": "longitudinal girders (was stringer bays)",
+      "Ok": true,
+      "Detail": "girders=93 stringers=160"
+    },
+    {
+      "Name": "hull knuckle stringers (8 paths)",
+      "Ok": true,
+      "Detail": "assemblies=8 segments=160"
+    },
+    {
+      "Name": "outfit solids",
+      "Ok": true,
+      "Detail": "outfit=222"
+    },
+    {
+      "Name": "furnished CREW_1",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished CREW_2",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished CREW_3",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished CREW_4",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished CREW_5",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished PAX_1",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished PAX_2",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished PAX_3",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished PAX_4",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "furnished PAX_5",
+      "Ok": true,
+      "Detail": "pieces=4"
+    },
+    {
+      "Name": "aft ramp solid",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "aft door coaming",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "hatches on partition walls",
+      "Ok": true,
+      "Detail": "onPartition=16/16"
+    },
+    {
+      "Name": "passageway hatch frames (room doors)",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "no floating passage-portal bars",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "passageway spaces without partition walls",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "outfit BRIDGE",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "outfit CREW_1",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "outfit GALLEY",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "outfit ENG",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "outfit HOLD",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "no 0.25 m compartment stubs",
+      "Ok": true,
+      "Detail": "stubs=0"
+    },
+    {
+      "Name": "open hatch coverage",
+      "Ok": true,
+      "Detail": "visited=31/31 reachable (100 %)"
+    },
+    {
+      "Name": "multi-deck circulation",
+      "Ok": true,
+      "Detail": "decks=3"
+    },
+    {
+      "Name": "outfit BRIDGE-console",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "bridge captain chair",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "bridge pilot consoles",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "bridge watch seats (8)",
+      "Ok": true,
+      "Detail": "seats=8"
+    },
+    {
+      "Name": "bridge pilot forward of captain",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "frame bay \u2264 4 m (station-driven)",
+      "Ok": true,
+      "Detail": "frames=15 bh=6 stations=21 maxBay=4 target=4"
+    },
+    {
+      "Name": "no wall-like webs across HOLD cargo void",
+      "Ok": true,
+      "Detail": "holdWebSolids=0"
+    },
+    {
+      "Name": "HOLD perimeter frames present",
+      "Ok": true,
+      "Detail": "holdPerimeterBars=8"
+    },
+    {
+      "Name": "outfit LOUNGE-bar",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "outfit HOLD-gantry",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "HOLD C40 stack 5\u00D73 (15)",
+      "Ok": true,
+      "Detail": "c40=15"
+    },
+    {
+      "Name": "airlock leaves both sides",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "airlock chambers present (A\u002BB \u00D7 port/stbd)",
+      "Ok": true,
+      "Detail": "airlockSpaces=4"
+    },
+    {
+      "Name": "passage interface hatches",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "airlock triple to SPACE (D1/D2/D3 both sides)",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "compartment bulkheads (limited structural BH)",
+      "Ok": true,
+      "Detail": "bhSolids=23"
+    },
+    {
+      "Name": "transverse open web frames",
+      "Ok": true,
+      "Detail": "frameSteel=63 profiles=17"
+    },
+    {
+      "Name": "bay frames not wall-like",
+      "Ok": true,
+      "Detail": "tallWebSolids=0"
+    },
+    {
+      "Name": "structure/outfit inside IML",
+      "Ok": true,
+      "Detail": "violations=0"
+    },
+    {
+      "Name": "bow footprints inside IML",
+      "Ok": true,
+      "Detail": "violations=0"
+    },
+    {
+      "Name": "no floating portal knees",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "deck longitudinal girders",
+      "Ok": true,
+      "Detail": "girders=93"
+    },
+    {
+      "Name": "transverse deck beams at frames",
+      "Ok": true,
+      "Detail": "deckBeams=25"
+    },
+    {
+      "Name": "primary skeleton before interiors",
+      "Ok": true,
+      "Detail": "struct@2 space@1333 partition@-1 outfit@2149"
+    },
+    {
+      "Name": "HOLD stem longitudinal girders",
+      "Ok": true,
+      "Detail": "holdGirders=15"
+    },
+    {
+      "Name": "structural metadata on steel",
+      "Ok": true,
+      "Detail": "tagged=1371"
+    },
+    {
+      "Name": "semantic registry classifies primary structure",
+      "Ok": true,
+      "Detail": "parts=1371 bhPlates=6 unclassified=0"
+    },
+    {
+      "Name": "semantic assembly validation (BH plates \u002B graph)",
+      "Ok": true,
+      "Detail": "bh=6 frames=15 isolated/gaps via graph.Ok=True"
+    },
+    {
+      "Name": "cellular sandwich face\u002Bribs",
+      "Ok": true,
+      "Detail": "faceTop=43 ribs=588"
+    },
+    {
+      "Name": "frame\u2194girder join stubs",
+      "Ok": true,
+      "Detail": "joins=72"
+    },
+    {
+      "Name": "critical deck seats (BH\u00D7deck \u002B frame\u00D7deck)",
+      "Ok": true,
+      "Detail": "deckSeats=41"
+    },
+    {
+      "Name": "critical structure connected (BH\u2194frame\u2194deck)",
+      "Ok": true,
+      "Detail": "bh\u2192deck orphans=0/29; frame\u2192deck orphans=0/15; decks=3"
+    },
+    {
+      "Name": "DNV review: review package id on document",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "DNV review: units SI (m)",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "DNV review: coordinate frame documented",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "DNV review: lock authority cited",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "DNV review: manufacturer OML cited",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "DNV review: deck drawing cited",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "DNV review: compartments traceable to deck drawing",
+      "Ok": true,
+      "Detail": "41/41"
+    },
+    {
+      "Name": "DNV review: S-STRUCT in layer catalog",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "DNV review: primary structure on S-STRUCT",
+      "Ok": true,
+      "Detail": "onLayer=348/348"
+    },
+    {
+      "Name": "DNV review: OML skin mass statement",
+      "Ok": true,
+      "Detail": "242,948 t @ t=8 mm"
+    },
+    {
+      "Name": "DNV review: exterior vacuum closure (D3) registered",
+      "Ok": true,
+      "Detail": "D3-P"
+    },
+    {
+      "Name": "DNV review: hold cargo hatch registered",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "DNV review: frame-first ring webs",
+      "Ok": true,
+      "Detail": "ring\u002Bchord=63 profiles=17"
+    },
+    {
+      "Name": "DNV review: no portal knee solids",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "fab release: fab manifest on document",
+      "Ok": false,
+      "Detail": ""
+    }
+  ],
+  "review": [
+    {
+      "Name": "review package id on document",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "units SI (m)",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "coordinate frame documented",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "lock authority cited",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "manufacturer OML cited",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "deck drawing cited",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "compartments traceable to deck drawing",
+      "Ok": true,
+      "Detail": "41/41"
+    },
+    {
+      "Name": "S-STRUCT in layer catalog",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "primary structure on S-STRUCT",
+      "Ok": true,
+      "Detail": "onLayer=348/348"
+    },
+    {
+      "Name": "OML skin mass statement",
+      "Ok": true,
+      "Detail": "242,948 t @ t=8 mm"
+    },
+    {
+      "Name": "exterior vacuum closure (D3) registered",
+      "Ok": true,
+      "Detail": "D3-P"
+    },
+    {
+      "Name": "hold cargo hatch registered",
+      "Ok": true,
+      "Detail": ""
+    },
+    {
+      "Name": "frame-first ring webs",
+      "Ok": true,
+      "Detail": "ring\u002Bchord=63 profiles=17"
+    },
+    {
+      "Name": "no portal knee solids",
+      "Ok": true,
+      "Detail": ""
+    }
+  ],
+  "visualAnnex": [
+    "layer-cutaway-structure.png",
+    "layer-cutaway-fitout.png",
+    "orbit-cutaway-long.png",
+    "plan-deck-0.png",
+    "interior-solid-bridge.png",
+    "interior-cutaway-portCorridor.png",
+    "layer-structure-wire.png",
+    "orbit-bow-quarter.png"
+  ]
+}

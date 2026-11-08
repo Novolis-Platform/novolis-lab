@@ -9,6 +9,15 @@ namespace CalypsoCad.Structure;
 /// </summary>
 internal static class StructureMeshValidation
 {
+    /// <summary>
+    /// Explicit justification when vertical pinch-point edges (>2 faces) are accepted.
+    /// Null when the mesh is fully manifold or when non-vertical non-manifold fails the gate.
+    /// </summary>
+    public const string PassagePinchJustification =
+        "Vertical T-junction edges at passage opening / outer-perimeter junctions: " +
+        "extruded plate shares those edges with portal wall faces. Edges are not open leaks; " +
+        "pressure continuity is via closed face loops. Non-vertical non-manifold edges remain failures.";
+
     public sealed record Result(
         string PartId,
         float StationZStem,
@@ -24,7 +33,8 @@ internal static class StructureMeshValidation
         int VertexCount,
         bool Passed,
         IReadOnlyList<string> Failures,
-        IReadOnlyList<string> Checks);
+        IReadOnlyList<string> Checks,
+        string? TopologyJustification = null);
 
     public static Result Validate(
         string partId,
@@ -86,10 +96,15 @@ internal static class StructureMeshValidation
         else
             checks.Add("closed solid: no open boundary edges");
 
+        string? topologyJustification = null;
         if (nonVerticalNonManifold != 0)
-            failures.Add($"nonManifoldEdges={nonManifold}");
+            failures.Add($"nonManifoldEdges={nonManifold} (non-vertical pinch not allowed)");
         else if (nonManifold != 0)
+        {
+            topologyJustification = PassagePinchJustification;
             checks.Add($"pinch-point vertical non-manifold edges={nonManifold}");
+            checks.Add($"topologyJustification: {PassagePinchJustification}");
+        }
         else
             checks.Add("manifold: no edge with >2 faces");
 
@@ -134,7 +149,8 @@ internal static class StructureMeshValidation
             mesh.VertexCount,
             failures.Count == 0,
             failures,
-            checks);
+            checks,
+            topologyJustification);
     }
 
     public static void WriteJsonReport(string path, IEnumerable<Result> results)
@@ -155,6 +171,7 @@ internal static class StructureMeshValidation
             triangleCount = r.TriangleCount,
             vertexCount = r.VertexCount,
             passed = r.Passed,
+            topologyJustification = r.TopologyJustification,
             failures = r.Failures,
             checks = r.Checks,
         });

@@ -1,6 +1,7 @@
 using CalypsoCad.Geometry;
 using CalypsoCad.Structure;
 using Novolis.Cad.Primitives;
+using CadDocument = Novolis.Cad.Primitives.CadDocument;
 
 namespace CalypsoCad.Generation.Longitudinal;
 
@@ -10,6 +11,9 @@ namespace CalypsoCad.Generation.Longitudinal;
 /// </summary>
 internal static class LongitudinalStructureGenerator
 {
+    /// <summary>Last knuckle path deviation report from the most recent generate.</summary>
+    public static HullKnucklePathValidation.Report? LastKnucklePathReport { get; private set; }
+
     public static void Generate(
         List<CadEntity> entities,
         float loa,
@@ -34,9 +38,16 @@ internal static class LongitudinalStructureGenerator
         foreach (var d in knuckle.Diagnostics)
             Console.Error.WriteLine($"  {d}");
 
-        // Shell plating strips still bay-scoped (P2 — path-swept plates later).
-        CalypsoShipbuildingFrames.AddOuterHullShellPlating(
-            entities, loa, topo.Web, ordinaryFrames);
+        // Path-swept shell plates on the same joint stations as knuckle paths.
+        CalypsoShipbuildingFrames.AddOuterHullShellPlating(entities, loa, topo.Web, jointZs);
+
+        // Independent loft re-sample gate (written under docs/renders on headless / acceptance).
+        var knuckleReport = HullKnucklePathValidation.Evaluate(
+            new CadDocument { Entities = entities }, context.Hull, CalypsoShipbuildingFrames.PlatingJoinInset);
+        LastKnucklePathReport = knuckleReport;
+        foreach (var fail in knuckleReport.Segments.Where(s => !s.Passed).Take(8))
+            Console.Error.WriteLine(
+                $"  FAIL knuckle path {fail.PartId}: deviation={fail.DeviationM:0.###}m @z={fail.MidZ:0.##}");
 
         Func<float, bool> inHold = context.Constraints.InCargoClearance;
         CalypsoShipbuildingFrames.AddFrameGirderJoinStubs(

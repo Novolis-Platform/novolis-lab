@@ -1,7 +1,7 @@
 {
   "package": "CAL-DWG-PACKAGE",
   "rev": "A",
-  "generatedUtc": "2026-11-08T03:16:40.4752797Z",
+  "generatedUtc": "2026-11-08T03:31:01.4356770Z",
   "standards": [
     "ISO 5457",
     "ISO 7200",
@@ -38,6 +38,12 @@
       "code": "240",
       "folder": "200-structure/240-structural-members",
       "title": "Structural members",
+      "discipline": "Structure"
+    },
+    {
+      "code": "250",
+      "folder": "200-structure/250-knuckle-stringers",
+      "title": "Knuckle stringers",
       "discipline": "Structure"
     },
     {
@@ -572,7 +578,7 @@
     {
       "DrawingNumber": "CAL-240-008",
       "Label": "MEM-REG-08",
-      "Title": "Structural members register \u2014 sheet 8 (40 ids)",
+      "Title": "Structural members register \u2014 sheet 8 (1 ids)",
       "category": "StructuralMembers",
       "categoryCode": "240",
       "RelativePath": "200-structure/240-structural-members/CAL-240-008-MEMBERS-08.html",
@@ -584,59 +590,131 @@
       ]
     },
     {
-      "DrawingNumber": "CAL-240-009",
-      "Label": "MEM-REG-09",
-      "Title": "Structural members register \u2014 sheet 9 (40 ids)",
-      "category": "StructuralMembers",
-      "categoryCode": "240",
-      "RelativePath": "200-structure/240-structural-members/CAL-240-009-MEMBERS-09.html",
-      "SubjectId": "members-9",
+      "DrawingNumber": "CAL-250-001",
+      "Label": "KNUCKLE-V0",
+      "Title": "Hull knuckle stringer v0 \u2014 continuous path (20 segments)",
+      "category": "KnuckleStringers",
+      "categoryCode": "250",
+      "RelativePath": "200-structure/250-knuckle-stringers/CAL-250-001-KNUCKLE-V0.html",
+      "SubjectId": "knuckle-v0",
       "volume": "None",
       "Tags": [
         "structure",
-        "member-register"
+        "knuckle-stringer",
+        "vertex=0",
+        "segments=20"
       ]
     },
     {
-      "DrawingNumber": "CAL-240-010",
-      "Label": "MEM-REG-10",
-      "Title": "Structural members register \u2014 sheet 10 (40 ids)",
-      "category": "StructuralMembers",
-      "categoryCode": "240",
-      "RelativePath": "200-structure/240-structural-members/CAL-240-010-MEMBERS-10.html",
-      "SubjectId": "members-10",
+      "DrawingNumber": "CAL-250-002",
+      "Label": "KNUCKLE-V1",
+      "Title": "Hull knuckle stringer v1 \u2014 continuous path (20 segments)",
+      "category": "KnuckleStringers",
+      "categoryCode": "250",
+      "RelativePath": "200-structure/250-knuckle-stringers/CAL-250-002-KNUCKLE-V1.html",
+      "SubjectId": "knuckle-v1",
       "volume": "None",
       "Tags": [
         "structure",
-        "member-register"
+        "knuckle-stringer",
+        "vertex=1",
+        "segments=20"
       ]
     },
     {
-      "DrawingNumber": "CAL-240-011",
-      "Label": "MEM-REG-11",
-      "Title": "Structural members register \u2014 sheet 11 (40 ids)",
-      "category": "StructuralMembers",
-      "categoryCode": "240",
-      "RelativePath": "200-structure/240-structural-members/CAL-240-011-MEMBERS-11.html",
-      "SubjectId": "members-11",
+      "DrawingNumber": "CAL-250-003",
+      "Label": "KNUCKLE-V2",
+      "Title": "Hull knuckle stringer v2 \u2014 continuous path (20 segments)",
+      "category": "KnuckleStringers",
+      "categoryCode": "250",
+      "RelativePath": "200-structure/250-knuckle-stringers/CAL-250-003-KNUCKLE-V2.html",
+      "SubjectId": "knuckle-v2",
       "volume": "None",
       "Tags": [
         "structure",
-        "member-register"
+        "knuckle-stringer",
+        "vertex=2",
+        "segments=20"
       ]
     },
     {
-      "DrawingNumber": "CAL-240-012",
-      "Label": "MEM-REG-12",
-      "Title": "Structural members register \u2014 sheet 12 (1 ids)",
-      "category": "StructuralMembers",
-      "categoryCode": "240",
-      "RelativePath": "200-structure/240-structural-members/CAL-240-012-MEMBERS-12.html",
-      "SubjectId": "members-12",
+      "DrawingNumber": "CAL-250-004",
+      "Label": "KNUCKLE-V3",
+      "Title": "Hull knuckle stringer v3 \u2014 continuous path (20 segments)",
+      "category": "KnuckleStringers",
+      "categoryCode": "250",
+      "RelativePath": "200-structure/250-knuckle-stringers/CAL-250-004-KNUCKLE-V3.html",
+      "SubjectId": "knuckle-v3",
       "volume": "None",
       "Tags": [
         "structure",
-        "member-register"
+        "knuckle-stringer",
+        "vertex=3",
+        "segments=20"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-250-005",
+      "Label": "KNUCKLE-V4",
+      "Title": "Hull knuckle stringer v4 \u2014 continuous path (20 segments)",
+      "category": "KnuckleStringers",
+      "categoryCode": "250",
+      "RelativePath": "200-structure/250-knuckle-stringers/CAL-250-005-KNUCKLE-V4.html",
+      "SubjectId": "knuckle-v4",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "knuckle-stringer",
+        "vertex=4",
+        "segments=20"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-250-006",
+      "Label": "KNUCKLE-V5",
+      "Title": "Hull knuckle stringer v5 \u2014 continuous path (20 segments)",
+      "category": "KnuckleStringers",
+      "categoryCode": "250",
+      "RelativePath": "200-structure/250-knuckle-stringers/CAL-250-006-KNUCKLE-V5.html",
+      "SubjectId": "knuckle-v5",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "knuckle-stringer",
+        "vertex=5",
+        "segments=20"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-250-007",
+      "Label": "KNUCKLE-V6",
+      "Title": "Hull knuckle stringer v6 \u2014 continuous path (20 segments)",
+      "category": "KnuckleStringers",
+      "categoryCode": "250",
+      "RelativePath": "200-structure/250-knuckle-stringers/CAL-250-007-KNUCKLE-V6.html",
+      "SubjectId": "knuckle-v6",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "knuckle-stringer",
+        "vertex=6",
+        "segments=20"
+      ]
+    },
+    {
+      "DrawingNumber": "CAL-250-008",
+      "Label": "KNUCKLE-V7",
+      "Title": "Hull knuckle stringer v7 \u2014 continuous path (20 segments)",
+      "category": "KnuckleStringers",
+      "categoryCode": "250",
+      "RelativePath": "200-structure/250-knuckle-stringers/CAL-250-008-KNUCKLE-V7.html",
+      "SubjectId": "knuckle-v7",
+      "volume": "None",
+      "Tags": [
+        "structure",
+        "knuckle-stringer",
+        "vertex=7",
+        "segments=20"
       ]
     },
     {

@@ -207,27 +207,27 @@ internal static class CalypsoShipbuildingFrames
         Geometry.HullGeometry.RequireActive().InnerOctagonRing(zStem, skinInset);
 
     /// <summary>
-    /// Shell plating strips between consecutive ordinary-frame stations.
-    /// Knuckle stringers are emitted by <c>HullKnuckleStringerGenerator</c> (path-swept).
+    /// Path-swept shell plating between structural joint stations (same Z set as knuckle paths).
+    /// Each facet is a ruled thin plate between consecutive knuckles at z0 and z1.
     /// </summary>
     public static void AddOuterHullShellPlating(
         List<CadEntity> entities,
         float loa,
         float web,
-        IReadOnlyList<(string Id, float ZStem, bool BowAligned)>? frameStations = null)
+        IReadOnlyList<float> jointZsStem)
     {
-        if (frameStations is not { Count: >= 2 })
+        if (jointZsStem.Count < 2)
             return;
-        for (var i = 0; i < frameStations.Count - 1; i++)
+        var zs = jointZsStem.OrderBy(z => z).ToList();
+        for (var i = 0; i < zs.Count - 1; i++)
         {
-            var (id0, z0, _) = frameStations[i];
-            var (id1, z1, _) = frameStations[i + 1];
-            if (z1 - z0 < 0.4f)
+            var z0 = zs[i];
+            var z1 = zs[i + 1];
+            if (z1 - z0 < 0.35f)
                 continue;
-            var fore = id0.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id0 : $"frame-{id0}";
-            var aft = id1.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id1 : $"frame-{id1}";
             AddShellPlatingStripsBetweenFrames(
-                entities, loa, z0, z1, web, $"b{i}", fore, aft);
+                entities, loa, z0, z1, web, $"s{i}",
+                $"z{z0:0.#}", $"z{z1:0.#}");
         }
     }
 
@@ -248,7 +248,8 @@ internal static class CalypsoShipbuildingFrames
         _ = zStart;
         _ = zEnd;
         _ = frameBay;
-        AddOuterHullShellPlating(entities, loa, web, frameStations);
+        var zs = (frameStations ?? []).Select(f => f.ZStem).ToList();
+        AddOuterHullShellPlating(entities, loa, web, zs);
     }
 
     /// <summary>
@@ -276,7 +277,10 @@ internal static class CalypsoShipbuildingFrames
         _ = aftFrame;
     }
 
-    /// <summary>Shell plate facets between plating-join vertices for one frame bay.</summary>
+    /// <summary>
+    /// Shell plate facets as ruled meshes between knuckle edges at z0 and z1
+    /// (follows hull taper — not a mid-bay axis-aligned box).
+    /// </summary>
     public static void AddShellPlatingStripsBetweenFrames(
         List<CadEntity> entities,
         float loa,
@@ -287,41 +291,51 @@ internal static class CalypsoShipbuildingFrames
         string foreFrame,
         string aftFrame)
     {
-        var zc = (z0 + z1) * 0.5f;
-        var halfLenZ = (z1 - z0) * 0.5f + web * 0.2f;
-        var ring = InnerOctagonRing(zc, PlatingJoinInset);
-        var (cy, cu) = ring.GetSectionCenter();
+        var ring0 = InnerOctagonRing(z0, PlatingJoinInset);
+        var ring1 = InnerOctagonRing(z1, PlatingJoinInset);
+        if (ring0.Length != ring1.Length || ring0.Length < 3)
+            return;
+        var (cy0, cu0) = ring0.GetSectionCenter();
+        var (cy1, cu1) = ring1.GetSectionCenter();
         var t = MathF.Max(0.04f, web * 0.22f);
-        for (var i = 0; i < ring.Length; i++)
+        var zc = (z0 + z1) * 0.5f;
+        for (var i = 0; i < ring0.Length; i++)
         {
-            var a = ring[i];
-            var b = ring[(i + 1) % ring.Length];
-            var dy = b.Y - a.Y;
-            var du = b.Up - a.Up;
-            var len = MathF.Sqrt(dy * dy + du * du);
-            if (len < 0.2f)
+            var a0 = ring0[i];
+            var b0 = ring0[(i + 1) % ring0.Length];
+            var a1 = ring1[i];
+            var b1 = ring1[(i + 1) % ring1.Length];
+            var edge0 = MathF.Sqrt((b0.Y - a0.Y) * (b0.Y - a0.Y) + (b0.Up - a0.Up) * (b0.Up - a0.Up));
+            if (edge0 < 0.15f)
                 continue;
-            var y = (a.Y + b.Y) * 0.5f;
-            var up = (a.Up + b.Up) * 0.5f;
-            var inwardY = cy - y;
-            var inwardU = cu - up;
-            var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
-            if (inwardLen > 1e-4f)
-            {
-                y += inwardY / inwardLen * (t * 0.6f);
-                up += inwardU / inwardLen * (t * 0.6f);
-            }
 
-            var angle = MathF.Atan2(du, dy);
-            CalypsoLockGenerator.TryAddOrientedStructureBar(
-                entities, loa, $"shell-panel-{bayTag}-e{i}", y, up, zc,
-                halfAlongEdge: len * 0.48f,
-                halfFlange: t * 0.5f,
-                halfDepthZ: halfLenZ,
-                orientZ: angle,
-                meta: new StructuralSolidMeta(
-                    StructuralRoles.ShellPanel, "bay-shell",
-                    StationZ: zc, DeckUp: up, Joins: [foreFrame, aftFrame]));
+            var midY0 = (a0.Y + b0.Y) * 0.5f;
+            var midU0 = (a0.Up + b0.Up) * 0.5f;
+            var midY1 = (a1.Y + b1.Y) * 0.5f;
+            var midU1 = (a1.Up + b1.Up) * 0.5f;
+            var inY = ((cy0 - midY0) + (cy1 - midY1)) * 0.5f;
+            var inU = ((cu0 - midU0) + (cu1 - midU1)) * 0.5f;
+            var inLen = MathF.Sqrt(inY * inY + inU * inU);
+            var ny = inLen > 1e-4f ? inY / inLen : 0f;
+            var nu = inLen > 1e-4f ? inU / inLen : 0f;
+
+            var wa0 = CalypsoLockGenerator.LockToWorldPublic(a0.Y, a0.Up, z0, loa);
+            var wb0 = CalypsoLockGenerator.LockToWorldPublic(b0.Y, b0.Up, z0, loa);
+            var wa1 = CalypsoLockGenerator.LockToWorldPublic(a1.Y, a1.Up, z1, loa);
+            var wb1 = CalypsoLockGenerator.LockToWorldPublic(b1.Y, b1.Up, z1, loa);
+            // Inward in lock Y/Up maps to CAD (+X, +Y); Z component unused for section normal.
+            var inward = new System.Numerics.Vector3(ny, nu, 0f);
+            if (inward.LengthSquared() < 1e-8f)
+                inward = System.Numerics.Vector3.UnitX;
+
+            var mesh = ShellPanelMesh.Build(wa0, wb0, wa1, wb1, inward, t);
+            var name = $"shell-panel-{bayTag}-e{i}";
+            var meta = new StructuralSolidMeta(
+                StructuralRoles.ShellPanel, "bay-shell",
+                StationZ: zc, DeckUp: (midU0 + midU1) * 0.5f, Joins: [foreFrame, aftFrame]);
+            if (!CalypsoLockGenerator.TryAddStructureMesh(
+                    entities, loa, name, zc, mesh, fabPartId: $"P-SHELL-{bayTag}-E{i}", meta: meta))
+                continue;
         }
     }
 

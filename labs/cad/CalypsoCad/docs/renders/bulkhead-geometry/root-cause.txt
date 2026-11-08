@@ -1,12 +1,12 @@
-Root cause (bulkhead triangular artifacts):
+Root cause (bulkhead triangular artifacts) — FIXED:
 1. MESH GENERATION — PolygonWithHolesExtrude.BridgeHoles silently skipped openings when
    bridging/triangulation failed, and ExtrudeAlongZ fell back to a solid outer-only plate.
-   EarClip could return a partial triangle set. That produced plates with missing openings
-   and incomplete material coverage (large arbitrary triangles filling what should be openings
-   or leaving gaps).
-2. CUTAWAY — DrawStructureMesh culled a triangle only when ALL three vertices were on the
-   excluded side, so triangles straddling the cut plane were drawn whole (fake large faces).
+   Fail-closed extrusion now rejects hole skip / solid fallback / incomplete triangulation.
+2. CUTAWAY — DrawStructureMesh now clips triangles against the cut plane with section caps.
 
-Fixes: fail-closed extrusion (no hole skip / no solid fallback / complete triangulation +
-coverage checks), welded watertight walls, TryAddStructureMesh geometric validation, and
-true cut-plane clipping with section caps. Triangulation edges are diagnostic-only.
+Topology justification (remaining vertical non-manifold edges):
+Passage openings that meet the outer perimeter create vertical T-junction edges in the
+extruded solid (plate faces + portal wall faces share the edge). These are NOT open
+boundary leaks. StructureMeshValidation fails any non-vertical non-manifold edge, and
+records TopologyJustification = PassagePinchJustification for accepted vertical pinch
+edges. See bulkhead-geometry-validation.json field topologyJustification.

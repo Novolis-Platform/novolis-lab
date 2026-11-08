@@ -8,6 +8,7 @@ internal enum DrawingCategoryId
     Frames = 220,
     DeckPlates = 230,
     StructuralMembers = 240,
+    KnuckleStringers = 250,
     ShirtSleeves = 310,
     AirlockAnteroom = 320,
     Airlock = 330,
