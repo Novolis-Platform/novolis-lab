@@ -1,5 +1,7 @@
 # Calypso internals drawings (retired Node HTML)
 
+Terminology: [`CAL-STRUCT-GLOSSARY.md`](CAL-STRUCT-GLOSSARY.md) — structural / CAD glossary (ring frame vs BH, knuckle paths, sandwich decks, semantic pipeline).
+
 HTML blueprint sheets are emitted by **C#** only:
 
 ```powershell

@@ -22,6 +22,7 @@ Shared CAD primitives stay in libraries (`Novolis.Cad.*`, `Novolis.Ship.*`, `Nov
 ```text
 Program.cs          CLI router only
 docs/               lock + manufacturer + renders (content)
+docs/internals/     ISO blueprints + CAL-STRUCT-GLOSSARY.md
 tools/              one-off scripts (not compiled into the host)
 ```
 
