@@ -14,7 +14,7 @@
     "vertexCount": 0,
     "passed": false,
     "failures": [
-      "bh-CROSS-AFT: watertight solid validation failed \u2014 nonManifoldEdges=7; volume 11.33731 vs expected 34.36024 (rel 67.0 %)."
+      "bh-CROSS-AFT: watertight solid validation failed \u2014 nonManifoldEdges=7."
     ],
     "checks": []
   }
