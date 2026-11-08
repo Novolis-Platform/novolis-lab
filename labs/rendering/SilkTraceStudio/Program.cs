@@ -8,8 +8,9 @@ namespace SilkTraceStudio;
 
 internal static class Program
 {
-    private const int OrbitSamplesPerFrame = 16;
-    private const int AccumulateSamplesPerBatch = 4;
+    private const int OrbitSamplesPerFrame = 24;
+    // Larger batches amortize the single GPU→CPU framebuffer download after resident accumulation.
+    private const int AccumulateSamplesPerBatch = 16;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomSensitivity = 0.15f;
 

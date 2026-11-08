@@ -10,7 +10,7 @@ namespace SilkTraceHello;
 internal static class Program
 {
     private const int OrbitSamplesPerFrame = 16;
-    private const int AccumulateSamplesPerBatch = 4;
+    private const int AccumulateSamplesPerBatch = 16;
 
     public static void Main()
     {
