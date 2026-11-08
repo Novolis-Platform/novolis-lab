@@ -77,6 +77,7 @@ internal sealed class CalypsoObjectBrowser : UserControl
         isolates.Children.Add(ActionBtn("Deck 0", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectDeck0Supports)));
         isolates.Children.Add(ActionBtn("Cargo fl", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectCargoFloorSupports)));
         isolates.Children.Add(ActionBtn("All long.", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectAllLongitudinalLoadBearing)));
+        isolates.Children.Add(ActionBtn("Int.supp", () => IsolateCategory(HeadlessFrameInteriorInspectionExporter.CollectInteriorSupports)));
 
         var root = new StackPanel { Spacing = 2 };
         root.Children.Add(Header("Object browser"));

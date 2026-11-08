@@ -11,4 +11,6 @@ internal static class StructuralRoles
     public const string ShellPanel = "ShellPanel";
     public const string ShellStiffener = "ShellStiffener";
     public const string StructuralBracket = "StructuralBracket";
+    public const string PartitionAttachment = "PartitionAttachment";
+    public const string PortalFrame = "PortalFrame";
 }

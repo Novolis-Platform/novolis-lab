@@ -58,5 +58,21 @@ internal enum CadPartKind
     ServiceComponent,
     CargoContainer,
     ThrustMember,
+
+    /// <summary>Vertical secondary member at a longitudinal partition × ring-frame intersection.</summary>
+    PartitionAttachmentPost,
+
+    /// <summary>Horizontal/inclined secondary attachment edge for partition panels.</summary>
+    PartitionAttachmentRail,
+
+    /// <summary>Vertical member at a passageway opening edge.</summary>
+    PortalJamb,
+
+    /// <summary>Horizontal member above a passageway clear opening.</summary>
+    PortalHeader,
+
+    /// <summary>Physical connection between partition support and primary framing.</summary>
+    PartitionTieBracket,
+
     Unknown,
 }

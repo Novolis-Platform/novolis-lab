@@ -2463,7 +2463,11 @@ internal sealed class CalypsoRenderer
                 Model.CadPartKind.DeckBeam =>
                     CalypsoVisualLayers.Longitudinals | outer,
                 Model.CadPartKind.BulkheadPlate => CalypsoVisualLayers.Bulkheads,
-                Model.CadPartKind.StructuralBracket => CalypsoVisualLayers.Joinery,
+                Model.CadPartKind.StructuralBracket
+                    or Model.CadPartKind.PartitionTieBracket => CalypsoVisualLayers.Joinery,
+                Model.CadPartKind.PartitionAttachmentPost or Model.CadPartKind.PartitionAttachmentRail
+                    or Model.CadPartKind.PortalJamb or Model.CadPartKind.PortalHeader =>
+                    CalypsoVisualLayers.Frames | CalypsoVisualLayers.Joinery,
                 Model.CadPartKind.DeckPanel => DeckPlateFlags(box) | outer,
                 Model.CadPartKind.LongitudinalGirder or Model.CadPartKind.ThrustMember
                     or Model.CadPartKind.DeckEdgeGirder =>
@@ -2492,8 +2496,10 @@ internal sealed class CalypsoRenderer
             var role = roleEl.GetString() ?? "";
             if (string.Equals(role, "TransverseFrame", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Frames | outer;
-            if (string.Equals(role, "StructuralBracket", StringComparison.OrdinalIgnoreCase))
-                return CalypsoVisualLayers.Joinery;
+            if (string.Equals(role, "StructuralBracket", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(role, "PartitionAttachment", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(role, "PortalFrame", StringComparison.OrdinalIgnoreCase))
+                return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Joinery;
             if (string.Equals(role, "PressureBulkhead", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Bulkheads;
             if (string.Equals(role, "StructuralDeck", StringComparison.OrdinalIgnoreCase))
@@ -2524,6 +2530,11 @@ internal sealed class CalypsoRenderer
             || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Longitudinals
                    | CalypsoVisualLayers.OuterHull;
+        if (n.Contains("-int-post-", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-int-jamb-", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-int-hdr-", StringComparison.OrdinalIgnoreCase)
+            || n.Contains("-int-rail-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Joinery;
         if (n.Contains("-join-", StringComparison.OrdinalIgnoreCase)
             || n.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Joinery;

@@ -607,6 +607,21 @@ internal static class CalypsoAcceptance
             && e.Name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase));
         Add("no arbitrary frame×girder join stubs", joinStubs == 0, $"joins={joinStubs}");
 
+        var intPosts = entities.Count(e =>
+            e.Name?.Contains("-int-post-", StringComparison.OrdinalIgnoreCase) == true);
+        var intJambs = entities.Count(e =>
+            e.Name?.Contains("-int-jamb-", StringComparison.OrdinalIgnoreCase) == true);
+        var intHdrs = entities.Count(e =>
+            e.Name?.Contains("-int-hdr-", StringComparison.OrdinalIgnoreCase) == true);
+        Add("frame interior partition posts", intPosts >= 8, $"posts={intPosts}");
+        Add("frame interior portal jambs", intJambs >= 8, $"jambs={intJambs}");
+        Add("frame interior portal headers", intHdrs >= 4, $"headers={intHdrs}");
+        var attach = Export.PartitionAttachmentValidator.Evaluate(doc, layout: null);
+        Add(
+            "partition posts clear of passage envelopes",
+            attach.PassageViolations == 0,
+            $"passageHits={attach.PassageViolations}");
+
         var deckSeats = entities.Count(e =>
             e.Name?.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase) == true);
         Add("critical deck seats (BH×deck + frame×deck)", deckSeats >= 24, $"deckSeats={deckSeats}");

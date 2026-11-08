@@ -61,6 +61,12 @@ internal static class Program
             return;
         }
 
+        if (HasFlag(args, "--frame-interior"))
+        {
+            Environment.ExitCode = CalypsoAcceptanceGates.FrameInteriorInspection();
+            return;
+        }
+
         if (HasFlag(args, "--bulkhead-mesh"))
         {
             Environment.ExitCode = CalypsoAcceptanceGates.BulkheadMesh();

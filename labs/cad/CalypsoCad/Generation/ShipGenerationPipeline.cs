@@ -4,6 +4,7 @@ using CalypsoCad.Generation.Decks;
 using CalypsoCad.Generation.Longitudinal;
 using CalypsoCad.Generation.Transverse;
 using CalypsoCad.Geometry;
+using CalypsoCad.Layout;
 using CalypsoCad.Model;
 using CalypsoCad.Publication;
 using CalypsoCad.Structure;
@@ -27,8 +28,10 @@ internal static class ShipGenerationPipeline
         float doorH,
         float sill,
         float apronD,
-        float tShell)
+        float tShell,
+        CompartmentLayout? compartmentLayout = null)
     {
+        var layout = compartmentLayout ?? new CompartmentLayout { DeckUps = topo.DeckUps, TPlate = topo.TPlate };
         // Stage 1 — design model; station-driven schedule (BH anchors → fill ring frames).
         var bhSchedule = CalypsoBulkheads.BuildSchedule(loa, bhStationMap);
         var framing = FrameSchedule.Create(
@@ -90,7 +93,7 @@ internal static class ShipGenerationPipeline
         }
 
         // Stage 3b — ring frames (schedule already excludes BH stations; hold → perimeter-only).
-        void PlaceFrame(string id, float zStem, bool bowAligned = false)
+        void PlaceFrame(string id, float zStem, bool bowAligned, AssemblyId frameAsm)
         {
             var skin = tShell + 0.05f;
             var halfDepthZ = topo.Web * 0.5f;
@@ -121,6 +124,15 @@ internal static class ShipGenerationPipeline
                     entities, loa, z, frameName, topo.Web, halfDepthZ, topo.DeckUps, gaps, topo.TPlate,
                     topo.OpenAtriumSpans);
             }
+
+            // Secondary interior supports from compartment layout (not solid webs).
+            if (!bowAligned)
+            {
+                var interior = FrameInteriorSupportGenerator.Generate(
+                    entities, loa, frameName, frameAsm, z, topo.Web, halfDepthZ, layout, context);
+                foreach (var d in interior.Diagnostics.Take(4))
+                    Console.Error.WriteLine($"  {d}");
+            }
         }
 
         foreach (var fr in ordinaryFrames)
@@ -137,7 +149,9 @@ internal static class ShipGenerationPipeline
                 fr.BowAligned,
                 HoldPerimeterOnly: context.Constraints.InCargoClearance(fr.ZStem),
                 topo.DeckUps);
-            _ = TransverseStructureGenerator.GenerateRingFrame(spec, context, entities, PlaceFrame);
+            _ = TransverseStructureGenerator.GenerateRingFrame(
+                spec, context, entities,
+                (id, z, bow) => PlaceFrame(id, z, bow, asmId));
         }
 
         // Stage 4 — longitudinal (path-swept knuckle stringers + deck girders)

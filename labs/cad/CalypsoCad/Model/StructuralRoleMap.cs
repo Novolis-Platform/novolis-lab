@@ -32,6 +32,10 @@ internal static class StructuralRoleMap
                 (CadSystem.Hull, CadPartKind.HullStringer, PartFunction.LoadBearing | PartFunction.HullAttached),
             StructuralRoles.StructuralBracket =>
                 (CadSystem.Transverse, CadPartKind.StructuralBracket, PartFunction.LoadBearing),
+            StructuralRoles.PartitionAttachment =>
+                (CadSystem.Transverse, CadPartKind.PartitionAttachmentPost, PartFunction.LoadBearing),
+            StructuralRoles.PortalFrame =>
+                (CadSystem.Transverse, CadPartKind.PortalJamb, PartFunction.LoadBearing),
             _ => (CadSystem.Transverse, CadPartKind.Unknown, PartFunction.None),
         };
     }
@@ -58,6 +62,27 @@ internal static class StructuralRoleMap
                     StructuralRoles.PressureBulkhead, asm)
                 : (CadSystem.Transverse, CadPartKind.StructuralBracket, PartFunction.LoadBearing,
                     StructuralRoles.StructuralBracket, asm);
+        }
+
+        if (name.Contains("-int-post-", StringComparison.OrdinalIgnoreCase))
+        {
+            var asm = AssemblyFromFrameName(name);
+            return (CadSystem.Transverse, CadPartKind.PartitionAttachmentPost, PartFunction.LoadBearing,
+                StructuralRoles.PartitionAttachment, asm);
+        }
+
+        if (name.Contains("-int-jamb-", StringComparison.OrdinalIgnoreCase))
+        {
+            var asm = AssemblyFromFrameName(name);
+            return (CadSystem.Transverse, CadPartKind.PortalJamb, PartFunction.LoadBearing,
+                StructuralRoles.PortalFrame, asm);
+        }
+
+        if (name.Contains("-int-hdr-", StringComparison.OrdinalIgnoreCase))
+        {
+            var asm = AssemblyFromFrameName(name);
+            return (CadSystem.Transverse, CadPartKind.PortalHeader, PartFunction.LoadBearing,
+                StructuralRoles.PortalFrame, asm);
         }
 
         if (name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))

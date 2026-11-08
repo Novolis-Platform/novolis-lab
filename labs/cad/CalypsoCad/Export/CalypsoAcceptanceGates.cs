@@ -71,6 +71,56 @@ internal static class CalypsoAcceptanceGates
         }
     }
 
+    public static int FrameInteriorInspection()
+    {
+        Console.WriteLine("CalypsoCad frame-interior inspection (A–F)");
+        var failures = 0;
+        void Check(string name, bool ok, string detail = "")
+        {
+            if (ok)
+            {
+                Console.WriteLine($"  OK  {name}");
+                return;
+            }
+
+            failures++;
+            Console.WriteLine($"  FAIL {name}{(string.IsNullOrEmpty(detail) ? "" : ": " + detail)}");
+        }
+
+        try
+        {
+            return CalypsoHeadlessHost.WithViewport((session, renderer) =>
+            {
+                Publication.CadDocumentAdapter.LoadFromDocument(session.Document);
+                var stills = HeadlessFrameInteriorInspectionExporter.Export(session, renderer);
+                Check("inspection PNGs A–F", stills.Count >= 6, $"count={stills.Count}");
+
+                var reportPath = Path.Combine(
+                    CalypsoProjectPaths.RendersDirectory, "frame-interior", "partition-attachment.json");
+                Check("partition attachment report", File.Exists(reportPath), reportPath);
+
+                var posts = session.Document.Entities.Count(e =>
+                    e.Name?.Contains("-int-post-", StringComparison.OrdinalIgnoreCase) == true);
+                var jambs = session.Document.Entities.Count(e =>
+                    e.Name?.Contains("-int-jamb-", StringComparison.OrdinalIgnoreCase) == true);
+                Check("partition posts present", posts >= 8, $"posts={posts}");
+                Check("portal jambs present", jambs >= 8, $"jambs={jambs}");
+
+                Console.WriteLine(failures == 0
+                    ? "CalypsoCad frame-interior inspection OK"
+                    : $"CalypsoCad frame-interior inspection FAILED ({failures})");
+                return failures == 0 ? 0 : 1;
+            });
+        }
+        catch (Exception ex)
+        {
+            Check("frame-interior pipeline", false, ex.Message);
+            Console.Error.WriteLine(ex);
+            Console.WriteLine($"CalypsoCad frame-interior inspection FAILED ({failures})");
+            return 1;
+        }
+    }
+
     public static int StructureInspection()
     {
         Console.WriteLine("CalypsoCad structure inspection (semantic A–E)");

@@ -2240,6 +2240,9 @@ internal static class CalypsoLockGenerator
         var sill = lockDoc.Hold?.Sill is > 0 ? (float)lockDoc.Hold.Sill : 0.25f;
         var apron = lockDoc.Hold?.ApronD is > 0 ? (float)lockDoc.Hold.ApronD : 12.25f;
 
+        // Layout before frame internals — walls may fabricate later from the same definitions.
+        var compartmentLayout = BuildCompartmentLayout(lockDoc, topo, bhStationMap);
+
         // Semantic pipeline: define assemblies → generate geometry → validate → publish via entities list.
         return Generation.ShipGenerationPipeline.RunStructure(
             entities,
@@ -2252,7 +2255,136 @@ internal static class CalypsoLockGenerator
             doorH,
             sill,
             apron,
-            TShell);
+            TShell,
+            compartmentLayout);
+    }
+
+    /// <summary>
+    /// Shared compartment / circulation layout for structure + later partition emit.
+    /// </summary>
+    private static Layout.CompartmentLayout BuildCompartmentLayout(
+        CalypsoLockDocument lockDoc,
+        StructuralTopology topo,
+        IReadOnlyDictionary<string, float> bhStationMap)
+    {
+        var circ = lockDoc.Circulation;
+        var corrInner = circ?.CorrInner is > 0 ? (float)circ.CorrInner : 5f;
+        var corrOuter = circ?.CorrOuter is > 0 ? (float)circ.CorrOuter : 8f;
+        var corrW = circ?.CorrW is > 0 ? (float)circ.CorrW : 3f;
+        var accessW = circ?.AccessW is > 0 ? (float)circ.AccessW : 3f;
+        var roomH = lockDoc.Decks?.RoomH is > 1 ? (float)lockDoc.Decks.RoomH : 3.2f;
+        var tPlate = topo.TPlate;
+
+        var compartments = new List<Layout.CompartmentBound>();
+        var longPart = new List<Layout.LongitudinalPartitionPath>();
+        var transPart = new List<Layout.TransversePartitionPath>();
+        var passages = new List<Layout.PassageEnvelope>();
+
+        foreach (var comp in lockDoc.Compartments ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(comp.Id))
+                continue;
+            var id = comp.Id!;
+            var isPass = IsPassagewaySpace(id);
+            var isHold = string.Equals(id, "HOLD", StringComparison.OrdinalIgnoreCase);
+            var isEng = string.Equals(id, "ENG", StringComparison.OrdinalIgnoreCase);
+            var deckNum = 0;
+            if (comp.Deck.ValueKind == JsonValueKind.Number && comp.Deck.TryGetInt32(out var di))
+                deckNum = di;
+            else if (comp.Deck.ValueKind == JsonValueKind.String)
+            {
+                var ds = comp.Deck.GetString() ?? "";
+                if (int.TryParse(ds, out var dn))
+                    deckNum = dn;
+            }
+
+            var bound = new Layout.CompartmentBound(
+                id,
+                deckNum,
+                (float)comp.Z0,
+                (float)comp.Z1,
+                (float)comp.Y0,
+                (float)comp.Y1,
+                (float)comp.Up0,
+                (float)comp.Up1,
+                isPass,
+                isHold,
+                isEng);
+            compartments.Add(bound);
+
+            if (isPass)
+            {
+                foreach (var (d, up0, up1) in ExpandDecks(comp, lockDoc))
+                {
+                    _ = d;
+                    passages.Add(new Layout.PassageEnvelope(
+                        id,
+                        bound.Y0,
+                        bound.Y1,
+                        bound.Z0,
+                        bound.Z1,
+                        up0,
+                        MathF.Abs(bound.Y1 - bound.Y0),
+                        MathF.Min(roomH - 0.2f, MathF.Max(2.0f, up1 - up0 - 0.3f))));
+                    longPart.Add(new Layout.LongitudinalPartitionPath(
+                        $"{id}-d{d}-y0", bound.Y0, bound.Z0, bound.Z1, up0, up1, id, IsPassageBoundary: true));
+                    longPart.Add(new Layout.LongitudinalPartitionPath(
+                        $"{id}-d{d}-y1", bound.Y1, bound.Z0, bound.Z1, up0, up1, id, IsPassageBoundary: true));
+                }
+
+                continue;
+            }
+
+            if (isHold || isEng)
+                continue;
+
+            // Cabin / service longitudinal walls (Y faces).
+            longPart.Add(new Layout.LongitudinalPartitionPath(
+                $"{id}-y0", bound.Y0, bound.Z0, bound.Z1, bound.Up0, bound.Up1, id, IsPassageBoundary: false));
+            longPart.Add(new Layout.LongitudinalPartitionPath(
+                $"{id}-y1", bound.Y1, bound.Z0, bound.Z1, bound.Up0, bound.Up1, id, IsPassageBoundary: false));
+
+            foreach (var zFace in new[] { bound.Z0, bound.Z1 })
+            {
+                var onBh = bhStationMap.Values.Any(bz => MathF.Abs(bz - zFace) < 0.35f);
+                transPart.Add(new Layout.TransversePartitionPath(
+                    $"{id}-z{zFace:0.#}",
+                    zFace,
+                    bound.Y0,
+                    bound.Y1,
+                    bound.Up0,
+                    bound.Up1,
+                    id,
+                    onBh));
+            }
+        }
+
+        // ACCESS on CL forward of CROSS when present in circulation extents.
+        const float PassageZ0 = 13f;
+        const float CrossZ0 = 19f;
+        if (!passages.Any(p => p.Id.StartsWith("ACCESS", StringComparison.OrdinalIgnoreCase)))
+        {
+            var half = accessW * 0.5f;
+            passages.Add(new Layout.PassageEnvelope(
+                "ACCESS", -half, half, PassageZ0, CrossZ0, topo.DeckUps.Count > 1 ? topo.DeckUps[1] : 4.4f,
+                accessW, MathF.Min(roomH - 0.2f, 2.1f)));
+        }
+
+        _ = (corrInner, corrOuter, corrW);
+        return new Layout.CompartmentLayout
+        {
+            Compartments = compartments,
+            LongitudinalPartitions = longPart,
+            TransversePartitions = transPart,
+            Passages = passages,
+            DeckUps = topo.DeckUps,
+            TPlate = tPlate,
+            RoomClearH = roomH,
+            DoorClearH = 2.1f,
+            CorrInner = corrInner,
+            CorrOuter = corrOuter,
+            CorrW = corrW,
+        };
     }
 
     private static List<float> DeckStructureElevations(CalypsoLockDocument lockDoc)
