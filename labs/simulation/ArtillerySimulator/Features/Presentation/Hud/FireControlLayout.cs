@@ -19,7 +19,7 @@ internal static class FireControlLayout
         var bh = 42f * scale;
         var bx = 8f;
         var by = height - 180f * scale;
-        buttons.Add(new FireControlUiButton("charge-toggle", bx, by, bw, bh, $"CHARGE  {gun.ChargeLabel.ToUpperInvariant()}", selected: true));
+        buttons.Add(new FireControlUiButton("charge-toggle", bx, by, bw, bh, $"CHARGE  {gun.ChargeLabel.ToUpperInvariant()}", true));
         if (chargeMenuOpen)
         {
             for (var i = 0; i < gun.Spec.Charges.Count; i++)

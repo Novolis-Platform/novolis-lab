@@ -15,8 +15,8 @@ internal sealed class ArtilleryAgentSnapshotBuilder(
         var shot = play.Shot;
         var terrain = play.Terrain;
         var impact = shot.Impact;
-        var lines = BuildStatusLines(gun, shot, terrain, impact);
-        var summary = BuildSummary(gun, shot, impact);
+        var lines = BuildStatusLines();
+        var summary = BuildSummary();
 
         return new AgentSnapshot
         {
@@ -77,12 +77,12 @@ internal sealed class ArtilleryAgentSnapshotBuilder(
         };
     }
 
-    private Dictionary<string, string> BuildStatusLines(
-        GunRuntime gun,
-        BallisticShot shot,
-        BattleTerrain terrain,
-        BallisticImpact? impact)
+    private Dictionary<string, string> BuildStatusLines()
     {
+        var gun = play.Gun;
+        var shot = play.Shot;
+        var terrain = play.Terrain;
+        var impact = shot.Impact;
         var lines = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["elevation"] = gun.ElevationDegrees.ToString("F1", CultureInfo.InvariantCulture),
@@ -155,8 +155,11 @@ internal sealed class ArtilleryAgentSnapshotBuilder(
         return lines;
     }
 
-    private string BuildSummary(GunRuntime gun, BallisticShot shot, BallisticImpact? impact)
+    private string BuildSummary()
     {
+        var gun = play.Gun;
+        var shot = play.Shot;
+        var impact = shot.Impact;
         var defense = play.Mission?.Observation();
         var crewNote = play.Crew.Ready(gun) ? "" : " " + play.Crew.Phrase(gun);
         return impact is { } recorded

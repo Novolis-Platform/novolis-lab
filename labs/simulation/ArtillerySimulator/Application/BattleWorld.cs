@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Novolis.Physics.Ballistics;
 using Novolis.Silk;
@@ -6,7 +5,7 @@ using Novolis.Silk;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Play kernel: gun, mission, fixed-step battle, command apply.
+/// Play kernel composition root: wires session, command apply, bootstrap, and frame loop.
 /// No Silk frame loop, no agent host, no particle/audio wiring (see <see cref="BattlePresentationBinder"/>).
 /// </summary>
 internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
@@ -27,6 +26,11 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     private readonly ArtilleryBattleLoop _battle;
     private readonly ArtilleryAudioHub? _audio;
     private readonly BattleSession _session;
+    private readonly FireAuthorizationRules _fireRules;
+    private readonly BattleCommandApplier _commandApplier;
+    private readonly LevelTransitionService _levelTransitions;
+    private readonly BattleWorldBootstrap _bootstrap;
+    private readonly BattleFrameCoordinator _frames;
 
     private GunModel _gun = null!;
     private ProjectileBallisticSimulation _ballistics = null!;
@@ -87,6 +91,54 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             logs.CreateLogger<ArtilleryAudioHub>());
         _presentation.Bind(this, _audio);
 
+        _fireRules = new FireAuthorizationRules(() => _gun, _crew, _aim, () => _mission);
+        _commandApplier = new BattleCommandApplier(
+            _terrain,
+            _session,
+            _crew,
+            _rounds,
+            _battle,
+            _aim,
+            _camera,
+            _fireRules,
+            () => _gun,
+            () => IsPaused,
+            log);
+        _levelTransitions = new LevelTransitionService(
+            _session,
+            _crew,
+            _rounds,
+            _battle,
+            _aim,
+            _shell,
+            log);
+        _bootstrap = new BattleWorldBootstrap(
+            _terrain,
+            _session,
+            _crew,
+            _rounds,
+            _battle,
+            _aim,
+            _camera,
+            _shell,
+            _input,
+            log);
+        _frames = new BattleFrameCoordinator(
+            _session,
+            _rounds,
+            _battle,
+            _camera,
+            _input,
+            _ui,
+            _shell,
+            _terrain,
+            () => _gun,
+            () => _worldReady,
+            () => IsPaused,
+            _fireRules,
+            () => _mission,
+            log);
+
         _log.LogInformation(
             "Session ready: level={LevelId} piece={PieceId} seed={Seed} skipShell={SkipShell}",
             level.Id,
@@ -115,14 +167,14 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     public IDefenseMission? Mission => _mission;
     public BattleSession Session => _session;
     public DeliverySampler Delivery => _session.Delivery;
-    public float PredictedRangeMeters => _aim.PredictedRangeMeters();
+    public float PredictedRangeMeters => _fireRules.PredictedRangeMeters;
     public string CameraModeName => "Orbit";
     public string PaceText => "realtime";
-    public bool LaunchDetonation => PredictedRangeMeters < _gun.Spec.LaunchClearanceMeters;
-    public bool BelowHeMin => !LaunchDetonation && PredictedRangeMeters < _gun.Spec.MinEffectiveRangeMeters;
-    public bool SolutionUnsafe => LaunchDetonation || BelowHeMin;
-    public bool IsMissionTerminal => _mission?.IsTerminal == true;
-    public MissionOutcome MissionOutcome => _mission?.Outcome ?? MissionOutcome.Open;
+    public bool LaunchDetonation => _fireRules.LaunchDetonation;
+    public bool BelowHeMin => _fireRules.BelowHeMin;
+    public bool SolutionUnsafe => _fireRules.SolutionUnsafe;
+    public bool IsMissionTerminal => _fireRules.IsMissionTerminal;
+    public MissionOutcome MissionOutcome => _fireRules.MissionOutcome;
 
     public FrameViewModel CreateFrameViewModel() => new()
     {
@@ -157,120 +209,15 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             },
         });
 
-    public void BindPiece(IArtilleryPieceSpec piece)
-    {
-        _session.RebindPiece(piece);
-        _gun = new GunModel(piece);
-        _ballistics = new ProjectileBallisticSimulation(piece.Projectile, DragCoefficientLaw.BoatTail);
-        _aim.Bind(_gun, _ballistics);
-        _battle.Bind(_gun, _crew, _ballistics);
-        _aim.MarkDirty();
-    }
+    public void BindPiece(IArtilleryPieceSpec piece) =>
+        _levelTransitions.BindPiece(piece, ref _gun, ref _ballistics);
 
-    public void SelectLevel(int delta)
-    {
-        var next = GameLevelCatalog.NextPlayable(_shell.Level, delta);
-        if (string.Equals(next.Id, _shell.Level.Id, StringComparison.OrdinalIgnoreCase))
-            return;
+    public void SelectLevel(int delta) =>
+        _levelTransitions.SelectLevel(delta, ref _gun, ref _ballistics);
 
-        _shell.SetLevel(next);
-        BindPiece(next.ResolvePiece());
-        _rounds.ResetAll(_battle.ImpactHandled);
-        _log.LogInformation("Selected level {LevelId}", next.Id);
-    }
+    public BattleCommandResult Apply(BattleCommand command) => _commandApplier.Apply(command);
 
-    public BattleCommandResult Apply(BattleCommand command) =>
-        command.Kind switch
-        {
-            BattleCommandKind.Aim => ApplyAim(command),
-            BattleCommandKind.Charge => ApplyCharge(command),
-            BattleCommandKind.Fire => ApplyFire(),
-            BattleCommandKind.FollowCamera => ApplyFollow(command.FollowShell),
-            _ => BattleCommandResult.Fail("unavailable", "Unknown battle command."),
-        };
-
-    private BattleCommandResult ApplyAim(BattleCommand command)
-    {
-        if (IsPaused)
-            return BattleCommandResult.Fail("paused", "Battle clock paused — resume (Esc) before commanding the gun.");
-
-        var elev = Math.Clamp(command.ElevationDegrees, _gun.Spec.MinElevationDegrees, _gun.Spec.MaxElevationDegrees);
-        _crew.OrderAim(_gun, elev, command.AzimuthDegrees);
-        _aim.Rebuild(_crew);
-        var message = _crew.Ready(_gun)
-            ? string.Create(CultureInfo.InvariantCulture, $"On lay at {_crew.OrderedElevation:F1}° elevation, {_crew.OrderedAzimuth:F1}° azimuth.")
-            : string.Create(CultureInfo.InvariantCulture, $"Laying to {_crew.OrderedElevation:F1}° / {_crew.OrderedAzimuth:F1}°. Tube at {_gun.ElevationDegrees:F1}° / {_gun.AzimuthDegrees:F1}°.");
-        return BattleCommandResult.Ok(message);
-    }
-
-    private BattleCommandResult ApplyCharge(BattleCommand command)
-    {
-        if (IsPaused)
-            return BattleCommandResult.Fail("paused", "Battle clock paused — resume (Esc) before commanding the gun.");
-
-        var index = command.ChargeIndex;
-        if (index < 0 || index >= _gun.Spec.Charges.Count)
-            return BattleCommandResult.Fail("invalid-arguments", $"Charge index must be 0..{_gun.Spec.Charges.Count - 1}.");
-
-        _crew.OrderCharge(_gun, index);
-        _aim.Rebuild(_crew);
-        var message = _crew.Ready(_gun)
-            ? string.Create(CultureInfo.InvariantCulture, $"Charge {_gun.ChargeLabel} ({_gun.MuzzleSpeedMps:F0} m/s).")
-            : string.Create(CultureInfo.InvariantCulture, $"Charge {_gun.ChargeLabel} ({_gun.MuzzleSpeedMps:F0} m/s). {_crew.Phrase(_gun)}");
-        return BattleCommandResult.Ok(message);
-    }
-
-    private BattleCommandResult ApplyFire()
-    {
-        if (IsPaused)
-            return BattleCommandResult.Fail("paused", "Battle clock paused — resume (Esc) before commanding the gun.");
-
-        if (FireBlockReason() is { } blocked)
-            return BattleCommandResult.Fail("unavailable", blocked);
-
-        _crew.SnapTube(_gun);
-        var muzzle = _gun.MuzzlePosition(_terrain.GunBaseline);
-        var delivery = _session.Delivery.SampleFire(_gun.ElevationDegrees, _gun.AzimuthDegrees, _gun.MuzzleSpeedMps);
-        var fireDir = GunModel.DirectionOf(delivery.ElevationDegrees, delivery.AzimuthDegrees);
-        _rounds.Active = _rounds.Acquire(_camera.FollowProjectile, _battle.ImpactHandled);
-        _rounds.Active.Begin(_gun.CreateProjectileState(muzzle, fireDir, delivery.MuzzleSpeedMps));
-        _battle.ImpactHandled.Remove(_rounds.Active);
-        _battle.NotifyFired(muzzle, fireDir);
-        _crew.BeginReload();
-        _battle.KillcamActive = _camera.FollowProjectile;
-        _aim.MarkDirty();
-        _log.LogDebug(
-            "Fired {Charge} at elev={Elev:F1} az={Az:F1}",
-            _gun.ChargeLabel,
-            _gun.ElevationDegrees,
-            _gun.AzimuthDegrees);
-        return BattleCommandResult.Ok("Round away. Impact will arrive as artillery.impact.", _rounds.Active);
-    }
-
-    private BattleCommandResult ApplyFollow(bool followShell)
-    {
-        _camera.FollowProjectile = followShell;
-        _battle.KillcamActive = followShell;
-        return BattleCommandResult.Ok(followShell ? "Camera follows the shell." : "Camera follows the gun.");
-    }
-
-    public string? FireBlockReason()
-    {
-        if (IsMissionTerminal)
-            return MissionOutcome switch
-            {
-                MissionOutcome.Held => "City held — mission complete.",
-                MissionOutcome.Fratricide => "Fratricide — mission lost.",
-                MissionOutcome.ObjectiveLost => "Crossing lost — mission over.",
-                _ => "Mission complete.",
-            };
-
-        if (!_crew.BreechReady)
-            return _crew.Phrase(_gun);
-        if (LaunchDetonation)
-            return "No clearance — predicted detonation at the piece.";
-        return null;
-    }
+    public string? FireBlockReason() => _fireRules.FireBlockReason();
 
     public void NudgeOrder(float deltaElevationDegrees, float deltaTraverseDegrees)
     {
@@ -295,91 +242,15 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
 
     public void ShowMapOverview() => _camera.ShowMapOverview(_terrain.EastMeters, _terrain.NorthMeters);
 
-    public void LoadWorld()
-    {
-        if (_worldReady)
-            return;
+    public void LoadWorld() => _mission = _bootstrap.LoadWorld(ref _gun, ref _worldReady, ref _mission);
 
-        var level = _shell.Level;
-        _shell.SetLoadingStatus($"Building {level.DisplayName}…");
-        level.RebuildMap(_terrain);
-        _shell.SetLoadingStatus($"Seating {_gun.Spec.ShortName} battery…");
-        _session.Clock.Reset();
-        _mission = level.StartMission(_terrain, _session.Piece, _session.Seed);
-        _battle.SetMission(_mission);
-        _terrain.PlaceGun(_mission.GunX, _mission.GunZ, _session.Piece.GunHeightOffsetMeters);
-        _gun.LayCenter(_mission.TrailBearingDegrees);
-        _gun.SetCharge(_mission.OpeningChargeIndex);
-        _gun.SetElevation(_mission.OpeningElevationDegrees);
-        _gun.NudgeAzimuth(_mission.OpeningAzimuthDegrees - _mission.TrailBearingDegrees);
-        _crew.SeatOpening(_gun);
-        _rounds.ResetAll(_battle.ImpactHandled);
-        _battle.ResetVisuals();
-        _input.Reset();
-        _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
-        _aim.Rebuild(_crew);
-        _shell.Menus.ClearToPlaying();
-        _worldReady = true;
+    public void HandleInput(SilkFrame frame, IBatteryApplier applier) =>
+        _frames.HandleInput(frame, applier);
 
-        _log.LogInformation(
-            "World loaded: approaches={Approaches} remaining={Remaining}",
-            _mission.SpawnPointCount,
-            _mission.Remaining);
-    }
+    public int TickPhysics(float wallSeconds) => _frames.TickPhysics(wallSeconds);
 
-    public void HandleInput(SilkFrame frame, IBatteryApplier applier)
-    {
-        if (!_worldReady)
-            return;
-
-        if (IsPaused)
-        {
-            _input.Handle(frame, 0f, paused: true, IsMissionTerminal, applier, _ui);
-            return;
-        }
-
-        var controlSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
-        if (!IsMissionTerminal)
-            _input.Handle(frame, controlSeconds, paused: false, IsMissionTerminal, applier, _ui);
-    }
-
-    public int TickPhysics(float wallSeconds)
-    {
-        if (!_worldReady || IsPaused || IsMissionTerminal)
-            return 0;
-
-        var steps = _session.Clock.Consume(wallSeconds);
-        if (steps > 0)
-            _battle.AdvancePhysics(steps, steps * FixedStepClock.DtSeconds);
-
-        MaybePauseOnMissionEnd();
-        return steps;
-    }
-
-    public void PresentFrame(SilkFrame frame, float wallSeconds)
-    {
-        if (!_worldReady)
-            return;
-
-        _battle.AdvancePresentation(wallSeconds, audioPlaying: _shell.Menus.IsPlaying && !IsPaused);
-
-        if (_mission is { } mission)
-            _camera.SetBattleFocus(mission.BattleFocus(_terrain.GunBaseline));
-        var camRound = _rounds.RoundForCamera(_battle.BurstAge, ArtilleryBattleLoop.KillcamReturnSeconds) ?? _rounds.Active;
-        if (_camera.FollowProjectile && camRound.Phase == BallisticTrajectoryPhase.InFlight)
-            _rounds.Active = camRound;
-        _camera.Update(frame, _terrain.GunBaseline, camRound, allowMouseLook: !_ui.PointerOverUi);
-    }
-
-    private void MaybePauseOnMissionEnd()
-    {
-        if (!IsMissionTerminal || !_shell.Menus.IsPlaying)
-            return;
-
-        _shell.Menus.PushPause();
-        _log.LogInformation("Mission ended: {Outcome}", MissionOutcome);
-        Console.WriteLine(_mission?.Observation() ?? "Mission complete.");
-    }
+    public void PresentFrame(SilkFrame frame, float wallSeconds) =>
+        _frames.PresentFrame(frame, wallSeconds);
 
     public void Dispose() => _audio?.Dispose();
 }
