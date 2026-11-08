@@ -1,7 +1,7 @@
 {
   "package": "CAL-DWG-PACKAGE",
   "rev": "A",
-  "generatedUtc": "2026-11-08T03:01:16.8682100Z",
+  "generatedUtc": "2026-11-08T03:04:52.4757161Z",
   "standards": [
     "ISO 5457",
     "ISO 7200",
@@ -186,7 +186,7 @@
     {
       "DrawingNumber": "CAL-220-001",
       "Label": "FRM-Z0",
-      "Title": "Transverse frame frame-F0 @ z=0 m (1 perimeter parts)",
+      "Title": "Transverse frame frame-F0 @ z=0.13 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
       "RelativePath": "200-structure/220-frames/CAL-220-001-FRAME-z0.html",
@@ -195,56 +195,56 @@
       "Tags": [
         "structure",
         "frame",
-        "z=0",
+        "z=0.13",
         "frame-F0"
       ]
     },
     {
       "DrawingNumber": "CAL-220-002",
-      "Label": "FRM-Z3",
-      "Title": "Transverse frame frame-F3 @ z=3 m (1 perimeter parts)",
+      "Label": "FRM-Z3.3",
+      "Title": "Transverse frame frame-F3.3 @ z=3.25 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-002-FRAME-z3.html",
-      "SubjectId": "frame-F3",
+      "RelativePath": "200-structure/220-frames/CAL-220-002-FRAME-z3-3.html",
+      "SubjectId": "frame-F3.3",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=3",
-        "frame-F3"
+        "z=3.25",
+        "frame-F3.3"
       ]
     },
     {
       "DrawingNumber": "CAL-220-003",
-      "Label": "FRM-Z6",
-      "Title": "Transverse frame frame-F6 @ z=6 m (1 perimeter parts)",
+      "Label": "FRM-Z6.5",
+      "Title": "Transverse frame frame-F6.5 @ z=6.5 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-003-FRAME-z6.html",
-      "SubjectId": "frame-F6",
+      "RelativePath": "200-structure/220-frames/CAL-220-003-FRAME-z6-5.html",
+      "SubjectId": "frame-F6.5",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=6",
-        "frame-F6"
+        "z=6.5",
+        "frame-F6.5"
       ]
     },
     {
       "DrawingNumber": "CAL-220-004",
-      "Label": "FRM-Z9",
-      "Title": "Transverse frame frame-F9 @ z=9 m (1 perimeter parts)",
+      "Label": "FRM-Z9.8",
+      "Title": "Transverse frame frame-F9.8 @ z=9.75 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-004-FRAME-z9.html",
-      "SubjectId": "frame-F9",
+      "RelativePath": "200-structure/220-frames/CAL-220-004-FRAME-z9-8.html",
+      "SubjectId": "frame-F9.8",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=9",
-        "frame-F9"
+        "z=9.75",
+        "frame-F9.8"
       ]
     },
     {
@@ -265,136 +265,136 @@
     },
     {
       "DrawingNumber": "CAL-220-006",
-      "Label": "FRM-Z26",
-      "Title": "Transverse frame frame-F26 @ z=26 m (1 perimeter parts)",
+      "Label": "FRM-Z26.6",
+      "Title": "Transverse frame frame-F26.6 @ z=26.64 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-006-FRAME-z26.html",
-      "SubjectId": "frame-F26",
+      "RelativePath": "200-structure/220-frames/CAL-220-006-FRAME-z26-6.html",
+      "SubjectId": "frame-F26.6",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=26",
-        "frame-F26"
+        "z=26.64",
+        "frame-F26.6"
       ]
     },
     {
       "DrawingNumber": "CAL-220-007",
-      "Label": "FRM-Z33",
-      "Title": "Transverse frame frame-F33 @ z=33 m (1 perimeter parts)",
+      "Label": "FRM-Z33.9",
+      "Title": "Transverse frame frame-F33.9 @ z=33.85 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-007-FRAME-z33.html",
-      "SubjectId": "frame-F33",
+      "RelativePath": "200-structure/220-frames/CAL-220-007-FRAME-z33-9.html",
+      "SubjectId": "frame-F33.9",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=33",
-        "frame-F33"
+        "z=33.85",
+        "frame-F33.9"
       ]
     },
     {
       "DrawingNumber": "CAL-220-008",
-      "Label": "FRM-Z37",
-      "Title": "Transverse frame frame-F37 @ z=37 m (1 perimeter parts)",
+      "Label": "FRM-Z37.4",
+      "Title": "Transverse frame frame-F37.4 @ z=37.43 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-008-FRAME-z37.html",
-      "SubjectId": "frame-F37",
+      "RelativePath": "200-structure/220-frames/CAL-220-008-FRAME-z37-4.html",
+      "SubjectId": "frame-F37.4",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=37",
-        "frame-F37"
+        "z=37.43",
+        "frame-F37.4"
       ]
     },
     {
       "DrawingNumber": "CAL-220-009",
-      "Label": "FRM-Z43",
-      "Title": "Transverse frame frame-F43 @ z=43 m (1 perimeter parts)",
+      "Label": "FRM-Z43.8",
+      "Title": "Transverse frame frame-F43.8 @ z=43.75 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-009-FRAME-z43.html",
-      "SubjectId": "frame-F43",
+      "RelativePath": "200-structure/220-frames/CAL-220-009-FRAME-z43-8.html",
+      "SubjectId": "frame-F43.8",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=43",
-        "frame-F43"
+        "z=43.75",
+        "frame-F43.8"
       ]
     },
     {
       "DrawingNumber": "CAL-220-010",
-      "Label": "FRM-Z46",
-      "Title": "Transverse frame frame-F46 @ z=46 m (1 perimeter parts)",
+      "Label": "FRM-Z46.5",
+      "Title": "Transverse frame frame-F46.5 @ z=46.5 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-010-FRAME-z46.html",
-      "SubjectId": "frame-F46",
+      "RelativePath": "200-structure/220-frames/CAL-220-010-FRAME-z46-5.html",
+      "SubjectId": "frame-F46.5",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=46",
-        "frame-F46"
+        "z=46.5",
+        "frame-F46.5"
       ]
     },
     {
       "DrawingNumber": "CAL-220-011",
-      "Label": "FRM-Z53",
-      "Title": "Transverse frame frame-F53 @ z=53 m (1 perimeter parts)",
+      "Label": "FRM-Z53.2",
+      "Title": "Transverse frame frame-F53.2 @ z=53.19 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-011-FRAME-z53.html",
-      "SubjectId": "frame-F53",
+      "RelativePath": "200-structure/220-frames/CAL-220-011-FRAME-z53-2.html",
+      "SubjectId": "frame-F53.2",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=53",
-        "frame-F53"
+        "z=53.19",
+        "frame-F53.2"
       ]
     },
     {
       "DrawingNumber": "CAL-220-012",
-      "Label": "FRM-Z57",
-      "Title": "Transverse frame frame-F57 @ z=57 m (1 perimeter parts)",
+      "Label": "FRM-Z57.1",
+      "Title": "Transverse frame frame-F57.1 @ z=57.13 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-012-FRAME-z57.html",
-      "SubjectId": "frame-F57",
+      "RelativePath": "200-structure/220-frames/CAL-220-012-FRAME-z57-1.html",
+      "SubjectId": "frame-F57.1",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=57",
-        "frame-F57"
+        "z=57.13",
+        "frame-F57.1"
       ]
     },
     {
       "DrawingNumber": "CAL-220-013",
-      "Label": "FRM-Z61",
-      "Title": "Transverse frame frame-F61 @ z=61 m (1 perimeter parts)",
+      "Label": "FRM-Z61.1",
+      "Title": "Transverse frame frame-F61.1 @ z=61.07 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
-      "RelativePath": "200-structure/220-frames/CAL-220-013-FRAME-z61.html",
-      "SubjectId": "frame-F61",
+      "RelativePath": "200-structure/220-frames/CAL-220-013-FRAME-z61-1.html",
+      "SubjectId": "frame-F61.1",
       "volume": "None",
       "Tags": [
         "structure",
         "frame",
-        "z=61",
-        "frame-F61"
+        "z=61.07",
+        "frame-F61.1"
       ]
     },
     {
       "DrawingNumber": "CAL-220-014",
       "Label": "FRM-Z65",
-      "Title": "Transverse frame frame-F65 @ z=65 m (1 perimeter parts)",
+      "Title": "Transverse frame frame-F65 @ z=65.01 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
       "RelativePath": "200-structure/220-frames/CAL-220-014-FRAME-z65.html",
@@ -403,14 +403,14 @@
       "Tags": [
         "structure",
         "frame",
-        "z=65",
+        "z=65.01",
         "frame-F65"
       ]
     },
     {
       "DrawingNumber": "CAL-220-015",
       "Label": "FRM-Z69",
-      "Title": "Transverse frame frame-F69 @ z=69 m (1 perimeter parts)",
+      "Title": "Transverse frame frame-F69 @ z=68.87 m (1 perimeter parts)",
       "category": "Frames",
       "categoryCode": "220",
       "RelativePath": "200-structure/220-frames/CAL-220-015-FRAME-z69.html",
@@ -419,7 +419,7 @@
       "Tags": [
         "structure",
         "frame",
-        "z=69",
+        "z=68.87",
         "frame-F69"
       ]
     },
