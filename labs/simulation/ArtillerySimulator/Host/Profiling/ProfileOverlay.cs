@@ -1,10 +1,11 @@
+using System.Runtime.InteropServices;
 using Novolis.Math.Geometry;
 using Novolis.Silk;
 using SkiaSharp;
 
 namespace ArtillerySimulator;
 
-/// <summary>F1 profile panel — Skia text over the 3D frame.</summary>
+/// <summary>F1 profile panel — Skia text; uploads only when text changes.</summary>
 internal sealed class ProfileOverlay : IDisposable
 {
     private readonly SKTypeface _typeface;
@@ -14,6 +15,7 @@ internal sealed class ProfileOverlay : IDisposable
     private int _width;
     private int _height;
     private string _lastText = "";
+    private bool _uploaded;
 
     public ProfileOverlay()
     {
@@ -29,13 +31,17 @@ internal sealed class ProfileOverlay : IDisposable
             return;
 
         EnsureSurface(frame.Width, frame.Height);
-        if (text != _lastText || _pixels.Length == 0)
+        if (text != _lastText || !_uploaded)
         {
             _lastText = text;
             Rasterize(text);
+            frame.BlitOverlay(_pixels, _width, _height);
+            _uploaded = true;
         }
-
-        frame.BlitOverlay(_pixels, _width, _height);
+        else
+        {
+            frame.DrawOverlay();
+        }
     }
 
     public void Dispose()
@@ -60,6 +66,7 @@ internal sealed class ProfileOverlay : IDisposable
         _width = width;
         _height = height;
         _lastText = "";
+        _uploaded = false;
     }
 
     private void Rasterize(string text)
@@ -119,11 +126,8 @@ internal sealed class ProfileOverlay : IDisposable
 
         using var pixmap = _bitmap!.PeekPixels();
         var bytes = pixmap.GetPixelSpan<byte>();
-        var n = Math.Min(_pixels.Length, bytes.Length / 4);
-        for (var i = 0; i < n; i++)
-        {
-            var o = i * 4;
-            _pixels[i] = new Rgba32(bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]);
-        }
+        var dst = MemoryMarshal.AsBytes(_pixels.AsSpan());
+        var n = Math.Min(dst.Length, bytes.Length);
+        bytes[..n].CopyTo(dst[..n]);
     }
 }

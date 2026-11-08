@@ -7,7 +7,8 @@ namespace ArtillerySimulator;
 
 /// <summary>
 /// Fixed-step battle integration: met, crew, ballistics, mission impacts.
-/// Presentation FX (particles/audio/killcam) are reported via <see cref="BattleFxSink"/>.
+/// Presentation FX (particles/audio/killcam/aim) advance separately via
+/// <see cref="AdvancePresentation"/> so render cost cannot multiply physics work.
 /// </summary>
 internal sealed class ArtilleryBattleLoop
 {
@@ -50,6 +51,7 @@ internal sealed class ArtilleryBattleLoop
     public Vector3 BurstAt { get; private set; }
     public float MuzzleFlash { get; private set; }
     public bool KillcamActive { get; set; }
+    public AimPreviewService Aim => _aim;
 
     public void Bind(GunModel gun, CrewDrill crew, ProjectileBallisticSimulation ballistics)
     {
@@ -74,8 +76,12 @@ internal sealed class ArtilleryBattleLoop
         _log.LogDebug("Muzzle flash at {Muzzle}", muzzle);
     }
 
-    public void Advance(int steps, float battleSeconds, float wallSeconds, bool audioPlaying)
+    /// <summary>Physics only — fixed-step ballistics / mission. No aim rebuild, no particle age.</summary>
+    public void AdvancePhysics(int steps, float battleSeconds)
     {
+        if (steps <= 0)
+            return;
+
         _atmosphere.Advance(battleSeconds);
         if (_atmosphere.ConsumeAimInvalidation())
             _aim.MarkDirty();
@@ -117,7 +123,11 @@ internal sealed class ArtilleryBattleLoop
                 BurstAt,
                 airburst);
         }
+    }
 
+    /// <summary>Render-rate FX: muzzle/burst age, killcam, particles/audio, aim arcs (once).</summary>
+    public void AdvancePresentation(float wallSeconds, bool audioPlaying)
+    {
         if (BurstAge >= 0f)
         {
             BurstAge += wallSeconds;
@@ -132,7 +142,6 @@ internal sealed class ArtilleryBattleLoop
             MuzzleFlash = MathF.Max(0f, MuzzleFlash - wallSeconds);
 
         _fx.OnFrameFx(wallSeconds, audioPlaying, _mission);
-
         _aim.RebuildIfNeeded(_crew);
     }
 

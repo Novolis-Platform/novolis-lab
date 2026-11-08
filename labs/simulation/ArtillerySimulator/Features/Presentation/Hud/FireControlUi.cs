@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using Novolis.Math.Geometry;
 using Novolis.Physics.Ballistics;
 using Novolis.Silk;
@@ -34,6 +35,8 @@ internal sealed class FireControlUi : IDisposable
     private int _height;
     private string _lastSignature = "";
     private float _rasterAge = 99f;
+    private float _titleAge = 99f;
+    private bool _overlayUploaded;
 
     public FireControlUi()
     {
@@ -161,11 +164,12 @@ internal sealed class FireControlUi : IDisposable
         _buttons.Clear();
         BuildButtons(gun, followProjectile, canFire);
 
+        // Quantize live values so InFlight range/met do not force a full-screen Skia+upload every frame.
         var signature = string.Create(
             CultureInfo.InvariantCulture,
-            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{predictedRangeMeters:F0}|{predictedTofSeconds:F1}|{heroRange:F0}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{windSpeed:F1}|{windFrom:F0}|{tempC:F0}|{qnh:F0}|{rh:F0}|{predictedImpact.Y:F0}|{radioSpeaker}|{radioLine}");
+            $"{_width}x{_height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{(int)(predictedRangeMeters / 25f)}|{(int)(predictedTofSeconds * 2f)}|{(int)(heroRange / 25f)}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{(int)(windSpeed * 2f)}|{(int)windFrom}|{(int)tempC}|{(int)qnh}|{(int)rh}|{(int)(predictedImpact.Y / 10f)}|{radioSpeaker}|{radioLine}");
         _rasterAge += frame.DeltaSeconds;
-        var dirty = signature != _lastSignature || _rasterAge >= 0.12f;
+        var dirty = signature != _lastSignature || _rasterAge >= 0.25f;
         if (dirty)
         {
             _lastSignature = signature;
@@ -191,14 +195,25 @@ internal sealed class FireControlUi : IDisposable
             DrawHelp(canvas);
             DrawRadio(canvas, radioSpeaker, radioLine);
             CopyPixels();
+            frame.ClearDepth();
+            frame.BlitOverlay(_pixels, _width, _height);
+            _overlayUploaded = true;
+        }
+        else if (_overlayUploaded)
+        {
+            frame.ClearDepth();
+            frame.DrawOverlay();
         }
 
-        frame.SetTitle(string.Create(
-            CultureInfo.InvariantCulture,
-            $"{ProductIdentity.Title}  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
+        _titleAge += frame.DeltaSeconds;
+        if (_titleAge >= 0.25f)
+        {
+            _titleAge = 0f;
+            frame.SetTitle(string.Create(
+                CultureInfo.InvariantCulture,
+                $"{ProductIdentity.Title}  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
+        }
 
-        frame.ClearDepth();
-        frame.BlitOverlay(_pixels, _width, _height);
         LastOverlayLineCount = 0;
     }
 
@@ -252,6 +267,8 @@ internal sealed class FireControlUi : IDisposable
         _bitmap = new SKBitmap(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
         _canvas = new SKCanvas(_bitmap);
         _pixels = new Rgba32[width * height];
+        _overlayUploaded = false;
+        _lastSignature = "";
     }
 
     private void CopyPixels()
@@ -259,15 +276,12 @@ internal sealed class FireControlUi : IDisposable
         if (_bitmap is null)
             return;
 
-        // SKColorType.Rgba8888 → byte order matches Novolis.Math.Geometry.Rgba32.
+        // SKColorType.Rgba8888 → same byte order as Rgba32; block-copy instead of per-pixel loops.
         using var pixmap = _bitmap.PeekPixels();
         var bytes = pixmap.GetPixelSpan<byte>();
-        var n = Math.Min(_pixels.Length, bytes.Length / 4);
-        for (var i = 0; i < n; i++)
-        {
-            var o = i * 4;
-            _pixels[i] = new Rgba32(bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]);
-        }
+        var dst = MemoryMarshal.AsBytes(_pixels.AsSpan());
+        var n = Math.Min(dst.Length, bytes.Length);
+        bytes[..n].CopyTo(dst[..n]);
     }
 
     private void DrawTopBar(

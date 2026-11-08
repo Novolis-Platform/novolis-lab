@@ -340,7 +340,8 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             _mission.Remaining);
     }
 
-    public void SimulateFrame(SilkFrame frame, IBatteryApplier applier)
+    /// <summary>Player input only — never advances physics.</summary>
+    public void HandleInput(SilkFrame frame, IBatteryApplier applier)
     {
         if (!_worldReady)
             return;
@@ -354,12 +355,32 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
         var controlSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
         if (!IsMissionTerminal)
             _input.Handle(frame, controlSeconds, paused: false, IsMissionTerminal, applier, _ui);
+    }
 
-        var steps = _session.Clock.Consume(frame.DeltaSeconds);
+    /// <summary>
+    /// Fixed-step physics from wall time. Independent of how long render will take;
+    /// <see cref="FixedStepClock"/> caps steps so a hitch cannot explode this call.
+    /// </summary>
+    public int TickPhysics(float wallSeconds)
+    {
+        if (!_worldReady || IsPaused || IsMissionTerminal)
+            return 0;
+
+        var steps = _session.Clock.Consume(wallSeconds);
         if (steps > 0)
-            _battle.Advance(steps, steps * FixedStepClock.DtSeconds, frame.DeltaSeconds, audioPlaying: _shell.Menus.IsPlaying);
+            _battle.AdvancePhysics(steps, steps * FixedStepClock.DtSeconds);
 
         MaybePauseOnMissionEnd();
+        return steps;
+    }
+
+    /// <summary>Camera + FX + aim preview at display rate — never calls ballistics steps.</summary>
+    public void PresentFrame(SilkFrame frame, float wallSeconds)
+    {
+        if (!_worldReady)
+            return;
+
+        _battle.AdvancePresentation(wallSeconds, audioPlaying: _shell.Menus.IsPlaying && !IsPaused);
 
         if (_mission is { } mission)
             _camera.SetBattleFocus(mission.BattleFocus(_terrain.GunBaseline));

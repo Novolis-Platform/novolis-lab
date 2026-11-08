@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Novolis.Agent.Surface;
 using Novolis.Silk;
@@ -5,8 +6,8 @@ using Novolis.Silk;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Silk frame adapter: shell → drain battle commands → simulate → render.
-/// Owns agent surface attach; does not own domain state (<see cref="BattleWorld"/>).
+/// Silk frame adapter. Physics and rendering are sequenced but budget-isolated:
+/// wall-clock fixed steps (capped) never grow because HUD/GPU was slow.
 /// </summary>
 internal sealed class FrameDirector : IDisposable
 {
@@ -17,6 +18,7 @@ internal sealed class FrameDirector : IDisposable
     private readonly ProfileOverlay _profileOverlay;
     private readonly FrameProfiler _liveProfiler = new(warmupFrames: 5);
     private readonly ILogger<FrameDirector> _log;
+    private readonly Stopwatch _wall = Stopwatch.StartNew();
 
     private AgentSurface? _surface;
     private FrameProfiler? _profiler;
@@ -26,6 +28,7 @@ internal sealed class FrameDirector : IDisposable
     private string _profileFlash = "";
     private float _profileFlashAge = -1f;
     private bool _agentAttached;
+    private long _lastWallTimestamp;
 
     public FrameDirector(
         BattleWorld world,
@@ -41,6 +44,7 @@ internal sealed class FrameDirector : IDisposable
         _renderer = renderer;
         _profileOverlay = profileOverlay;
         _log = log;
+        _lastWallTimestamp = _wall.ElapsedTicks;
     }
 
     public BattleSession Session => _world.Session;
@@ -60,10 +64,21 @@ internal sealed class FrameDirector : IDisposable
         WindowIconLoader.TryApply(frame);
         if (_world.Options.SkipShell)
             LoadWorldAndAttachAgent();
+        _lastWallTimestamp = _wall.ElapsedTicks;
     }
 
     public void Update(SilkFrame frame)
     {
+        // Wall slice for THIS update — stamped before work so a long render does not
+        // enlarge the next physics debt beyond what FixedStepClock already caps.
+        var now = _wall.ElapsedTicks;
+        var wallSeconds = (float)((now - _lastWallTimestamp) / (double)Stopwatch.Frequency);
+        _lastWallTimestamp = now;
+        if (wallSeconds < 0f)
+            wallSeconds = 0f;
+        // Hard clamp: never ask physics to absorb more than ~67 ms of wall in one Update.
+        wallSeconds = Math.Min(wallSeconds, FixedStepClock.DtSeconds * 8f);
+
         _world.Shell.HandleKeys(frame, _world.WorldReady, _world.SelectLevel);
         HandleProfileHotkeys(frame);
 
@@ -74,7 +89,8 @@ internal sealed class FrameDirector : IDisposable
         active?.BeginFrame();
         if (active is not null)
         {
-            active.Time("simulate", () => _agent.RunFrame(Simulate));
+            active.Time("simulate", () => _agent.RunFrame(() => TickAndInput(frame, wallSeconds)));
+            active.Time("present", () => _world.PresentFrame(frame, wallSeconds));
             active.Time("render", () => Render(frame));
             active.SetGeometry(
                 _world.Terrain.TerrainTriangleCount,
@@ -94,7 +110,8 @@ internal sealed class FrameDirector : IDisposable
         }
         else
         {
-            _agent.RunFrame(Simulate);
+            _agent.RunFrame(() => TickAndInput(frame, wallSeconds));
+            _world.PresentFrame(frame, wallSeconds);
             Render(frame);
         }
 
@@ -102,15 +119,14 @@ internal sealed class FrameDirector : IDisposable
 
         if (_profileFlashAge >= 0f)
             _profileFlashAge += frame.DeltaSeconds;
+    }
 
-        void Simulate()
-        {
-            // Agent (and any prior writers) first; player discrete intents are TryWrite'd during
-            // SimulateFrame, then drained so fire/charge land this frame — no BackgroundService.
-            _ = _commands.Drain();
-            _world.SimulateFrame(frame, _world);
-            _ = _commands.Drain();
-        }
+    private void TickAndInput(SilkFrame frame, float wallSeconds)
+    {
+        _ = _commands.Drain();
+        _world.HandleInput(frame, _world);
+        _ = _commands.Drain();
+        _ = _world.TickPhysics(wallSeconds);
     }
 
     private void LoadWorldAndAttachAgent()
@@ -138,6 +154,7 @@ internal sealed class FrameDirector : IDisposable
 
         Console.WriteLine(ProductLegal.Tagline);
         Console.WriteLine($"Session seed={_world.Session.SeedHash}  level={_world.Level.Id}  piece={_world.Session.Piece.Id}");
+        _lastWallTimestamp = _wall.ElapsedTicks;
     }
 
     private void Render(SilkFrame frame)
