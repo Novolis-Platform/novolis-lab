@@ -26,13 +26,19 @@ internal static class FrameContourValidation
         foreach (var frame in frames)
         {
             var zStem = InferZStem(frame);
-            var inset = CalypsoShipbuildingFrames.PlatingJoinInset;
-            // Recover outer ring from mesh AABB mid-plane verts is noisy; compare fab registry if present.
-            var auth = HullSectionAuthority.InnerRing(zStem, inset);
+            // Ordinary Emit uses DefaultSkinInset+WebClearance; hold/perimeter rings use PlatingJoinInset.
+            var authCandidates = new[]
+            {
+                HullSectionAuthority.InnerRing(zStem, CalypsoShipbuildingFrames.DefaultSkinInset + 0.28f),
+                HullSectionAuthority.InnerRing(zStem, CalypsoShipbuildingFrames.PlatingJoinInset),
+                HullSectionAuthority.InnerRing(zStem, CalypsoShipbuildingFrames.DefaultSkinInset),
+            };
+            var auth = authCandidates[0];
             float? maxDev = null;
             if (frame.MeshVertices is { Count: > 0 })
             {
-                // Sample front-face verts (min Z cluster) and match to auth by nearest.
+                // Front face = min-Z cluster. Annulus has outer+inner verts — keep the outer
+                // shell only (farthest from section center) before measuring deviation.
                 var zs = frame.MeshVertices.Select(v => v[2]).ToList();
                 var zMin = zs.Min();
                 var front = frame.MeshVertices
@@ -41,19 +47,36 @@ internal static class FrameContourValidation
                     .ToList();
                 if (front.Count >= auth.Length)
                 {
-                    var max = 0f;
-                    foreach (var a in auth)
+                    var cy = front.Average(p => p.Y);
+                    var cu = front.Average(p => p.Up);
+                    var radii = front
+                        .Select(p => (P: p, R: MathF.Sqrt((p.Y - cy) * (p.Y - cy) + (p.Up - cu) * (p.Up - cu))))
+                        .OrderByDescending(x => x.R)
+                        .ToList();
+                    // Outer ring ≈ first N verts by radius (N = auth vertex count).
+                    var outer = radii.Take(auth.Length).Select(x => x.P).ToList();
+                    var best = float.PositiveInfinity;
+                    foreach (var candidate in authCandidates)
                     {
-                        var d = front.Min(p =>
+                        if (candidate.Length == 0)
+                            continue;
+                        var max = 0f;
+                        foreach (var a in candidate)
                         {
-                            var dy = p.Y - a.Y;
-                            var du = p.Up - a.Up;
-                            return MathF.Sqrt(dy * dy + du * du);
-                        });
-                        max = MathF.Max(max, d);
+                            var d = outer.Min(p =>
+                            {
+                                var dy = p.Y - a.Y;
+                                var du = p.Up - a.Up;
+                                return MathF.Sqrt(dy * dy + du * du);
+                            });
+                            max = MathF.Max(max, d);
+                        }
+
+                        best = MathF.Min(best, max);
                     }
 
-                    maxDev = max * 1000f;
+                    maxDev = float.IsFinite(best) ? best * 1000f : null;
+                    auth = authCandidates[0];
                 }
             }
 

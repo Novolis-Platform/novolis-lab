@@ -97,31 +97,19 @@ internal static class FrameWebPlateBuilder
             .ToList();
         var zCad = loa * 0.5f - zStem;
         EditableMesh mesh;
-        PolygonWithHolesExtrude.ExtrudeReport? extrudeReport = null;
+        PolygonWithHolesExtrude.ExtrudeReport extrudeReport;
         try
         {
             mesh = PolygonWithHolesExtrude.ExtrudeAlongZ(
-                outer, holes, zCad, halfDepthZ, bulkheadId, out var report);
-            extrudeReport = report;
+                outer, holes, zCad, halfDepthZ, bulkheadId, out extrudeReport);
         }
         catch (Exception ex)
         {
-            // Prefer real openings; fall back to hull-conforming solid plate so the ship still
-            // carries BH stations while the hole-punch path is repaired. Fab profile keeps openings.
-            Console.Error.WriteLine(
-                $"  WARN {bulkheadId} polygon-with-holes failed ({ex.Message}); emitting solid hull-contour plate.");
-            try
-            {
-                mesh = SolidPlateExtrude.ExtrudeAlongZ(outer, zCad, halfDepthZ, bulkheadId);
-            }
-            catch (Exception ex2)
-            {
-                Console.Error.WriteLine($"  FAIL {bulkheadId} solid plate: {ex2.Message}");
-                StructurePlacementLog.Record(
-                    bulkheadId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
-                    $"BH extrude failed: {ex.Message}; solid fallback: {ex2.Message}");
-                return;
-            }
+            Console.Error.WriteLine($"  FAIL {bulkheadId} polygon extrude: {ex.Message}");
+            StructurePlacementLog.Record(
+                bulkheadId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
+                $"polygon extrude failed: {ex.Message}");
+            return;
         }
 
         CalypsoLockGenerator.TryAddStructureMesh(
@@ -132,7 +120,7 @@ internal static class FrameWebPlateBuilder
             mesh,
             fabPartId,
             extrudeReport: extrudeReport,
-            expectedOpenings: extrudeReport?.ExpectedOpenings);
+            expectedOpenings: holes.Count);
     }
 
     private static string SanitizeFileToken(string id) =>
@@ -173,9 +161,9 @@ internal static class FrameWebPlateBuilder
         if (u1 <= u0 + 0.2f)
             return false;
 
-        var ringRaw = HullSectionAuthority.InnerRing(zStem, skinInset);
-        var (rawCy, rawCu) = ringRaw.GetSectionCenter();
-        ring = ringRaw.Select(v => (Y: v.Y - rawCy, Up: v.Up - (rawCu - sectionMid))).ToArray();
+        // Keep the authoritative section in absolute CAD Y/Up — do not recenter.
+        // Recenter would detach fab/viz from HullSectionAuthority and break contour checks.
+        ring = HullSectionAuthority.InnerRing(zStem, skinInset);
         gaps = NormalizeGaps(athwartGaps, zStem, skinInset, bowAligned);
         var deckList = new List<float>();
         var sources = deckUps is { Count: > 0 }
@@ -262,6 +250,10 @@ internal static class FrameWebPlateBuilder
                 $"annular frame failed: {ex.Message}");
             return;
         }
+
+        // Emit-time contour check: outerRing is already the geometric inset of the hull section.
+        var contourMm = HullSectionAuthority.MaxRingDeviation(outerRing, zStem, inset) * 1000f;
+        FrameContourEmitLog.Record(frameId, zStem, inset, contourMm, mesh.TriangleCount, mesh.VertexCount);
 
         CalypsoLockGenerator.TryAddStructureMesh(
             entities, loa, $"{frameId}-annulus", zStem, mesh, fabPartId,

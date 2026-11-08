@@ -1,12 +1,12 @@
 {
   "frameAnnulusCount": 12,
-  "failures": 8,
+  "failures": 12,
   "toleranceMm": 25,
   "frames": [
     {
       "partId": "frame-F0-annulus",
       "stationZStem": 0.13299942,
-      "maxDeviationMm": 464.8064,
+      "maxDeviationMm": 209.16269,
       "toleranceMm": 25,
       "passed": false,
       "triangleCount": 64,
@@ -15,7 +15,7 @@
     {
       "partId": "frame-F4-annulus",
       "stationZStem": 4,
-      "maxDeviationMm": 441.85303,
+      "maxDeviationMm": 1723.1222,
       "toleranceMm": 25,
       "passed": false,
       "triangleCount": 64,
@@ -24,7 +24,7 @@
     {
       "partId": "frame-F8-annulus",
       "stationZStem": 8,
-      "maxDeviationMm": 435.91046,
+      "maxDeviationMm": 2348.1396,
       "toleranceMm": 25,
       "passed": false,
       "triangleCount": 64,
@@ -33,7 +33,7 @@
     {
       "partId": "frame-F16-annulus",
       "stationZStem": 16,
-      "maxDeviationMm": 433.0822,
+      "maxDeviationMm": 3092.778,
       "toleranceMm": 25,
       "passed": false,
       "triangleCount": 64,
@@ -42,7 +42,7 @@
     {
       "partId": "frame-F28-annulus",
       "stationZStem": 28,
-      "maxDeviationMm": 238.28548,
+      "maxDeviationMm": 3225.1868,
       "toleranceMm": 25,
       "passed": false,
       "triangleCount": 64,
@@ -51,7 +51,7 @@
     {
       "partId": "frame-F36-annulus",
       "stationZStem": 36,
-      "maxDeviationMm": 238.28548,
+      "maxDeviationMm": 3225.1868,
       "toleranceMm": 25,
       "passed": false,
       "triangleCount": 64,
@@ -60,7 +60,7 @@
     {
       "partId": "frame-F44-annulus",
       "stationZStem": 44,
-      "maxDeviationMm": 238.28548,
+      "maxDeviationMm": 3225.1868,
       "toleranceMm": 25,
       "passed": false,
       "triangleCount": 64,
@@ -69,43 +69,43 @@
     {
       "partId": "frame-F52-ring-annulus",
       "stationZStem": 52,
-      "maxDeviationMm": 0,
+      "maxDeviationMm": 3313.9785,
       "toleranceMm": 25,
-      "passed": true,
+      "passed": false,
       "triangleCount": 64,
       "vertexCount": 32
     },
     {
       "partId": "frame-F56-ring-annulus",
       "stationZStem": 56,
-      "maxDeviationMm": 0,
+      "maxDeviationMm": 3313.9785,
       "toleranceMm": 25,
-      "passed": true,
+      "passed": false,
       "triangleCount": 64,
       "vertexCount": 32
     },
     {
       "partId": "frame-F60-ring-annulus",
       "stationZStem": 60,
-      "maxDeviationMm": 0,
+      "maxDeviationMm": 3313.9785,
       "toleranceMm": 25,
-      "passed": true,
+      "passed": false,
       "triangleCount": 64,
       "vertexCount": 32
     },
     {
       "partId": "frame-F64-ring-annulus",
       "stationZStem": 64,
-      "maxDeviationMm": 0,
+      "maxDeviationMm": 3313.9785,
       "toleranceMm": 25,
-      "passed": true,
+      "passed": false,
       "triangleCount": 64,
       "vertexCount": 32
     },
     {
       "partId": "frame-F68-annulus",
       "stationZStem": 68,
-      "maxDeviationMm": 238.28548,
+      "maxDeviationMm": 3225.1868,
       "toleranceMm": 25,
       "passed": false,
       "triangleCount": 64,

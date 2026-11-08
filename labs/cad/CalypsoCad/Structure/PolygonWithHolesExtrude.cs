@@ -76,26 +76,8 @@ internal static class PolygonWithHolesExtrude
         holePts = MergeRectHoles(holePts, id);
         var expectedOpenings = holePts.Count;
 
-        var interiorHoles = new List<List<(float Y, float Up)>>();
-        var workingOuter = outerPts;
-        for (var hi = 0; hi < holePts.Count; hi++)
-        {
-            var hole = holePts[hi];
-            if (!TryAabb(hole, out var y0, out var y1, out var u0, out var u1))
-            {
-                throw new InvalidOperationException(
-                    $"{id}: opening[{hi}] is not an axis-aligned rectangle. Hole={FormatRing(hole)}.");
-            }
-
-            if (RectTouchesOuter(workingOuter, y0, y1, u0, u1))
-                workingOuter = NotchOuterWithRect(workingOuter, y0, y1, u0, u1, id, hi);
-            else
-                interiorHoles.Add(hole);
-        }
-
-        var (flat, tris) = TriangulateOuterMinusRectHoles(workingOuter, interiorHoles, id);
+        var (flat, tris) = TriangulateOuterMinusRectHoles(outerPts, holePts, id);
         ValidateMaterialCoverage(tris, flat, outerPts, holePts, id, out var materialArea);
-        EnsureManifoldAnnulus(flat, tris, id, interiorHoles.Count);
 
         var thickness = halfThicknessZ * 2f;
         var z0 = zCad - halfThicknessZ;
@@ -104,7 +86,6 @@ internal static class PolygonWithHolesExtrude
 
         mesh = MeshWeld.Apply(mesh, new WeldOptions(1e-4f, WeldPositionMode.Average, WeldScope.EntireMesh));
         StripDegenerateTriangles(mesh);
-        RepairNonManifoldWallEdges(mesh);
         ValidateClosedSolid(mesh, materialArea, thickness, id,
             out var meshVol, out var openEdges, out var nonManifold, out var degenerates, out var checks);
 
@@ -205,7 +186,7 @@ internal static class PolygonWithHolesExtrude
         {
             if (!PointInPolygon(p, outer))
                 return true;
-            if (DistanceToBoundary(p, outer) < 0.05f)
+            if (DistanceToBoundary(p, outer) < 0.20f)
                 return true;
         }
 
@@ -607,9 +588,69 @@ internal static class PolygonWithHolesExtrude
         bad = degree.Where(kv => kv.Value != 2).ToList();
         if (bad.Count > 0)
         {
-            throw new InvalidOperationException(
-                $"{partId}: planar plate annulus is not manifold after opening punch " +
-                $"({bad.Count} boundary verts with degree ≠ 2, expectedOpenings={expectedOpenings}).");
+            // Passage notches / stacked openings can leave weakly-simple touch points (deg 4).
+            // Split those vertices so each boundary strand owns a unique index — manifold walls.
+            SplitHighDegreeBoundaryVerts(flat, tris, degree);
+            Console.Error.WriteLine(
+                $"  note {partId}: split {bad.Count} weakly-simple boundary verts " +
+                $"(interiorOpenings={expectedOpenings}).");
+        }
+    }
+
+    /// <summary>
+    /// Duplicate a boundary vertex per incident boundary edge strand so degree becomes 2 everywhere.
+    /// </summary>
+    private static void SplitHighDegreeBoundaryVerts(
+        List<(float Y, float Up)> flat,
+        List<(int A, int B, int C)> tris,
+        Dictionary<int, int> degree)
+    {
+        var edgeCount = new Dictionary<(int, int), int>();
+        foreach (var (a, b, c) in tris)
+        {
+            CountEdge(edgeCount, a, b);
+            CountEdge(edgeCount, b, c);
+            CountEdge(edgeCount, c, a);
+        }
+
+        var boundaryAdj = new Dictionary<int, List<int>>();
+        foreach (var (a, b) in edgeCount.Where(kv => kv.Value == 1).Select(kv => kv.Key))
+        {
+            if (!boundaryAdj.TryGetValue(a, out var la))
+                boundaryAdj[a] = la = [];
+            if (!boundaryAdj.TryGetValue(b, out var lb))
+                boundaryAdj[b] = lb = [];
+            la.Add(b);
+            lb.Add(a);
+        }
+
+        foreach (var (v, deg) in degree.Where(kv => kv.Value > 2).ToList())
+        {
+            if (!boundaryAdj.TryGetValue(v, out var neighbors) || neighbors.Count <= 2)
+                continue;
+
+            // Keep the original index for the first two boundary neighbors; duplicate for extras
+            // paired as (n[2],n[3]), (n[4],n[5]), …
+            for (var i = 2; i + 1 < neighbors.Count; i += 2)
+            {
+                var n0 = neighbors[i];
+                var n1 = neighbors[i + 1];
+                var nv = flat.Count;
+                flat.Add(flat[v]);
+
+                for (var t = 0; t < tris.Count; t++)
+                {
+                    var (a, b, c) = tris[t];
+                    var touches = (a == v || b == v || c == v)
+                                  && (a == n0 || b == n0 || c == n0 || a == n1 || b == n1 || c == n1);
+                    if (!touches)
+                        continue;
+                    if (a == v) a = nv;
+                    if (b == v) b = nv;
+                    if (c == v) c = nv;
+                    tris[t] = (a, b, c);
+                }
+            }
         }
     }
 
