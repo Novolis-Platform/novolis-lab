@@ -10,7 +10,7 @@ using Novolis.Silk.Capture;
 namespace CalypsoCad.Export;
 
 /// <summary>
-/// Fixed-camera semantic structure inspection views A–E + inventory / knuckle reports.
+/// Fixed-camera longitudinal / structure inspection views A–E + inventory / knuckle reports.
 /// Same physical model; isolation via RevealEntityIds from the registry.
 /// </summary>
 internal static class HeadlessStructureInspectionExporter
@@ -59,6 +59,8 @@ internal static class HeadlessStructureInspectionExporter
             session.ViewMode = CalypsoViewMode.Orbit;
             session.DeckFilter = null;
             session.WireMeshMode = CalypsoWireMeshMode.None;
+            // Isolation: never draw OML reference guide unless reveal is cleared.
+            session.ShowOmlGuide = false;
             renderer.ApplyOrbitPreset("bow-quarter");
             renderer.ZoomOrbit(1.45f);
         }
@@ -66,51 +68,44 @@ internal static class HeadlessStructureInspectionExporter
         void Add(string name, Action prepare) =>
             jobs.Add((Path.Combine(outDir, $"{name}.png"), prepare));
 
-        Add("A-knuckles-hull-outline", () =>
+        Add("A-knuckle-stringers", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.OuterHull;
-            session.ShowOmlGuide = true;
+            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.Longitudinals;
             session.RevealEntityIds = CollectKnuckles(registry);
-            session.StatusText = "inspect:A knuckles + OML guide";
+            session.StatusText = "inspect:A hull knuckle stringers";
         });
 
-        Add("B-ring-frames-only", () =>
+        Add("B-deck0-supports", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.OuterHull;
-            session.ShowOmlGuide = true;
-            session.RevealEntityIds = CollectRingFrames(registry);
-            session.StatusText = "inspect:B ordinary ring frames";
+            session.VisualLayers = CalypsoVisualLayers.Longitudinals;
+            session.RevealEntityIds = CollectDeck0Supports(registry);
+            session.StatusText = "inspect:B Deck 0 edge supports";
         });
 
-        Add("C-heavy-bulkheads-only", () =>
+        Add("C-deck-m1-cargo-floor", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Bulkheads;
-            session.ShowOmlGuide = true;
-            session.RevealEntityIds = CollectBulkheads(registry);
-            session.StatusText = "inspect:C heavy bulkheads";
+            session.VisualLayers = CalypsoVisualLayers.Longitudinals;
+            session.RevealEntityIds = CollectCargoFloorSupports(registry);
+            session.StatusText = "inspect:C Deck -1 cargo-floor supports";
         });
 
-        Add("D-frames-and-knuckles", () =>
+        Add("D-primary-longitudinal", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.OuterHull;
-            session.ShowOmlGuide = true;
-            var ids = CollectRingFrames(registry);
-            ids.UnionWith(CollectKnuckles(registry));
-            session.RevealEntityIds = ids;
-            session.StatusText = "inspect:D frames + knuckles";
+            session.VisualLayers = CalypsoVisualLayers.Longitudinals;
+            session.RevealEntityIds = CollectPrimaryLongitudinal(registry);
+            session.StatusText = "inspect:D primary keel + thrust";
         });
 
-        Add("E-primary-structure-semantic", () =>
+        Add("E-all-longitudinal-loadbearing", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.ShipSkeleton;
-            session.ShowOmlGuide = true;
-            session.RevealEntityIds = null;
-            session.StatusText = "inspect:E primary structure · semantic colors";
+            session.VisualLayers = CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.Frames;
+            session.RevealEntityIds = CollectAllLongitudinalLoadBearing(registry);
+            session.StatusText = "inspect:E all longitudinal load-bearing";
         });
 
         try
@@ -144,7 +139,6 @@ internal static class HeadlessStructureInspectionExporter
 
     public static HashSet<Guid> CollectRingFrames(ShipPartRegistry registry)
     {
-        // Annular web + chords only — not deckbeams that happen to live under FRAME-* assemblies.
         var ids = new HashSet<Guid>();
         foreach (var p in registry.Parts)
         {
@@ -164,11 +158,73 @@ internal static class HeadlessStructureInspectionExporter
         return ids;
     }
 
-    public static HashSet<Guid> CollectGirders(ShipPartRegistry registry)
+    /// <summary>Primary longitudinal system only (keel + thrust) — not deck edges or knuckles.</summary>
+    public static HashSet<Guid> CollectPrimaryLongitudinal(ShipPartRegistry registry)
     {
         var ids = new HashSet<Guid>();
-        foreach (var p in registry.Query(kind: CadPartKind.LongitudinalGirder))
-            ids.UnionWith(registry.CollectEntityIds(p.Id));
+        ids.UnionWith(registry.CollectEntityIds(AssemblyId.Of(ShipHierarchyIds.PrimaryHullGirders)));
+        ids.UnionWith(registry.CollectEntityIds(AssemblyId.Of(ShipHierarchyIds.ThrustStructure)));
+        ids.UnionWith(registry.CollectEntityIds(AssemblyId.Of(ShipHierarchyIds.Longitudinal)));
+        foreach (var p in registry.Parts)
+        {
+            if (p.System != CadSystem.Longitudinal)
+                continue;
+            if (p.Kind is CadPartKind.LongitudinalGirder or CadPartKind.ThrustMember)
+                ids.UnionWith(registry.CollectEntityIds(p.Id));
+        }
+
+        return ids;
+    }
+
+    /// <summary>Legacy button name → primary longitudinal only.</summary>
+    public static HashSet<Guid> CollectGirders(ShipPartRegistry registry) =>
+        CollectPrimaryLongitudinal(registry);
+
+    public static HashSet<Guid> CollectDeck0Supports(ShipPartRegistry registry)
+    {
+        var ids = new HashSet<Guid>();
+        ids.UnionWith(registry.CollectEntityIds(AssemblyId.Of(ShipHierarchyIds.Deck0)));
+        foreach (var p in registry.Parts)
+        {
+            if (p.Kind != CadPartKind.DeckEdgeGirder)
+                continue;
+            if (p.Assembly.Value.Contains("dk0", StringComparison.OrdinalIgnoreCase)
+                || p.Id.Value.Contains("-dk0", StringComparison.OrdinalIgnoreCase))
+                ids.UnionWith(registry.CollectEntityIds(p.Id));
+        }
+
+        return ids;
+    }
+
+    public static HashSet<Guid> CollectCargoFloorSupports(ShipPartRegistry registry)
+    {
+        var ids = new HashSet<Guid>();
+        ids.UnionWith(registry.CollectEntityIds(AssemblyId.Of(ShipHierarchyIds.DeckM1)));
+        foreach (var p in registry.Parts)
+        {
+            if (p.Id.Value.StartsWith("cargo-floor-", StringComparison.OrdinalIgnoreCase)
+                || p.Assembly.Value.Contains("dkm1", StringComparison.OrdinalIgnoreCase))
+            {
+                if (p.Kind is CadPartKind.LongitudinalGirder or CadPartKind.DeckEdgeGirder)
+                    ids.UnionWith(registry.CollectEntityIds(p.Id));
+            }
+        }
+
+        return ids;
+    }
+
+    /// <summary>Virtual filter — not a physical assembly.</summary>
+    public static HashSet<Guid> CollectAllLongitudinalLoadBearing(ShipPartRegistry registry)
+    {
+        var ids = CollectPrimaryLongitudinal(registry);
+        ids.UnionWith(CollectKnuckles(registry));
+        foreach (var p in registry.Parts)
+        {
+            if (p.Kind is CadPartKind.DeckEdgeGirder or CadPartKind.LongitudinalGirder
+                or CadPartKind.ThrustMember or CadPartKind.KnuckleStringer)
+                ids.UnionWith(registry.CollectEntityIds(p.Id));
+        }
+
         return ids;
     }
 

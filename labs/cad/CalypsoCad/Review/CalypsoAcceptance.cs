@@ -459,9 +459,23 @@ internal static class CalypsoAcceptance
         Add(
             "no floating portal knees",
             !doc.Entities.Any(e => e.Name?.Contains("-knee-", StringComparison.OrdinalIgnoreCase) == true));
-        var girders = doc.Entities.Count(e =>
-            e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) == true);
-        Add("deck longitudinal girders", girders >= 24, $"girders={girders}");
+        var primaryKeel = doc.Entities.Count(e =>
+            e.Name?.StartsWith("primary-keel", StringComparison.OrdinalIgnoreCase) == true);
+        var thrust = doc.Entities.Count(e =>
+            e.Name?.StartsWith("thrust-spine", StringComparison.OrdinalIgnoreCase) == true);
+        var deckEdges = doc.Entities.Count(e =>
+            e.Name?.StartsWith("deck-edge-", StringComparison.OrdinalIgnoreCase) == true);
+        var cargoEdges = doc.Entities.Count(e =>
+            e.Name?.StartsWith("cargo-floor-", StringComparison.OrdinalIgnoreCase) == true);
+        var legacyGrid = doc.Entities.Count(e =>
+            e.Name?.StartsWith("girder-keel-d", StringComparison.OrdinalIgnoreCase) == true
+            || e.Name?.StartsWith("girder-port-d", StringComparison.OrdinalIgnoreCase) == true
+            || e.Name?.StartsWith("girder-stbd-d", StringComparison.OrdinalIgnoreCase) == true);
+        Add("primary keel spine", primaryKeel >= 4, $"primaryKeel={primaryKeel}");
+        Add("thrust spine (ENG)", thrust >= 2, $"thrust={thrust}");
+        Add("deck edge supports", deckEdges >= 4, $"deckEdges={deckEdges}");
+        Add("cargo-floor edge supports", cargoEdges >= 2, $"cargoEdges={cargoEdges}");
+        Add("no legacy per-deck girder grid", legacyGrid == 0, $"legacyGrid={legacyGrid}");
         var deckBeamEntities = doc.Entities
             .Where(e => e.Name?.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase) == true)
             .ToList();
@@ -505,7 +519,9 @@ internal static class CalypsoAcceptance
 
         var holdGirders = entities.Count(e =>
         {
-            if (e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) != true)
+            var n = e.Name ?? "";
+            if (!n.StartsWith("primary-keel", StringComparison.OrdinalIgnoreCase)
+                && !n.StartsWith("cargo-floor-", StringComparison.OrdinalIgnoreCase))
                 return false;
             if (e.Properties is null
                 || !e.Properties.TryGetValue("stationZ", out var sz)
@@ -587,8 +603,9 @@ internal static class CalypsoAcceptance
             $"faceTop={sandwichFaces} ribs={sandwichRibs}");
 
         var joinStubs = entities.Count(e =>
-            e.Name?.Contains("-join-", StringComparison.OrdinalIgnoreCase) == true);
-        Add("frame↔girder join stubs", joinStubs >= 12, $"joins={joinStubs}");
+            e.Name?.Contains("-join-", StringComparison.OrdinalIgnoreCase) == true
+            && e.Name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase));
+        Add("no arbitrary frame×girder join stubs", joinStubs == 0, $"joins={joinStubs}");
 
         var deckSeats = entities.Count(e =>
             e.Name?.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase) == true);

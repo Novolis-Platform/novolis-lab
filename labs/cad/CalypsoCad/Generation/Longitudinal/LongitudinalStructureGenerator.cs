@@ -6,8 +6,8 @@ using CadDocument = Novolis.Cad.Primitives.CadDocument;
 namespace CalypsoCad.Generation.Longitudinal;
 
 /// <summary>
-/// Whole-ship longitudinal structure: deck girders, continuous hull-knuckle stringers,
-/// frame×girder join stubs. Knuckle stringers are path-driven (not mid-bay boxes).
+/// Hull knuckle stringers + primary longitudinal load paths.
+/// Deck-edge and cargo-floor supports are owned by deck/cargo generators.
 /// </summary>
 internal static class LongitudinalStructureGenerator
 {
@@ -22,16 +22,19 @@ internal static class LongitudinalStructureGenerator
         ShipGeometryContext context,
         IReadOnlyList<(string Id, float ZStem)>? bulkheadStations = null)
     {
-        var halfDepthZ = topo.Web * 0.5f;
-        CalypsoShipbuildingFrames.AddDeckLongitudinalGirders(
-            entities, loa, topo.ZStart, topo.ZEnd, topo.Web, topo.FrameBay, topo.DeckUps, topo.TPlate,
-            topo.OpenAtriumSpans);
+        var bh = bulkheadStations ?? [];
+
+        // Primary keel + ENG thrust (CadSystem.Longitudinal).
+        PrimaryLongitudinalGenerator.Generate(entities, loa, topo, ordinaryFrames, bh);
+
+        // Cargo-floor edge supports under Deck -1 / HOLD (owned as deck-dkm1).
+        CargoFloorSupportGenerator.Generate(entities, loa, topo, ordinaryFrames, bh);
 
         // Eight continuous knuckle paths → swept segments between structural joints.
         var jointZs = HullKnucklePath.MergeJointStations(
             loa,
             ordinaryFrames.Select(f => f.ZStem),
-            (bulkheadStations ?? []).Select(b => b.ZStem));
+            bh.Select(b => b.ZStem));
         var paths = HullKnucklePath.Build(
             context.Hull, CalypsoShipbuildingFrames.PlatingJoinInset, jointZs);
         var knuckle = HullKnuckleStringerGenerator.Generate(paths, loa, topo.Web, context, entities);
@@ -41,7 +44,6 @@ internal static class LongitudinalStructureGenerator
         // Path-swept shell plates on the same joint stations as knuckle paths.
         CalypsoShipbuildingFrames.AddOuterHullShellPlating(entities, loa, topo.Web, jointZs);
 
-        // Independent loft re-sample gate (written under docs/renders on headless / acceptance).
         var knuckleReport = HullKnucklePathValidation.Evaluate(
             new CadDocument { Entities = entities }, context.Hull, CalypsoShipbuildingFrames.PlatingJoinInset);
         LastKnucklePathReport = knuckleReport;
@@ -49,9 +51,6 @@ internal static class LongitudinalStructureGenerator
             Console.Error.WriteLine(
                 $"  FAIL knuckle path {fail.PartId}: deviation={fail.DeviationM:0.###}m @z={fail.MidZ:0.##}");
 
-        Func<float, bool> inHold = context.Constraints.InCargoClearance;
-        CalypsoShipbuildingFrames.AddFrameGirderJoinStubs(
-            entities, loa, ordinaryFrames, topo.Web, halfDepthZ, topo.DeckUps, topo.TPlate,
-            inHold, topo.OpenAtriumSpans);
+        // No AddDeckLongitudinalGirders / AddFrameGirderJoinStubs — purpose-owned generators only.
     }
 }

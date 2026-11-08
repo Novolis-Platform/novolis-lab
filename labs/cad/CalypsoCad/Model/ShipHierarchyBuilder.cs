@@ -38,6 +38,8 @@ internal static class ShipHierarchyBuilder
             "Pressure hull shell", ShipHierarchyIds.Hull);
         EnsureOrg(registry, ShipHierarchyIds.KnuckleStringers, CadSystem.Hull, CadAssemblyKind.SystemGroup,
             "Knuckle stringers", ShipHierarchyIds.Hull);
+        EnsureOrg(registry, ShipHierarchyIds.ShellStiffeners, CadSystem.Hull, CadAssemblyKind.SystemGroup,
+            "Additional shell stiffeners", ShipHierarchyIds.Hull);
 
         EnsureOrg(registry, ShipHierarchyIds.Transverse, CadSystem.Transverse, CadAssemblyKind.SystemGroup,
             "Transverse structure", ShipHierarchyIds.PhysicalStructure);
@@ -48,17 +50,19 @@ internal static class ShipHierarchyBuilder
 
         EnsureOrg(registry, ShipHierarchyIds.Longitudinal, CadSystem.Longitudinal, CadAssemblyKind.SystemGroup,
             "Longitudinal structure", ShipHierarchyIds.PhysicalStructure);
-        EnsureOrg(registry, ShipHierarchyIds.KeelGirders, CadSystem.Longitudinal, CadAssemblyKind.SystemGroup,
-            "Keel girders", ShipHierarchyIds.Longitudinal);
-        EnsureOrg(registry, ShipHierarchyIds.PortGirders, CadSystem.Longitudinal, CadAssemblyKind.SystemGroup,
-            "Port girders", ShipHierarchyIds.Longitudinal);
-        EnsureOrg(registry, ShipHierarchyIds.StbdGirders, CadSystem.Longitudinal, CadAssemblyKind.SystemGroup,
-            "Starboard girders", ShipHierarchyIds.Longitudinal);
+        EnsureOrg(registry, ShipHierarchyIds.PrimaryHullGirders, CadSystem.Longitudinal, CadAssemblyKind.SystemGroup,
+            "Primary hull girders", ShipHierarchyIds.Longitudinal);
         EnsureOrg(registry, ShipHierarchyIds.ThrustStructure, CadSystem.Longitudinal, CadAssemblyKind.SystemGroup,
-            "Thrust structure", ShipHierarchyIds.Longitudinal);
+            "Propulsion thrust structure", ShipHierarchyIds.Longitudinal);
 
         EnsureOrg(registry, ShipHierarchyIds.DeckStructure, CadSystem.Deck, CadAssemblyKind.SystemGroup,
             "Deck structure", ShipHierarchyIds.PhysicalStructure);
+        EnsureOrg(registry, ShipHierarchyIds.DeckM1, CadSystem.Deck, CadAssemblyKind.SystemGroup,
+            "Deck -1", ShipHierarchyIds.DeckStructure);
+        EnsureOrg(registry, ShipHierarchyIds.Deck0, CadSystem.Deck, CadAssemblyKind.SystemGroup,
+            "Deck 0", ShipHierarchyIds.DeckStructure);
+        EnsureOrg(registry, ShipHierarchyIds.DeckP1, CadSystem.Deck, CadAssemblyKind.SystemGroup,
+            "Deck +1", ShipHierarchyIds.DeckStructure);
 
         EnsureOrg(registry, ShipHierarchyIds.Closures, CadSystem.Closures, CadAssemblyKind.SystemGroup,
             "Closures and access", ShipHierarchyIds.ShipRoot);
@@ -178,17 +182,29 @@ internal static class ShipHierarchyBuilder
             || asm.Id.Value.StartsWith("FRAME-", StringComparison.OrdinalIgnoreCase))
             return ShipHierarchyIds.RingFrames;
 
+        if (asm.Id.Value.StartsWith("deck-dkm1", StringComparison.OrdinalIgnoreCase)
+            || asm.Id.Value.StartsWith("cargo-floor-", StringComparison.OrdinalIgnoreCase))
+            return ShipHierarchyIds.DeckM1;
+        if (asm.Id.Value.StartsWith("deck-dk0", StringComparison.OrdinalIgnoreCase)
+            || asm.Id.Value.Contains("-dk0", StringComparison.OrdinalIgnoreCase)
+               && asm.System == CadSystem.Deck)
+            return ShipHierarchyIds.Deck0;
+        if (asm.Id.Value.StartsWith("deck-dk1", StringComparison.OrdinalIgnoreCase)
+            || asm.Id.Value.Contains("-dk1", StringComparison.OrdinalIgnoreCase)
+               && asm.System == CadSystem.Deck)
+            return ShipHierarchyIds.DeckP1;
+
         if (asm.Kind == CadAssemblyKind.DeckBay
             || asm.Id.Value.StartsWith("deck-", StringComparison.OrdinalIgnoreCase))
             return ShipHierarchyIds.DeckStructure;
 
-        if (asm.Id.Value.StartsWith("girder-keel", StringComparison.OrdinalIgnoreCase))
-            return ShipHierarchyIds.KeelGirders;
-        if (asm.Id.Value.StartsWith("girder-port", StringComparison.OrdinalIgnoreCase))
-            return ShipHierarchyIds.PortGirders;
-        if (asm.Id.Value.StartsWith("girder-stbd", StringComparison.OrdinalIgnoreCase))
-            return ShipHierarchyIds.StbdGirders;
-        if (asm.Id.Value.StartsWith("coaming", StringComparison.OrdinalIgnoreCase)
+        if (asm.Id.Value.StartsWith("primary-keel", StringComparison.OrdinalIgnoreCase)
+            || asm.Id.Value.StartsWith("girder-keel", StringComparison.OrdinalIgnoreCase)
+            || asm.Id.Value.StartsWith("girder-port", StringComparison.OrdinalIgnoreCase)
+            || asm.Id.Value.StartsWith("girder-stbd", StringComparison.OrdinalIgnoreCase))
+            return ShipHierarchyIds.PrimaryHullGirders;
+        if (asm.Id.Value.StartsWith("thrust-spine", StringComparison.OrdinalIgnoreCase)
+            || asm.Id.Value.StartsWith("coaming", StringComparison.OrdinalIgnoreCase)
             || asm.Id.Value.StartsWith("ramp", StringComparison.OrdinalIgnoreCase)
             || (asm.Kind == CadAssemblyKind.LongitudinalRun && asm.System == CadSystem.Longitudinal))
             return ShipHierarchyIds.ThrustStructure;

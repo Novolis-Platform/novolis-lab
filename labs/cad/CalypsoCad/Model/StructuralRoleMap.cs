@@ -96,8 +96,37 @@ internal static class StructuralRoleMap
                 StructuralRoles.TransverseFrame, asm);
         }
 
+        if (name.StartsWith("primary-keel", StringComparison.OrdinalIgnoreCase))
+        {
+            return (CadSystem.Longitudinal, CadPartKind.LongitudinalGirder, PartFunction.LoadBearing,
+                StructuralRoles.LongitudinalGirder, "primary-keel");
+        }
+
+        if (name.StartsWith("thrust-spine", StringComparison.OrdinalIgnoreCase))
+        {
+            return (CadSystem.Longitudinal, CadPartKind.ThrustMember, PartFunction.LoadBearing,
+                StructuralRoles.ThrustStructure, "thrust-spine");
+        }
+
+        if (name.StartsWith("cargo-floor-", StringComparison.OrdinalIgnoreCase))
+        {
+            return (CadSystem.Deck, CadPartKind.LongitudinalGirder, PartFunction.LoadBearing,
+                StructuralRoles.LongitudinalGirder, "deck-dkm1");
+        }
+
+        if (name.StartsWith("deck-edge-", StringComparison.OrdinalIgnoreCase))
+        {
+            var asm = name.Contains("-dk1", StringComparison.OrdinalIgnoreCase) ? "deck-dk1"
+                : name.Contains("-dk0", StringComparison.OrdinalIgnoreCase) ? "deck-dk0"
+                : name.Contains("-dkm1", StringComparison.OrdinalIgnoreCase) ? "deck-dkm1"
+                : AssemblyFromDeckName(name);
+            return (CadSystem.Deck, CadPartKind.DeckEdgeGirder, PartFunction.LoadBearing,
+                StructuralRoles.StructuralDeck, asm);
+        }
+
         if (name.StartsWith("girder-", StringComparison.OrdinalIgnoreCase))
         {
+            // Legacy StructuralBayAssembly proof names only.
             var asm = name.StartsWith("girder-keel", StringComparison.OrdinalIgnoreCase) ? "girder-keel"
                 : name.StartsWith("girder-port", StringComparison.OrdinalIgnoreCase) ? "girder-port"
                 : name.StartsWith("girder-stbd", StringComparison.OrdinalIgnoreCase) ? "girder-stbd"

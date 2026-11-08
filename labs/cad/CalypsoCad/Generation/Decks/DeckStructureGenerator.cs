@@ -16,6 +16,8 @@ internal static class DeckStructureGenerator
     {
         _ = context;
         var bhStations = bulkheads.Select(b => (b.Id, b.ZStem)).ToList();
+        // Deck-edge longitudinal supports before sandwich panels (load path → panel).
+        DeckSupportGenerator.Generate(entities, loa, topo, ordinaryFrames, bhStations);
         CalypsoShipbuildingFrames.AddCellularSandwichDecks(
             entities, loa, topo.ZStart, topo.ZEnd, topo.FrameBay, topo.SandwichDecks, topo.TPlate,
             topo.OpenAtriumSpans, topo.Web, ordinaryFrames, bhStations);

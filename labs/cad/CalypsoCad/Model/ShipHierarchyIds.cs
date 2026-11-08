@@ -21,12 +21,18 @@ internal static class ShipHierarchyIds
     public const string HeavyBulkheads = "PHYS-HEAVY-BULKHEADS";
 
     public const string Longitudinal = "PHYS-LONGITUDINAL";
-    public const string KeelGirders = "PHYS-GIRDER-KEEL";
-    public const string PortGirders = "PHYS-GIRDER-PORT";
-    public const string StbdGirders = "PHYS-GIRDER-STBD";
+    public const string PrimaryHullGirders = "PHYS-PRIMARY-GIRDERS";
     public const string ThrustStructure = "PHYS-THRUST";
+    /// <summary>Legacy group ids — retained for old snapshots; new models use PrimaryHullGirders.</summary>
+    public const string KeelGirders = PrimaryHullGirders;
+    public const string PortGirders = PrimaryHullGirders;
+    public const string StbdGirders = PrimaryHullGirders;
 
     public const string DeckStructure = "PHYS-DECK-STRUCTURE";
+    public const string DeckM1 = "PHYS-DECK-M1";
+    public const string Deck0 = "PHYS-DECK-0";
+    public const string DeckP1 = "PHYS-DECK-P1";
+    public const string ShellStiffeners = "PHYS-HULL-SHELL-STIFFENERS";
     public const string Closures = "PHYS-CLOSURES";
     public const string Machinery = "PHYS-MACHINERY";
     public const string Interior = "PHYS-INTERIOR";

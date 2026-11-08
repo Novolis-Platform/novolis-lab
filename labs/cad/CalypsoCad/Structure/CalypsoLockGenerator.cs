@@ -2639,6 +2639,10 @@ internal static class CalypsoLockGenerator
     private static bool IsPrimaryStructureName(string name) =>
         name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
         || name.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("primary-keel", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("thrust-spine", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("cargo-floor-", StringComparison.OrdinalIgnoreCase)
+        || name.StartsWith("deck-edge-", StringComparison.OrdinalIgnoreCase)
         || name.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
         || name.StartsWith("shell-", StringComparison.OrdinalIgnoreCase)
         || name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase)

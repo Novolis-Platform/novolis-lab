@@ -729,8 +729,11 @@ internal sealed class CalypsoRenderer
 
         // Faceted OML guide only when explicitly requested — never on structure-wire
         // progressive slides (it fills the volume and blocks the skeleton read).
+        // Isolation mode: reference guides are not selected physical components — suppress
+        // unless the caller cleared RevealEntityIds (full model) or set ShowOmlGuide with no isolate.
         if (_session.ViewMode == CalypsoViewMode.Orbit
             && _session.ShowOmlGuide
+            && _session.RevealEntityIds is null
             && !_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
             CalypsoExterior.DrawOmlWireGuide(_world, _session.Document);
 
@@ -2426,6 +2429,10 @@ internal sealed class CalypsoRenderer
         return n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("primary-keel", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("thrust-spine", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("cargo-floor-", StringComparison.OrdinalIgnoreCase)
+               || n.StartsWith("deck-edge-", StringComparison.OrdinalIgnoreCase)
                || n.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase)
                || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
@@ -2458,7 +2465,8 @@ internal sealed class CalypsoRenderer
                 Model.CadPartKind.BulkheadPlate => CalypsoVisualLayers.Bulkheads,
                 Model.CadPartKind.StructuralBracket => CalypsoVisualLayers.Joinery,
                 Model.CadPartKind.DeckPanel => DeckPlateFlags(box) | outer,
-                Model.CadPartKind.LongitudinalGirder or Model.CadPartKind.ThrustMember =>
+                Model.CadPartKind.LongitudinalGirder or Model.CadPartKind.ThrustMember
+                    or Model.CadPartKind.DeckEdgeGirder =>
                     CalypsoVisualLayers.Longitudinals | outer,
                 // Continuous knuckle paths: show with open-web frames AND girders (not shell-only).
                 Model.CadPartKind.HullStringer or Model.CadPartKind.KnuckleStringer
@@ -2489,7 +2497,12 @@ internal sealed class CalypsoRenderer
             if (string.Equals(role, "PressureBulkhead", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Bulkheads;
             if (string.Equals(role, "StructuralDeck", StringComparison.OrdinalIgnoreCase))
+            {
+                // Deck-edge girders are longitudinal load paths, not sandwich face sheets.
+                if (n.StartsWith("deck-edge-", StringComparison.OrdinalIgnoreCase))
+                    return CalypsoVisualLayers.Longitudinals | outer;
                 return DeckPlateFlags(box) | outer;
+            }
             if (string.Equals(role, "LongitudinalGirder", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Longitudinals | outer;
@@ -2517,6 +2530,10 @@ internal sealed class CalypsoRenderer
         // frame-*-deckbeam-* before generic frame- (deckbeams are Longitudinals, not open webs).
         if (n.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("primary-keel", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("thrust-spine", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("cargo-floor-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("deck-edge-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Longitudinals | outer;

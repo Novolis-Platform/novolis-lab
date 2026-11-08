@@ -73,15 +73,17 @@ internal sealed class CalypsoObjectBrowser : UserControl
         isolates.Children.Add(ActionBtn("Frames", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectRingFrames)));
         isolates.Children.Add(ActionBtn("Bulkheads", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectBulkheads)));
         isolates.Children.Add(ActionBtn("Knuckles", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectKnuckles)));
-        isolates.Children.Add(ActionBtn("Girders", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectGirders)));
-        isolates.Children.Add(ActionBtn("Joins", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectBrackets)));
+        isolates.Children.Add(ActionBtn("Primary L", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectPrimaryLongitudinal)));
+        isolates.Children.Add(ActionBtn("Deck 0", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectDeck0Supports)));
+        isolates.Children.Add(ActionBtn("Cargo fl", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectCargoFloorSupports)));
+        isolates.Children.Add(ActionBtn("All long.", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectAllLongitudinalLoadBearing)));
 
         var root = new StackPanel { Spacing = 2 };
         root.Children.Add(Header("Object browser"));
         root.Children.Add(_search);
         root.Children.Add(_tree);
         root.Children.Add(actions);
-        root.Children.Add(Hint("Isolate category (registry ownership):"));
+        root.Children.Add(Hint("Isolate (registry ownership). All long. = virtual filter."));
         root.Children.Add(isolates);
         root.Children.Add(Header("Inspector"));
         root.Children.Add(_inspector);

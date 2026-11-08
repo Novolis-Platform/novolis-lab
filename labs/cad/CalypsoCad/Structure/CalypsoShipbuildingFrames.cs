@@ -339,6 +339,11 @@ internal static class CalypsoShipbuildingFrames
         }
     }
 
+    /// <summary>
+    /// Obsolete: replaced by PrimaryLongitudinalGenerator / DeckSupportGenerator /
+    /// CargoFloorSupportGenerator. Kept as no-op so legacy call sites compile until removed.
+    /// </summary>
+    [Obsolete("Use purpose-owned longitudinal generators instead of per-deck keel/port/stbd grids.")]
     public static void AddDeckLongitudinalGirders(
         List<CadEntity> entities,
         float loa,
@@ -350,98 +355,13 @@ internal static class CalypsoShipbuildingFrames
         float tPlate = 0.1f,
         IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null)
     {
-        if (zEnd <= zStart + 1f)
-            return;
-
-        var bayIndex = 0;
-        // Start at zStart — HalfBeamInside + ySide<0.35 already taper-clips the extreme stem.
-        var girderStart = zStart;
-        var floorDeck = deckUps.Count > 0 ? deckUps[0] : 0.5f;
-        for (var z = girderStart; z < zEnd - 0.5f; z += frameBay)
-        {
-            var zc = MathF.Min(z + frameBay * 0.5f, zEnd - 0.2f);
-            // Overlap into frame webs so adjacent bay girders form a continuous load path.
-            var halfLenZ = MathF.Min(frameBay * 0.5f + web * 0.45f, zEnd - zc);
-            if (halfLenZ < 0.25f)
-                break;
-
-            var inHold = IsHoldCargoStem(zc, openAtriumSpans);
-            foreach (var deckUp in deckUps)
-            {
-                // HOLD: keep continuous keel + side girders on the cargo floor only —
-                // no upper deck girder tiers across the open bay.
-                if (inHold && deckUp > floorDeck + 0.15f)
-                    continue;
-                if (!inHold && IsOpenAtriumDeck(zc, deckUp, openAtriumSpans))
-                    continue; // ENG atrium — no floating girders across the void
-
-                // Use the narrowest beam along the girder span so ends never poke past the taper.
-                var zA = zc - halfLenZ;
-                var zB = zc + halfLenZ;
-                var girderInset = DefaultSkinInset + 0.28f;
-                var halfB = MathF.Min(
-                    CalypsoLockGenerator.HalfBeamInsidePublic(zA, deckUp, girderInset),
-                    MathF.Min(
-                        CalypsoLockGenerator.HalfBeamInsidePublic(zc, deckUp, girderInset),
-                        CalypsoLockGenerator.HalfBeamInsidePublic(zB, deckUp, girderInset)));
-                var ySide = halfB - web * 0.85f;
-                if (ySide < 0.35f)
-                    continue;
-                // Sit under plate underside (plate top = deckUp); not a second floating floor.
-                // HOLD floor run uses a deeper web box for continuous side/keel strength.
-                var webH = inHold ? web * 0.55f : web * 0.35f;
-                var up = deckUp - tPlate - webH;
-
-                var keelAsm = "girder-keel";
-                var portAsm = "girder-port";
-                var stbdAsm = "girder-stbd";
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities,
-                    loa,
-                    $"girder-keel-d{bayIndex}-{deckUp:0.#}",
-                    0f,
-                    up,
-                    zc,
-                    MathF.Min(0.12f, web),
-                    webH,
-                    halfLenZ,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.LongitudinalGirder, keelAsm, StationZ: zc, DeckUp: deckUp));
-
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities,
-                    loa,
-                    $"girder-port-d{bayIndex}-{deckUp:0.#}",
-                    -ySide,
-                    up,
-                    zc,
-                    web * 0.4f,
-                    webH,
-                    halfLenZ,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.LongitudinalGirder, portAsm, StationZ: zc, DeckUp: deckUp));
-
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities,
-                    loa,
-                    $"girder-stbd-d{bayIndex}-{deckUp:0.#}",
-                    ySide,
-                    up,
-                    zc,
-                    web * 0.4f,
-                    webH,
-                    halfLenZ,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.LongitudinalGirder, stbdAsm, StationZ: zc, DeckUp: deckUp));
-            }
-
-            bayIndex++;
-        }
+        _ = (entities, loa, zStart, zEnd, web, frameBay, deckUps, tPlate, openAtriumSpans);
     }
 
     /// <summary>
-    /// Short bracket stubs at frame × keel/port/stbd girder crossings (weld tags via <c>joins</c>).
+    /// Obsolete: connection brackets require defined mating geometry — do not invent stubs.
     /// </summary>
+    [Obsolete("Generate brackets from actual joint design, not assumed frame×girder crossings.")]
     public static void AddFrameGirderJoinStubs(
         List<CadEntity> entities,
         float loa,
@@ -453,59 +373,7 @@ internal static class CalypsoShipbuildingFrames
         Func<float, bool> inOpenHoldCell,
         IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null)
     {
-        var stubHy = MathF.Max(0.06f, web * 0.35f);
-        var stubHu = MathF.Max(0.06f, web * 0.28f);
-        var stubHz = MathF.Max(halfDepthZ, web * 0.45f);
-
-        var floorDeck = deckUps.Count > 0 ? deckUps[0] : 0.5f;
-        foreach (var (id, zStem, _) in frameStations)
-        {
-            var hold = inOpenHoldCell(zStem);
-            var frameName = id.StartsWith("frame-", StringComparison.OrdinalIgnoreCase) ? id : $"frame-{id}";
-            var frameAsm = frameName.Contains('-')
-                ? string.Join('-', frameName.Split('-').Take(2))
-                : frameName;
-
-            foreach (var deckUp in deckUps)
-            {
-                // HOLD: join stubs only at cargo floor (perimeter framing ↔ floor girders).
-                if (hold && deckUp > floorDeck + 0.15f)
-                    continue;
-                if (!hold && IsOpenAtriumDeck(zStem, deckUp, openAtriumSpans))
-                    continue;
-
-                var inset = DefaultSkinInset + 0.28f;
-                var halfB = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp, inset);
-                var ySide = halfB - web * 0.85f;
-                if (ySide < 0.35f)
-                    continue;
-                var up = deckUp - tPlate - web * 0.35f;
-
-                void Stub(string side, float y, string girderAsm)
-                {
-                    CalypsoLockGenerator.TryAddStructureBar(
-                        entities,
-                        loa,
-                        $"{frameName}-join-{side}-d{deckUp:0.#}",
-                        y,
-                        up,
-                        zStem,
-                        stubHy,
-                        stubHu,
-                        stubHz,
-                        meta: new StructuralSolidMeta(
-                            StructuralRoles.StructuralBracket,
-                            frameAsm,
-                            StationZ: zStem,
-                            DeckUp: deckUp,
-                            Joins: [girderAsm, frameAsm]));
-                }
-
-                Stub("keel", 0f, "girder-keel");
-                Stub("port", -ySide, "girder-port");
-                Stub("stbd", ySide, "girder-stbd");
-            }
-        }
+        _ = (entities, loa, frameStations, web, halfDepthZ, deckUps, tPlate, inOpenHoldCell, openAtriumSpans);
     }
 
     public static void AddTransverseDeckBeams(
