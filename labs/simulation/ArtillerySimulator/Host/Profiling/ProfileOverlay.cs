@@ -16,6 +16,7 @@ internal sealed class ProfileOverlay : IDisposable
     private int _height;
     private string _lastText = "";
     private bool _uploaded;
+    private float _refreshAge = 99f;
 
     public ProfileOverlay()
     {
@@ -31,16 +32,20 @@ internal sealed class ProfileOverlay : IDisposable
             return;
 
         EnsureSurface(frame.Width, frame.Height);
-        if (text != _lastText || !_uploaded)
+        _refreshAge += frame.DeltaSeconds;
+        // FPS counters change every frame — refresh the panel at 4 Hz, redraw GPU tex every frame.
+        var dirty = text != _lastText && _refreshAge >= 0.25f || !_uploaded;
+        if (dirty)
         {
             _lastText = text;
+            _refreshAge = 0f;
             Rasterize(text);
-            frame.BlitOverlay(_pixels, _width, _height);
+            frame.BlitOverlay2(_pixels, _width, _height);
             _uploaded = true;
         }
         else
         {
-            frame.DrawOverlay();
+            frame.DrawOverlay2();
         }
     }
 
