@@ -14,7 +14,7 @@
     "vertexCount": 0,
     "passed": false,
     "failures": [
-      "bh-BOW-COLLISION: triangle[1953] occupies opening[1] at (-0.106,4.681)."
+      "bh-BOW-COLLISION: watertight solid validation failed \u2014 nonManifoldEdges=4."
     ],
     "checks": []
   }

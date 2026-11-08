@@ -14,7 +14,7 @@
     "vertexCount": 0,
     "passed": false,
     "failures": [
-      "bh-CROSS-FORE: triangle[1980] occupies opening[1] at (-0.210,4.515)."
+      "bh-CROSS-FORE: watertight solid validation failed \u2014 nonManifoldEdges=4."
     ],
     "checks": []
   }

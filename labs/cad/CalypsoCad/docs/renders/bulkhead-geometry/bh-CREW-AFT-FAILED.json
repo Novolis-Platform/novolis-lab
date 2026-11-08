@@ -14,7 +14,7 @@
     "vertexCount": 0,
     "passed": false,
     "failures": [
-      "bh-CREW-AFT: watertight solid validation failed \u2014 nonManifoldEdges=5."
+      "bh-CREW-AFT: watertight solid validation failed \u2014 nonManifoldEdges=8."
     ],
     "checks": []
   }

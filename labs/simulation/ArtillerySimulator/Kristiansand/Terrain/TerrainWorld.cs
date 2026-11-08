@@ -21,8 +21,8 @@ internal sealed class TerrainWorld : IDisposable
     /// </summary>
     public const int DisplayCells = 512;
 
-    /// <summary>~188 m/cell — enough for shell/terrain contact without a 500k-tri BVH at boot.</summary>
-    public const int CollisionCells = 128;
+    /// <summary>~125 m/cell — closer aim/impact agreement than 128 without DisplayCells (512) BVH build cost.</summary>
+    public const int CollisionCells = 192;
 
     private WorldExtentOptions _extentOptions = new()
     {

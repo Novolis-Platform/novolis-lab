@@ -10,9 +10,9 @@ Levels are pluggable (`GameLevelCatalog` / `IGameLevel`). Shipped: **Defense of 
 # Desktop play (VSync on while the window is visible)
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --level kristiansand.defense --seed 42
 
-# Headless exit-code smoke (load → aim → fire → impact)
+# CI-ish headless smoke (load → aim → fire → impact; exit 0 on success)
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --smoke --seed 42
-echo $LASTEXITCODE
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # Headless agent HTTP (always attaches surface)
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --headless --seed 42
@@ -20,9 +20,12 @@ dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\A
 # Desktop + agent (opt-in; default desktop does not open the port)
 $env:ARTILLERY_ATTACH_AGENT = "1"
 dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --seed 42 --attach-agent
+
+# Scripted agent play (game must be running with --headless)
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\artillery-agent-play.cs -- --rounds 5
 ```
 
-Splash → ←/→ pick level → load → play. **Esc / P** pause, **L** licenses (scrollable full `NOTICE.txt` + `assets/sfx/LICENSE.txt`).
+Splash → ←/→ pick level (when more than one playable) → load → play. **Esc / P** pause, **L** licenses (scrollable full `NOTICE.txt` + `assets/sfx/LICENSE.txt`). In play: **F1** toggles the live frame profiler overlay; **Ctrl+C** copies a debug dump to the clipboard.
 
 `--seed` makes PE sampling and convoy RNG reproducible (`SeedHash` on agent snapshots).
 
@@ -71,7 +74,8 @@ Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force,
 | `Host/` | `Program`, DI, CLI, `ArtilleryGameRunner`, smoke driver, profiler |
 | `Domain/` | `BattleSession`, clock, `Battery/` (gun, crew, ballistics loop, piece tech) |
 | `Application/` | `BattleWorld`, `FrameViewModel`, commands + pump, `BattleFxSink`, ports |
-| `Adapters/Silk/` | `FrameDirector`, renderer, shell, input, presentation binder |
+| `Adapters/Silk/` | `FrameDirector`, shell, input, presentation binder |
+| `Adapters/Silk/Scene/` | `ArtillerySceneRenderer` orchestrator, `SkyDomeCache`, `BattleWireComposer`, `HudFrameComposer` |
 | `Adapters/Agent/` | `ArtilleryLiveHost` → `ChannelWriter<BattleCommand>` |
 | `Features/Product/` | Title, legal, MenuFlows shell screens |
 | `Features/Levels/` | `IGameLevel`, catalog |

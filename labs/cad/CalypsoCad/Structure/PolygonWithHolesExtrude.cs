@@ -127,33 +127,43 @@ internal static class PolygonWithHolesExtrude
                     $"Hole={FormatRing(hole)}. Non-rect openings require a CDT; refuse silent skip.");
             }
 
-            EnsureVert(verts, (y0, u0));
-            EnsureVert(verts, (y0, u1));
-            EnsureVert(verts, (y1, u1));
-            EnsureVert(verts, (y1, u0));
-
-            faces = SplitAllByVertical(verts, faces, y0);
-            faces = SplitAllByVertical(verts, faces, y1);
-            faces = SplitAllByHorizontal(verts, faces, u0);
-            faces = SplitAllByHorizontal(verts, faces, u1);
-
-            var kept = new List<(int A, int B, int C)>(faces.Count);
+            var next = new List<(int A, int B, int C)>(faces.Count * 2);
             foreach (var (a, b, c) in faces)
             {
-                var cy = (verts[a].Y + verts[b].Y + verts[c].Y) / 3f;
-                var cu = (verts[a].Up + verts[b].Up + verts[c].Up) / 3f;
-                if (cy > y0 + 1e-5f && cy < y1 - 1e-5f && cu > u0 + 1e-5f && cu < u1 - 1e-5f)
+                var poly = new List<(float Y, float Up)> { verts[a], verts[b], verts[c] };
+                if (!TriangleOverlapsAabb(poly, y0, y1, u0, u1))
+                {
+                    next.Add((a, b, c));
                     continue;
-                kept.Add((a, b, c));
+                }
+
+                foreach (var piece in SubtractAabbFromConvex(poly, y0, y1, u0, u1))
+                {
+                    if (piece.Count < 3)
+                        continue;
+                    var baseIdx = verts.Count;
+                    verts.AddRange(piece);
+                    // Force CCW fan.
+                    if (SignedArea(piece) < 0f)
+                    {
+                        for (var i = 1; i < piece.Count - 1; i++)
+                            next.Add((baseIdx, baseIdx + i + 1, baseIdx + i));
+                    }
+                    else
+                    {
+                        for (var i = 1; i < piece.Count - 1; i++)
+                            next.Add((baseIdx, baseIdx + i, baseIdx + i + 1));
+                    }
+                }
             }
 
-            if (kept.Count == 0)
+            if (next.Count == 0)
             {
                 throw new InvalidOperationException(
                     $"{partId}: opening[{hi}] ({y0:F3}..{y1:F3}, {u0:F3}..{u1:F3}) removed all plate triangles.");
             }
 
-            faces = kept;
+            faces = next;
         }
 
         if (faces.Count == 0)
@@ -162,145 +172,108 @@ internal static class PolygonWithHolesExtrude
         return WeldPlanarVerts(verts, faces, partId);
     }
 
-    private static int EnsureVert(List<(float Y, float Up)> verts, (float Y, float Up) p)
+    private static bool TriangleOverlapsAabb(
+        List<(float Y, float Up)> tri, float y0, float y1, float u0, float u1)
     {
-        const float tol = 1e-5f;
-        for (var i = 0; i < verts.Count; i++)
+        var minY = MathF.Min(tri[0].Y, MathF.Min(tri[1].Y, tri[2].Y));
+        var maxY = MathF.Max(tri[0].Y, MathF.Max(tri[1].Y, tri[2].Y));
+        var minU = MathF.Min(tri[0].Up, MathF.Min(tri[1].Up, tri[2].Up));
+        var maxU = MathF.Max(tri[0].Up, MathF.Max(tri[1].Up, tri[2].Up));
+        return minY <= y1 && maxY >= y0 && minU <= u1 && maxU >= u0;
+    }
+
+    /// <summary>
+    /// Convex poly ∩ complement(open AABB), as four non-overlapping pieces.
+    /// Left/right own the vertical opening edges; top/bottom own the horizontal edges between.
+    /// </summary>
+    private static List<List<(float Y, float Up)>> SubtractAabbFromConvex(
+        List<(float Y, float Up)> poly,
+        float y0, float y1, float u0, float u1)
+    {
+        var parts = new List<List<(float Y, float Up)>>(4);
+
+        void Add(List<(float Y, float Up)>? piece)
         {
-            if (MathF.Abs(verts[i].Y - p.Y) <= tol && MathF.Abs(verts[i].Up - p.Up) <= tol)
-                return i;
-        }
-
-        verts.Add(p);
-        return verts.Count - 1;
-    }
-
-    private static List<(int A, int B, int C)> SplitAllByVertical(
-        List<(float Y, float Up)> verts,
-        List<(int A, int B, int C)> faces,
-        float yCut)
-    {
-        var next = new List<(int A, int B, int C)>(faces.Count * 2);
-        foreach (var (a, b, c) in faces)
-            next.AddRange(SplitTriByPlaneY(verts, a, b, c, yCut));
-        return next;
-    }
-
-    private static List<(int A, int B, int C)> SplitAllByHorizontal(
-        List<(float Y, float Up)> verts,
-        List<(int A, int B, int C)> faces,
-        float uCut)
-    {
-        var next = new List<(int A, int B, int C)>(faces.Count * 2);
-        foreach (var (a, b, c) in faces)
-            next.AddRange(SplitTriByPlaneUp(verts, a, b, c, uCut));
-        return next;
-    }
-
-    private static List<(int A, int B, int C)> SplitTriByPlaneY(
-        List<(float Y, float Up)> verts, int ia, int ib, int ic, float yCut)
-    {
-        var sa = MathF.Sign(verts[ia].Y - yCut);
-        var sb = MathF.Sign(verts[ib].Y - yCut);
-        var sc = MathF.Sign(verts[ic].Y - yCut);
-        // Treat on-plane as 0.
-        if (MathF.Abs(verts[ia].Y - yCut) <= 1e-6f) sa = 0;
-        if (MathF.Abs(verts[ib].Y - yCut) <= 1e-6f) sb = 0;
-        if (MathF.Abs(verts[ic].Y - yCut) <= 1e-6f) sc = 0;
-
-        if (sa == sb && sb == sc)
-            return [(ia, ib, ic)];
-
-        // Collect intersections on edges that straddle the plane.
-        var hits = new List<(int U, int V, int P)>();
-        void Edge(int u, int v, int su, int sv)
-        {
-            if (su == 0 || sv == 0 || su == sv)
+            if (piece is null || piece.Count < 3)
                 return;
-            var a = verts[u];
-            var b = verts[v];
-            var t = (yCut - a.Y) / (b.Y - a.Y);
-            t = Math.Clamp(t, 0f, 1f);
-            var p = EnsureVert(verts, (yCut, a.Up + (b.Up - a.Up) * t));
-            if (p != u && p != v)
-                hits.Add((u, v, p));
-        }
-
-        Edge(ia, ib, sa, sb);
-        Edge(ib, ic, sb, sc);
-        Edge(ic, ia, sc, sa);
-
-        if (hits.Count != 2)
-            return [(ia, ib, ic)];
-
-        return SplitTriThroughChord(ia, ib, ic, hits[0], hits[1]);
-    }
-
-    private static List<(int A, int B, int C)> SplitTriByPlaneUp(
-        List<(float Y, float Up)> verts, int ia, int ib, int ic, float uCut)
-    {
-        var sa = MathF.Sign(verts[ia].Up - uCut);
-        var sb = MathF.Sign(verts[ib].Up - uCut);
-        var sc = MathF.Sign(verts[ic].Up - uCut);
-        if (MathF.Abs(verts[ia].Up - uCut) <= 1e-6f) sa = 0;
-        if (MathF.Abs(verts[ib].Up - uCut) <= 1e-6f) sb = 0;
-        if (MathF.Abs(verts[ic].Up - uCut) <= 1e-6f) sc = 0;
-
-        if (sa == sb && sb == sc)
-            return [(ia, ib, ic)];
-
-        var hits = new List<(int U, int V, int P)>();
-        void Edge(int u, int v, int su, int sv)
-        {
-            if (su == 0 || sv == 0 || su == sv)
+            if (MathF.Abs(SignedArea(piece)) < 1e-10f)
                 return;
-            var a = verts[u];
-            var b = verts[v];
-            var t = (uCut - a.Up) / (b.Up - a.Up);
-            t = Math.Clamp(t, 0f, 1f);
-            var p = EnsureVert(verts, (a.Y + (b.Y - a.Y) * t, uCut));
-            if (p != u && p != v)
-                hits.Add((u, v, p));
+            if (SignedArea(piece) < 0f)
+                piece.Reverse();
+            parts.Add(piece);
         }
 
-        Edge(ia, ib, sa, sb);
-        Edge(ib, ic, sb, sc);
-        Edge(ic, ia, sc, sa);
-
-        if (hits.Count != 2)
-            return [(ia, ib, ic)];
-
-        return SplitTriThroughChord(ia, ib, ic, hits[0], hits[1]);
+        Add(ClipConvex(poly, p => p.Y <= y0 + 1e-7f, (a, b) => LerpAtY(a, b, y0)));
+        Add(ClipConvex(poly, p => p.Y >= y1 - 1e-7f, (a, b) => LerpAtY(a, b, y1)));
+        Add(ClipBand(poly, y0, y1, maxUp: u0));
+        Add(ClipBand(poly, y0, y1, minUp: u1));
+        return parts;
     }
 
-    private static List<(int A, int B, int C)> SplitTriThroughChord(
-        int ia, int ib, int ic,
-        (int U, int V, int P) h0,
-        (int U, int V, int P) h1)
+    private static List<(float Y, float Up)>? ClipBand(
+        List<(float Y, float Up)> poly, float y0, float y1, float? minUp = null, float? maxUp = null)
     {
-        var ring = new[] { ia, ib, ic };
-        var poly = new List<int>(5);
-        for (var i = 0; i < 3; i++)
+        // Inclusive Y: shared boundary with left/right is a zero-area edge (manifold after weld).
+        var cur = ClipConvex(poly, p => p.Y >= y0 - 1e-7f, (a, b) => LerpAtY(a, b, y0));
+        if (cur is null)
+            return null;
+        cur = ClipConvex(cur, p => p.Y <= y1 + 1e-7f, (a, b) => LerpAtY(a, b, y1));
+        if (cur is null)
+            return null;
+        if (maxUp is float uMax)
+            cur = ClipConvex(cur, p => p.Up <= uMax + 1e-7f, (a, b) => LerpAtUp(a, b, uMax));
+        if (cur is null)
+            return null;
+        if (minUp is float uMin)
+            cur = ClipConvex(cur, p => p.Up >= uMin - 1e-7f, (a, b) => LerpAtUp(a, b, uMin));
+        return cur;
+    }
+
+    private static List<(float Y, float Up)>? ClipConvex(
+        List<(float Y, float Up)> poly,
+        Func<(float Y, float Up), bool> inside,
+        Func<(float Y, float Up), (float Y, float Up), (float Y, float Up)> intersect)
+    {
+        if (poly.Count == 0)
+            return null;
+        var output = new List<(float Y, float Up)>(poly.Count + 2);
+        var prev = poly[^1];
+        var prevIn = inside(prev);
+        foreach (var cur in poly)
         {
-            var u = ring[i];
-            var v = ring[(i + 1) % 3];
-            poly.Add(u);
-            if ((h0.U == u && h0.V == v) || (h0.U == v && h0.V == u))
-                poly.Add(h0.P);
-            else if ((h1.U == u && h1.V == v) || (h1.U == v && h1.V == u))
-                poly.Add(h1.P);
+            var curIn = inside(cur);
+            if (curIn)
+            {
+                if (!prevIn)
+                    output.Add(intersect(prev, cur));
+                output.Add(cur);
+            }
+            else if (prevIn)
+            {
+                output.Add(intersect(prev, cur));
+            }
+
+            prev = cur;
+            prevIn = curIn;
         }
 
-        if (poly.Count != 5)
-            return [(ia, ib, ic)];
+        return output.Count >= 3 ? output : null;
+    }
 
-        // Fan keep orientation of original triangle.
-        return
-        [
-            (poly[0], poly[1], poly[2]),
-            (poly[0], poly[2], poly[3]),
-            (poly[0], poly[3], poly[4]),
-        ];
+    private static (float Y, float Up) LerpAtY((float Y, float Up) a, (float Y, float Up) b, float y)
+    {
+        var dy = b.Y - a.Y;
+        var t = MathF.Abs(dy) < 1e-12f ? 0f : (y - a.Y) / dy;
+        t = Math.Clamp(t, 0f, 1f);
+        return (y, a.Up + (b.Up - a.Up) * t);
+    }
+
+    private static (float Y, float Up) LerpAtUp((float Y, float Up) a, (float Y, float Up) b, float up)
+    {
+        var du = b.Up - a.Up;
+        var t = MathF.Abs(du) < 1e-12f ? 0f : (up - a.Up) / du;
+        t = Math.Clamp(t, 0f, 1f);
+        return (a.Y + (b.Y - a.Y) * t, up);
     }
 
     private static (List<(float Y, float Up)> Verts, List<(int A, int B, int C)> Tris) WeldPlanarVerts(
@@ -326,6 +299,7 @@ internal static class PolygonWithHolesExtrude
             remap[i] = idx;
         }
 
+        var seen = new HashSet<(int, int, int)>();
         var tris = new List<(int A, int B, int C)>(faces.Count);
         foreach (var (a, b, c) in faces)
         {
@@ -339,6 +313,10 @@ internal static class PolygonWithHolesExtrude
             // Force CCW.
             if (SignedArea([welded[ia], welded[ib], welded[ic]]) < 0f)
                 (ib, ic) = (ic, ib);
+            // Canonical key so duplicate faces from partition seams are dropped.
+            var key = CanonicalTri(ia, ib, ic);
+            if (!seen.Add(key))
+                continue;
             tris.Add((ia, ib, ic));
         }
 
@@ -346,6 +324,16 @@ internal static class PolygonWithHolesExtrude
             throw new InvalidOperationException($"{partId}: all faces degenerate after planar weld.");
 
         return (welded, tris);
+    }
+
+    private static (int, int, int) CanonicalTri(int a, int b, int c)
+    {
+        // Rotate so smallest index is first; keep winding.
+        if (a <= b && a <= c)
+            return (a, b, c);
+        if (b <= a && b <= c)
+            return (b, c, a);
+        return (c, a, b);
     }
 
     private static EditableMesh BuildWatertightMesh(
@@ -818,6 +806,17 @@ internal static class PolygonWithHolesExtrude
         meshVolume = MathF.Abs(SignedMeshVolume(mesh));
         var expected = materialArea * thickness;
         var volRel = MathF.Abs(meshVolume - expected) / MathF.Max(expected, 1e-6f);
+
+        if (nonManifold != 0)
+        {
+            foreach (var (edge, count) in edgeCounts.Where(kv => kv.Value > 2).Take(6))
+            {
+                var pa = mesh.Vertices[edge.Item1];
+                var pb = mesh.Vertices[edge.Item2];
+                Console.Error.WriteLine(
+                    $"  dbg {partId} nonManifold x{count} edge ({pa.X:F3},{pa.Y:F3},{pa.Z:F3})-({pb.X:F3},{pb.Y:F3},{pb.Z:F3})");
+            }
+        }
 
         var fail = new List<string>();
         if (openEdges != 0)

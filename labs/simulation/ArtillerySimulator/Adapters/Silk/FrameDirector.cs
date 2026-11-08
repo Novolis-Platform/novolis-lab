@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Novolis.Agent.Surface;
 using Novolis.Silk;
 
 namespace ArtillerySimulator;
@@ -14,23 +13,13 @@ internal sealed class FrameDirector : IDisposable
     private readonly BattleWorld _world;
     private readonly BattleCommandPump _commands;
     private readonly ArtilleryLiveHost _agent;
-    private readonly ArtillerySceneRenderer _renderer;
-    private readonly ProfileOverlay _profileOverlay;
     private readonly ArtilleryRunOptions _options;
-    private readonly FrameProfiler _liveProfiler = new(warmupFrames: 5);
-    private readonly ILogger<FrameDirector> _log;
     private readonly Stopwatch _wall = Stopwatch.StartNew();
+    private readonly FrameWallClockBudget _wallBudget;
+    private readonly ArtilleryAgentSurfaceBootstrap _agentBootstrap;
+    private readonly ArtilleryFrameProfileController _profiles;
+    private readonly PlayingFrameRenderer _playingRenderer;
     private readonly ArtillerySmokeDriver? _smoke;
-
-    private AgentSurface? _surface;
-    private FrameProfiler? _profiler;
-    private int _profileFramesRemaining = -1;
-    private string? _profileJsonPath;
-    private bool _showProfile;
-    private string _profileFlash = "";
-    private float _profileFlashAge = -1f;
-    private bool _agentAttachAttempted;
-    private long _lastWallTimestamp;
 
     public FrameDirector(
         BattleWorld world,
@@ -45,11 +34,11 @@ internal sealed class FrameDirector : IDisposable
         _world = world;
         _commands = commands;
         _agent = agent;
-        _renderer = renderer;
-        _profileOverlay = profileOverlay;
         _options = options;
-        _log = log;
-        _lastWallTimestamp = _wall.ElapsedTicks;
+        _wallBudget = new FrameWallClockBudget(_wall);
+        _agentBootstrap = new ArtilleryAgentSurfaceBootstrap(agent, options, world, log);
+        _profiles = new ArtilleryFrameProfileController(world, renderer, profileOverlay, log);
+        _playingRenderer = new PlayingFrameRenderer(world, renderer, options, _profiles);
         if (options.Smoke)
             _smoke = new ArtillerySmokeDriver(world, logs.CreateLogger<ArtillerySmokeDriver>());
     }
@@ -58,13 +47,8 @@ internal sealed class FrameDirector : IDisposable
 
     public int SmokeExitCode => _smoke?.ExitCode ?? 1;
 
-    public void EnableProfile(int frames, string? jsonPath = null)
-    {
-        _profiler = new FrameProfiler(warmupFrames: Math.Min(20, Math.Max(0, frames / 6)));
-        _profileFramesRemaining = Math.Max(1, frames);
-        _profileJsonPath = jsonPath;
-        _log.LogInformation("Profiling enabled for {Frames} frames", frames);
-    }
+    public void EnableProfile(int frames, string? jsonPath = null) =>
+        _profiles.EnableProfile(frames, jsonPath);
 
     public void Initialize(SilkFrame frame)
     {
@@ -73,62 +57,33 @@ internal sealed class FrameDirector : IDisposable
         WindowIconLoader.TryApply(frame);
         if (_world.Options.SkipShell)
             LoadWorldAndMaybeAttachAgent();
-        _lastWallTimestamp = _wall.ElapsedTicks;
+        _wallBudget.Stamp();
     }
 
     public void Update(SilkFrame frame)
     {
-        // Wall slice for THIS update — stamped before work so a long render does not
-        // enlarge the next physics debt beyond what FixedStepClock already caps.
-        var now = _wall.ElapsedTicks;
-        var wallSeconds = (float)((now - _lastWallTimestamp) / (double)Stopwatch.Frequency);
-        _lastWallTimestamp = now;
-        if (wallSeconds < 0f)
-            wallSeconds = 0f;
-        // Hard clamp: never ask physics to absorb more than ~67 ms of wall in one Update.
-        wallSeconds = Math.Min(wallSeconds, FixedStepClock.DtSeconds * 8f);
+        var wallSeconds = _wallBudget.AdvanceSeconds();
 
         _world.Shell.HandleKeys(frame, _world.WorldReady, _world.SelectLevel);
-        HandleProfileHotkeys(frame);
+        _profiles.HandleHotkeys(frame);
 
         if (_world.Shell.TryHandlePreWorldFrame(frame, _world.WorldReady, LoadWorldAndMaybeAttachAgent))
             return;
 
-        var active = ActiveProfiler();
-        if (active is not null)
+        void Simulate() => _agent.RunFrame(() => TickAndInput(frame, wallSeconds));
+        void Present() => _world.PresentFrame(frame, wallSeconds);
+        void Render() => _playingRenderer.Render(frame);
+
+        if (!_profiles.StepTimedCapture(frame, Simulate, Present, Render))
         {
-            active.BeginFrame();
-            active.Time("simulate", () => _agent.RunFrame(() => TickAndInput(frame, wallSeconds)));
-            active.Time("present", () => _world.PresentFrame(frame, wallSeconds));
-            active.Time("render", () => Render(frame));
-            active.SetGeometry(
-                _world.Terrain.TerrainTriangleCount,
-                _world.Terrain.RoadLineCount,
-                _renderer.Wires.AsSpan().Length / 2,
-                FireControlUi.LastOverlayLineCount);
-            active.EndFrame();
-            if (_profiler is not null && _profileFramesRemaining > 0)
-            {
-                _profileFramesRemaining--;
-                if (_profileFramesRemaining == 0)
-                {
-                    WriteProfileReport();
-                    frame.Close();
-                }
-            }
-        }
-        else
-        {
-            _agent.RunFrame(() => TickAndInput(frame, wallSeconds));
-            _world.PresentFrame(frame, wallSeconds);
-            Render(frame);
+            Simulate();
+            Present();
+            Render();
         }
 
         _smoke?.Tick(frame);
         _world.Shell.DrawOverlayIfNeeded(frame);
-
-        if (_profileFlashAge >= 0f)
-            _profileFlashAge += frame.DeltaSeconds;
+        _profiles.TickFlash(frame.DeltaSeconds);
     }
 
     private void TickAndInput(SilkFrame frame, float wallSeconds)
@@ -143,142 +98,9 @@ internal sealed class FrameDirector : IDisposable
     private void LoadWorldAndMaybeAttachAgent()
     {
         _world.LoadWorld();
-        TryAttachAgent();
-        _lastWallTimestamp = _wall.ElapsedTicks;
+        _agentBootstrap.TryAttach();
+        _wallBudget.Stamp();
     }
 
-    private void TryAttachAgent()
-    {
-        if (_agentAttachAttempted)
-            return;
-        _agentAttachAttempted = true;
-
-        if (!ShouldAttachAgent())
-        {
-            _log.LogInformation(
-                "Agent surface skipped (set ARTILLERY_ATTACH_AGENT=1 or use --headless / --attach-agent)");
-            return;
-        }
-
-        var def = AgentSurfaceDefinition.From<IArtillerySurface>();
-        _surface = AgentSurface.AttachAll(
-            _agent,
-            def,
-            new AgentAttachOptions { EnableStdio = false, EnableMcpStdio = false });
-        if (_surface?.Http is { } http)
-        {
-            _log.LogInformation("Agent surface ready at {BaseUrl}", http.BaseUrl);
-            Console.WriteLine($"Agent surface ready: {http.BaseUrl}  (MCP tools at /agent/mcp/tools)");
-        }
-        else
-        {
-            _log.LogWarning("Agent surface attach incomplete — expected HTTP :{Port}", def.DefaultHttpPort);
-            Console.WriteLine($"Agent surface attach incomplete — expected HTTP :{def.DefaultHttpPort}");
-        }
-
-        Console.WriteLine(ProductLegal.Tagline);
-        Console.WriteLine($"Session seed={_world.Session.SeedHash}  level={_world.Level.Id}  piece={_world.Session.Piece.Id}");
-    }
-
-    private bool ShouldAttachAgent()
-    {
-        if (_options.AttachAgent || _options.Headless)
-            return true;
-
-        var env = Environment.GetEnvironmentVariable("ARTILLERY_ATTACH_AGENT");
-        return string.Equals(env, "1", StringComparison.Ordinal)
-            || string.Equals(env, "true", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private void Render(SilkFrame frame)
-    {
-        if (_options.Smoke)
-            return;
-
-        var vm = _world.CreateFrameViewModel();
-        _renderer.DrawPlaying(frame, vm, ActiveProfiler());
-
-        if (_showProfile)
-        {
-            _profileOverlay.Draw(
-                frame,
-                ArtilleryDebugDump.BuildProfilePanel(
-                    frame,
-                    ActiveProfiler() ?? _liveProfiler,
-                    _renderer,
-                    vm.Terrain,
-                    vm.Atmosphere,
-                    vm.Gun,
-                    vm.Rounds,
-                    vm.PredictedRangeMeters,
-                    vm.Camera,
-                    vm.Mission,
-                    _profileFlash,
-                    _profileFlashAge));
-        }
-    }
-
-    private FrameProfiler? ActiveProfiler()
-    {
-        if (_profiler is not null)
-            return _profiler;
-        return _showProfile ? _liveProfiler : null;
-    }
-
-    private void HandleProfileHotkeys(SilkFrame frame)
-    {
-        if (frame.IsKeyPressed(Key.F1))
-        {
-            _showProfile = !_showProfile;
-            if (_showProfile)
-                _liveProfiler.Reset();
-        }
-
-        var ctrl = frame.IsKeyDown(Key.ControlLeft) || frame.IsKeyDown(Key.ControlRight);
-        if (ctrl && frame.IsKeyPressed(Key.C))
-        {
-            var dump = ArtilleryDebugDump.BuildClipboardDump(
-                frame,
-                ActiveProfiler() ?? _liveProfiler,
-                _renderer,
-                _world.Terrain,
-                _world.Atmosphere,
-                _world.Gun,
-                _world.Crew,
-                _world.Rounds,
-                _world.Camera,
-                _world.Mission);
-            var ok = WindowsClipboardText.TrySet(dump);
-            _profileFlash = ok ? "DEBUG DUMP COPIED" : "CLIPBOARD FAILED";
-            _profileFlashAge = 0f;
-            if (!_showProfile)
-            {
-                _showProfile = true;
-                _liveProfiler.Reset();
-            }
-        }
-    }
-
-    private void WriteProfileReport()
-    {
-        if (_profiler is null)
-            return;
-        var text = _profiler.ToReport();
-        Console.WriteLine();
-        Console.WriteLine("=== ArtillerySimulator profile ===");
-        Console.WriteLine(text);
-        if (!string.IsNullOrWhiteSpace(_profileJsonPath))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_profileJsonPath))!);
-            File.WriteAllText(_profileJsonPath, _profiler.ToJson());
-            _log.LogInformation("Wrote profile JSON to {Path}", _profileJsonPath);
-            Console.WriteLine($"Wrote {_profileJsonPath}");
-        }
-    }
-
-    public void Dispose()
-    {
-        if (_surface is not null)
-            _surface.DisposeAsync().AsTask().GetAwaiter().GetResult();
-    }
+    public void Dispose() => _agentBootstrap.DisposeSurface();
 }

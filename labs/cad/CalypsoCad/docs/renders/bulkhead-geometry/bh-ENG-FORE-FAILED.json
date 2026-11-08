@@ -14,7 +14,7 @@
     "vertexCount": 0,
     "passed": false,
     "failures": [
-      "bh-ENG-FORE: watertight solid validation failed \u2014 nonManifoldEdges=5."
+      "bh-ENG-FORE: watertight solid validation failed \u2014 nonManifoldEdges=8."
     ],
     "checks": []
   }

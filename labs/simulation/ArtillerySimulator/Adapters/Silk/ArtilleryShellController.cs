@@ -12,6 +12,7 @@ internal sealed class ArtilleryShellController
     private readonly ILogger<ArtilleryShellController> _log;
     private IGameLevel _level;
     private string _loadingStatus = "Loading map…";
+    private bool _loadFailed;
 
     public ArtilleryShellController(
         ArtilleryMenuFlow menus,
@@ -55,8 +56,11 @@ internal sealed class ArtilleryShellController
         if (_menus.IsLoading)
         {
             frame.Clear(Rgba32.Black);
-            _shell.Draw(frame, _menus.Phase, _loadingStatus, _level);
-            if (!worldReady)
+            var status = _loadFailed
+                ? $"{_loadingStatus}  Esc — back to title"
+                : _loadingStatus;
+            _shell.Draw(frame, _menus.Phase, status, _level);
+            if (!worldReady && !_loadFailed)
             {
                 _loadingStatus = $"Building {_level.DisplayName}…";
                 _log.LogInformation("Loading world for {LevelId}", _level.Id);
@@ -69,6 +73,7 @@ internal sealed class ArtilleryShellController
                 }
                 catch (Exception ex)
                 {
+                    _loadFailed = true;
                     _loadingStatus = $"Load failed: {ex.Message}";
                     _log.LogError(ex, "World load failed for {LevelId}", _level.Id);
                     Console.Error.WriteLine($"World load failed: {ex.Message}");
@@ -91,16 +96,19 @@ internal sealed class ArtilleryShellController
     {
         if (_menus.IsSplash)
         {
-            if (frame.IsKeyPressed(Key.Left) || frame.IsKeyPressed(Key.A))
+            if (GameLevelCatalog.PlayableCount > 1)
             {
-                selectLevel(-1);
-                return;
-            }
+                if (frame.IsKeyPressed(Key.Left) || frame.IsKeyPressed(Key.A))
+                {
+                    selectLevel(-1);
+                    return;
+                }
 
-            if (frame.IsKeyPressed(Key.Right) || frame.IsKeyPressed(Key.D))
-            {
-                selectLevel(+1);
-                return;
+                if (frame.IsKeyPressed(Key.Right) || frame.IsKeyPressed(Key.D))
+                {
+                    selectLevel(+1);
+                    return;
+                }
             }
 
             if (frame.IsKeyPressed(Key.L))
@@ -112,8 +120,20 @@ internal sealed class ArtilleryShellController
             }
 
             if (frame.IsKeyPressed(Key.Enter) || frame.IsKeyPressed(Key.Space))
+            {
+                _loadFailed = false;
+                _loadingStatus = "Loading map…";
                 _menus.ShowLoading();
+            }
 
+            return;
+        }
+
+        if (_menus.IsLoading && _loadFailed && frame.IsKeyPressed(Key.Escape))
+        {
+            _loadFailed = false;
+            _loadingStatus = "Loading map…";
+            _menus.ShowSplash();
             return;
         }
 

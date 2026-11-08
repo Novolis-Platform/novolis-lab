@@ -8,7 +8,7 @@
 #:package Novolis.Agent.Surface@2026.1.*
 
 // Drive ArtillerySimulator over the agent HTTP surface (start the game with --headless first).
-//   dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator -p:NovolisUseProjectReferences=true -c Release -- --headless
+//   dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\ArtillerySimulator.csproj -p:NovolisUseProjectReferences=true -c Release -- --headless
 //   dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\artillery-agent-play.cs -- --rounds 5
 
 using System.Globalization;
