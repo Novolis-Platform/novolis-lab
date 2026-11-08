@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.Json;
 using Novolis.Cad.Primitives;
 using CalypsoCad.Structure;
+using CalypsoCad.Publication;
+using CalypsoCad.Model;
 
 namespace CalypsoCad.Export;
 
@@ -109,6 +111,11 @@ internal static class StructureAuditExporter
             AppendNdjson(nd, "bh-spine-up", passUp, Math.Abs(deltaUp), TolUp, key);
         }
 
+        // Ensure registry reflects the document (fresh process or post-generate).
+        if (CadDocumentAdapter.Active.Parts.Count == 0)
+            CadDocumentAdapter.LoadFromDocument(doc);
+
+        var reg = CadDocumentAdapter.Active;
         var payload = new
         {
             generatedUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
@@ -118,6 +125,16 @@ internal static class StructureAuditExporter
             tolUp = TolUp,
             failureCount = failures,
             groups = rows,
+            semanticRegistry = new
+            {
+                partCount = reg.Parts.Count,
+                assemblyCount = reg.Assemblies.Count,
+                bulkheadPlates = reg.BulkheadPlateCount,
+                frameAssemblies = reg.FrameAssemblyCount,
+                transverseParts = reg.CountBySystem(CadSystem.Transverse),
+                unclassifiedCount = reg.Unclassified.Count,
+                unclassified = reg.Unclassified.Take(40).ToArray(),
+            },
         };
 
         var jsonPath = Path.Combine(outDir, "structure-audit.json");

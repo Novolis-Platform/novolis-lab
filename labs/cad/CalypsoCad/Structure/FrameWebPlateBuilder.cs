@@ -120,7 +120,7 @@ internal static class FrameWebPlateBuilder
             mesh,
             fabPartId,
             extrudeReport: extrudeReport,
-            expectedOpenings: holes.Count);
+            expectedOpenings: extrudeReport.ExpectedOpenings);
     }
 
     private static string SanitizeFileToken(string id) =>

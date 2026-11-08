@@ -306,11 +306,19 @@ internal static class CalypsoLockGenerator
     private static CadDocument BuildCad(string stamp, CalypsoLockDocument lockDoc)
     {
         FrameWebPlateRegistry.Clear();
+        Publication.CadDocumentAdapter.Reset();
         UseLoftStations(lockDoc);
         var env = lockDoc.Envelope ?? throw new InvalidOperationException("Lock missing envelope");
         var loa = (float)env.Loa;
         var beam = (float)env.Beam;
         var oah = (float)env.Oah;
+        Publication.CadDocumentAdapter.Active.SetShip(new Model.ShipDefinition(
+            "CALYPSO",
+            loa,
+            beam,
+            oah,
+            DeckStructureElevations(lockDoc),
+            BulkheadStationMap(lockDoc)));
         var entities = new List<CadEntity>();
         var spaceByKey = new Dictionary<string, CadEntity>(StringComparer.OrdinalIgnoreCase);
         var openingById = new Dictionary<string, CadEntity>(StringComparer.OrdinalIgnoreCase);
@@ -1006,8 +1014,16 @@ internal static class CalypsoLockGenerator
 
     private const float SectionChamfer = 2.5f;
 
-    internal static void SectionAtPublic(float z, out float halfB, out float halfH, out float mid, out float cx, out float cy) =>
+    internal static void SectionAtPublic(float z, out float halfB, out float halfH, out float mid, out float cx, out float cy)
+    {
+        if (Geometry.HullGeometry.Active is { } hull)
+        {
+            hull.SectionAt(z, out halfB, out halfH, out mid, out cx, out cy);
+            return;
+        }
+
         SectionAt(z, out halfB, out halfH, out mid, out cx, out cy);
+    }
 
     private static void SectionAt(float z, out float halfB, out float halfH, out float mid, out float cx, out float cy)
     {
@@ -1022,7 +1038,8 @@ internal static class CalypsoLockGenerator
     }
 
     /// <summary>Athwart half-width of the octagon at this height, inside the plate by <paramref name="inset"/>.</summary>
-    internal static float HalfBeamInsidePublic(float z, float up, float inset) => HalfBeamInside(z, up, inset);
+    internal static float HalfBeamInsidePublic(float z, float up, float inset) =>
+        Geometry.HullGeometry.Active?.HalfBeamInside(z, up, inset) ?? HalfBeamInside(z, up, inset);
 
     private static float HalfBeamInside(float z, float up, float inset)
     {
@@ -2140,13 +2157,17 @@ internal static class CalypsoLockGenerator
         if (stations is not { Count: >= 2 })
         {
             ActiveStations = ForeStations;
-            return;
+        }
+        else
+        {
+            ActiveStations = stations
+                .OrderBy(s => s.ZFromStem)
+                .Select(s => ((float)s.ZFromStem, (float)(s.HalfBeam * 2.0), (float)(s.HalfHeight * 2.0)))
+                .ToArray();
         }
 
-        ActiveStations = stations
-            .OrderBy(s => s.ZFromStem)
-            .Select(s => ((float)s.ZFromStem, (float)(s.HalfBeam * 2.0), (float)(s.HalfHeight * 2.0)))
-            .ToArray();
+        // Semantic hull authority — generators should prefer Geometry.HullGeometry over these statics.
+        Geometry.HullGeometry.SetActive(new Geometry.HullGeometry(ActiveStations, ActiveOahMid));
     }
 
     private static StructuralTopology BuildStructuralTopology(CalypsoLockDocument lockDoc, float loa)
@@ -3185,7 +3206,7 @@ internal static class CalypsoLockGenerator
                 props["joins"] = JsonSerializer.SerializeToElement(joins);
         }
 
-        return new CadEntity
+        var entity = new CadEntity
         {
             Kind = "box",
             Name = name,
@@ -3201,6 +3222,20 @@ internal static class CalypsoLockGenerator
             Thickness = half.X * 2f,
             Properties = props,
         };
+
+        if (structural is { } stamped)
+        {
+            Publication.CadDocumentAdapter.StampAndRegister(
+                entity,
+                name,
+                stamped.Role,
+                stamped.Assembly,
+                stamped.StationZ,
+                stamped.DeckUp,
+                fabPartId);
+        }
+
+        return entity;
     }
 
     /// <summary>

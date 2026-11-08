@@ -55,6 +55,12 @@ internal static class Program
             return;
         }
 
+        if (HasFlag(args, "--bulkhead-mesh"))
+        {
+            Environment.ExitCode = CalypsoAcceptanceGates.BulkheadMesh();
+            return;
+        }
+
         if (HasFlag(args, "--blueprints") || HasFlag(args, "--blueprint-details"))
         {
             Environment.ExitCode = CalypsoAcceptanceGates.Blueprints(emitDetails: true);

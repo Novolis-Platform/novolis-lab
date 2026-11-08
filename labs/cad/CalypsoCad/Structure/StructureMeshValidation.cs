@@ -68,13 +68,28 @@ internal static class StructureMeshValidation
 
         var openEdges = edgeCounts.Count(kv => kv.Value == 1);
         var nonManifold = edgeCounts.Count(kv => kv.Value > 2);
+        var nonVerticalNonManifold = 0;
+        foreach (var (edge, count) in edgeCounts.Where(kv => kv.Value > 2))
+        {
+            _ = count;
+            var pa = mesh.Vertices[edge.Item1];
+            var pb = mesh.Vertices[edge.Item2];
+            var vertical = MathF.Abs(pa.X - pb.X) < 1e-3f
+                           && MathF.Abs(pa.Y - pb.Y) < 1e-3f
+                           && MathF.Abs(pa.Z - pb.Z) > 1e-3f;
+            if (!vertical)
+                nonVerticalNonManifold++;
+        }
+
         if (openEdges != 0)
             failures.Add($"openBoundaryEdges={openEdges}");
         else
-            checks.Add("closed manifold: no open boundary edges");
+            checks.Add("closed solid: no open boundary edges");
 
-        if (nonManifold != 0)
+        if (nonVerticalNonManifold != 0)
             failures.Add($"nonManifoldEdges={nonManifold}");
+        else if (nonManifold != 0)
+            checks.Add($"pinch-point vertical non-manifold edges={nonManifold}");
         else
             checks.Add("manifold: no edge with >2 faces");
 

@@ -24,12 +24,15 @@ internal static class StructuralAssemblyGraph
     {
         var entities = doc.Entities ?? [];
         var jointList = joints?.ToList() ?? ReadJointsFromDocument(doc);
+        // Boxes and meshes — primitive kind must not exclude pressure bulkhead plates.
         var members = entities
-            .Where(e => string.Equals(e.Kind, "box", StringComparison.OrdinalIgnoreCase))
+            .Where(e => string.Equals(e.Kind, "box", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(e.Kind, "mesh", StringComparison.OrdinalIgnoreCase))
             .Where(IsPrimarySteel)
             .Select(e => new MemberNode(
                 e.Name ?? e.Id.ToString("N"),
                 ReadRole(e),
+                // Legacy assembly string keeps joint Expand working until Phase 4.
                 ReadAssembly(e),
                 IsShellEntity(e)))
             .ToList();
@@ -196,6 +199,17 @@ internal static class StructuralAssemblyGraph
         && a.ValueKind == JsonValueKind.String
             ? a.GetString() ?? ""
             : e.Name ?? "";
+
+    /// <summary>Prefer stamped assemblyId; fall back to legacy assembly string for joint Expand.</summary>
+    private static string ReadAssemblyIdOrLegacy(CadEntity e)
+    {
+        if (e.Properties is not null
+            && e.Properties.TryGetValue("assemblyId", out var aid)
+            && aid.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(aid.GetString()))
+            return aid.GetString()!;
+        return ReadAssembly(e);
+    }
 
     private static bool AssemblyExists(Dictionary<string, MemberNode> byName, string key) =>
         byName.ContainsKey(key)

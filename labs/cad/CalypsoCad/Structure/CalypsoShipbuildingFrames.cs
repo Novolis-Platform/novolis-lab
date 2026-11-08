@@ -168,6 +168,10 @@ internal static class CalypsoShipbuildingFrames
             return;
         }
 
+        var deviationMm = HullSectionAuthority.MaxRingDeviation(outer, zStem, ringInset) * 1000f;
+        FrameContourEmitLog.Record(
+            $"{frameId}-{namePrefix}", zStem, ringInset, deviationMm, mesh.TriangleCount, mesh.VertexCount);
+
         CalypsoLockGenerator.TryAddStructureMesh(
             entities,
             loa,
@@ -182,7 +186,6 @@ internal static class CalypsoShipbuildingFrames
                     : frameId,
                 StationZ: zStem));
 
-        var deviationMm = HullSectionAuthority.MaxRingDeviation(outer, zStem, ringInset) * 1000f;
         if (deviationMm > 25f)
         {
             Console.Error.WriteLine(
@@ -193,34 +196,15 @@ internal static class CalypsoShipbuildingFrames
     /// <summary>
     /// Authoritative transverse hull section at <paramref name="zStem"/> (OML octagon from loft metrics).
     /// </summary>
-    public static (float Y, float Up)[] OuterOctagonRing(float zStem)
-    {
-        CalypsoLockGenerator.SectionAtPublic(zStem, out var halfB, out var halfH, out var mid, out var cx, out var cy);
-        return
-        [
-            (-halfB + cx, mid + halfH),
-            (halfB - cx, mid + halfH),
-            (halfB, mid + halfH - cy),
-            (halfB, mid - halfH + cy),
-            (halfB - cx, mid - halfH),
-            (-halfB + cx, mid - halfH),
-            (-halfB, mid - halfH + cy),
-            (-halfB, mid + halfH - cy),
-        ];
-    }
+    public static (float Y, float Up)[] OuterOctagonRing(float zStem) =>
+        Geometry.HullGeometry.RequireActive().OuterOctagonRing(zStem);
 
     /// <summary>
     /// Structural ring: geometric inward offset of the authoritative hull section.
     /// Does not shrink half-beam / half-height independently (that distorts chamfer facets).
     /// </summary>
-    public static (float Y, float Up)[] InnerOctagonRing(float zStem, float skinInset)
-    {
-        var outer = OuterOctagonRing(zStem);
-        if (skinInset <= 1e-6f)
-            return outer;
-        var inset = PolygonInset2D.Inset(outer, skinInset);
-        return inset.Length >= 3 ? inset : outer;
-    }
+    public static (float Y, float Up)[] InnerOctagonRing(float zStem, float skinInset) =>
+        Geometry.HullGeometry.RequireActive().InnerOctagonRing(zStem, skinInset);
 
     /// <summary>
     /// Outer-hull plating-join longitudinals: one knuckle stringer at each of the 8 IML octagon

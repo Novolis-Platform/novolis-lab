@@ -1,0 +1,12 @@
+Root cause (bulkhead triangular artifacts):
+1. MESH GENERATION — PolygonWithHolesExtrude.BridgeHoles silently skipped openings when
+   bridging/triangulation failed, and ExtrudeAlongZ fell back to a solid outer-only plate.
+   EarClip could return a partial triangle set. That produced plates with missing openings
+   and incomplete material coverage (large arbitrary triangles filling what should be openings
+   or leaving gaps).
+2. CUTAWAY — DrawStructureMesh culled a triangle only when ALL three vertices were on the
+   excluded side, so triangles straddling the cut plane were drawn whole (fake large faces).
+
+Fixes: fail-closed extrusion (no hole skip / no solid fallback / complete triangulation +
+coverage checks), welded watertight walls, TryAddStructureMesh geometric validation, and
+true cut-plane clipping with section caps. Triangulation edges are diagnostic-only.
