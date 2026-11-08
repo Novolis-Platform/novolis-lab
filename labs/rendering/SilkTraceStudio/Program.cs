@@ -9,8 +9,7 @@ namespace SilkTraceStudio;
 internal static class Program
 {
     private const int OrbitSamplesPerFrame = 24;
-    // Larger batches amortize the single GPU→CPU framebuffer download after resident accumulation.
-    private const int AccumulateSamplesPerBatch = 16;
+    private const int AccumulateSamplesPerBatch = 24;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomSensitivity = 0.15f;
 
@@ -25,6 +24,8 @@ internal static class Program
         var sample = 0;
         var frameWidth = 0;
         var frameHeight = 0;
+        var traceWidth = 0;
+        var traceHeight = 0;
         var autoOrbit = false;
         var autoOrbitAngle = 0f;
 
@@ -36,27 +37,22 @@ internal static class Program
             {
                 frameWidth = frame.Width;
                 frameHeight = frame.Height;
+                (traceWidth, traceHeight) = InteractiveTraceSize.Clamp(frameWidth, frameHeight);
                 worker.WaitForIdle();
-                session.Resize(frameWidth, frameHeight);
-                display.Invalidate(frameWidth, frameHeight);
+                session.Resize(traceWidth, traceHeight);
+                display.Invalidate(traceWidth, traceHeight);
                 sample = 0;
             }
 
             if (frame.IsResetPressed())
             {
-                worker.WaitForIdle();
-                session.Backend.ResetAccumulation();
-                display.Invalidate(frameWidth, frameHeight);
-                sample = 0;
+                ResetTrace(worker, session, display, ref sample, traceWidth, traceHeight);
             }
 
             if (frame.IsOrbitTogglePressed())
             {
                 autoOrbit = !autoOrbit;
-                worker.WaitForIdle();
-                session.Backend.ResetAccumulation();
-                display.Invalidate(frameWidth, frameHeight);
-                sample = 0;
+                ResetTrace(worker, session, display, ref sample, traceWidth, traceHeight);
             }
 
             if (frame.IsBackendCyclePressed())
@@ -64,33 +60,37 @@ internal static class Program
                 worker.WaitForIdle();
                 session.CycleBackend();
                 worker.ReplaceBackend(session.Backend);
-                display.Invalidate(frameWidth, frameHeight);
+                display.Invalidate(traceWidth, traceHeight);
                 sample = 0;
             }
 
             if (frame.IsDigitPressed(1))
             {
-                SwitchBackend(worker, session, display, ref sample, frameWidth, frameHeight, PathTraceBackendKind.Ilgpu);
+                SwitchBackend(worker, session, display, ref sample, traceWidth, traceHeight, PathTraceBackendKind.Ilgpu);
             }
             else if (frame.IsDigitPressed(2))
             {
-                SwitchBackend(worker, session, display, ref sample, frameWidth, frameHeight, PathTraceBackendKind.Vulkan);
+                SwitchBackend(worker, session, display, ref sample, traceWidth, traceHeight, PathTraceBackendKind.Vulkan);
             }
             else if (frame.IsDigitPressed(3))
             {
-                SwitchBackend(worker, session, display, ref sample, frameWidth, frameHeight, PathTraceBackendKind.Cpu);
+                SwitchBackend(worker, session, display, ref sample, traceWidth, traceHeight, PathTraceBackendKind.Cpu);
             }
 
+            var cameraMoved = false;
             if (!autoOrbit)
             {
-                if (frame.IsMouseButtonDown(MouseButton.Left))
+                if (frame.IsMouseButtonDown(MouseButton.Left)
+                    && (MathF.Abs(frame.MouseDelta.X) > 1e-4f || MathF.Abs(frame.MouseDelta.Y) > 1e-4f))
                 {
                     orbit.AddLookDelta(frame.MouseDelta.X * MouseLookSensitivity, -frame.MouseDelta.Y * MouseLookSensitivity);
+                    cameraMoved = true;
                 }
 
                 if (MathF.Abs(frame.ScrollDelta) > 1e-4f)
                 {
                     orbit.AdjustDistance(-frame.ScrollDelta * ScrollZoomSensitivity);
+                    cameraMoved = true;
                 }
             }
             else
@@ -99,7 +99,12 @@ internal static class Program
                 orbit.Yaw = autoOrbitAngle;
             }
 
-            var aspect = frameWidth / (float)Math.Max(1, frameHeight);
+            if (cameraMoved)
+            {
+                ResetTrace(worker, session, display, ref sample, traceWidth, traceHeight);
+            }
+
+            var aspect = traceWidth / (float)Math.Max(1, traceHeight);
             var camera = CameraSnapshot.LookAt(
                 orbit.BuildEyePosition(),
                 orbit.Target,
@@ -127,8 +132,26 @@ internal static class Program
                 autoOrbit,
                 fps.Value,
                 worker.IsBusy,
-                "drag LMB · scroll zoom · Space auto-orbit · B cycle backend · 1/2/3 ILGPU/Vulkan/CPU · R reset"));
+                $"trace {traceWidth}x{traceHeight} · drag LMB · scroll zoom · Space auto-orbit · B cycle · 1/2/3 · R reset"));
         });
+    }
+
+    private static void ResetTrace(
+        PathTraceBackgroundWorker worker,
+        PathTraceSession session,
+        PathTraceDisplayBuffer display,
+        ref int sample,
+        int traceWidth,
+        int traceHeight)
+    {
+        worker.WaitForIdle();
+        session.Backend.ResetAccumulation();
+        if (traceWidth > 0 && traceHeight > 0)
+        {
+            display.Invalidate(traceWidth, traceHeight);
+        }
+
+        sample = 0;
     }
 
     private static void SwitchBackend(
@@ -136,16 +159,16 @@ internal static class Program
         PathTraceSession session,
         PathTraceDisplayBuffer display,
         ref int sample,
-        int frameWidth,
-        int frameHeight,
+        int traceWidth,
+        int traceHeight,
         PathTraceBackendKind kind)
     {
         worker.WaitForIdle();
         session.SwitchBackend(kind);
         worker.ReplaceBackend(session.Backend);
-        if (frameWidth > 0 && frameHeight > 0)
+        if (traceWidth > 0 && traceHeight > 0)
         {
-            display.Invalidate(frameWidth, frameHeight);
+            display.Invalidate(traceWidth, traceHeight);
         }
 
         sample = 0;
