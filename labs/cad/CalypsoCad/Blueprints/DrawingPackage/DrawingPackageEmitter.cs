@@ -68,8 +68,10 @@ internal static class DrawingPackageEmitter
                 continue;
             if (entry.Category == DrawingCategoryId.General && entry.Sequence == 1)
             {
-                Write(outDir, entry.RelativePath, DrawingPackageHtml.PackageIndex(drawings, bom));
-                Write(outDir, "index.html", DrawingPackageHtml.PackageIndex(drawings, bom));
+                // Nested cover sheet needs ../ prefixes; package root index does not.
+                var nestDepth = entry.RelativePath.Count(c => c is '/' or '\\');
+                Write(outDir, entry.RelativePath, DrawingPackageHtml.PackageIndex(drawings, bom, nestDepth));
+                Write(outDir, "index.html", DrawingPackageHtml.PackageIndex(drawings, bom, nestDepth: 0));
                 continue;
             }
 

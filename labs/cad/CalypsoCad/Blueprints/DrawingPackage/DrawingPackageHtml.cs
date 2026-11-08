@@ -12,10 +12,18 @@ internal static class DrawingPackageHtml
         "INTERPRET PER ISO 128-15 / ISO 5457 / ISO 7200. UNITS: METRES. STERN LEFT, BOW RIGHT. " +
         "NOT DNV PLAN APPROVAL — CLASSIFICATION-STYLE DRAWING REGISTER FOR CALYPSO.";
 
+    /// <param name="nestDepth">
+    /// Directory depth of this HTML under the package root (0 = <c>index.html</c>,
+    /// 1 = <c>100-general/CAL-100-001-…</c>). Prefixes relative hrefs with <c>../</c>.
+    /// </param>
     public static string PackageIndex(
         IReadOnlyList<DrawingEntry> drawings,
-        IReadOnlyList<DrawingPackageBomLine> bom)
+        IReadOnlyList<DrawingPackageBomLine> bom,
+        int nestDepth = 0)
     {
+        var prefix = nestDepth <= 0
+            ? ""
+            : string.Concat(Enumerable.Repeat("../", nestDepth));
         var sb = new StringBuilder();
         Head(sb, "CAL-100-001 — Calypso drawing package");
         sb.AppendLine("<body>");
@@ -32,7 +40,7 @@ internal static class DrawingPackageHtml
         {
             var count = drawings.Count(d => d.Category == cat.Id);
             sb.AppendLine(
-                $"<a href=\"{WebUtility.HtmlEncode(cat.FolderName)}/index.html\"><strong>{cat.SystemCode}</strong> {WebUtility.HtmlEncode(cat.Title)} <span>{count}</span></a>");
+                $"<a href=\"{WebUtility.HtmlEncode(prefix + cat.FolderName)}/index.html\"><strong>{cat.SystemCode}</strong> {WebUtility.HtmlEncode(cat.Title)} <span>{count}</span></a>");
         }
 
         sb.AppendLine("</nav>");
@@ -43,7 +51,7 @@ internal static class DrawingPackageHtml
         {
             var cat = DrawingPackageCategories.Get(d.Category);
             sb.AppendLine(
-                $"<tr><td><a href=\"{WebUtility.HtmlEncode(d.RelativePath)}\">{WebUtility.HtmlEncode(d.DrawingNumber)}</a></td>" +
+                $"<tr><td><a href=\"{WebUtility.HtmlEncode(prefix + d.RelativePath)}\">{WebUtility.HtmlEncode(d.DrawingNumber)}</a></td>" +
                 $"<td>{WebUtility.HtmlEncode(d.Label)}</td>" +
                 $"<td>{WebUtility.HtmlEncode(d.Title)}</td>" +
                 $"<td>{WebUtility.HtmlEncode(cat.Title)}</td>" +
