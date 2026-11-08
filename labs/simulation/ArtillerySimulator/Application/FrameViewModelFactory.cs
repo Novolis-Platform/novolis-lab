@@ -23,5 +23,6 @@ internal static class FrameViewModelFactory
         FxTime = world.FxTime,
         FollowProjectile = world.Camera.FollowProjectile,
         PredictedRangeMeters = world.PredictedRangeMeters,
+        Score = world.ScoreSnapshot,
     };
 }

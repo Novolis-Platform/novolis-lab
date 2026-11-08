@@ -120,6 +120,13 @@ internal sealed class ArtilleryAgentSnapshotBuilder(
             ["hePinnedM"] = gun.Spec.Warhead.PinnedMeters.ToString("F0", CultureInfo.InvariantCulture),
             ["heAirburstM"] = gun.Spec.Warhead.AirburstHeightMeters.ToString("F0", CultureInfo.InvariantCulture),
             ["seed"] = play.Session.SeedHash,
+            ["score"] = play.ScoreSnapshot.Points.ToString(CultureInfo.InvariantCulture),
+            ["highScore"] = play.ScoreSnapshot.HighScore.ToString(CultureInfo.InvariantCulture),
+            ["scoreTime"] = play.ScoreSnapshot.TimeText,
+            ["shots"] = play.ScoreSnapshot.Shots.ToString(CultureInfo.InvariantCulture),
+            ["kills"] = play.ScoreSnapshot.Kills.ToString(CultureInfo.InvariantCulture),
+            ["pins"] = play.ScoreSnapshot.Pins.ToString(CultureInfo.InvariantCulture),
+            ["scoreFinal"] = play.ScoreSnapshot.Finalized ? "yes" : "no",
         };
         if (play.Delivery.LastFire is { } last)
         {
@@ -138,6 +145,7 @@ internal sealed class ArtilleryAgentSnapshotBuilder(
             lines["defenders"] = mission.DefendersAlive.ToString(CultureInfo.InvariantCulture);
             lines["fratricide"] = mission.FratricideLoss ? "yes" : "no";
             lines["outcome"] = mission.Outcome.ToString();
+            lines["battleSeconds"] = mission.BattleElapsedSeconds.ToString("F1", CultureInfo.InvariantCulture);
             lines["defense"] = mission.Outcome switch
             {
                 MissionOutcome.Held => "held",

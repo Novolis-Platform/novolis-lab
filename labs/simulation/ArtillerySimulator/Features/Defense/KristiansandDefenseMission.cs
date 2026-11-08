@@ -73,6 +73,7 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
     public int Remaining => _state.Units.Count;
     public int Stopped => _state.Wrecks.Count;
     public int DefendersAlive => _state.DefendersAlive;
+    public float BattleElapsedSeconds => _state.BattleSeconds;
     public bool Held => DefenseVictoryEvaluator.Held(_state);
     public MissionOutcome Outcome => DefenseVictoryEvaluator.Outcome(_state);
 

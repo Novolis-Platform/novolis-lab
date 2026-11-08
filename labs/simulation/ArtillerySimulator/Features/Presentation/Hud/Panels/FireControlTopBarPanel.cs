@@ -15,7 +15,8 @@ internal static class FireControlTopBarPanel
         string? defenseLine,
         string? fireBlockReason,
         bool launchDetonation,
-        bool solutionUnsafe)
+        bool solutionUnsafe,
+        in ScoreSnapshot score)
     {
         var scale = m.Scale;
         var width = m.Width;
@@ -39,6 +40,15 @@ internal static class FireControlTopBarPanel
             28 * scale,
             20f * scale,
             FireControlTheme.Text);
+
+        var scoreLine = $"SCORE {score.Points}   HI {score.HighScore}   {score.TimeText}";
+        chrome.DrawText(
+            canvas,
+            scoreLine,
+            width - 20 * scale - chrome.MeasureText(scoreLine, 18f * scale),
+            28 * scale,
+            18f * scale,
+            score.IsNewHighScore ? FireControlTheme.Accent : FireControlTheme.Text);
 
         var mission = string.IsNullOrEmpty(defenseLine) ? ProductIdentity.Subtitle.ToUpperInvariant() : defenseLine;
         chrome.DrawText(canvas, FireControlChromePrimitives.Truncate(mission, 72), 20 * scale, 56 * scale, 15f * scale, FireControlTheme.Accent);

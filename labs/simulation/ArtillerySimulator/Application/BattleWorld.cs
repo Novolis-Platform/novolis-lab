@@ -31,6 +31,7 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     private readonly LevelTransitionService _levelTransitions;
     private readonly BattleWorldBootstrap _bootstrap;
     private readonly BattleFrameCoordinator _frames;
+    private readonly ScoreBoard _score;
 
     private GunModel _gun = null!;
     private ProjectileBallisticSimulation _ballistics = null!;
@@ -89,7 +90,9 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             _session.Seed,
             enabled: !options.SkipShell,
             logs.CreateLogger<ArtilleryAudioHub>());
+        _score = new ScoreBoard(log: logs.CreateLogger<ScoreBoard>());
         _presentation.Bind(this, _audio);
+        _fx.ImpactScored = (kills, pins) => _score.RegisterImpact(kills, pins);
 
         _fireRules = new FireAuthorizationRules(() => _gun, _crew, _aim, () => _mission);
         _commandApplier = new BattleCommandApplier(
@@ -103,6 +106,7 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             _fireRules,
             () => _gun,
             () => IsPaused,
+            _score,
             log);
         _levelTransitions = new LevelTransitionService(
             _session,
@@ -122,6 +126,7 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             _camera,
             _shell,
             _input,
+            _score,
             log);
         _frames = new BattleFrameCoordinator(
             _session,
@@ -137,6 +142,7 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             () => IsPaused,
             _fireRules,
             () => _mission,
+            _score,
             log);
 
         _log.LogInformation(
@@ -177,6 +183,8 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     public MissionOutcome MissionOutcome => _fireRules.MissionOutcome;
     public ArtilleryParticles Particles => _presentation.Particles;
     public float FxTime => _presentation.FxTime;
+    public ScoreBoard Score => _score;
+    public ScoreSnapshot ScoreSnapshot => _score.Snapshot;
 
     public FrameViewModel CreateFrameViewModel() => FrameViewModelFactory.Create(this);
 

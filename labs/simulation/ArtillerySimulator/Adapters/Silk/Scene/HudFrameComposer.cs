@@ -36,6 +36,7 @@ internal static class HudFrameComposer
             vm.Audio?.RadioSpeaker,
             vm.Audio?.VoiceAvailable == true,
             vm.Audio?.ScoreAvailable == true,
-            audioHubPresent: vm.Audio is not null);
+            audioHubPresent: vm.Audio is not null,
+            score: vm.Score);
     }
 }

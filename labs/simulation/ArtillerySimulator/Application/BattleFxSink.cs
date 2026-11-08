@@ -9,10 +9,12 @@ internal sealed class BattleFxSink
     public Action<Vector3, bool>? Burst;
     public Action? KillcamExpired;
     public Action<float, bool, IDefenseMission?>? FrameFx;
+    public Action<int, int>? ImpactScored;
 
     public void OnMuzzle(Vector3 muzzle, Vector3 fireDir) => Muzzle?.Invoke(muzzle, fireDir);
     public void OnBurst(Vector3 at, bool airburst) => Burst?.Invoke(at, airburst);
     public void OnKillcamExpired() => KillcamExpired?.Invoke();
     public void OnFrameFx(float wallSeconds, bool audioPlaying, IDefenseMission? mission) =>
         FrameFx?.Invoke(wallSeconds, audioPlaying, mission);
+    public void OnImpactScored(int kills, int pins) => ImpactScored?.Invoke(kills, pins);
 }

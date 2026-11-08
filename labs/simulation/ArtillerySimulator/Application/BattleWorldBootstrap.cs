@@ -14,6 +14,7 @@ internal sealed class BattleWorldBootstrap
     private readonly ArtilleryCameras _camera;
     private readonly ArtilleryShellController _shell;
     private readonly PlayerBattleInput _input;
+    private readonly ScoreBoard _score;
     private readonly ILogger _log;
 
     public BattleWorldBootstrap(
@@ -26,6 +27,7 @@ internal sealed class BattleWorldBootstrap
         ArtilleryCameras camera,
         ArtilleryShellController shell,
         PlayerBattleInput input,
+        ScoreBoard score,
         ILogger logger)
     {
         _terrain = terrain;
@@ -37,6 +39,7 @@ internal sealed class BattleWorldBootstrap
         _camera = camera;
         _shell = shell;
         _input = input;
+        _score = score;
         _log = logger;
     }
 
@@ -51,6 +54,7 @@ internal sealed class BattleWorldBootstrap
         _shell.SetLoadingStatus($"Seating {gun.Spec.ShortName} battery…");
         _session.Clock.Reset();
         mission = level.StartMission(_terrain, _session.Piece, _session.Seed);
+        _score.BeginMission(level.Id, _session.SeedHash);
         _battle.SetMission(mission);
         _terrain.PlaceGun(mission.GunX, mission.GunZ, _session.Piece.GunHeightOffsetMeters);
         gun.LayCenter(mission.TrailBearingDegrees);

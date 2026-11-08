@@ -86,10 +86,10 @@ internal sealed class ArtilleryShellController
         return false;
     }
 
-    public void DrawOverlayIfNeeded(SilkFrame frame)
+    public void DrawOverlayIfNeeded(SilkFrame frame, string? pauseStatus = null)
     {
         if (_menus.IsPaused || _menus.IsLegal)
-            _shell.Draw(frame, _menus.Phase, "", _level);
+            _shell.Draw(frame, _menus.Phase, pauseStatus ?? "", _level);
     }
 
     public void HandleKeys(SilkFrame frame, bool worldReady, Action<int> selectLevel)

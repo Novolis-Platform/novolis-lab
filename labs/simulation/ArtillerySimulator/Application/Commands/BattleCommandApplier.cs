@@ -16,6 +16,7 @@ internal sealed class BattleCommandApplier
     private readonly FireAuthorizationRules _fireRules;
     private readonly Func<GunModel> _gun;
     private readonly Func<bool> _isPaused;
+    private readonly ScoreBoard _score;
     private readonly ILogger _log;
 
     public BattleCommandApplier(
@@ -29,6 +30,7 @@ internal sealed class BattleCommandApplier
         FireAuthorizationRules fireRules,
         Func<GunModel> gun,
         Func<bool> isPaused,
+        ScoreBoard score,
         ILogger logger)
     {
         _terrain = terrain;
@@ -41,6 +43,7 @@ internal sealed class BattleCommandApplier
         _fireRules = fireRules;
         _gun = gun;
         _isPaused = isPaused;
+        _score = score;
         _log = logger;
     }
 
@@ -107,6 +110,7 @@ internal sealed class BattleCommandApplier
         _crew.BeginReload();
         _battle.KillcamActive = _camera.FollowProjectile;
         _aim.MarkDirty();
+        _score.RegisterShot();
         _log.LogDebug(
             "Fired {Charge} at elev={Elev:F1} az={Az:F1}",
             gun.ChargeLabel,

@@ -84,7 +84,7 @@ internal sealed class FrameDirector : IDisposable
         }
 
         _smoke?.Tick(frame);
-        _world.Shell.DrawOverlayIfNeeded(frame);
+        _world.Shell.DrawOverlayIfNeeded(frame, _world.ScoreSnapshot.PauseBody);
         _profiles.TickFlash(frame.DeltaSeconds);
     }
 

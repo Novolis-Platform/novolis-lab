@@ -70,7 +70,13 @@ internal sealed class ShellOverlay : IDisposable
                     ShellLoadingPanel.Draw(canvas, _surface.Width, _surface.Height, _splash, _icon, level, statusLine);
                     break;
                 case ShellPhase.Paused:
-                    ShellPausePanel.Draw(canvas, _surface.Width, _surface.Height, ref _legalScrollLines, out _legalMaxScrollLines);
+                    ShellPausePanel.Draw(
+                        canvas,
+                        _surface.Width,
+                        _surface.Height,
+                        statusLine,
+                        ref _legalScrollLines,
+                        out _legalMaxScrollLines);
                     break;
                 case ShellPhase.Legal:
                     ShellLegalPanel.Draw(canvas, _surface.Width, _surface.Height, level, ref _legalScrollLines, out _legalMaxScrollLines);

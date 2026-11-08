@@ -22,4 +22,5 @@ internal interface IPlayQuery
     string? FireBlockReason();
     bool SolutionUnsafe { get; }
     bool LaunchDetonation { get; }
+    ScoreSnapshot ScoreSnapshot { get; }
 }

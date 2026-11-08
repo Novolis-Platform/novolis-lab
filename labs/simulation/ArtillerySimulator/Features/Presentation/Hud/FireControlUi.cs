@@ -121,7 +121,8 @@ internal sealed class FireControlUi : IDisposable
         string? radioSpeaker = null,
         bool voiceAvailable = false,
         bool scoreAvailable = false,
-        bool audioHubPresent = false)
+        bool audioHubPresent = false,
+        ScoreSnapshot score = default)
     {
         var metrics = FireControlHudMetrics.FromFrame(frame.Width, frame.Height);
         var width = metrics.Width;
@@ -159,7 +160,7 @@ internal sealed class FireControlUi : IDisposable
 
         var signature = string.Create(
             CultureInfo.InvariantCulture,
-            $"{width}x{height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{(int)(predictedRangeMeters / 25f)}|{(int)(predictedTofSeconds * 2f)}|{(int)(heroRange / 25f)}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{(int)(windSpeed * 2f)}|{(int)windFrom}|{(int)tempC}|{(int)qnh}|{(int)rh}|{(int)(predictedImpact.Y / 10f)}|{radioSpeaker}|{radioLine}|{voiceAvailable}|{scoreAvailable}|{audioHubPresent}");
+            $"{width}x{height}|{gun.ElevationMils:F0}|{orderedElevMils:F0}|{gun.DeflectionMils:F0}|{orderedDeflMils:F0}|{(int)(predictedRangeMeters / 25f)}|{(int)(predictedTofSeconds * 2f)}|{(int)(heroRange / 25f)}|{gun.ChargeIndex}|{followProjectile}|{_chargeMenuOpen}|{canFire}|{defenseLine}|{fireBlockReason}|{shot.Phase}|{solutionUnsafe}|{launchDetonation}|{(int)(windSpeed * 2f)}|{(int)windFrom}|{(int)tempC}|{(int)qnh}|{(int)rh}|{(int)(predictedImpact.Y / 10f)}|{radioSpeaker}|{radioLine}|{voiceAvailable}|{scoreAvailable}|{audioHubPresent}|{score.Points}|{score.HighScore}|{score.TimeText}|{score.IsNewHighScore}");
         _rasterAge += frame.DeltaSeconds;
         var dirty = signature != _lastSignature || _rasterAge >= 0.25f;
         if (dirty)
@@ -169,7 +170,7 @@ internal sealed class FireControlUi : IDisposable
             var chrome = new FireControlChromePrimitives(_typeface, metrics.Scale);
             var canvas = _surface.Canvas;
             canvas.Clear(SKColors.Transparent);
-            FireControlTopBarPanel.Draw(canvas, chrome, metrics, shot, heroRange, gun, defenseLine, fireBlockReason, launchDetonation, solutionUnsafe);
+            FireControlTopBarPanel.Draw(canvas, chrome, metrics, shot, heroRange, gun, defenseLine, fireBlockReason, launchDetonation, solutionUnsafe, score);
             FireControlGunPanel.Draw(canvas, chrome, metrics, gun, orderedElevMils, orderedDeflMils, fireBlockReason, solutionUnsafe, launchDetonation, predictedRangeMeters, predictedTofSeconds);
             FireControlMetPanel.Draw(canvas, chrome, metrics, atmosphere, sampleAlt, windSpeed, windFrom, tempC, qnh, rh, predictedImpact, terrain);
             FireControlChargeMenuPanel.Draw(canvas, chrome, metrics, gun, _chargeMenuOpen);
@@ -192,7 +193,7 @@ internal sealed class FireControlUi : IDisposable
             _titleAge = 0f;
             frame.SetTitle(string.Create(
                 CultureInfo.InvariantCulture,
-                $"{ProductIdentity.Title}  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
+                $"{ProductIdentity.Title}  |  {score.Points} pts  {score.TimeText}  |  {SimulationUnits.FormatRange(heroRange)}  |  {gun.ChargeLabel}  |  {(followProjectile ? "FOLLOW SHELL" : "FOLLOW GUN")}  |  {fps:F0} fps"));
         }
 
         LastOverlayLineCount = 0;

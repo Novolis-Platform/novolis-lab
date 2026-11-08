@@ -38,6 +38,9 @@ internal interface IDefenseMission
     float CaughtMeters { get; }
     float PinnedMeters { get; }
 
+    /// <summary>Accumulated battle-clock seconds since mission boot (paused when terminal).</summary>
+    float BattleElapsedSeconds { get; }
+
     void Advance(float simSeconds, Vector3? incomingShell);
     void ResolveImpact(Vector3 impact);
     void Draw(SilkWireBatch wires);

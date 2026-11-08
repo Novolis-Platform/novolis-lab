@@ -58,6 +58,9 @@ dotnet run --project d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\A
 | Present | Visible window uses VSync (`SilkWindow`); sim still wall-capped |
 | Session | `BattleSession` owns seed + piece + `DeliverySampler` |
 | Mission end | `MissionOutcome` (Open/Held/ObjectiveLost/Fratricide); auto-pause; fire blocked |
+| Score | Arcade points (kill/pin/round/held); HUD `SCORE` / `HI` / `mm:ss`; pause shows final |
+| High score | Best per level in `%LocalAppData%\Novolis\ArtillerySimulator\highscores.json` |
+| Time | Battle-clock elapsed on HUD; wall play time tracked for telemetry |
 | Map payload | Runtime bins only in output (~heightfield, NVDB, water masks) |
 | Audio HUD | Bottom bar shows `RADIO OFF` / `SCORE OFF` / `AUDIO OFF` when missing |
 | Aim preview | Real TOF + collision sweep; rebuild throttled ~10 Hz |
@@ -81,7 +84,8 @@ Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force,
 | `Features/Levels/` | `IGameLevel`, catalog |
 | `Features/Defense/` | Mission loop, columns, opening fire plan |
 | `Features/Presentation/` | Camera, HUD Skia, particles (drawn via adapters) |
-| `Features/Audio/` | SFX, score, voice |
+| `Features/Audio/` | SFX, music loop, voice |
+| `Features/Score/` | `ScoreBoard`, ledger, play clock, high-score store |
 | `Kristiansand/` | Geodesy, terrain, roads, atmosphere |
 
 Physics (`TickPhysics`) and render (`CreateFrameViewModel` → draw) are budget-isolated. Commands use `Novolis.Messaging.Channels` — no MediatR.

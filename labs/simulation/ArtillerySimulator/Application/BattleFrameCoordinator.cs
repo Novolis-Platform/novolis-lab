@@ -19,6 +19,7 @@ internal sealed class BattleFrameCoordinator
     private readonly Func<bool> _isPaused;
     private readonly FireAuthorizationRules _fireRules;
     private readonly Func<IDefenseMission?> _mission;
+    private readonly ScoreBoard _score;
     private readonly ILogger _log;
 
     public BattleFrameCoordinator(
@@ -35,6 +36,7 @@ internal sealed class BattleFrameCoordinator
         Func<bool> isPaused,
         FireAuthorizationRules fireRules,
         Func<IDefenseMission?> mission,
+        ScoreBoard score,
         ILogger logger)
     {
         _session = session;
@@ -50,6 +52,7 @@ internal sealed class BattleFrameCoordinator
         _isPaused = isPaused;
         _fireRules = fireRules;
         _mission = mission;
+        _score = score;
         _log = logger;
     }
 
@@ -88,7 +91,9 @@ internal sealed class BattleFrameCoordinator
         if (!_worldReady())
             return;
 
-        _battle.AdvancePresentation(wallSeconds, audioPlaying: _shell.Menus.IsPlaying && !_isPaused());
+        var playing = _shell.Menus.IsPlaying && !_isPaused();
+        _battle.AdvancePresentation(wallSeconds, audioPlaying: playing);
+        _score.Tick(_mission(), playing, wallSeconds);
 
         if (_mission() is { } mission)
             _camera.SetBattleFocus(mission.BattleFocus(_terrain.GunBaseline));
@@ -103,8 +108,11 @@ internal sealed class BattleFrameCoordinator
         if (!_fireRules.IsMissionTerminal || !_shell.Menus.IsPlaying)
             return;
 
+        // Ensure terminal bonuses / high-score write before pause chrome.
+        _score.Tick(_mission(), playing: false, wallSeconds: 0f);
         _shell.Menus.PushPause();
         _log.LogInformation("Mission ended: {Outcome}", _fireRules.MissionOutcome);
         Console.WriteLine(_mission()?.Observation() ?? "Mission complete.");
+        Console.WriteLine(_score.Snapshot.PauseBody.Replace('\n', ' '));
     }
 }

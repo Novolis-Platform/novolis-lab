@@ -113,7 +113,12 @@ internal sealed class ArtilleryBattleLoop
             BurstAt = BurstPoint(landed.Position);
             var airburst = _gun.Spec.Warhead.IsAirburst;
             _fx.OnBurst(BurstAt, airburst);
-            _mission?.ResolveImpact(landed.Position);
+            if (_mission is { } mission)
+            {
+                mission.ResolveImpact(landed.Position);
+                _fx.OnImpactScored(mission.LastBracket, mission.LastPinned);
+            }
+
             _log.LogDebug(
                 "Impact {Reason} at {Position} airburst={Airburst}",
                 landed.Reason,
