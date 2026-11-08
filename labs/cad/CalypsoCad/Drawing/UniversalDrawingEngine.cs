@@ -1,6 +1,7 @@
 using System.Text.Json;
 using CalypsoCad.Blueprints;
 using CalypsoCad.Blueprints.DrawingPackage;
+using CalypsoCad.Hierarchy;
 using CalypsoCad.Model;
 using CalypsoCad.Publication;
 using Novolis.Cad.Primitives;
@@ -8,8 +9,7 @@ using Novolis.Cad.Primitives;
 namespace CalypsoCad.Drawing;
 
 /// <summary>
-/// Hierarchy-driven drawing engine: subject → geometry → project/section → compose.
-/// One engine for interactive preview and headless package generation.
+/// Calypso host drawing engine: generic Novolis.Cad.Drawing projection + Calypso SVG package chrome.
 /// </summary>
 internal static class UniversalDrawingEngine
 {
@@ -27,34 +27,22 @@ internal static class UniversalDrawingEngine
         CadJsonStructureQuery.EnsureHullGeometry(document);
         var ship = PackageDrawingChrome.ReadShip(document);
 
-        var resolved = SubjectGeometryResolver.Resolve(request.SubjectId, registry, document);
-        var measurements = DrawingMeasurements.ComputeOverall(resolved.Geometry, request.Dimensions);
-        var register = PartRegisterBuilder.Build(request.SubjectId, registry);
-
-        var unsupported = resolved.Diagnostics
-            .Where(d => d.Contains("Unsupported", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        var ok = resolved.HasDrawableGeometry
-                 || request.Views.All(v => v.Kind == DrawingViewKind.Assembly);
-        if (unsupported.Count > 0 && !resolved.HasDrawableGeometry)
-            ok = false;
-
-        var manifest = new DrawingManifest
-        {
-            SubjectId = request.SubjectId,
-            DrawingNumber = request.DrawingNumber,
-            ViewIds = request.Views.Select(v => v.Id).ToList(),
-            GeometrySourceIds = resolved.Geometry.Select(g => g.SourceEntityId).Distinct().ToList(),
-            Measurements = measurements,
-            Diagnostics = resolved.Diagnostics,
-            PartRegister = register,
-            Ok = ok && unsupported.Count == 0,
-        };
+        var hierarchy = ShipHierarchyMapper.ToHierarchy(registry);
+        var core = Novolis.Cad.Drawing.UniversalDrawingEngine.Render(request, document, hierarchy);
+        var resolved = new SubjectGeometryResolver.ResolveResult(
+            core.Resolved.SubjectId,
+            core.Resolved.Geometry,
+            core.Resolved.Diagnostics,
+            core.Resolved.HasDrawableGeometry);
 
         var html = DrawingSvgComposer.ComposeHtml(
-            request, resolved, measurements, register, ship, manifest);
-        return new RenderResult(html, manifest, resolved);
+            request,
+            resolved,
+            core.Manifest.Measurements,
+            core.Manifest.PartRegister,
+            ship,
+            core.Manifest);
+        return new RenderResult(html, core.Manifest, resolved);
     }
 
     public static string RenderManifestJson(DrawingManifest manifest) =>

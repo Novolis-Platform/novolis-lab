@@ -20,10 +20,29 @@ internal static class CadDocumentAdapter
     public const string PropParentAssemblyId = "parentAssemblyId";
     public const string PropObjectClass = "objectClass"; // physical | reference | annotation | diagnostic
 
-    /// <summary>Active registry for the current generate / load pass.</summary>
-    public static ShipPartRegistry Active { get; } = new();
+    private static readonly AsyncLocal<ShipPartRegistry?> CurrentRegistry = new();
 
-    public static void Reset() => Active.Clear();
+    /// <summary>
+    /// Session / generation-scoped registry. Not process-global — each host or generate pass
+    /// must <see cref="SetActive"/> (or let <see cref="Active"/> lazily create one for CLI).
+    /// </summary>
+    public static ShipPartRegistry Active
+    {
+        get => CurrentRegistry.Value ??= new ShipPartRegistry();
+        private set => CurrentRegistry.Value = value;
+    }
+
+    /// <summary>Bind a session-owned registry (multi-document safe).</summary>
+    public static void SetActive(ShipPartRegistry registry) =>
+        Active = registry ?? throw new ArgumentNullException(nameof(registry));
+
+    public static void Reset()
+    {
+        if (CurrentRegistry.Value is { } existing)
+            existing.Clear();
+        else
+            CurrentRegistry.Value = new ShipPartRegistry();
+    }
 
     /// <summary>
     /// Stamp semantic properties onto an entity and register the corresponding <see cref="CadPart"/>.

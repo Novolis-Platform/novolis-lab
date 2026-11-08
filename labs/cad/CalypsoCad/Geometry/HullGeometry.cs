@@ -10,8 +10,14 @@ internal sealed class HullGeometry
 {
     private const float SectionChamfer = 2.5f;
 
-    /// <summary>Active snapshot for the current generate / audit process.</summary>
-    public static HullGeometry? Active { get; private set; }
+    private static readonly AsyncLocal<HullGeometry?> CurrentHull = new();
+
+    /// <summary>Generation-scoped hull snapshot (AsyncLocal — not process-global).</summary>
+    public static HullGeometry? Active
+    {
+        get => CurrentHull.Value;
+        private set => CurrentHull.Value = value;
+    }
 
     private readonly (float Z, float Beam, float H)[] _stations;
     private readonly float _oahMid;

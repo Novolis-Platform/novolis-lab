@@ -14,6 +14,9 @@ internal sealed class CalypsoSession
     /// <summary>Authoritative physical/reference object visibility (Explorer + renderer).</summary>
     public HierarchyVisibilityService Visibility { get; } = new();
 
+    /// <summary>Document-owned semantic registry (not CadDocumentAdapter process singleton).</summary>
+    public ShipPartRegistry Registry { get; } = new();
+
     public string GeneratedDirectory { get; private set; } = "";
     public CadDocument Document { get; private set; } = new();
     public CadShapesDocument Shapes { get; private set; } = new();
@@ -126,6 +129,8 @@ internal sealed class CalypsoSession
         SelectedPartId = null;
         SelectedReferenceId = null;
         InspectorText = "";
+        CadDocumentAdapter.SetActive(Registry);
+        Registry.Clear();
         CadDocumentAdapter.LoadFromDocument(Document);
         ShipHierarchyBuilder.EnsureCanonicalHierarchy(Registry, Document);
         Visibility.BindRegistry(Registry, Document);
@@ -149,7 +154,6 @@ internal sealed class CalypsoSession
         VisibilityPersistence.Save(Visibility, VisibilityPersistence.DefaultPath(GeneratedDirectory));
     }
 
-    public ShipPartRegistry Registry => CadDocumentAdapter.Active;
 
     /// <summary>Generate and load the two-bay structural proof CAD (not the full ship).</summary>
     public void RegenerateAndLoadStructuralBay()

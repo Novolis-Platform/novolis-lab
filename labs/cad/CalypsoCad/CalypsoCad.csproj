@@ -15,6 +15,11 @@
     <LibraryReference Include="Novolis.Agent.Surface" />
     <LibraryReference Include="Novolis.Cad.Primitives" />
     <LibraryReference Include="Novolis.Cad.SceneBridge" />
+    <LibraryReference Include="Novolis.Cad.Hierarchy" />
+    <LibraryReference Include="Novolis.Cad.Visibility" />
+    <LibraryReference Include="Novolis.Cad.Drawing" />
+    <LibraryReference Include="Novolis.Cad.Generation" />
+    <LibraryReference Include="Novolis.Avalonia.Cad" />
     <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.Math.Topology" />
     <LibraryReference Include="Novolis.Modeling.Import.Assimp" />

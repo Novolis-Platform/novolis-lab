@@ -3,6 +3,7 @@ using CalypsoCad.Canvas;
 using CalypsoCad.Export;
 using CalypsoCad.Explorer;
 using CalypsoCad.Fabrication;
+using CalypsoCad.Host;
 using CalypsoCad.Review;
 using CalypsoCad.Session;
 using CalypsoCad.Structure;
@@ -164,18 +165,30 @@ internal static class Program
             return;
         }
 
-        // GUI mode — Avalonia chrome + Silk 3D (or --silk for GLFW-only).
+        // GUI mode — default: thin CadSessionService host (CadEditorSurface).
+        // --explorer / --silk keep the legacy Silk inspection shell.
         var silkOnly = HasFlag(args, "--silk");
         var explorer = HasFlag(args, "--explorer");
-        var session = new CalypsoSession();
-        session.RegenerateAndLoad();
-        var renderer = new CalypsoRenderer(session);
-        renderer.Fit();
-        renderer.SyncInteriorFromSelection();
-        if (silkOnly && !explorer)
-            CalypsoSilkHost.Run(session, renderer);
-        else
-            CalypsoExplorerHost.Run(session, renderer);
+        if (silkOnly || explorer)
+        {
+            var session = new CalypsoSession();
+            session.RegenerateAndLoad();
+            var renderer = new CalypsoRenderer(session);
+            renderer.Fit();
+            renderer.SyncInteriorFromSelection();
+            if (silkOnly && !explorer)
+                CalypsoSilkHost.Run(session, renderer);
+            else
+                CalypsoExplorerHost.Run(session, renderer);
+            return;
+        }
+
+        var dataRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Novolis",
+            "CalypsoCad");
+        var cadSession = CalypsoCadComposition.CreateSession(dataRoot);
+        CalypsoCadHost.Run(cadSession);
     }
 
     private static bool HasFlag(string[] args, string flag) =>
@@ -196,6 +209,8 @@ internal static class Program
             failures++;
             Console.WriteLine($"  FAIL {name}{(string.IsNullOrEmpty(detail) ? "" : ": " + detail)}");
         }
+
+        Check("hierarchy adapter metadata", Tests.CalypsoHierarchyAdapterTests.Run(out var adapterDetail), adapterDetail);
 
         var dir = CalypsoLockGenerator.Generate();
         var cadPath = Path.Combine(dir, "calypso.cadjson");
