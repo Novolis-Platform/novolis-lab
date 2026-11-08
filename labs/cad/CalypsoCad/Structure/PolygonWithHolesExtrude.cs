@@ -76,8 +76,26 @@ internal static class PolygonWithHolesExtrude
         holePts = MergeRectHoles(holePts, id);
         var expectedOpenings = holePts.Count;
 
-        var (flat, tris) = TriangulateOuterMinusRectHoles(outerPts, holePts, id);
+        var interiorHoles = new List<List<(float Y, float Up)>>();
+        var workingOuter = outerPts;
+        for (var hi = 0; hi < holePts.Count; hi++)
+        {
+            var hole = holePts[hi];
+            if (!TryAabb(hole, out var y0, out var y1, out var u0, out var u1))
+            {
+                throw new InvalidOperationException(
+                    $"{id}: opening[{hi}] is not an axis-aligned rectangle. Hole={FormatRing(hole)}.");
+            }
+
+            if (RectTouchesOuter(workingOuter, y0, y1, u0, u1))
+                workingOuter = NotchOuterWithRect(workingOuter, y0, y1, u0, u1, id, hi);
+            else
+                interiorHoles.Add(hole);
+        }
+
+        var (flat, tris) = TriangulateOuterMinusRectHoles(workingOuter, interiorHoles, id);
         ValidateMaterialCoverage(tris, flat, outerPts, holePts, id, out var materialArea);
+        EnsureManifoldAnnulus(flat, tris, id, interiorHoles.Count);
 
         var thickness = halfThicknessZ * 2f;
         var z0 = zCad - halfThicknessZ;
@@ -86,9 +104,7 @@ internal static class PolygonWithHolesExtrude
 
         mesh = MeshWeld.Apply(mesh, new WeldOptions(1e-4f, WeldPositionMode.Average, WeldScope.EntireMesh));
         StripDegenerateTriangles(mesh);
-        if (mesh.FindBoundaryEdges().Count > 0)
-            mesh = MeshWeld.Apply(mesh, new WeldOptions(5e-4f, WeldPositionMode.Average, WeldScope.EntireMesh));
-        StripDegenerateTriangles(mesh);
+        RepairNonManifoldWallEdges(mesh);
         ValidateClosedSolid(mesh, materialArea, thickness, id,
             out var meshVol, out var openEdges, out var nonManifold, out var degenerates, out var checks);
 
@@ -310,23 +326,13 @@ internal static class PolygonWithHolesExtrude
                 return null;
         }
 
-        var ring = new List<(float Y, float Up)>();
+        var ringKeys = new List<long> { start };
         var prev = start;
         var cur = adj[start][0];
-        ring.Add(verts[start]);
         var guard = 0;
         while (cur != start && guard++ < boundary.Count + 2)
         {
-            ring.Add(verts[cur]);
-            var next = adj[cur].FirstOrDefault(n => n != prev);
-            if (next == 0 && !adj[cur].Contains(0) && next != start)
-            {
-                // next may legitimately be key 0; use explicit search.
-                next = adj[cur].Find(n => n != prev);
-            }
-
-            if (adj[cur].All(n => n == prev) && adj[cur].Count == 1)
-                break;
+            ringKeys.Add(cur);
             var candidates = adj[cur].Where(n => n != prev).ToList();
             if (candidates.Count == 0)
                 break;
@@ -334,7 +340,9 @@ internal static class PolygonWithHolesExtrude
             cur = candidates[0];
         }
 
-        return ring.Count >= 3 ? ring : null;
+        if (ringKeys.Count < 3 || cur != start)
+            return null;
+        return ringKeys.Select(k => verts[k]).ToList();
     }
 
     private static bool TriangleOverlapsAabb(
