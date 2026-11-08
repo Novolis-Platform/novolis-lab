@@ -26,4 +26,5 @@ internal sealed class FrameViewModel
     public required bool FollowProjectile { get; init; }
     public required float PredictedRangeMeters { get; init; }
     public required ScoreSnapshot Score { get; init; }
+    public required string BatteryLabel { get; init; }
 }

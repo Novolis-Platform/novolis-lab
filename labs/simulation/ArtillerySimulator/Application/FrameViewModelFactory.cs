@@ -24,5 +24,6 @@ internal static class FrameViewModelFactory
         FollowProjectile = world.Camera.FollowProjectile,
         PredictedRangeMeters = world.PredictedRangeMeters,
         Score = world.ScoreSnapshot,
+        BatteryLabel = world.ActiveBatteryLabel,
     };
 }

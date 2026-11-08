@@ -37,6 +37,7 @@ internal static class HudFrameComposer
             vm.Audio?.VoiceAvailable == true,
             vm.Audio?.ScoreAvailable == true,
             audioHubPresent: vm.Audio is not null,
-            score: vm.Score);
+            score: vm.Score,
+            batteryLabel: vm.BatteryLabel);
     }
 }

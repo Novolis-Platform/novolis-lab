@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Novolis.Physics.Ballistics;
 using Novolis.Silk;
@@ -36,6 +37,7 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     private GunModel _gun = null!;
     private ProjectileBallisticSimulation _ballistics = null!;
     private IDefenseMission? _mission;
+    private BatteryRoster _battery;
     private bool _worldReady;
 
     public BattleWorld(
@@ -66,6 +68,7 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
         if (!level.IsPlayable)
             level = GameLevelCatalog.Default;
         _shell.SetLevel(level);
+        _battery = BatteryRoster.FromLevel(level);
 
         var resolved = level.ResolvePiece();
         _session = new BattleSession(
@@ -106,6 +109,7 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             _fireRules,
             () => _gun,
             () => IsPaused,
+            ApplyCycleGun,
             _score,
             log);
         _levelTransitions = new LevelTransitionService(
@@ -119,11 +123,8 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
         _bootstrap = new BattleWorldBootstrap(
             _terrain,
             _session,
-            _crew,
             _rounds,
             _battle,
-            _aim,
-            _camera,
             _shell,
             _input,
             _score,
@@ -185,6 +186,9 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     public float FxTime => _presentation.FxTime;
     public ScoreBoard Score => _score;
     public ScoreSnapshot ScoreSnapshot => _score.Snapshot;
+    public string ActiveBatteryLabel => _battery.ActiveLabel;
+    public int BatteryMountCount => _battery.Count;
+    public int BatteryActiveIndex => _battery.ActiveIndex;
 
     public FrameViewModel CreateFrameViewModel() => FrameViewModelFactory.Create(this);
 
@@ -201,8 +205,13 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     public void BindPiece(IArtilleryPieceSpec piece) =>
         _levelTransitions.BindPiece(piece, ref _gun, ref _ballistics);
 
-    public void SelectLevel(int delta) =>
+    public void SelectLevel(int delta)
+    {
         _levelTransitions.SelectLevel(delta, ref _gun, ref _ballistics);
+        _battery = BatteryRoster.FromLevel(_shell.Level);
+        _worldReady = false;
+        _mission = null;
+    }
 
     public BattleCommandResult Apply(BattleCommand command) => _commandApplier.Apply(command);
 
@@ -231,7 +240,15 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
 
     public void ShowMapOverview() => _camera.ShowMapOverview(_terrain.EastMeters, _terrain.NorthMeters);
 
-    public void LoadWorld() => _mission = _bootstrap.LoadWorld(ref _gun, ref _worldReady, ref _mission);
+    public void CycleGun() => _ = ApplyCycleGun();
+
+    public void LoadWorld()
+    {
+        _battery = BatteryRoster.FromLevel(_shell.Level);
+        _mission = _bootstrap.LoadWorld(ref _worldReady, ref _mission);
+        SeatActiveMount(useMissionOpening: true);
+        _shell.Menus.ClearToPlaying();
+    }
 
     public void HandleInput(SilkFrame frame, IBatteryApplier applier) =>
         _frames.HandleInput(frame, applier);
@@ -242,4 +259,64 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
         _frames.PresentFrame(frame, wallSeconds);
 
     public void Dispose() => _audio?.Dispose();
+
+    private BattleCommandResult ApplyCycleGun()
+    {
+        if (!_worldReady || _mission is null)
+            return BattleCommandResult.Fail("unavailable", "World not ready.");
+        if (!_battery.CanCycle)
+            return BattleCommandResult.Fail("unavailable", "This level has a single tube.");
+
+        if (!_battery.TryCycle())
+            return BattleCommandResult.Fail("unavailable", "Cannot cycle battery.");
+
+        SeatActiveMount(useMissionOpening: false);
+        return BattleCommandResult.Ok(
+            string.Create(CultureInfo.InvariantCulture, $"Battery: {_battery.ActiveLabel} ({_gun.Spec.ShortName})."));
+    }
+
+    private void SeatActiveMount(bool useMissionOpening)
+    {
+        if (_mission is null)
+            return;
+
+        var mount = _battery.Active;
+        var piece = ArtilleryPieceCatalog.Require(mount.PieceSpecId);
+        BindPiece(piece);
+        _mission.RetuneEquipment(piece);
+
+        var pad = BatteryLandSnap.Snap(
+            _terrain,
+            _mission.GunX + mount.OffsetEastMeters,
+            _mission.GunZ + mount.OffsetNorthMeters);
+        _terrain.PlaceGun(pad.X, pad.Y, piece.GunHeightOffsetMeters);
+
+        _gun.LayCenter(_mission.TrailBearingDegrees);
+        var elev = mount.OpeningElevationDegrees;
+        var useOpeningLay = useMissionOpening
+            && string.Equals(mount.PieceSpecId, _shell.Level.PieceSpecId, StringComparison.OrdinalIgnoreCase);
+        if (useOpeningLay)
+            elev = _mission.OpeningElevationDegrees;
+        elev = Math.Clamp(elev, piece.MinElevationDegrees, piece.MaxElevationDegrees);
+        _gun.SetElevation(elev);
+        if (useOpeningLay)
+        {
+            _gun.SetCharge(_mission.OpeningChargeIndex);
+            _gun.NudgeAzimuth(_mission.OpeningAzimuthDegrees - _mission.TrailBearingDegrees);
+        }
+        else
+        {
+            _gun.SetCharge(Math.Min(1, piece.Charges.Count - 1));
+        }
+
+        _crew.SeatOpening(_gun);
+        _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
+        _aim.Rebuild(_crew);
+        _log.LogInformation(
+            "Seated battery {Label} ({Piece}) at ({X:F0},{Z:F0})",
+            mount.Label,
+            piece.Id,
+            pad.X,
+            pad.Y);
+    }
 }
