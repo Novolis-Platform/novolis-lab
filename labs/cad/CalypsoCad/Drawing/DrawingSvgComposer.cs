@@ -181,21 +181,7 @@ internal static class DrawingSvgComposer
         var bot = Math.Max(sy0, sy1);
         sb.AppendLine(
             $"<rect x=\"{F(left)}\" y=\"{F(top)}\" width=\"{F(Math.Max(1, right - left))}\" height=\"{F(Math.Max(1, bot - top))}\" fill=\"#c82828\" fill-opacity=\"0.18\" stroke=\"#c82828\" stroke-width=\"1.4\"/>");
-
-        // Light polylines only (paths), clipped to ship length.
-        var proj = ViewProjector.ProjectOrthographic(
-            resolved.Geometry, StandardViewOrientation.PlanSternLeft, ViewProjector.EdgeMode.PolylinesOnly, false);
-        foreach (var s in proj.Segments.Take(400))
-        {
-            var za = Math.Clamp(-s.A.U, 0, (float)ship.Loa);
-            var zb = Math.Clamp(-s.B.U, 0, (float)ship.Loa);
-            var xa = LockDraftGeometry.ShipX(ox, scale, ship.Loa, za);
-            var xb = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zb);
-            var ya = oy - (-s.A.V) * scale;
-            var yb = oy - (-s.B.V) * scale;
-            sb.AppendLine(
-                $"<line x1=\"{F(xa)}\" y1=\"{F(ya)}\" x2=\"{F(xb)}\" y2=\"{F(yb)}\" stroke=\"#c82828\" stroke-width=\"0.9\"/>");
-        }
+        // Location context is extent-only — never dump mesh/box triangulation here.
     }
 
     private static void DrawSubjectExtentOnProfile(
@@ -222,20 +208,6 @@ internal static class DrawingSvgComposer
         var right = Math.Max(x0, x1);
         sb.AppendLine(
             $"<rect x=\"{F(left)}\" y=\"{F(Math.Min(yTop, yBot))}\" width=\"{F(Math.Max(1, right - left))}\" height=\"{F(Math.Max(1, Math.Abs(yBot - yTop)))}\" fill=\"#c82828\" fill-opacity=\"0.18\" stroke=\"#c82828\" stroke-width=\"1.4\"/>");
-
-        var proj = ViewProjector.ProjectOrthographic(
-            resolved.Geometry, StandardViewOrientation.ProfileSternLeft, ViewProjector.EdgeMode.PolylinesOnly, false);
-        foreach (var s in proj.Segments.Take(400))
-        {
-            var za = Math.Clamp(-s.A.U, 0, (float)ship.Loa);
-            var zb = Math.Clamp(-s.B.U, 0, (float)ship.Loa);
-            var xa = LockDraftGeometry.ShipX(ox, scale, ship.Loa, za);
-            var xb = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zb);
-            var ya = keelY - s.A.V * scale;
-            var yb = keelY - s.B.V * scale;
-            sb.AppendLine(
-                $"<line x1=\"{F(xa)}\" y1=\"{F(ya)}\" x2=\"{F(xb)}\" y2=\"{F(yb)}\" stroke=\"#c82828\" stroke-width=\"0.9\"/>");
-        }
     }
 
     private static void ComposeSection(
