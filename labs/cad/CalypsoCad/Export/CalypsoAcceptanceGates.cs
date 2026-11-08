@@ -71,6 +71,63 @@ internal static class CalypsoAcceptanceGates
         }
     }
 
+    public static int StructureInspection()
+    {
+        Console.WriteLine("CalypsoCad structure inspection (semantic A–E)");
+        var failures = 0;
+        void Check(string name, bool ok, string detail = "")
+        {
+            if (ok)
+            {
+                Console.WriteLine($"  OK  {name}");
+                return;
+            }
+
+            failures++;
+            Console.WriteLine($"  FAIL {name}{(string.IsNullOrEmpty(detail) ? "" : ": " + detail)}");
+        }
+
+        try
+        {
+            return CalypsoHeadlessHost.WithViewport((session, renderer) =>
+            {
+                Publication.CadDocumentAdapter.LoadFromDocument(session.Document);
+                var stills = HeadlessStructureInspectionExporter.Export(session, renderer);
+                Check("inspection PNGs A–E", stills.Count >= 5, $"count={stills.Count}");
+
+                var inventoryPath = Path.Combine(
+                    CalypsoProjectPaths.RendersDirectory, "structure-inspection", "surface-inventory.json");
+                Check("surface inventory", File.Exists(inventoryPath), inventoryPath);
+
+                var knucklePath = Path.Combine(
+                    CalypsoProjectPaths.RendersDirectory, "structure-inspection", "knuckle-continuity.json");
+                Check("knuckle continuity report", File.Exists(knucklePath), knucklePath);
+
+                if (File.Exists(knucklePath))
+                {
+                    var json = File.ReadAllText(knucklePath);
+                    Check(
+                        "knuckle continuity passed",
+                        json.Contains("\"Passed\": true", StringComparison.Ordinal)
+                        || json.Contains("\"passed\": true", StringComparison.OrdinalIgnoreCase),
+                        "see knuckle-continuity.json");
+                }
+
+                Console.WriteLine(failures == 0
+                    ? "CalypsoCad structure inspection OK"
+                    : $"CalypsoCad structure inspection FAILED ({failures})");
+                return failures == 0 ? 0 : 1;
+            });
+        }
+        catch (Exception ex)
+        {
+            Check("structure inspection pipeline", false, ex.Message);
+            Console.Error.WriteLine(ex);
+            Console.WriteLine($"CalypsoCad structure inspection FAILED ({failures})");
+            return 1;
+        }
+    }
+
     public static int HullFirst()
     {
         Console.WriteLine("CalypsoCad hull-first transverse skeleton");

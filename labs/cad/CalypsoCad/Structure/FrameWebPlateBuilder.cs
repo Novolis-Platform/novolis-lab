@@ -298,43 +298,33 @@ internal static class FrameWebPlateBuilder
         EmitAnnularFrameFromRing(
             entities, loa, frameId, zStem, web, halfDepthZ, ring, fabPartId, inset);
 
-        // 2) Deck chords — athwart load transfer at lock plate tops (split at passage tracks).
+        // 2) Deck chords — full athwart load path at lock plate tops.
+        //    Passage openings belong in the web plate portals, not as chord gaps.
+        _ = athwartGaps;
+        _ = bowAligned;
         var chordHalf = MathF.Max(0.08f, web * 0.45f);
         var chordInset = CalypsoShipbuildingFrames.PlatingJoinInset;
-        var cellIndex = 0;
         foreach (var deckUp in decks)
         {
-            var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp, chordInset) - 0.15f;
+            // Nest half-beam across the chord flange height so corners stay inside the IML.
+            var halfY = MathF.Min(
+                CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp, chordInset),
+                MathF.Min(
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp - chordHalf, chordInset),
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp + chordHalf, chordInset))) - 0.15f;
             if (halfY < 0.35f)
                 continue;
-            foreach (var (ya, yb) in CalypsoLockGenerator.SolidSpansPublic(-halfY, halfY, athwartGaps))
-            {
-                var width = yb - ya;
-                if (width < 0.3f)
-                    continue;
-                var cy = (ya, yb).GetCenter();
-                if (bowAligned && cy < -0.02f)
-                    continue;
-                // Exact chord span — reposition inboard if needed; never shrink length.
-                var chordName = $"{frameId}-chord-{deckUp:0.#}-{cellIndex++}";
-                var hy = width * 0.5f;
-                var asm = frameId.Contains('-')
-                    ? string.Join('-', frameId.Split('-').Take(2))
-                    : frameId;
-                PlaceChordExact(entities, loa, chordName, cy, deckUp, zStem, hy, chordHalf, halfDepthZ, asm, frameId);
-
-                if (bowAligned && cy > 0.02f)
-                {
-                    var mirror = $"{frameId}-chord-{deckUp:0.#}-{cellIndex++}";
-                    PlaceChordExact(entities, loa, mirror, -cy, deckUp, zStem, hy, chordHalf, halfDepthZ, asm, frameId);
-                }
-            }
+            var asm = frameId.Contains('-')
+                ? string.Join('-', frameId.Split('-').Take(2))
+                : frameId;
+            var chordName = $"{frameId}-chord-{deckUp:0.#}";
+            PlaceChordExact(entities, loa, chordName, 0f, deckUp, zStem, halfY, chordHalf, halfDepthZ, asm, frameId);
         }
     }
 
     /// <summary>
-    /// Place a deck chord at requested half-span. Pull the center inboard if BoxFits fails —
-    /// never shorten <paramref name="hy"/> (Shipbuilding 102 / structural review).
+    /// Place a CL-centered full-athwart deck chord. Half-span is pre-nested to the IML;
+    /// on BoxFits failure only a small end trim is allowed (never passage chopping).
     /// </summary>
     private static void PlaceChordExact(
         List<CadEntity> entities,
@@ -349,15 +339,18 @@ internal static class FrameWebPlateBuilder
         string assembly,
         string frameId)
     {
-        for (var pull = 0f; pull <= 1.2f; pull += 0.1f)
+        var tryHy = hy;
+        for (var step = 0; step < 8; step++)
         {
-            var scale = 1f - pull * 0.08f;
-            var y = cy * scale;
             if (CalypsoLockGenerator.TryAddStructureBar(
-                    entities, loa, chordName, y, deckUp, zStem, hy, chordHalf, halfDepthZ,
+                    entities, loa, chordName, cy, deckUp, zStem, tryHy, chordHalf, halfDepthZ,
                     meta: new StructuralSolidMeta(
                         StructuralRoles.TransverseFrame, assembly,
                         StationZ: zStem, DeckUp: deckUp, Joins: [frameId])))
+                return;
+            // Tiny end trim to clear chamfer — keep one continuous member.
+            tryHy *= 0.97f;
+            if (tryHy < 0.35f)
                 return;
         }
     }

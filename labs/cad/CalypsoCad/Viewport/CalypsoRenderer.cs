@@ -1307,17 +1307,9 @@ internal sealed class CalypsoRenderer
         if (mesh is null)
             return;
 
-        var isBh = entity.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true;
-        var color = isBh
-            ? (entity.Name!.Contains("ENG", StringComparison.OrdinalIgnoreCase)
-                ? Color.FromArgb(255, 148, 78, 48)
-                : HeavyBulkhead)
-            : entity.Color is { Length: >= 3 } rgb
-                ? Color.FromArgb(255,
-                    (int)(Math.Clamp(rgb[0], 0, 1) * 255),
-                    (int)(Math.Clamp(rgb[1], 0, 1) * 255),
-                    (int)(Math.Clamp(rgb[2], 0, 1) * 255))
-                : Steel;
+        // Semantic inspection color — CadPartKind/System, not mesh vs box or baked entity.Color.
+        var color = StructureInspectionPalette.Resolve(entity);
+        var isBh = StructureInspectionPalette.IsHeavyBulkhead(entity);
 
         var wireOnly = _session.WireMeshMode == CalypsoWireMeshMode.Wire;
         var boundaryOnly = wireOnly || _session.StatusText?.Contains("bh-edges", StringComparison.OrdinalIgnoreCase) == true;
@@ -1573,12 +1565,7 @@ internal sealed class CalypsoRenderer
             }
         }
 
-        var color = box.Color is { Length: >= 3 } rgb
-            ? Color.FromArgb(255,
-                (int)(Math.Clamp(rgb[0], 0, 1) * 255),
-                (int)(Math.Clamp(rgb[1], 0, 1) * 255),
-                (int)(Math.Clamp(rgb[2], 0, 1) * 255))
-            : _session.ResolveShapeColor(box.ShapeId, Steel);
+        Color color;
         if (isC40 && box.Name is { } c40Name)
         {
             // Tier tint so 5×3 reads as distinct boxes, not one amber brick.
@@ -1593,6 +1580,20 @@ internal sealed class CalypsoRenderer
                 _ => Color.FromArgb(255, 172, 132, 58),
             };
         }
+        else if (IsStructureBox(box))
+        {
+            color = StructureInspectionPalette.Resolve(box);
+        }
+        else
+        {
+            color = box.Color is { Length: >= 3 } rgb
+                ? Color.FromArgb(255,
+                    (int)(Math.Clamp(rgb[0], 0, 1) * 255),
+                    (int)(Math.Clamp(rgb[1], 0, 1) * 255),
+                    (int)(Math.Clamp(rgb[2], 0, 1) * 255))
+                : _session.ResolveShapeColor(box.ShapeId, Steel);
+        }
+
         var cutaway = _session.WireMeshMode == CalypsoWireMeshMode.CutawayPartial;
         GetCutPlane(cutaway, out var cutPt, out var cutN);
         if (cutaway && CulledByCutPlane(c, cutPt, cutN))
@@ -1602,15 +1603,7 @@ internal sealed class CalypsoRenderer
         var sx = Math.Abs(he.X) * 2f * gap;
         var sy = Math.Abs(he.Y) * 2f * gap;
         var sz = Math.Abs(he.Z) * 2f * gap;
-        var isBh = box.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true;
-        // Heavy BH: warm plate (distinct from ordinary frame steel gray). ENG slightly darker.
-        if (isBh)
-        {
-            var eng = box.Name!.Contains("ENG", StringComparison.OrdinalIgnoreCase);
-            color = eng
-                ? Color.FromArgb(255, 148, 78, 48)
-                : HeavyBulkhead;
-        }
+        var isBh = StructureInspectionPalette.IsHeavyBulkhead(box);
 
         var body = ShadeColor(color, isC40 ? 0.55f : 0.4f, isC40 ? 0.25f : (isBh ? 0.75f : 0.65f), Vector3.UnitY, LightDir);
         var wireMode = _session.WireMeshMode == CalypsoWireMeshMode.Wire;

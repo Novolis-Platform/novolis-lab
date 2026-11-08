@@ -1,0 +1,104 @@
+{
+  "LoaM": 69,
+  "PathCount": 8,
+  "PassedPaths": 8,
+  "Paths": [
+    {
+      "Vertex": 0,
+      "AssemblyId": "knuckle-v0",
+      "SegmentCount": 20,
+      "ZMin": 0,
+      "ZMax": 68.95,
+      "CoverageLoaFraction": 0.9992753,
+      "JunctionGaps": [],
+      "MissingOrInvalid": [],
+      "MaxDeviationM": 0.00739967,
+      "Passed": true
+    },
+    {
+      "Vertex": 1,
+      "AssemblyId": "knuckle-v1",
+      "SegmentCount": 20,
+      "ZMin": 0,
+      "ZMax": 68.95,
+      "CoverageLoaFraction": 0.9992753,
+      "JunctionGaps": [],
+      "MissingOrInvalid": [],
+      "MaxDeviationM": 0.00739967,
+      "Passed": true
+    },
+    {
+      "Vertex": 2,
+      "AssemblyId": "knuckle-v2",
+      "SegmentCount": 20,
+      "ZMin": 0,
+      "ZMax": 68.95,
+      "CoverageLoaFraction": 0.9992753,
+      "JunctionGaps": [],
+      "MissingOrInvalid": [],
+      "MaxDeviationM": 0.006016583,
+      "Passed": true
+    },
+    {
+      "Vertex": 3,
+      "AssemblyId": "knuckle-v3",
+      "SegmentCount": 20,
+      "ZMin": 0,
+      "ZMax": 68.95,
+      "CoverageLoaFraction": 0.9992753,
+      "JunctionGaps": [],
+      "MissingOrInvalid": [],
+      "MaxDeviationM": 0.0060168155,
+      "Passed": true
+    },
+    {
+      "Vertex": 4,
+      "AssemblyId": "knuckle-v4",
+      "SegmentCount": 20,
+      "ZMin": 0,
+      "ZMax": 68.95,
+      "CoverageLoaFraction": 0.9992753,
+      "JunctionGaps": [],
+      "MissingOrInvalid": [],
+      "MaxDeviationM": 0.007399375,
+      "Passed": true
+    },
+    {
+      "Vertex": 5,
+      "AssemblyId": "knuckle-v5",
+      "SegmentCount": 20,
+      "ZMin": 0,
+      "ZMax": 68.95,
+      "CoverageLoaFraction": 0.9992753,
+      "JunctionGaps": [],
+      "MissingOrInvalid": [],
+      "MaxDeviationM": 0.0073989937,
+      "Passed": true
+    },
+    {
+      "Vertex": 6,
+      "AssemblyId": "knuckle-v6",
+      "SegmentCount": 20,
+      "ZMin": 0,
+      "ZMax": 68.95,
+      "CoverageLoaFraction": 0.9992753,
+      "JunctionGaps": [],
+      "MissingOrInvalid": [],
+      "MaxDeviationM": 0.0060170367,
+      "Passed": true
+    },
+    {
+      "Vertex": 7,
+      "AssemblyId": "knuckle-v7",
+      "SegmentCount": 20,
+      "ZMin": 0,
+      "ZMax": 68.95,
+      "CoverageLoaFraction": 0.9992753,
+      "JunctionGaps": [],
+      "MissingOrInvalid": [],
+      "MaxDeviationM": 0.006016583,
+      "Passed": true
+    }
+  ],
+  "Passed": true
+}

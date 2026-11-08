@@ -41,8 +41,9 @@ internal sealed class CalypsoExplorerWindow : Window
         var viewport = new CalypsoSilkViewportControl
         {
             Controller = controller,
-            FrameWidth = 1024,
-            FrameHeight = 640,
+            // Live Silk framebuffer — 4K UHD (headless stills remain 8K Ultra).
+            FrameWidth = Novolis.Silk.Capture.SilkCaptureSize.UhdWidth,
+            FrameHeight = Novolis.Silk.Capture.SilkCaptureSize.UhdHeight,
             [DockPanel.DockProperty] = Dock.Right,
         };
 

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using CalypsoCad.Export;
 using CalypsoCad.Model;
 using CalypsoCad.Session;
 using Novolis.Avalonia.GraphicalProfile;
@@ -68,11 +69,20 @@ internal sealed class CalypsoObjectBrowser : UserControl
             },
         };
 
+        var isolates = new WrapPanel { Margin = new Thickness(0, 4, 0, 0) };
+        isolates.Children.Add(ActionBtn("Frames", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectRingFrames)));
+        isolates.Children.Add(ActionBtn("Bulkheads", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectBulkheads)));
+        isolates.Children.Add(ActionBtn("Knuckles", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectKnuckles)));
+        isolates.Children.Add(ActionBtn("Girders", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectGirders)));
+        isolates.Children.Add(ActionBtn("Joins", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectBrackets)));
+
         var root = new StackPanel { Spacing = 2 };
         root.Children.Add(Header("Object browser"));
         root.Children.Add(_search);
         root.Children.Add(_tree);
         root.Children.Add(actions);
+        root.Children.Add(Hint("Isolate category (registry ownership):"));
+        root.Children.Add(isolates);
         root.Children.Add(Header("Inspector"));
         root.Children.Add(_inspector);
         Content = root;
@@ -222,6 +232,22 @@ internal sealed class CalypsoObjectBrowser : UserControl
         _controller.Session.StatusText = $"isolate:{ids.Count}";
     }
 
+    private void IsolateCategory(Func<ShipPartRegistry, HashSet<Guid>> collect)
+    {
+        EnsureRegistry();
+        var ids = collect(_controller.Session.Registry);
+        _controller.Session.RevealEntityIds = ids.Count == 0 ? null : ids;
+        _controller.Session.VisualLayers = CalypsoVisualLayers.ShipSkeleton | CalypsoVisualLayers.OuterHull;
+        _controller.Session.StatusText = $"isolate-category:{ids.Count}";
+    }
+
+    private void EnsureRegistry()
+    {
+        if (_controller.Session.Registry.Assemblies.Count == 0
+            && _controller.Session.Document.Entities.Count > 0)
+            _controller.Session.RebuildSemanticRegistry();
+    }
+
     private void ClearIsolateAndHide()
     {
         _controller.Session.RevealEntityIds = null;
@@ -282,6 +308,18 @@ internal sealed class CalypsoObjectBrowser : UserControl
     }
 
     private static string Fmt(float? v) => v is { } x ? x.ToString("0.###") : "unresolved";
+
+    private static TextBlock Hint(string text)
+    {
+        var t = new TextBlock
+        {
+            Text = text,
+            FontSize = 10,
+            Margin = new Thickness(0, 2, 0, 0),
+        };
+        GraphicalProfileBinding.Bind(t, TextBlock.ForegroundProperty, GraphicalProfile.MutedResourceKey);
+        return t;
+    }
 
     private static TextBlock Header(string text)
     {

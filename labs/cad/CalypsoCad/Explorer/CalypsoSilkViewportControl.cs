@@ -16,11 +16,15 @@ using Novolis.Silk.Capture;
 namespace CalypsoCad.Explorer;
 
 /// <summary>
-/// Hidden Silk GLFW loop → RGBA into <see cref="Rgba32FrameControl"/>.
+/// Hidden Silk GLFW loop → offscreen FBO readback into <see cref="Rgba32FrameControl"/>.
+/// Capture resolution is independent of the tiny GLFW context (same pattern as headless).
 /// Requires Avalonia Software/Skia (not WGL) so OpenGL is free for Silk.
 /// </summary>
 internal sealed class CalypsoSilkViewportControl : Panel
 {
+    /// <summary>Small GL context; pixels come from <see cref="IGlHost.BeginCaptureTarget"/>.</summary>
+    private const int ContextWindowSize = 256;
+
     private readonly Rgba32FrameControl _frame = new();
     private readonly TextBlock _status;
     private readonly DispatcherTimer _presentTimer;
@@ -66,11 +70,19 @@ internal sealed class CalypsoSilkViewportControl : Panel
         PointerReleased += OnPointerReleased;
         PointerWheelChanged += OnPointerWheel;
         PointerCaptureLost += (_, _) => _orbitDragging = false;
+        LayoutUpdated += (_, _) => MaybeRestartForSize();
     }
 
     public CalypsoViewportController? Controller { get; set; }
-    public int FrameWidth { get; set; } = 960;
-    public int FrameHeight { get; set; } = 640;
+
+    /// <summary>Capture width cap (panel×DPI up to this; UHD by default).</summary>
+    public int FrameWidth { get; set; } = SilkCaptureSize.UhdWidth;
+
+    /// <summary>Capture height cap (panel×DPI up to this; UHD by default).</summary>
+    public int FrameHeight { get; set; } = SilkCaptureSize.UhdHeight;
+
+    private int _runningW;
+    private int _runningH;
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -86,6 +98,32 @@ internal sealed class CalypsoSilkViewportControl : Panel
         base.OnDetachedFromVisualTree(e);
     }
 
+    private void MaybeRestartForSize()
+    {
+        if (_renderThread is not { IsAlive: true })
+            return;
+        ResolveCaptureSize(out var w, out var h);
+        if (Math.Abs(w - _runningW) < 64 && Math.Abs(h - _runningH) < 64)
+            return;
+        StopHost();
+        StartHost();
+    }
+
+    private void ResolveCaptureSize(out int width, out int height)
+    {
+        var scale = (float)(TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0);
+        if (scale < 0.5f || float.IsNaN(scale))
+            scale = 1f;
+
+        var maxW = Math.Clamp(FrameWidth, 960, SilkCaptureSize.UhdWidth);
+        var maxH = Math.Clamp(FrameHeight, 540, SilkCaptureSize.UhdHeight);
+        var bw = Bounds.Width > 32 ? Bounds.Width : maxW;
+        var bh = Bounds.Height > 32 ? Bounds.Height : maxH;
+        // Panel × DPI, floored for readability, capped at configured FrameWidth/Height (4K UHD).
+        width = Math.Clamp((int)Math.Ceiling(bw * scale), 960, maxW);
+        height = Math.Clamp((int)Math.Ceiling(bh * scale), 540, maxH);
+    }
+
     private void StartHost()
     {
         if (_renderThread is { IsAlive: true } || Controller is null)
@@ -95,8 +133,9 @@ internal sealed class CalypsoSilkViewportControl : Panel
         _frames = 0;
         _lastError = "";
         var controller = Controller;
-        var w = Math.Max(320, FrameWidth);
-        var h = Math.Max(240, FrameHeight);
+        ResolveCaptureSize(out var w, out var h);
+        _runningW = w;
+        _runningH = h;
         _renderThread = new Thread(() => RenderLoop(controller, w, h))
         {
             IsBackground = true,
@@ -117,18 +156,13 @@ internal sealed class CalypsoSilkViewportControl : Panel
 
     private void RenderLoop(CalypsoViewportController controller, int width, int height)
     {
-        using var capture = new FrameCaptureSession(new CaptureStreamOptions
-        {
-            CaptureEveryNFrames = 1,
-            MaxBufferedFrames = 2,
-        });
-
         try
         {
+            // Tiny GLFW context; BeginCaptureTarget owns the real pixel budget (headless pattern).
             SilkGame.Run(
                 "Calypso CAD viewport",
-                width,
-                height,
+                ContextWindowSize,
+                ContextWindowSize,
                 initialize: null,
                 update: frame =>
                 {
@@ -138,22 +172,33 @@ internal sealed class CalypsoSilkViewportControl : Panel
                         return;
                     }
 
-                    // Escape still closes the hidden GLFW loop; mouse comes from Avalonia.
                     if (frame.IsKeyPressed(Novolis.Silk.Key.Escape))
                         frame.Close();
-                    controller.Renderer.DrawFrame(frame, frame.DeltaSeconds);
-                    capture.CaptureAfterDraw(frame.Host);
-                    if (!capture.TryRead(out var shot) || shot.Pixels is not { Length: > 0 })
-                        return;
 
-                    lock (_pixelLock)
+                    var host = frame.Host;
+                    host.BeginCaptureTarget(width, height);
+                    frame.OverrideSize(width, height);
+                    try
                     {
-                        if (_latest is null || _latest.Length != shot.Pixels.Length)
-                            _latest = new Rgba32[shot.Pixels.Length];
-                        shot.Pixels.CopyTo(_latest, 0);
-                        _latestW = shot.Width;
-                        _latestH = shot.Height;
-                        _frames++;
+                        controller.Renderer.DrawFrame(frame, frame.DeltaSeconds);
+                        if (!host.TryReadPixels(out var pixels) || pixels.Length == 0)
+                            return;
+                        if (pixels.Length != width * height)
+                            return;
+
+                        lock (_pixelLock)
+                        {
+                            if (_latest is null || _latest.Length != pixels.Length)
+                                _latest = new Rgba32[pixels.Length];
+                            pixels.CopyTo(_latest, 0);
+                            _latestW = width;
+                            _latestH = height;
+                            _frames++;
+                        }
+                    }
+                    finally
+                    {
+                        host.EndCaptureTarget();
                     }
                 },
                 renderOverlay: null,
@@ -244,7 +289,7 @@ internal sealed class CalypsoSilkViewportControl : Panel
 
         _status.IsVisible = n < 3;
         if (_status.IsVisible)
-            _status.Text = $"Silk viewport live · {w}×{h} · drag to orbit · wheel zoom";
+            _status.Text = $"Silk viewport live · {w}×{h} FBO · drag to orbit · wheel zoom";
         _frame.PresentCpuFrame(pixels, w, h);
     }
 

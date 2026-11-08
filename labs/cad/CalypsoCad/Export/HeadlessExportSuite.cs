@@ -63,6 +63,7 @@ internal static class HeadlessExportSuite
             return 0;
         });
         Step("hull-first Views A–D", () => CalypsoAcceptanceGates.HullFirst());
+        Step("structure inspection A–E (semantic)", () => CalypsoAcceptanceGates.StructureInspection());
         Step("bulkhead polygon-mesh views", () => CalypsoAcceptanceGates.BulkheadMesh());
         Step("curated 8K stills", () => CalypsoAcceptanceGates.CuratedStills());
         Step("ship mesh objects (OBJ/STL/FBX/GLB)", () => ShipObjectExporter.Run());

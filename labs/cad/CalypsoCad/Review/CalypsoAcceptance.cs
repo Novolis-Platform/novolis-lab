@@ -429,7 +429,8 @@ internal static class CalypsoAcceptance
         // Limited full-depth BH (ENG massive / airlock / bow) — no stern thrust BH (nacelles).
         Add("compartment bulkheads (limited structural BH)", bulkheads >= 8 && bulkheads <= 8000,
             $"bhSolids={bulkheads}");
-        Add("transverse open web frames", frameSteel >= 40 && webProfiles >= 10,
+        // Full-athwart chords (one per deck) replace passage-chopped stubs — count drops vs old gate.
+        Add("transverse open web frames", frameSteel >= 30 && webProfiles >= 10,
             $"frameSteel={frameSteel} profiles={webProfiles}");
         Add("bay frames not wall-like", wallLikeFrameBars == 0,
             $"tallWebSolids={wallLikeFrameBars}");
@@ -461,10 +462,17 @@ internal static class CalypsoAcceptance
         var girders = doc.Entities.Count(e =>
             e.Name?.StartsWith("girder-", StringComparison.OrdinalIgnoreCase) == true);
         Add("deck longitudinal girders", girders >= 24, $"girders={girders}");
-        var deckBeams = doc.Entities.Count(e =>
-            e.Name?.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase) == true);
-        // Bow-aligned + BH-owned + HOLD-perimeter stations omit beams; midbody frames carry the set.
-        Add("transverse deck beams at frames", deckBeams >= 15, $"deckBeams={deckBeams}");
+        var deckBeamEntities = doc.Entities
+            .Where(e => e.Name?.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase) == true)
+            .ToList();
+        // One full-athwart member per deck (no passage chopping). Midbody frames only.
+        var deckBeams = deckBeamEntities.Count;
+        var narrowBeams = deckBeamEntities.Count(e => e.Thickness < 10f);
+        Add("transverse deck beams at frames", deckBeams >= 12, $"deckBeams={deckBeams}");
+        Add(
+            "deck beams full athwart width",
+            deckBeams > 0 && narrowBeams == 0,
+            $"narrow={narrowBeams}/{deckBeams}");
 
         // Topology-first gates: primary skeleton before interiors; HOLD keel/side continuity.
         var entities = doc.Entities ?? [];
@@ -547,6 +555,27 @@ internal static class CalypsoAcceptance
             && reg2.Parts.Count == partsBefore
             && reg2.BulkheadPlateCount >= 6,
             $"knuckles={reg2.KnuckleAssemblyCount}/{knuckleBefore} parts={reg2.Parts.Count}/{partsBefore} bh={reg2.BulkheadPlateCount}");
+
+        var surfaceRows = Export.StructureSurfaceInventory.Collect(doc, reg2);
+        var orangeBh = surfaceRows.Count(r =>
+            string.Equals(r.PartKind, nameof(Model.CadPartKind.BulkheadPlate), StringComparison.OrdinalIgnoreCase));
+        var orangeMisclass = surfaceRows.Count(r =>
+            r.TriangleCount >= 200
+            && !string.Equals(r.PartKind, nameof(Model.CadPartKind.BulkheadPlate), StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(r.PartKind, nameof(Model.CadPartKind.AnnularWebPlate), StringComparison.OrdinalIgnoreCase)
+            && !r.PartKind.Contains("Ring", StringComparison.OrdinalIgnoreCase)
+            && !r.PartKind.Contains("Web", StringComparison.OrdinalIgnoreCase));
+        Add(
+            "orange surfaces are BH plates (semantic)",
+            orangeBh >= 6 && orangeMisclass == 0,
+            $"bhPlates={orangeBh} largeNonBh={orangeMisclass}");
+
+        var knuckleCont = Export.KnuckleContinuityReport.Evaluate(
+            doc, Geometry.HullGeometry.RequireActive(), CalypsoShipbuildingFrames.PlatingJoinInset);
+        Add(
+            "knuckle continuity (8 paths)",
+            knuckleCont.Passed,
+            $"passed={knuckleCont.PassedPaths}/{knuckleCont.PathCount}");
 
         var sandwichFaces = entities.Count(e =>
             e.Name?.Contains("-face-top", StringComparison.OrdinalIgnoreCase) == true

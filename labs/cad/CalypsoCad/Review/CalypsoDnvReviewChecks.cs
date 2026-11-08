@@ -107,7 +107,8 @@ internal static class CalypsoDnvReviewChecks
         });
         Add(
             "frame-first ring webs",
-            openFrameSteel >= 40 && FrameWebPlateRegistry.All.Count >= 8,
+            // One full-athwart chord per deck (not passage-chopped stubs).
+            openFrameSteel >= 30 && FrameWebPlateRegistry.All.Count >= 8,
             $"ring+chord={openFrameSteel} profiles={FrameWebPlateRegistry.All.Count}");
         Add(
             "no portal knee solids",

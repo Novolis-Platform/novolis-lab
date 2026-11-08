@@ -58,10 +58,10 @@ internal static class CalypsoShipbuildingFrames
         var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, floorUp, inset) - 0.15f;
         if (halfY < 0.35f)
             return;
-        // Floor chord only — cargo void above remains clear.
+        // Floor chord only — full athwart span; cargo void above remains clear.
         CalypsoLockGenerator.TryAddStructureBar(
             entities, loa, $"{frameId}-chord-{floorUp:0.#}-holdfloor",
-            0f, floorUp, zStem, halfY * 0.5f, chordHalf, halfDepthZ,
+            0f, floorUp, zStem, halfY, chordHalf, halfDepthZ,
             meta: new StructuralSolidMeta(
                 StructuralRoles.TransverseFrame, frameId.Contains('-')
                     ? string.Join('-', frameId.Split('-').Take(2))
@@ -520,32 +520,34 @@ internal static class CalypsoShipbuildingFrames
         float tPlate = 0.1f,
         IReadOnlyList<(float Z0, float Z1, float FloorTop)>? openAtriumSpans = null)
     {
+        // Passage clears live in the web/BH plate — deck beams stay one full-athwart member.
+        _ = athwartGaps;
         foreach (var deckUp in deckUps)
         {
             if (IsOpenAtriumDeck(zStem, deckUp, openAtriumSpans))
                 continue;
 
             var deckInset = DefaultSkinInset + 0.28f;
-            var halfY = CalypsoLockGenerator.HalfBeamInsidePublic(zStem, deckUp, deckInset) - web * 1.25f;
+            var halfUp = web * 0.35f;
+            var beamUp = deckUp - tPlate - halfUp;
+            // Nest across beam depth so ends clear the IML chamfer without chopping for passages.
+            var halfY = MathF.Min(
+                CalypsoLockGenerator.HalfBeamInsidePublic(zStem, beamUp, deckInset),
+                MathF.Min(
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, beamUp - halfUp, deckInset),
+                    CalypsoLockGenerator.HalfBeamInsidePublic(zStem, beamUp + halfUp, deckInset))) - web * 1.25f;
             if (halfY < 0.35f)
                 continue;
-            foreach (var (ya, yb) in CalypsoLockGenerator.SolidSpansPublic(-halfY, halfY, athwartGaps))
-            {
-                var cy = (ya, yb).GetCenter();
-                var hy = (yb - ya) * 0.45f;
-                if (hy < 0.12f)
-                    continue;
-                CalypsoLockGenerator.TryAddStructureBar(
-                    entities,
-                    loa,
-                    $"{frameId}-deckbeam-{deckUp:0.#}-y{ya:0.#}",
-                    cy,
-                    deckUp - tPlate - web * 0.35f,
-                    zStem,
-                    hy,
-                    web * 0.35f,
-                    halfDepthZ * 0.8f);
-            }
+            CalypsoLockGenerator.TryAddStructureBar(
+                entities,
+                loa,
+                $"{frameId}-deckbeam-{deckUp:0.#}",
+                0f,
+                beamUp,
+                zStem,
+                halfY,
+                halfUp,
+                halfDepthZ * 0.8f);
         }
     }
 
