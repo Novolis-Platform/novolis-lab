@@ -9,8 +9,8 @@ Overall: **PASS**
 | Check | Result | Detail |
 | --- | --- | --- |
 | hull meshes present | PASS | oml/iml |
-| ordinary frame assemblies | PASS | ringed=12 |
+| ordinary frame assemblies | PASS | annular=12 |
 | heavy BH assemblies match schedule | PASS | bh=6 |
 | no duplicate ordinary frame at BH station | PASS | dups=0 |
 | BH stations have structural section | PASS | scheduled=6 |
-| frames have perimeter rings | PASS | assembliesWithoutRing=0 |
+| frames have hull-conforming annulus | PASS | assembliesWithoutAnnulus=0 |

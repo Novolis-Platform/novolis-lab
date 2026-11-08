@@ -1,0 +1,116 @@
+{
+  "frameAnnulusCount": 12,
+  "failures": 8,
+  "toleranceMm": 25,
+  "frames": [
+    {
+      "partId": "frame-F0-annulus",
+      "stationZStem": 0.13299942,
+      "maxDeviationMm": 464.8064,
+      "toleranceMm": 25,
+      "passed": false,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F4-annulus",
+      "stationZStem": 4,
+      "maxDeviationMm": 441.85303,
+      "toleranceMm": 25,
+      "passed": false,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F8-annulus",
+      "stationZStem": 8,
+      "maxDeviationMm": 435.91046,
+      "toleranceMm": 25,
+      "passed": false,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F16-annulus",
+      "stationZStem": 16,
+      "maxDeviationMm": 433.0822,
+      "toleranceMm": 25,
+      "passed": false,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F28-annulus",
+      "stationZStem": 28,
+      "maxDeviationMm": 238.28548,
+      "toleranceMm": 25,
+      "passed": false,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F36-annulus",
+      "stationZStem": 36,
+      "maxDeviationMm": 238.28548,
+      "toleranceMm": 25,
+      "passed": false,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F44-annulus",
+      "stationZStem": 44,
+      "maxDeviationMm": 238.28548,
+      "toleranceMm": 25,
+      "passed": false,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F52-ring-annulus",
+      "stationZStem": 52,
+      "maxDeviationMm": 0,
+      "toleranceMm": 25,
+      "passed": true,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F56-ring-annulus",
+      "stationZStem": 56,
+      "maxDeviationMm": 0,
+      "toleranceMm": 25,
+      "passed": true,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F60-ring-annulus",
+      "stationZStem": 60,
+      "maxDeviationMm": 0,
+      "toleranceMm": 25,
+      "passed": true,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F64-ring-annulus",
+      "stationZStem": 64,
+      "maxDeviationMm": 0,
+      "toleranceMm": 25,
+      "passed": true,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F68-annulus",
+      "stationZStem": 68,
+      "maxDeviationMm": 238.28548,
+      "toleranceMm": 25,
+      "passed": false,
+      "triangleCount": 64,
+      "vertexCount": 32
+    }
+  ],
+  "note": "Ordinary transverse frames must be connected annular plate-webs following the geometric inset of the authoritative hull section."
+}

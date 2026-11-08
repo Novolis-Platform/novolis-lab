@@ -8,13 +8,13 @@ namespace CalypsoCad.Structure;
 /// </summary>
 internal static class HullSectionAuthority
 {
-    /// <summary>Outer (OML) octagon ring at stem station — plate outer face.</summary>
+    /// <summary>Outer (OML) octagon ring at stem station — plate outer face from loft metrics.</summary>
     public static (float Y, float Up)[] OuterRing(float zStem) =>
-        CalypsoShipbuildingFrames.InnerOctagonRing(zStem, skinInset: 0f);
+        CalypsoShipbuildingFrames.OuterOctagonRing(zStem);
 
     /// <summary>
-    /// Inner structural ring at stem station. Pass the same inset the frame/BH emitter uses
-    /// (DefaultSkinInset + clearances) so generators share one profile path.
+    /// Inner structural ring at stem station via geometric polygon offset of <see cref="OuterRing"/>.
+    /// Pass the same inset the frame/BH emitter uses so generators share one profile path.
     /// </summary>
     public static (float Y, float Up)[] InnerRing(
         float zStem,

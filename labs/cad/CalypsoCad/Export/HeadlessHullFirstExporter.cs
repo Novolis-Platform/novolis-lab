@@ -50,14 +50,53 @@ internal static class HeadlessHullFirstExporter
             ShipCamera();
         });
 
-        // B — Transparent hull + ordinary frames.
+        // B — Transparent hull + ordinary frames (View A: transverse structure).
         Add("B-hull-frames", () =>
         {
             session.VisualLayers = CalypsoVisualLayers.Frames;
             session.ShowOmlGuide = true;
             session.WireMeshMode = CalypsoWireMeshMode.None;
-            session.StatusText = "hull-first:B hull+frames";
+            session.StatusText = "hull-first:B transverse frames · hull transparent";
             ShipCamera();
+        });
+
+        // B2 — Midbody constant-section frame contour.
+        Add("B2-midbody-frame-contour", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.Frames;
+            session.ShowOmlGuide = true;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.DeckFilter = null;
+            var zCad = 69f * 0.5f - 28f;
+            renderer.SetOrbitPose(new Vector3(0f, 5.5f, zCad), 26f, MathF.PI * 0.5f, 0.05f);
+            session.StatusText = "hull-first:B2 midbody frame @28 m vs IML";
+        });
+
+        // B3 — Start of bow taper.
+        Add("B3-taper-start-frame", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.Frames;
+            session.ShowOmlGuide = true;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.DeckFilter = null;
+            var zCad = 69f * 0.5f - 16f;
+            renderer.SetOrbitPose(new Vector3(0f, 5.5f, zCad), 24f, MathF.PI * 0.5f, 0.05f);
+            session.StatusText = "hull-first:B3 taper-start frame @16 m vs IML";
+        });
+
+        // B4 — Forward tapered station.
+        Add("B4-bow-taper-frame", () =>
+        {
+            session.VisualLayers = CalypsoVisualLayers.Frames;
+            session.ShowOmlGuide = true;
+            session.WireMeshMode = CalypsoWireMeshMode.None;
+            session.ViewMode = CalypsoViewMode.Orbit;
+            session.DeckFilter = null;
+            var zCad = 69f * 0.5f - 8f;
+            renderer.SetOrbitPose(new Vector3(0f, 5.5f, zCad), 22f, MathF.PI * 0.5f, 0.05f);
+            session.StatusText = "hull-first:B4 bow-taper frame @8 m vs IML";
         });
 
         // C — Hull + frames + heavy BHs (primary acceptance).

@@ -14,7 +14,7 @@
     "vertexCount": 0,
     "passed": false,
     "failures": [
-      "bh-CREW-AFT: watertight solid validation failed \u2014 nonManifoldEdges=8."
+      "bh-CREW-AFT: planar plate annulus is not manifold after opening punch (8 boundary verts with degree \u2260 2, expectedOpenings=6)."
     ],
     "checks": []
   }

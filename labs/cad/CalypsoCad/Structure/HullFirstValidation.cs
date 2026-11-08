@@ -21,8 +21,9 @@ internal static class HullFirstValidation
     public static Report Evaluate(CadDocument doc, float loa = 69f)
     {
         var frames = doc.Entities
-            .Where(e => e.Kind == "box" && e.Name is not null
-                        && e.Name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
+            .Where(e => e.Name is not null
+                        && e.Name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+                        && (e.Kind is "box" or "mesh"))
             .Select(e => e.Name!)
             .ToList();
         var bhs = doc.Entities
@@ -49,13 +50,17 @@ internal static class HullFirstValidation
             .Select(s => s.Id)
             .ToList();
 
-        // Ringed ordinary frames must not sit on heavy-BH stations.
+        static bool HasAnnulus(IEnumerable<string> names, string asm) =>
+            names.Any(n => n.StartsWith(asm + "-", StringComparison.OrdinalIgnoreCase)
+                           && n.Contains("annulus", StringComparison.OrdinalIgnoreCase));
+
+        // Hull-conforming annular frames must not sit on heavy-BH stations.
         var dup = 0;
         foreach (var asm in frameAsms)
         {
             if (asm is null || !asm.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase))
                 continue;
-            if (!frames.Any(n => n.StartsWith(asm + "-ring-", StringComparison.OrdinalIgnoreCase)))
+            if (!HasAnnulus(frames, asm))
                 continue;
             var num = asm["frame-F".Length..];
             if (!float.TryParse(num, System.Globalization.NumberStyles.Float,
@@ -65,12 +70,12 @@ internal static class HullFirstValidation
                 dup++;
         }
 
-        // Count only assemblies that own a perimeter ring (join stubs alone are not frames).
+        // Count assemblies that own a connected annular plate-web (not bar stubs).
         var ringedFrames = frameAsms
-            .Where(a => a is not null
-                        && frames.Any(n => n.StartsWith(a + "-ring-", StringComparison.OrdinalIgnoreCase)))
+            .Where(a => a is not null && HasAnnulus(frames, a!))
             .ToList();
-        var ringsMissing = frameAsms.Count - ringedFrames.Count;
+        var ringsMissing = frameAsms.Count(a => a is not null && a.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase))
+                           - ringedFrames.Count;
 
         var checks = new List<Check>
         {
@@ -78,15 +83,15 @@ internal static class HullFirstValidation
                 doc.Entities.Any(e => e.Kind == "mesh" && (e.Name?.Contains("oml", StringComparison.OrdinalIgnoreCase) == true
                                                            || e.Name?.Contains("hull", StringComparison.OrdinalIgnoreCase) == true)),
                 "oml/iml"),
-            new("ordinary frame assemblies", ringedFrames.Count >= 10, $"ringed={ringedFrames.Count}"),
+            new("ordinary frame assemblies", ringedFrames.Count >= 10, $"annular={ringedFrames.Count}"),
             new("heavy BH assemblies match schedule", missingBh.Count == 0,
                 missingBh.Count == 0 ? $"bh={bhAsms.Count}" : $"missing={string.Join(',', missingBh)}"),
             new("no duplicate ordinary frame at BH station", dup == 0, $"dups={dup}"),
             new("BH stations have structural section",
                 schedule.All(s => HullSectionAuthority.HasStructuralSection(s.ZStem)),
                 $"scheduled={schedule.Count}"),
-            new("frames have perimeter rings", ringsMissing == 0,
-                $"assembliesWithoutRing={ringsMissing}"),
+            new("frames have hull-conforming annulus", ringsMissing == 0,
+                $"assembliesWithoutAnnulus={ringsMissing}"),
         };
 
         return new Report(frameAsms.Count, bhAsms.Count, schedule.Count, dup, checks);

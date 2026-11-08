@@ -127,73 +127,75 @@ internal static class CalypsoShipbuildingFrames
         string namePrefix,
         bool exactInsetOnly = false)
     {
-        // Oriented polygonal ring along IML (Shipbuilding 101) — not axis-aligned AABB stubs.
-        // Pull inboard until the flange nests; never shorten the edge (continuity).
+        // Connected annular plate-web from the authoritative hull section — not independent bars.
         CalypsoLockGenerator.SectionAtPublic(zStem, out var halfBCheck, out var halfHCheck, out _, out _, out _);
         if (halfBCheck < 1.45f || halfHCheck < 1.45f)
             return;
 
         var ringInset = exactInsetOnly ? inset : inset + web * 1.05f + 0.18f;
-        var ring = InnerOctagonRing(zStem, ringInset);
-        var (cy0, cu0) = ring.GetSectionCenter();
-        var flangeHalf = MathF.Max(0.05f, web * 0.34f);
-        var asm = frameId.Contains('-')
-            ? string.Join('-', frameId.Split('-').Take(2))
-            : frameId;
-        for (var i = 0; i < ring.Length; i++)
+        var outer = InnerOctagonRing(zStem, ringInset);
+        if (outer.Length < 3)
         {
-            var a = ring[i];
-            var b = ring[(i + 1) % ring.Length];
-            var dy = b.Y - a.Y;
-            var du = b.Up - a.Up;
-            var len = MathF.Sqrt(dy * dy + du * du);
-            if (len < 0.12f)
-                continue;
+            StructurePlacementLog.Record(
+                frameId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
+                "hull section ring collapsed after geometric inset");
+            return;
+        }
 
-            var edgeY = (a.Y + b.Y) * 0.5f;
-            var edgeU = (a.Up + b.Up) * 0.5f;
-            var inwardY = cy0 - edgeY;
-            var inwardU = cu0 - edgeU;
-            var inwardLen = MathF.Sqrt(inwardY * inwardY + inwardU * inwardU);
-            var ny = inwardLen > 1e-4f ? inwardY / inwardLen : 0f;
-            var nu = inwardLen > 1e-4f ? inwardU / inwardLen : 0f;
-            var halfLen = len * 0.5f;
-            var angle = MathF.Atan2(du, dy);
-            var placed = false;
-            for (var attempt = 0; attempt < 10 && !placed; attempt++)
-            {
-                var pull = MathF.Min(flangeHalf * (1.2f + attempt * 0.45f), inwardLen * 0.92f);
-                var y = edgeY + ny * pull;
-                var u = edgeU + nu * pull;
-                var hf = MathF.Max(0.035f, flangeHalf * MathF.Pow(0.9f, attempt));
-                placed = CalypsoLockGenerator.TryAddOrientedStructureBar(
-                    entities, loa, $"{frameId}-{namePrefix}-{i}",
-                    y, u, zStem,
-                    halfAlongEdge: halfLen,
-                    halfFlange: hf,
-                    halfDepthZ: halfDepthZ,
-                    orientZ: angle,
-                    meta: new StructuralSolidMeta(
-                        StructuralRoles.TransverseFrame, asm,
-                        StationZ: zStem, DeckUp: u,
-                        Joins:
-                        [
-                            $"{frameId}-{namePrefix}-{(i + ring.Length - 1) % ring.Length}",
-                            $"{frameId}-{namePrefix}-{(i + 1) % ring.Length}",
-                        ]));
-            }
-            // Fail closed — do not invent a disconnected AABB stub (Shipbuilding 102).
+        var webWidth = MathF.Max(0.08f, web);
+        var inner = PolygonInset2D.Inset(outer, webWidth);
+        if (inner.Length != outer.Length)
+        {
+            StructurePlacementLog.Record(
+                frameId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
+                $"annular inset collapsed (webWidth={webWidth:F3})");
+            return;
+        }
+
+        var zCad = loa * 0.5f - zStem;
+        EditableMesh mesh;
+        try
+        {
+            mesh = AnnularPlateExtrude.ExtrudeAlongZ(
+                outer, inner, zCad, halfDepthZ, $"{frameId}-{namePrefix}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"  FAIL {frameId}-{namePrefix} annular extrude: {ex.Message}");
+            StructurePlacementLog.Record(
+                frameId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
+                $"annular extrude failed: {ex.Message}");
+            return;
+        }
+
+        CalypsoLockGenerator.TryAddStructureMesh(
+            entities,
+            loa,
+            $"{frameId}-{namePrefix}-annulus",
+            zStem,
+            mesh,
+            fabPartId: null,
+            meta: new StructuralSolidMeta(
+                StructuralRoles.TransverseFrame,
+                frameId.Contains('-')
+                    ? string.Join('-', frameId.Split('-').Take(2))
+                    : frameId,
+                StationZ: zStem));
+
+        var deviationMm = HullSectionAuthority.MaxRingDeviation(outer, zStem, ringInset) * 1000f;
+        if (deviationMm > 25f)
+        {
+            Console.Error.WriteLine(
+                $"  WARN {frameId}: frame outer ring max deviation {deviationMm:0.0} mm from hull section");
         }
     }
 
-    public static (float Y, float Up)[] InnerOctagonRing(float zStem, float skinInset)
+    /// <summary>
+    /// Authoritative transverse hull section at <paramref name="zStem"/> (OML octagon from loft metrics).
+    /// </summary>
+    public static (float Y, float Up)[] OuterOctagonRing(float zStem)
     {
         CalypsoLockGenerator.SectionAtPublic(zStem, out var halfB, out var halfH, out var mid, out var cx, out var cy);
-        var inset = skinInset;
-        halfB -= inset;
-        halfH -= inset;
-        cx = MathF.Max(0.05f, cx - inset * 0.5f);
-        cy = MathF.Max(0.05f, cy - inset * 0.5f);
         return
         [
             (-halfB + cx, mid + halfH),
@@ -205,6 +207,19 @@ internal static class CalypsoShipbuildingFrames
             (-halfB, mid - halfH + cy),
             (-halfB, mid + halfH - cy),
         ];
+    }
+
+    /// <summary>
+    /// Structural ring: geometric inward offset of the authoritative hull section.
+    /// Does not shrink half-beam / half-height independently (that distorts chamfer facets).
+    /// </summary>
+    public static (float Y, float Up)[] InnerOctagonRing(float zStem, float skinInset)
+    {
+        var outer = OuterOctagonRing(zStem);
+        if (skinInset <= 1e-6f)
+            return outer;
+        var inset = PolygonInset2D.Inset(outer, skinInset);
+        return inset.Length >= 3 ? inset : outer;
     }
 
     /// <summary>

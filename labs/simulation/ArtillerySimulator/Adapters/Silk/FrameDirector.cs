@@ -17,6 +17,7 @@ internal sealed class FrameDirector : IDisposable
     private readonly Stopwatch _wall = Stopwatch.StartNew();
     private readonly FrameWallClockBudget _wallBudget;
     private readonly ArtilleryAgentSurfaceBootstrap _agentBootstrap;
+    private readonly ArtillerySceneRenderer _renderer;
     private readonly ArtilleryFrameProfileController _profiles;
     private readonly PlayingFrameRenderer _playingRenderer;
     private readonly ArtillerySmokeDriver? _smoke;
@@ -34,6 +35,7 @@ internal sealed class FrameDirector : IDisposable
         _world = world;
         _commands = commands;
         _agent = agent;
+        _renderer = renderer;
         _options = options;
         _wallBudget = new FrameWallClockBudget(_wall);
         _agentBootstrap = new ArtilleryAgentSurfaceBootstrap(agent, options, world, log);
@@ -102,5 +104,9 @@ internal sealed class FrameDirector : IDisposable
         _wallBudget.Stamp();
     }
 
-    public void Dispose() => _agentBootstrap.DisposeSurface();
+    public void Dispose()
+    {
+        _agentBootstrap.DisposeSurface();
+        _renderer.Dispose();
+    }
 }

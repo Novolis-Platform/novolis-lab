@@ -82,11 +82,20 @@ internal static class CalypsoAcceptanceGates
                 foreach (var c in report.Checks)
                     Check(c.Name, c.Ok, c.Detail);
 
+                var contourPath = FrameContourValidation.WriteReport(session.Document);
+                Console.WriteLine($"Frame contour → {contourPath}");
+                var annulus = session.Document.Entities.Count(e =>
+                    e.Kind == "mesh"
+                    && e.Name is not null
+                    && e.Name.StartsWith("frame-", StringComparison.OrdinalIgnoreCase)
+                    && e.Name.Contains("annulus", StringComparison.OrdinalIgnoreCase));
+                Check("frame annulus meshes", annulus >= 8, $"count={annulus}");
+
                 var stills = HeadlessHullFirstExporter.Export(session, renderer);
                 Console.WriteLine($"Hull-first PNGs ({stills.Count}) → {Path.Combine(CalypsoProjectPaths.RendersDirectory, "hull-first")}");
                 foreach (var path in stills)
                     Console.WriteLine($"  {path}");
-                Check("hull-first PNGs written", stills.Count >= 6, $"count={stills.Count}");
+                Check("hull-first PNGs written", stills.Count >= 9, $"count={stills.Count}");
                 Check("hull-first gate", report.Ok);
 
                 Console.WriteLine(failures == 0

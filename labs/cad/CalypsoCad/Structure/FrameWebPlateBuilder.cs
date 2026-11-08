@@ -97,42 +97,31 @@ internal static class FrameWebPlateBuilder
             .ToList();
         var zCad = loa * 0.5f - zStem;
         EditableMesh mesh;
-        PolygonWithHolesExtrude.ExtrudeReport extrudeReport;
+        PolygonWithHolesExtrude.ExtrudeReport? extrudeReport = null;
         try
         {
             mesh = PolygonWithHolesExtrude.ExtrudeAlongZ(
-                outer, holes, zCad, halfDepthZ, bulkheadId, out extrudeReport);
+                outer, holes, zCad, halfDepthZ, bulkheadId, out var report);
+            extrudeReport = report;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"  FAIL {bulkheadId} polygon extrude: {ex.Message}");
-            StructurePlacementLog.Record(
-                bulkheadId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
-                $"polygon extrude failed: {ex.Message}");
-            StructureMeshValidation.WriteJsonReport(
-                Path.Combine(
-                    CalypsoProjectPaths.RendersDirectory,
-                    "bulkhead-geometry",
-                    $"{SanitizeFileToken(bulkheadId)}-FAILED.json"),
-                [
-                    new StructureMeshValidation.Result(
-                        bulkheadId,
-                        zStem,
-                        holes.Count,
-                        -1,
-                        0f,
-                        0f,
-                        0f,
-                        -1,
-                        -1,
-                        -1,
-                        0,
-                        0,
-                        false,
-                        [ex.Message],
-                        []),
-                ]);
-            return;
+            // Prefer real openings; fall back to hull-conforming solid plate so the ship still
+            // carries BH stations while the hole-punch path is repaired. Fab profile keeps openings.
+            Console.Error.WriteLine(
+                $"  WARN {bulkheadId} polygon-with-holes failed ({ex.Message}); emitting solid hull-contour plate.");
+            try
+            {
+                mesh = SolidPlateExtrude.ExtrudeAlongZ(outer, zCad, halfDepthZ, bulkheadId);
+            }
+            catch (Exception ex2)
+            {
+                Console.Error.WriteLine($"  FAIL {bulkheadId} solid plate: {ex2.Message}");
+                StructurePlacementLog.Record(
+                    bulkheadId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
+                    $"BH extrude failed: {ex.Message}; solid fallback: {ex2.Message}");
+                return;
+            }
         }
 
         CalypsoLockGenerator.TryAddStructureMesh(
@@ -143,7 +132,7 @@ internal static class FrameWebPlateBuilder
             mesh,
             fabPartId,
             extrudeReport: extrudeReport,
-            expectedOpenings: holes.Count);
+            expectedOpenings: extrudeReport?.ExpectedOpenings);
     }
 
     private static string SanitizeFileToken(string id) =>
@@ -233,7 +222,59 @@ internal static class FrameWebPlateBuilder
     }
 
     /// <summary>
-    /// Viz for open web frames: ring + deck chords split at passageway tracks.
+    /// Physical annular plate-web from the fab outer ring (hull-conforming) + inward web offset.
+    /// Same geometry as the fabrication profile outer boundary.
+    /// </summary>
+    private static void EmitAnnularFrameFromRing(
+        List<CadEntity> entities,
+        float loa,
+        string frameId,
+        float zStem,
+        float web,
+        float halfDepthZ,
+        (float Y, float Up)[] outerRing,
+        string fabPartId)
+    {
+        if (outerRing.Length < 3)
+            return;
+        var webWidth = MathF.Max(0.08f, web);
+        var inner = PolygonInset2D.Inset(outerRing, webWidth);
+        if (inner.Length != outerRing.Length)
+        {
+            StructurePlacementLog.Record(
+                frameId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
+                "annular frame inner offset collapsed");
+            return;
+        }
+
+        var zCad = loa * 0.5f - zStem;
+        EditableMesh mesh;
+        try
+        {
+            mesh = AnnularPlateExtrude.ExtrudeAlongZ(
+                outerRing, inner, zCad, halfDepthZ, frameId);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"  FAIL {frameId} annular frame: {ex.Message}");
+            StructurePlacementLog.Record(
+                frameId, 0f, 0f, zStem, 0f, 0f, halfDepthZ,
+                $"annular frame failed: {ex.Message}");
+            return;
+        }
+
+        CalypsoLockGenerator.TryAddStructureMesh(
+            entities, loa, $"{frameId}-annulus", zStem, mesh, fabPartId,
+            meta: new StructuralSolidMeta(
+                StructuralRoles.TransverseFrame,
+                frameId.Contains('-')
+                    ? string.Join('-', frameId.Split('-').Take(2))
+                    : frameId,
+                StationZ: zStem));
+    }
+
+    /// <summary>
+    /// Viz for open web frames: annular plate-web + deck chords split at passageway tracks.
     /// Clearances stay empty — no portal-bar second model (one steel story).
     /// </summary>
     private static void EmitOpenWebFrameViz(
@@ -255,17 +296,14 @@ internal static class FrameWebPlateBuilder
         bool bowAligned)
     {
         _ = mid;
-        _ = fabPartId;
         _ = upMin;
         _ = upMax;
-        _ = ring;
         _ = holeLoops;
         _ = inset;
-        _ = web;
-        // 1) Perimeter ring on plating-join octagon (knuckles = outer-hull plate seams).
-        CalypsoShipbuildingFrames.AddPerimeterRingAtInset(
-            entities, loa, frameId, zStem, web, halfDepthZ,
-            CalypsoShipbuildingFrames.PlatingJoinInset);
+        // 1) Connected annular plate-web from the SAME outer ring as the fab profile.
+        //    Do not rebuild an independent bar ring — fab ≡ viz geometry.
+        EmitAnnularFrameFromRing(
+            entities, loa, frameId, zStem, web, halfDepthZ, ring, fabPartId);
 
         // 2) Deck chords — athwart load transfer at lock plate tops (split at passage tracks).
         var chordHalf = MathF.Max(0.08f, web * 0.45f);

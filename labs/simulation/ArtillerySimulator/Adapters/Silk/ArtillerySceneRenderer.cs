@@ -12,6 +12,7 @@ internal sealed class ArtillerySceneRenderer : IDisposable
     private readonly SilkWireBatch _wires = new();
     private readonly SmoothedFps _fps = new();
     private readonly SkyDomeCache _sky = new();
+    private bool _disposed;
 
     public SilkWireBatch Wires => _wires;
     public float Fps => _fps.Value;
@@ -63,5 +64,11 @@ internal sealed class ArtillerySceneRenderer : IDisposable
             DrawHud();
     }
 
-    public void Dispose() => _sky.Dispose();
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+        _disposed = true;
+        _sky.Dispose();
+    }
 }

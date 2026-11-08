@@ -175,29 +175,10 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     public bool SolutionUnsafe => _fireRules.SolutionUnsafe;
     public bool IsMissionTerminal => _fireRules.IsMissionTerminal;
     public MissionOutcome MissionOutcome => _fireRules.MissionOutcome;
+    public ArtilleryParticles Particles => _presentation.Particles;
+    public float FxTime => _presentation.FxTime;
 
-    public FrameViewModel CreateFrameViewModel() => new()
-    {
-        Camera = _camera,
-        Terrain = _terrain,
-        Atmosphere = _atmosphere,
-        Gun = _gun,
-        Crew = _crew,
-        Rounds = _rounds,
-        Aim = _aim,
-        Battle = _battle,
-        Particles = _presentation.Particles,
-        Mission = _mission,
-        Level = Level,
-        Ui = _ui,
-        Audio = _audio,
-        FireBlockReason = FireBlockReason(),
-        SolutionUnsafe = SolutionUnsafe,
-        LaunchDetonation = LaunchDetonation,
-        FxTime = _presentation.FxTime,
-        FollowProjectile = _camera.FollowProjectile,
-        PredictedRangeMeters = PredictedRangeMeters,
-    };
+    public FrameViewModel CreateFrameViewModel() => FrameViewModelFactory.Create(this);
 
     private BallisticTrajectoryRunner CreateRound() =>
         new(new BallisticTrajectoryRunnerOptions

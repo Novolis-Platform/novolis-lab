@@ -59,35 +59,24 @@ internal sealed class ArtilleryFrameProfileController
 
     public bool HandleHotkeys(SilkFrame frame)
     {
-        if (frame.IsKeyPressed(Key.F1))
-        {
-            _showProfile = !_showProfile;
-            if (_showProfile)
-                _liveProfiler.Reset();
-        }
+        var result = ProfileHotkeys.TryHandle(
+            frame,
+            ActiveProfiler() ?? _liveProfiler,
+            _renderer,
+            _world);
+        if (result is null)
+            return false;
 
-        var ctrl = frame.IsKeyDown(Key.ControlLeft) || frame.IsKeyDown(Key.ControlRight);
-        if (ctrl && frame.IsKeyPressed(Key.C))
+        if (result.ToggledShowProfile)
+            _showProfile = !_showProfile;
+        if (result.ForceShowProfile)
+            _showProfile = true;
+        if (result.ResetLiveProfiler)
+            _liveProfiler.Reset();
+        if (result.ProfileFlash is { } flash)
         {
-            var dump = ArtilleryDebugDump.BuildClipboardDump(
-                frame,
-                ActiveProfiler() ?? _liveProfiler,
-                _renderer,
-                _world.Terrain,
-                _world.Atmosphere,
-                _world.Gun,
-                _world.Crew,
-                _world.Rounds,
-                _world.Camera,
-                _world.Mission);
-            var ok = WindowsClipboardText.TrySet(dump);
-            _profileFlash = ok ? "DEBUG DUMP COPIED" : "CLIPBOARD FAILED";
+            _profileFlash = flash;
             _profileFlashAge = 0f;
-            if (!_showProfile)
-            {
-                _showProfile = true;
-                _liveProfiler.Reset();
-            }
         }
 
         return false;
@@ -139,25 +128,8 @@ internal sealed class ArtilleryFrameProfileController
         if (_profileFramesRemaining != 0)
             return false;
 
-        WriteProfileReport();
+        ProfileReportWriter.Write(_profiler, _profileJsonPath, _log);
         frame.Close();
         return true;
-    }
-
-    private void WriteProfileReport()
-    {
-        if (_profiler is null)
-            return;
-        var text = _profiler.ToReport();
-        Console.WriteLine();
-        Console.WriteLine("=== ArtillerySimulator profile ===");
-        Console.WriteLine(text);
-        if (!string.IsNullOrWhiteSpace(_profileJsonPath))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(_profileJsonPath))!);
-            File.WriteAllText(_profileJsonPath, _profiler.ToJson());
-            _log.LogInformation("Wrote profile JSON to {Path}", _profileJsonPath);
-            Console.WriteLine($"Wrote {_profileJsonPath}");
-        }
     }
 }

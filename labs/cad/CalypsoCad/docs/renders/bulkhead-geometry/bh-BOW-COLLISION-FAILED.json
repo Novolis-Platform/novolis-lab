@@ -14,7 +14,7 @@
     "vertexCount": 0,
     "passed": false,
     "failures": [
-      "bh-BOW-COLLISION: watertight solid validation failed \u2014 nonManifoldEdges=4."
+      "bh-BOW-COLLISION: planar plate annulus is not manifold after opening punch (4 boundary verts with degree \u2260 2, expectedOpenings=3)."
     ],
     "checks": []
   }

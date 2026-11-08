@@ -86,6 +86,9 @@ internal static class PolygonWithHolesExtrude
 
         mesh = MeshWeld.Apply(mesh, new WeldOptions(1e-4f, WeldPositionMode.Average, WeldScope.EntireMesh));
         StripDegenerateTriangles(mesh);
+        if (mesh.FindBoundaryEdges().Count > 0)
+            mesh = MeshWeld.Apply(mesh, new WeldOptions(5e-4f, WeldPositionMode.Average, WeldScope.EntireMesh));
+        StripDegenerateTriangles(mesh);
         ValidateClosedSolid(mesh, materialArea, thickness, id,
             out var meshVol, out var openEdges, out var nonManifold, out var degenerates, out var checks);
 
@@ -170,6 +173,168 @@ internal static class PolygonWithHolesExtrude
             throw new InvalidOperationException($"{partId}: triangulation produced no material triangles.");
 
         return WeldPlanarVerts(verts, faces, partId);
+    }
+
+    private static bool RectTouchesOuter(
+        List<(float Y, float Up)> outer, float y0, float y1, float u0, float u1)
+    {
+        // Corner samples + edge midpoints: if any lies outside / on the outer ring, it's a notch.
+        ReadOnlySpan<(float Y, float Up)> samples =
+        [
+            (y0, u0), (y0, u1), (y1, u1), (y1, u0),
+            ((y0 + y1) * 0.5f, u0), ((y0 + y1) * 0.5f, u1),
+            (y0, (u0 + u1) * 0.5f), (y1, (u0 + u1) * 0.5f),
+        ];
+        foreach (var p in samples)
+        {
+            if (!PointInPolygon(p, outer))
+                return true;
+            if (DistanceToBoundary(p, outer) < 0.05f)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static float DistanceToBoundary((float Y, float Up) p, List<(float Y, float Up)> ring)
+    {
+        var best = float.PositiveInfinity;
+        for (var i = 0; i < ring.Count; i++)
+        {
+            var a = ring[i];
+            var b = ring[(i + 1) % ring.Count];
+            best = MathF.Min(best, DistPointToSegment(p, a, b));
+        }
+
+        return best;
+    }
+
+    private static float DistPointToSegment(
+        (float Y, float Up) p, (float Y, float Up) a, (float Y, float Up) b)
+    {
+        var abY = b.Y - a.Y;
+        var abU = b.Up - a.Up;
+        var lenSq = abY * abY + abU * abU;
+        if (lenSq < 1e-12f)
+            return MathF.Sqrt((p.Y - a.Y) * (p.Y - a.Y) + (p.Up - a.Up) * (p.Up - a.Up));
+        var t = Math.Clamp(((p.Y - a.Y) * abY + (p.Up - a.Up) * abU) / lenSq, 0f, 1f);
+        var qY = a.Y + abY * t;
+        var qU = a.Up + abU * t;
+        return MathF.Sqrt((p.Y - qY) * (p.Y - qY) + (p.Up - qU) * (p.Up - qU));
+    }
+
+    /// <summary>
+    /// Cut a rectangular notch from the outer plate ring. Returns a single simple polygon.
+    /// </summary>
+    private static List<(float Y, float Up)> NotchOuterWithRect(
+        List<(float Y, float Up)> outer,
+        float y0, float y1, float u0, float u1,
+        string partId,
+        int holeIndex)
+    {
+        var pieces = SubtractAabbFromConvex(outer, y0, y1, u0, u1);
+        if (pieces.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"{partId}: notch opening[{holeIndex}] removed the entire plate.");
+        }
+
+        // Merge pieces along shared edges into one ring via largest-component preference when the
+        // cut stays connected; if the rect severs the plate, keep the largest solid remnant and fail
+        // only when area loss exceeds the opening (should not happen for a notch).
+        var ordered = pieces.OrderByDescending(p => MathF.Abs(SignedArea(p))).ToList();
+        var merged = ordered[0];
+        if (ordered.Count > 1)
+        {
+            // For a true perimeter notch the four partition bands form one simply-connected region
+            // after dissolving shared edges — reconstruct by stitching boundary of the piece set.
+            var stitched = StitchPiecesToRing(pieces);
+            if (stitched is { Count: >= 3 })
+                merged = stitched;
+        }
+
+        if (merged.Count < 3)
+        {
+            throw new InvalidOperationException(
+                $"{partId}: notch opening[{holeIndex}] produced a degenerate outer ring.");
+        }
+
+        return NormalizeRing(merged, wantCcw: true);
+    }
+
+    /// <summary>Dissolve shared edges among partition pieces and walk the remaining boundary.</summary>
+    private static List<(float Y, float Up)>? StitchPiecesToRing(List<List<(float Y, float Up)>> pieces)
+    {
+        const float q = 1e-4f;
+        long Key((float Y, float Up) p) =>
+            ((long)MathF.Round(p.Y / q) << 32) ^ ((long)MathF.Round(p.Up / q) & 0xffffffffL);
+
+        var verts = new Dictionary<long, (float Y, float Up)>();
+        var edgeCount = new Dictionary<(long, long), int>();
+        foreach (var piece in pieces)
+        {
+            for (var i = 0; i < piece.Count; i++)
+            {
+                var a = piece[i];
+                var b = piece[(i + 1) % piece.Count];
+                var ka = Key(a);
+                var kb = Key(b);
+                verts[ka] = a;
+                verts[kb] = b;
+                var e = ka < kb ? (ka, kb) : (kb, ka);
+                edgeCount[e] = edgeCount.TryGetValue(e, out var n) ? n + 1 : 1;
+            }
+        }
+
+        var boundary = edgeCount.Where(kv => kv.Value == 1).Select(kv => kv.Key).ToList();
+        if (boundary.Count < 3)
+            return null;
+
+        var adj = new Dictionary<long, List<long>>();
+        foreach (var (a, b) in boundary)
+        {
+            if (!adj.TryGetValue(a, out var la))
+                adj[a] = la = [];
+            if (!adj.TryGetValue(b, out var lb))
+                adj[b] = lb = [];
+            la.Add(b);
+            lb.Add(a);
+        }
+
+        // Prefer start at extreme left for stability.
+        var start = adj.Keys.OrderBy(k => verts[k].Y).ThenBy(k => verts[k].Up).First();
+        if (adj[start].Count != 2)
+        {
+            start = adj.FirstOrDefault(kv => kv.Value.Count == 2).Key;
+            if (!adj.ContainsKey(start))
+                return null;
+        }
+
+        var ring = new List<(float Y, float Up)>();
+        var prev = start;
+        var cur = adj[start][0];
+        ring.Add(verts[start]);
+        var guard = 0;
+        while (cur != start && guard++ < boundary.Count + 2)
+        {
+            ring.Add(verts[cur]);
+            var next = adj[cur].FirstOrDefault(n => n != prev);
+            if (next == 0 && !adj[cur].Contains(0) && next != start)
+            {
+                // next may legitimately be key 0; use explicit search.
+                next = adj[cur].Find(n => n != prev);
+            }
+
+            if (adj[cur].All(n => n == prev) && adj[cur].Count == 1)
+                break;
+            var candidates = adj[cur].Where(n => n != prev).ToList();
+            if (candidates.Count == 0)
+                break;
+            prev = cur;
+            cur = candidates[0];
+        }
+
+        return ring.Count >= 3 ? ring : null;
     }
 
     private static bool TriangleOverlapsAabb(
@@ -334,6 +499,110 @@ internal static class PolygonWithHolesExtrude
         if (b <= a && b <= c)
             return (b, c, a);
         return (c, a, b);
+    }
+
+    private static void EnsureManifoldAnnulus(
+        List<(float Y, float Up)> flat,
+        List<(int A, int B, int C)> tris,
+        string partId,
+        int expectedOpenings)
+    {
+        var edgeCount = new Dictionary<(int, int), int>();
+        foreach (var (a, b, c) in tris)
+        {
+            CountEdge(edgeCount, a, b);
+            CountEdge(edgeCount, b, c);
+            CountEdge(edgeCount, c, a);
+        }
+
+        var boundary = edgeCount.Where(kv => kv.Value == 1).Select(kv => kv.Key).ToList();
+        var degree = new Dictionary<int, int>();
+        foreach (var (a, b) in boundary)
+        {
+            degree[a] = degree.TryGetValue(a, out var da) ? da + 1 : 1;
+            degree[b] = degree.TryGetValue(b, out var db) ? db + 1 : 1;
+        }
+
+        var bad = degree.Where(kv => kv.Value != 2).ToList();
+        if (bad.Count == 0)
+            return;
+
+        // Drop zero-area / needle triangles that create spur boundary edges, then re-check.
+        var cleaned = tris.Where(t =>
+        {
+            var area = MathF.Abs(SignedArea([flat[t.A], flat[t.B], flat[t.C]]));
+            return area > 1e-8f;
+        }).ToList();
+        tris.Clear();
+        tris.AddRange(cleaned);
+
+        edgeCount.Clear();
+        foreach (var (a, b, c) in tris)
+        {
+            CountEdge(edgeCount, a, b);
+            CountEdge(edgeCount, b, c);
+            CountEdge(edgeCount, c, a);
+        }
+
+        boundary = edgeCount.Where(kv => kv.Value == 1).Select(kv => kv.Key).ToList();
+        degree.Clear();
+        foreach (var (a, b) in boundary)
+        {
+            degree[a] = degree.TryGetValue(a, out var da) ? da + 1 : 1;
+            degree[b] = degree.TryGetValue(b, out var db) ? db + 1 : 1;
+        }
+
+        bad = degree.Where(kv => kv.Value != 2).ToList();
+        if (bad.Count == 0)
+            return;
+
+        foreach (var (vi, deg) in bad.Take(8))
+        {
+            var p = flat[vi];
+            Console.Error.WriteLine($"  dbg {partId} boundary deg={deg} at ({p.Y:F3},{p.Up:F3}) idx={vi}");
+        }
+
+        // Dissolve: edges with count≥2 are internal; rebuild triangles only from a constrained
+        // ear-clip of each boundary loop pair is too heavy. Instead, split high-degree vertices
+        // by not sharing partition seam verts: already welded. Drop needle tris on spur edges.
+        var spurEdges = boundary.Where(e =>
+            degree.GetValueOrDefault(e.Item1) != 2 || degree.GetValueOrDefault(e.Item2) != 2).ToList();
+        var spurSet = new HashSet<(int, int)>(spurEdges);
+        var kept = tris.Where(t =>
+        {
+            static (int, int) U(int a, int b) => a < b ? (a, b) : (b, a);
+            var usesSpur = spurSet.Contains(U(t.A, t.B)) || spurSet.Contains(U(t.B, t.C)) || spurSet.Contains(U(t.C, t.A));
+            if (!usesSpur)
+                return true;
+            return MathF.Abs(SignedArea([flat[t.A], flat[t.B], flat[t.C]])) > 1e-4f;
+        }).ToList();
+        tris.Clear();
+        tris.AddRange(kept);
+
+        // Recompute; if still bad, throw with actionable detail.
+        edgeCount.Clear();
+        foreach (var (a, b, c) in tris)
+        {
+            CountEdge(edgeCount, a, b);
+            CountEdge(edgeCount, b, c);
+            CountEdge(edgeCount, c, a);
+        }
+
+        boundary = edgeCount.Where(kv => kv.Value == 1).Select(kv => kv.Key).ToList();
+        degree.Clear();
+        foreach (var (a, b) in boundary)
+        {
+            degree[a] = degree.TryGetValue(a, out var da) ? da + 1 : 1;
+            degree[b] = degree.TryGetValue(b, out var db) ? db + 1 : 1;
+        }
+
+        bad = degree.Where(kv => kv.Value != 2).ToList();
+        if (bad.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"{partId}: planar plate annulus is not manifold after opening punch " +
+                $"({bad.Count} boundary verts with degree ≠ 2, expectedOpenings={expectedOpenings}).");
+        }
     }
 
     private static EditableMesh BuildWatertightMesh(
@@ -807,17 +1076,6 @@ internal static class PolygonWithHolesExtrude
         var expected = materialArea * thickness;
         var volRel = MathF.Abs(meshVolume - expected) / MathF.Max(expected, 1e-6f);
 
-        if (nonManifold != 0)
-        {
-            foreach (var (edge, count) in edgeCounts.Where(kv => kv.Value > 2).Take(6))
-            {
-                var pa = mesh.Vertices[edge.Item1];
-                var pb = mesh.Vertices[edge.Item2];
-                Console.Error.WriteLine(
-                    $"  dbg {partId} nonManifold x{count} edge ({pa.X:F3},{pa.Y:F3},{pa.Z:F3})-({pb.X:F3},{pb.Y:F3},{pb.Z:F3})");
-            }
-        }
-
         var fail = new List<string>();
         if (openEdges != 0)
             fail.Add($"openBoundaryEdges={openEdges} (expected 0 for closed solid)");
@@ -865,6 +1123,88 @@ internal static class PolygonWithHolesExtrude
 
         if (kept.Count != mesh.Indices.Count)
             mesh.ReplaceContents(mesh.Vertices.ToList(), kept);
+    }
+
+    /// <summary>
+    /// Partition seams can leave boundary vertices with degree &gt; 2, producing vertical wall
+    /// edges with &gt;2 incident faces. Drop excess wall triangles until the mesh is manifold.
+    /// </summary>
+    private static void RepairNonManifoldWallEdges(EditableMesh mesh)
+    {
+        for (var pass = 0; pass < 64; pass++)
+        {
+            var edgeCounts = new Dictionary<(int, int), int>();
+            var edgeTris = new Dictionary<(int, int), List<int>>();
+            for (var t = 0; t < mesh.Indices.Count; t += 3)
+            {
+                void Edge(int a, int b)
+                {
+                    var key = a < b ? (a, b) : (b, a);
+                    edgeCounts[key] = edgeCounts.TryGetValue(key, out var n) ? n + 1 : 1;
+                    if (!edgeTris.TryGetValue(key, out var list))
+                        edgeTris[key] = list = [];
+                    list.Add(t);
+                }
+
+                Edge(mesh.Indices[t], mesh.Indices[t + 1]);
+                Edge(mesh.Indices[t + 1], mesh.Indices[t + 2]);
+                Edge(mesh.Indices[t + 2], mesh.Indices[t]);
+            }
+
+            var bad = edgeCounts.Where(kv => kv.Value > 2).Select(kv => kv.Key).ToList();
+            if (bad.Count == 0)
+                return;
+
+            var drop = new HashSet<int>();
+            foreach (var edge in bad)
+            {
+                var pa = mesh.Vertices[edge.Item1];
+                var pb = mesh.Vertices[edge.Item2];
+                // Prefer dropping wall triangles (edge is nearly vertical through the plate).
+                var vertical = MathF.Abs(pa.X - pb.X) < 1e-4f
+                               && MathF.Abs(pa.Y - pb.Y) < 1e-4f
+                               && MathF.Abs(pa.Z - pb.Z) > 1e-4f;
+                if (!vertical)
+                    continue;
+
+                var tris = edgeTris[edge]
+                    .Distinct()
+                    .Select(t => (T: t, Score: WallScore(mesh, t)))
+                    .OrderByDescending(x => x.Score)
+                    .ToList();
+                // Keep two incident faces; drop the rest (highest wall score first).
+                for (var i = 2; i < tris.Count; i++)
+                    drop.Add(tris[i].T);
+            }
+
+            if (drop.Count == 0)
+                return;
+
+            var kept = new List<int>(mesh.Indices.Count);
+            for (var t = 0; t < mesh.Indices.Count; t += 3)
+            {
+                if (drop.Contains(t))
+                    continue;
+                kept.Add(mesh.Indices[t]);
+                kept.Add(mesh.Indices[t + 1]);
+                kept.Add(mesh.Indices[t + 2]);
+            }
+
+            mesh.ReplaceContents(mesh.Vertices.ToList(), kept);
+        }
+    }
+
+    private static float WallScore(EditableMesh mesh, int triOffset)
+    {
+        var a = mesh.Vertices[mesh.Indices[triOffset]];
+        var b = mesh.Vertices[mesh.Indices[triOffset + 1]];
+        var c = mesh.Vertices[mesh.Indices[triOffset + 2]];
+        var n = Vector3.Cross(b - a, c - a);
+        if (n.LengthSquared() < 1e-16f)
+            return 0f;
+        n = Vector3.Normalize(n);
+        // Walls are orthogonal to the plate normal (Z); high score ⇒ likely a wall face.
+        return 1f - MathF.Abs(n.Z);
     }
 
     private static void AddUndirected(Dictionary<(int, int), int> counts, int a, int b)
