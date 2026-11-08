@@ -33,8 +33,6 @@ internal sealed class CalypsoExplorerWindow : Window
         Height = 940;
         FontFamily = GraphicalProfile.BodyFont;
 
-        ApplyHierarchyPreset(VisibilityPresets.PrimaryStructure, "primary", "PrimaryStructure · rings + girders + BH");
-
         GraphicalProfileBinding.Bind(this, BackgroundProperty, GraphicalProfile.BackgroundResourceKey);
 
         var viewport = new CalypsoSilkViewportControl
@@ -83,6 +81,8 @@ internal sealed class CalypsoExplorerWindow : Window
 
         _controller.Session.Visibility.Changed += () =>
             Dispatcher.UIThread.Post(() => _objectBrowser.RebuildTree());
+
+        ApplyHierarchyPreset(VisibilityPresets.PrimaryStructure, "primary", "PrimaryStructure · rings + girders + BH");
 
         _statusTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(200), DispatcherPriority.Background, (_, _) => SyncUiFromSession());
         _statusTimer.Start();
