@@ -2453,7 +2453,9 @@ internal sealed class CalypsoRenderer
         {
             var fromKind = kind switch
             {
-                Model.CadPartKind.RingFrame or Model.CadPartKind.WebFrame or Model.CadPartKind.DeckBeam =>
+                Model.CadPartKind.RingFrame or Model.CadPartKind.WebFrame or Model.CadPartKind.DeckBeam
+                    or Model.CadPartKind.AnnularWebPlate or Model.CadPartKind.DeckChord
+                    or Model.CadPartKind.RingFlange or Model.CadPartKind.WebStiffener =>
                     CalypsoVisualLayers.Frames | outer,
                 Model.CadPartKind.BulkheadPlate => CalypsoVisualLayers.Bulkheads,
                 Model.CadPartKind.StructuralBracket => CalypsoVisualLayers.Joinery,

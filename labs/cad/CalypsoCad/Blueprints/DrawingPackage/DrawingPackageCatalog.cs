@@ -61,12 +61,12 @@ internal static class DrawingPackageCatalog
                 note ?? "heavy bulkhead");
         }
 
-        // —— Structure: frames (only stations with physical CAD ring assemblies) ——
+        // —— Structure: frames (stations with annular plate-web mesh and/or legacy ring bars) ——
         foreach (var fr in CadJsonStructureQuery.PhysicalFrameStations(cad))
         {
             var zLabel = fr.ZStem.ToString("0", CultureInfo.InvariantCulture);
             Add(DrawingCategoryId.Frames,
-                $"Transverse frame {fr.FrameId} @ z={zLabel} m ({fr.PartCount} ring parts)",
+                $"Transverse frame {fr.FrameId} @ z={zLabel} m ({fr.PartCount} perimeter parts)",
                 $"FRM-Z{zLabel}",
                 $"FRAME-z{zLabel}",
                 detailSource: null,

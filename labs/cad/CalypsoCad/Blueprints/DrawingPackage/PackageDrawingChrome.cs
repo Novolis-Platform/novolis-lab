@@ -21,6 +21,7 @@ internal static class PackageDrawingChrome
 
     public static ShipBasics ReadShip(CadDocument cad)
     {
+        CadJsonStructureQuery.EnsureHullGeometry(cad);
         var loa = CadJsonStructureQuery.Loa(cad);
         var decks = CadJsonStructureQuery.Decks(cad);
         return new ShipBasics(

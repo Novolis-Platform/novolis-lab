@@ -15,11 +15,11 @@
     "LineId": "STR-DECK-DK\u22121",
     "Category": "deck-plates",
     "PartOrSpaceId": "deck-sandwich-DK\u22121",
-    "Description": "DK\u22121 cellular sandwich steel \u00B7 11 face-top bays \u00B7 261 steel parts (faces\u002Bperi\u002Bribs) \u00B7 V=45.821 m\u00B3 \u00B7 hollow core excluded",
+    "Description": "DK\u22121 cellular sandwich steel \u00B7 13 face-top bays \u00B7 294 steel parts (faces\u002Bperi\u002Bribs) \u00B7 V=46.619 m\u00B3 \u00B7 hollow core excluded",
     "Unit": "assy",
     "Qty": 1,
-    "MassKg": 366569.1,
-    "AreaM2": 821.52686,
+    "MassKg": 372949.22,
+    "AreaM2": 832.98,
     "Material": "AISI 316L",
     "DrawingNumber": "CAL-230-001"
   },
@@ -27,11 +27,11 @@
     "LineId": "STR-DECK-DK0",
     "Category": "deck-plates",
     "PartOrSpaceId": "deck-sandwich-DK0",
-    "Description": "DK0 cellular sandwich steel \u00B7 11 face-top bays \u00B7 216 steel parts (faces\u002Bperi\u002Bribs) \u00B7 V=39.648 m\u00B3 \u00B7 hollow core excluded",
+    "Description": "DK0 cellular sandwich steel \u00B7 15 face-top bays \u00B7 276 steel parts (faces\u002Bperi\u002Bribs) \u00B7 V=40.26 m\u00B3 \u00B7 hollow core excluded",
     "Unit": "assy",
     "Qty": 1,
-    "MassKg": 317183.62,
-    "AreaM2": 713.919,
+    "MassKg": 322080.78,
+    "AreaM2": 718.62585,
     "Material": "AISI 316L",
     "DrawingNumber": "CAL-230-002"
   },
@@ -39,11 +39,11 @@
     "LineId": "STR-DECK-DK\u002B1",
     "Category": "deck-plates",
     "PartOrSpaceId": "deck-sandwich-DK\u002B1",
-    "Description": "DK\u002B1 cellular sandwich steel \u00B7 11 face-top bays \u00B7 216 steel parts (faces\u002Bperi\u002Bribs) \u00B7 V=39.648 m\u00B3 \u00B7 hollow core excluded",
+    "Description": "DK\u002B1 cellular sandwich steel \u00B7 15 face-top bays \u00B7 276 steel parts (faces\u002Bperi\u002Bribs) \u00B7 V=40.26 m\u00B3 \u00B7 hollow core excluded",
     "Unit": "assy",
     "Qty": 1,
-    "MassKg": 317183.62,
-    "AreaM2": 713.919,
+    "MassKg": 322080.78,
+    "AreaM2": 718.62585,
     "Material": "AISI 316L",
     "DrawingNumber": "CAL-230-003"
   },
@@ -98,7 +98,7 @@
   {
     "LineId": "STR-MEM-005",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F0-ring-0",
+    "PartOrSpaceId": "frame-F0-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -110,7 +110,7 @@
   {
     "LineId": "STR-MEM-006",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F0-ring-4",
+    "PartOrSpaceId": "frame-F16-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -314,7 +314,7 @@
   {
     "LineId": "STR-MEM-023",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F16-ring-0",
+    "PartOrSpaceId": "frame-F26.6-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -326,7 +326,7 @@
   {
     "LineId": "STR-MEM-024",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F16-ring-4",
+    "PartOrSpaceId": "frame-F26.6-chord-4,4-0",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -338,7 +338,7 @@
   {
     "LineId": "STR-MEM-025",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-chord-4,4-0",
+    "PartOrSpaceId": "frame-F26.6-chord-4,4-1",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -350,7 +350,7 @@
   {
     "LineId": "STR-MEM-026",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-chord-4,4-1",
+    "PartOrSpaceId": "frame-F26.6-chord-4,4-2",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -362,7 +362,7 @@
   {
     "LineId": "STR-MEM-027",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-chord-4,4-2",
+    "PartOrSpaceId": "frame-F26.6-chord-8-3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -374,7 +374,7 @@
   {
     "LineId": "STR-MEM-028",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-chord-8-3",
+    "PartOrSpaceId": "frame-F26.6-chord-8-4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -386,7 +386,7 @@
   {
     "LineId": "STR-MEM-029",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-chord-8-4",
+    "PartOrSpaceId": "frame-F26.6-chord-8-5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -398,7 +398,7 @@
   {
     "LineId": "STR-MEM-030",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-chord-8-5",
+    "PartOrSpaceId": "frame-F26.6-deckbeam-0,5-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -410,7 +410,7 @@
   {
     "LineId": "STR-MEM-031",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckbeam-0,5-y-4,7",
+    "PartOrSpaceId": "frame-F26.6-deckbeam-4,4-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -422,7 +422,7 @@
   {
     "LineId": "STR-MEM-032",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckbeam-4,4-y-4,7",
+    "PartOrSpaceId": "frame-F26.6-deckbeam-4,4-y-9,8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -434,7 +434,7 @@
   {
     "LineId": "STR-MEM-033",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckbeam-4,4-y-9,8",
+    "PartOrSpaceId": "frame-F26.6-deckbeam-4,4-y8,3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -446,7 +446,7 @@
   {
     "LineId": "STR-MEM-034",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckbeam-4,4-y8,3",
+    "PartOrSpaceId": "frame-F26.6-deckbeam-8-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -458,7 +458,7 @@
   {
     "LineId": "STR-MEM-035",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckbeam-8-y-4,7",
+    "PartOrSpaceId": "frame-F26.6-deckbeam-8-y-9,8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -470,7 +470,7 @@
   {
     "LineId": "STR-MEM-036",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckbeam-8-y-9,8",
+    "PartOrSpaceId": "frame-F26.6-deckbeam-8-y8,3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -482,7 +482,7 @@
   {
     "LineId": "STR-MEM-037",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckbeam-8-y8,3",
+    "PartOrSpaceId": "frame-F26.6-deckseat-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -494,7 +494,7 @@
   {
     "LineId": "STR-MEM-038",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckseat-d0,5",
+    "PartOrSpaceId": "frame-F26.6-deckseat-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -506,7 +506,7 @@
   {
     "LineId": "STR-MEM-039",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckseat-d4,4",
+    "PartOrSpaceId": "frame-F26.6-deckseat-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -518,7 +518,7 @@
   {
     "LineId": "STR-MEM-040",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-deckseat-d8",
+    "PartOrSpaceId": "frame-F26.6-join-keel-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -530,7 +530,7 @@
   {
     "LineId": "STR-MEM-041",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-keel-d0,5",
+    "PartOrSpaceId": "frame-F26.6-join-keel-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -542,7 +542,7 @@
   {
     "LineId": "STR-MEM-042",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-keel-d4,4",
+    "PartOrSpaceId": "frame-F26.6-join-keel-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -554,7 +554,7 @@
   {
     "LineId": "STR-MEM-043",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-keel-d8",
+    "PartOrSpaceId": "frame-F26.6-join-port-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -566,7 +566,7 @@
   {
     "LineId": "STR-MEM-044",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-port-d0,5",
+    "PartOrSpaceId": "frame-F26.6-join-port-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -578,7 +578,7 @@
   {
     "LineId": "STR-MEM-045",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-port-d4,4",
+    "PartOrSpaceId": "frame-F26.6-join-port-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -590,7 +590,7 @@
   {
     "LineId": "STR-MEM-046",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-port-d8",
+    "PartOrSpaceId": "frame-F26.6-join-stbd-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -602,7 +602,7 @@
   {
     "LineId": "STR-MEM-047",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-stbd-d0,5",
+    "PartOrSpaceId": "frame-F26.6-join-stbd-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -614,7 +614,7 @@
   {
     "LineId": "STR-MEM-048",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-stbd-d4,4",
+    "PartOrSpaceId": "frame-F26.6-join-stbd-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -626,7 +626,7 @@
   {
     "LineId": "STR-MEM-049",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-join-stbd-d8",
+    "PartOrSpaceId": "frame-F3.3-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -638,7 +638,7 @@
   {
     "LineId": "STR-MEM-050",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-ring-0",
+    "PartOrSpaceId": "frame-F3.3-chord-4,4-0",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -650,7 +650,7 @@
   {
     "LineId": "STR-MEM-051",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F28-ring-4",
+    "PartOrSpaceId": "frame-F3.3-chord-8-1",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -662,7 +662,7 @@
   {
     "LineId": "STR-MEM-052",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-chord-4,4-0",
+    "PartOrSpaceId": "frame-F3.3-deckseat-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -674,7 +674,7 @@
   {
     "LineId": "STR-MEM-053",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-chord-4,4-1",
+    "PartOrSpaceId": "frame-F3.3-deckseat-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -686,7 +686,7 @@
   {
     "LineId": "STR-MEM-054",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-chord-4,4-2",
+    "PartOrSpaceId": "frame-F3.3-join-keel-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -698,7 +698,7 @@
   {
     "LineId": "STR-MEM-055",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-chord-8-3",
+    "PartOrSpaceId": "frame-F3.3-join-keel-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -710,7 +710,7 @@
   {
     "LineId": "STR-MEM-056",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-chord-8-4",
+    "PartOrSpaceId": "frame-F3.3-join-port-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -722,7 +722,7 @@
   {
     "LineId": "STR-MEM-057",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-chord-8-5",
+    "PartOrSpaceId": "frame-F3.3-join-port-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -734,7 +734,7 @@
   {
     "LineId": "STR-MEM-058",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckbeam-0,5-y-4,7",
+    "PartOrSpaceId": "frame-F3.3-join-stbd-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -746,7 +746,7 @@
   {
     "LineId": "STR-MEM-059",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckbeam-4,4-y-4,7",
+    "PartOrSpaceId": "frame-F3.3-join-stbd-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -758,7 +758,7 @@
   {
     "LineId": "STR-MEM-060",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckbeam-4,4-y-9,8",
+    "PartOrSpaceId": "frame-F33.9-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -770,7 +770,7 @@
   {
     "LineId": "STR-MEM-061",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckbeam-4,4-y8,3",
+    "PartOrSpaceId": "frame-F33.9-chord-4,4-0",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -782,7 +782,7 @@
   {
     "LineId": "STR-MEM-062",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckbeam-8-y-4,7",
+    "PartOrSpaceId": "frame-F33.9-chord-4,4-1",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -794,7 +794,7 @@
   {
     "LineId": "STR-MEM-063",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckbeam-8-y-9,8",
+    "PartOrSpaceId": "frame-F33.9-chord-4,4-2",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -806,7 +806,7 @@
   {
     "LineId": "STR-MEM-064",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckbeam-8-y8,3",
+    "PartOrSpaceId": "frame-F33.9-chord-8-3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -818,7 +818,7 @@
   {
     "LineId": "STR-MEM-065",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckseat-d0,5",
+    "PartOrSpaceId": "frame-F33.9-chord-8-4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -830,7 +830,7 @@
   {
     "LineId": "STR-MEM-066",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckseat-d4,4",
+    "PartOrSpaceId": "frame-F33.9-chord-8-5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -842,7 +842,7 @@
   {
     "LineId": "STR-MEM-067",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-deckseat-d8",
+    "PartOrSpaceId": "frame-F33.9-deckbeam-0,5-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -854,7 +854,7 @@
   {
     "LineId": "STR-MEM-068",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-keel-d0,5",
+    "PartOrSpaceId": "frame-F33.9-deckbeam-4,4-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -866,7 +866,7 @@
   {
     "LineId": "STR-MEM-069",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-keel-d4,4",
+    "PartOrSpaceId": "frame-F33.9-deckbeam-4,4-y-9,8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -878,7 +878,7 @@
   {
     "LineId": "STR-MEM-070",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-keel-d8",
+    "PartOrSpaceId": "frame-F33.9-deckbeam-4,4-y8,3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -890,7 +890,7 @@
   {
     "LineId": "STR-MEM-071",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-port-d0,5",
+    "PartOrSpaceId": "frame-F33.9-deckbeam-8-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -902,7 +902,7 @@
   {
     "LineId": "STR-MEM-072",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-port-d4,4",
+    "PartOrSpaceId": "frame-F33.9-deckbeam-8-y-9,8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -914,7 +914,7 @@
   {
     "LineId": "STR-MEM-073",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-port-d8",
+    "PartOrSpaceId": "frame-F33.9-deckbeam-8-y8,3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -926,7 +926,7 @@
   {
     "LineId": "STR-MEM-074",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-stbd-d0,5",
+    "PartOrSpaceId": "frame-F33.9-deckseat-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -938,7 +938,7 @@
   {
     "LineId": "STR-MEM-075",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-stbd-d4,4",
+    "PartOrSpaceId": "frame-F33.9-deckseat-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -950,7 +950,7 @@
   {
     "LineId": "STR-MEM-076",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-join-stbd-d8",
+    "PartOrSpaceId": "frame-F33.9-deckseat-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -962,7 +962,7 @@
   {
     "LineId": "STR-MEM-077",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-ring-0",
+    "PartOrSpaceId": "frame-F33.9-join-keel-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -974,7 +974,7 @@
   {
     "LineId": "STR-MEM-078",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F36-ring-4",
+    "PartOrSpaceId": "frame-F33.9-join-keel-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -986,7 +986,7 @@
   {
     "LineId": "STR-MEM-079",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-chord-4,4-0",
+    "PartOrSpaceId": "frame-F33.9-join-keel-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -998,7 +998,7 @@
   {
     "LineId": "STR-MEM-080",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-chord-8-1",
+    "PartOrSpaceId": "frame-F33.9-join-port-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1010,7 +1010,7 @@
   {
     "LineId": "STR-MEM-081",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-deckseat-d4,4",
+    "PartOrSpaceId": "frame-F33.9-join-port-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1022,7 +1022,7 @@
   {
     "LineId": "STR-MEM-082",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-deckseat-d8",
+    "PartOrSpaceId": "frame-F33.9-join-port-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1034,7 +1034,7 @@
   {
     "LineId": "STR-MEM-083",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-join-keel-d4,4",
+    "PartOrSpaceId": "frame-F33.9-join-stbd-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1046,7 +1046,7 @@
   {
     "LineId": "STR-MEM-084",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-join-keel-d8",
+    "PartOrSpaceId": "frame-F33.9-join-stbd-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1058,7 +1058,7 @@
   {
     "LineId": "STR-MEM-085",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-join-port-d4,4",
+    "PartOrSpaceId": "frame-F33.9-join-stbd-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1070,7 +1070,7 @@
   {
     "LineId": "STR-MEM-086",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-join-port-d8",
+    "PartOrSpaceId": "frame-F37.4-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1082,7 +1082,7 @@
   {
     "LineId": "STR-MEM-087",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-join-stbd-d4,4",
+    "PartOrSpaceId": "frame-F37.4-chord-4,4-0",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1094,7 +1094,7 @@
   {
     "LineId": "STR-MEM-088",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-join-stbd-d8",
+    "PartOrSpaceId": "frame-F37.4-chord-4,4-1",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1106,7 +1106,7 @@
   {
     "LineId": "STR-MEM-089",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-ring-0",
+    "PartOrSpaceId": "frame-F37.4-chord-4,4-2",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1118,7 +1118,7 @@
   {
     "LineId": "STR-MEM-090",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F4-ring-4",
+    "PartOrSpaceId": "frame-F37.4-chord-8-3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1130,7 +1130,7 @@
   {
     "LineId": "STR-MEM-091",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-chord-4,4-0",
+    "PartOrSpaceId": "frame-F37.4-chord-8-4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1142,7 +1142,7 @@
   {
     "LineId": "STR-MEM-092",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-chord-4,4-1",
+    "PartOrSpaceId": "frame-F37.4-chord-8-5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1154,7 +1154,7 @@
   {
     "LineId": "STR-MEM-093",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-chord-4,4-2",
+    "PartOrSpaceId": "frame-F37.4-deckbeam-0,5-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1166,7 +1166,7 @@
   {
     "LineId": "STR-MEM-094",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-chord-8-3",
+    "PartOrSpaceId": "frame-F37.4-deckbeam-4,4-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1178,7 +1178,7 @@
   {
     "LineId": "STR-MEM-095",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-chord-8-4",
+    "PartOrSpaceId": "frame-F37.4-deckbeam-4,4-y-9,8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1190,7 +1190,7 @@
   {
     "LineId": "STR-MEM-096",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-chord-8-5",
+    "PartOrSpaceId": "frame-F37.4-deckbeam-4,4-y8,3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1202,7 +1202,7 @@
   {
     "LineId": "STR-MEM-097",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-deckbeam-0,5-y-4,7",
+    "PartOrSpaceId": "frame-F37.4-deckbeam-8-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1214,7 +1214,7 @@
   {
     "LineId": "STR-MEM-098",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-deckseat-d0,5",
+    "PartOrSpaceId": "frame-F37.4-deckbeam-8-y-9,8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1226,7 +1226,7 @@
   {
     "LineId": "STR-MEM-099",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-join-keel-d0,5",
+    "PartOrSpaceId": "frame-F37.4-deckbeam-8-y8,3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1238,7 +1238,7 @@
   {
     "LineId": "STR-MEM-100",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-join-port-d0,5",
+    "PartOrSpaceId": "frame-F37.4-deckseat-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1250,7 +1250,7 @@
   {
     "LineId": "STR-MEM-101",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-join-stbd-d0,5",
+    "PartOrSpaceId": "frame-F37.4-deckseat-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1262,7 +1262,7 @@
   {
     "LineId": "STR-MEM-102",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-ring-0",
+    "PartOrSpaceId": "frame-F37.4-deckseat-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1274,7 +1274,7 @@
   {
     "LineId": "STR-MEM-103",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F44-ring-4",
+    "PartOrSpaceId": "frame-F37.4-join-keel-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1286,7 +1286,7 @@
   {
     "LineId": "STR-MEM-104",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F52-chord-0,5-holdfloor",
+    "PartOrSpaceId": "frame-F37.4-join-keel-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1298,7 +1298,7 @@
   {
     "LineId": "STR-MEM-105",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F52-deckseat-d0,5",
+    "PartOrSpaceId": "frame-F37.4-join-keel-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1310,7 +1310,7 @@
   {
     "LineId": "STR-MEM-106",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F52-join-keel-d0,5",
+    "PartOrSpaceId": "frame-F37.4-join-port-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1322,7 +1322,7 @@
   {
     "LineId": "STR-MEM-107",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F52-join-port-d0,5",
+    "PartOrSpaceId": "frame-F37.4-join-port-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1334,7 +1334,7 @@
   {
     "LineId": "STR-MEM-108",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F52-join-stbd-d0,5",
+    "PartOrSpaceId": "frame-F37.4-join-port-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1346,7 +1346,7 @@
   {
     "LineId": "STR-MEM-109",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F52-ring-0",
+    "PartOrSpaceId": "frame-F37.4-join-stbd-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1358,7 +1358,7 @@
   {
     "LineId": "STR-MEM-110",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F52-ring-4",
+    "PartOrSpaceId": "frame-F37.4-join-stbd-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1370,7 +1370,7 @@
   {
     "LineId": "STR-MEM-111",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F56-chord-0,5-holdfloor",
+    "PartOrSpaceId": "frame-F37.4-join-stbd-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1382,7 +1382,7 @@
   {
     "LineId": "STR-MEM-112",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F56-deckseat-d0,5",
+    "PartOrSpaceId": "frame-F43.8-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1394,7 +1394,7 @@
   {
     "LineId": "STR-MEM-113",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F56-join-keel-d0,5",
+    "PartOrSpaceId": "frame-F43.8-chord-4,4-0",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1406,7 +1406,7 @@
   {
     "LineId": "STR-MEM-114",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F56-join-port-d0,5",
+    "PartOrSpaceId": "frame-F43.8-chord-4,4-1",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1418,7 +1418,7 @@
   {
     "LineId": "STR-MEM-115",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F56-join-stbd-d0,5",
+    "PartOrSpaceId": "frame-F43.8-chord-4,4-2",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1430,7 +1430,7 @@
   {
     "LineId": "STR-MEM-116",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F56-ring-0",
+    "PartOrSpaceId": "frame-F43.8-chord-8-3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1442,7 +1442,7 @@
   {
     "LineId": "STR-MEM-117",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F56-ring-4",
+    "PartOrSpaceId": "frame-F43.8-chord-8-4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1454,7 +1454,7 @@
   {
     "LineId": "STR-MEM-118",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F60-chord-0,5-holdfloor",
+    "PartOrSpaceId": "frame-F43.8-chord-8-5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1466,7 +1466,7 @@
   {
     "LineId": "STR-MEM-119",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F60-deckseat-d0,5",
+    "PartOrSpaceId": "frame-F43.8-deckbeam-0,5-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1478,7 +1478,7 @@
   {
     "LineId": "STR-MEM-120",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F60-join-keel-d0,5",
+    "PartOrSpaceId": "frame-F43.8-deckseat-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1490,7 +1490,7 @@
   {
     "LineId": "STR-MEM-121",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F60-join-port-d0,5",
+    "PartOrSpaceId": "frame-F43.8-join-keel-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1502,7 +1502,7 @@
   {
     "LineId": "STR-MEM-122",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F60-join-stbd-d0,5",
+    "PartOrSpaceId": "frame-F43.8-join-port-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1514,7 +1514,7 @@
   {
     "LineId": "STR-MEM-123",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F60-ring-0",
+    "PartOrSpaceId": "frame-F43.8-join-stbd-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1526,7 +1526,7 @@
   {
     "LineId": "STR-MEM-124",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F60-ring-4",
+    "PartOrSpaceId": "frame-F46.5-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1538,7 +1538,7 @@
   {
     "LineId": "STR-MEM-125",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F64-chord-0,5-holdfloor",
+    "PartOrSpaceId": "frame-F46.5-chord-4,4-0",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1550,7 +1550,7 @@
   {
     "LineId": "STR-MEM-126",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F64-deckseat-d0,5",
+    "PartOrSpaceId": "frame-F46.5-chord-4,4-1",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1562,7 +1562,7 @@
   {
     "LineId": "STR-MEM-127",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F64-join-keel-d0,5",
+    "PartOrSpaceId": "frame-F46.5-chord-4,4-2",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1574,7 +1574,7 @@
   {
     "LineId": "STR-MEM-128",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F64-join-port-d0,5",
+    "PartOrSpaceId": "frame-F46.5-chord-8-3",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1586,7 +1586,7 @@
   {
     "LineId": "STR-MEM-129",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F64-join-stbd-d0,5",
+    "PartOrSpaceId": "frame-F46.5-chord-8-4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1598,7 +1598,7 @@
   {
     "LineId": "STR-MEM-130",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F64-ring-0",
+    "PartOrSpaceId": "frame-F46.5-chord-8-5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1610,7 +1610,7 @@
   {
     "LineId": "STR-MEM-131",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F64-ring-4",
+    "PartOrSpaceId": "frame-F46.5-deckbeam-0,5-y-4,7",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1622,7 +1622,7 @@
   {
     "LineId": "STR-MEM-132",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-chord-4,4-0",
+    "PartOrSpaceId": "frame-F46.5-deckseat-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1634,7 +1634,7 @@
   {
     "LineId": "STR-MEM-133",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-chord-4,4-1",
+    "PartOrSpaceId": "frame-F46.5-join-keel-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1646,7 +1646,7 @@
   {
     "LineId": "STR-MEM-134",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-chord-8-2",
+    "PartOrSpaceId": "frame-F46.5-join-port-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1658,7 +1658,7 @@
   {
     "LineId": "STR-MEM-135",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-chord-8-3",
+    "PartOrSpaceId": "frame-F46.5-join-stbd-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1670,7 +1670,7 @@
   {
     "LineId": "STR-MEM-136",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-deckbeam-0,5-y-7,7",
+    "PartOrSpaceId": "frame-F53.2-chord-0,5-holdfloor",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1682,7 +1682,7 @@
   {
     "LineId": "STR-MEM-137",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-deckbeam-0,5-y7,3",
+    "PartOrSpaceId": "frame-F53.2-deckseat-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1694,7 +1694,7 @@
   {
     "LineId": "STR-MEM-138",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-deckseat-d0,5",
+    "PartOrSpaceId": "frame-F53.2-join-keel-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1706,7 +1706,7 @@
   {
     "LineId": "STR-MEM-139",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-join-keel-d0,5",
+    "PartOrSpaceId": "frame-F53.2-join-port-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1718,7 +1718,7 @@
   {
     "LineId": "STR-MEM-140",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-join-port-d0,5",
+    "PartOrSpaceId": "frame-F53.2-join-stbd-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1730,7 +1730,7 @@
   {
     "LineId": "STR-MEM-141",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-join-stbd-d0,5",
+    "PartOrSpaceId": "frame-F53.2-ring-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1742,7 +1742,7 @@
   {
     "LineId": "STR-MEM-142",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-ring-0",
+    "PartOrSpaceId": "frame-F57.1-chord-0,5-holdfloor",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1754,7 +1754,7 @@
   {
     "LineId": "STR-MEM-143",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F68-ring-4",
+    "PartOrSpaceId": "frame-F57.1-deckseat-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1766,7 +1766,7 @@
   {
     "LineId": "STR-MEM-144",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-chord-4,4-0",
+    "PartOrSpaceId": "frame-F57.1-join-keel-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1778,7 +1778,7 @@
   {
     "LineId": "STR-MEM-145",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-chord-8-1",
+    "PartOrSpaceId": "frame-F57.1-join-port-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1790,7 +1790,7 @@
   {
     "LineId": "STR-MEM-146",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-deckseat-d4,4",
+    "PartOrSpaceId": "frame-F57.1-join-stbd-d0,5",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1802,7 +1802,7 @@
   {
     "LineId": "STR-MEM-147",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-deckseat-d8",
+    "PartOrSpaceId": "frame-F57.1-ring-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1814,7 +1814,7 @@
   {
     "LineId": "STR-MEM-148",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-join-keel-d4,4",
+    "PartOrSpaceId": "frame-F6.5-annulus",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1826,7 +1826,7 @@
   {
     "LineId": "STR-MEM-149",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-join-keel-d8",
+    "PartOrSpaceId": "frame-F6.5-chord-4,4-0",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1838,7 +1838,7 @@
   {
     "LineId": "STR-MEM-150",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-join-port-d4,4",
+    "PartOrSpaceId": "frame-F6.5-chord-8-1",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1850,7 +1850,7 @@
   {
     "LineId": "STR-MEM-151",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-join-port-d8",
+    "PartOrSpaceId": "frame-F6.5-deckseat-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1862,7 +1862,7 @@
   {
     "LineId": "STR-MEM-152",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-join-stbd-d4,4",
+    "PartOrSpaceId": "frame-F6.5-deckseat-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1874,7 +1874,7 @@
   {
     "LineId": "STR-MEM-153",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-join-stbd-d8",
+    "PartOrSpaceId": "frame-F6.5-join-keel-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1886,7 +1886,7 @@
   {
     "LineId": "STR-MEM-154",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-ring-0",
+    "PartOrSpaceId": "frame-F6.5-join-keel-d8",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1898,7 +1898,7 @@
   {
     "LineId": "STR-MEM-155",
     "Category": "structural-members",
-    "PartOrSpaceId": "frame-F8-ring-4",
+    "PartOrSpaceId": "frame-F6.5-join-port-d4,4",
     "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -1910,8 +1910,8 @@
   {
     "LineId": "STR-MEM-156",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d0-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F6.5-join-port-d8",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -1922,8 +1922,8 @@
   {
     "LineId": "STR-MEM-157",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d0-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F6.5-join-stbd-d4,4",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -1934,8 +1934,8 @@
   {
     "LineId": "STR-MEM-158",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d1-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F6.5-join-stbd-d8",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -1946,8 +1946,8 @@
   {
     "LineId": "STR-MEM-159",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d1-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F61.1-chord-0,5-holdfloor",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -1958,8 +1958,8 @@
   {
     "LineId": "STR-MEM-160",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d10-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F61.1-deckseat-d0,5",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -1970,8 +1970,8 @@
   {
     "LineId": "STR-MEM-161",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d11-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F61.1-join-keel-d0,5",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -1982,8 +1982,8 @@
   {
     "LineId": "STR-MEM-162",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d12-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F61.1-join-port-d0,5",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -1994,8 +1994,8 @@
   {
     "LineId": "STR-MEM-163",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d13-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F61.1-join-stbd-d0,5",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2006,8 +2006,8 @@
   {
     "LineId": "STR-MEM-164",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d14-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F61.1-ring-annulus",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2018,8 +2018,8 @@
   {
     "LineId": "STR-MEM-165",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d15-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F65-chord-0,5-holdfloor",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2030,8 +2030,8 @@
   {
     "LineId": "STR-MEM-166",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d2-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F65-deckseat-d0,5",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2042,8 +2042,8 @@
   {
     "LineId": "STR-MEM-167",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d2-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F65-join-keel-d0,5",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2054,8 +2054,8 @@
   {
     "LineId": "STR-MEM-168",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d3-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F65-join-port-d0,5",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2066,8 +2066,8 @@
   {
     "LineId": "STR-MEM-169",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d3-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F65-join-stbd-d0,5",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2078,8 +2078,8 @@
   {
     "LineId": "STR-MEM-170",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d3-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F65-ring-annulus",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2090,8 +2090,8 @@
   {
     "LineId": "STR-MEM-171",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d4-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F69-annulus",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2102,8 +2102,8 @@
   {
     "LineId": "STR-MEM-172",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d4-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F69-chord-4,4-0",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2114,8 +2114,8 @@
   {
     "LineId": "STR-MEM-173",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d4-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F69-chord-4,4-1",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2126,8 +2126,8 @@
   {
     "LineId": "STR-MEM-174",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d5-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F69-chord-8-2",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2138,8 +2138,8 @@
   {
     "LineId": "STR-MEM-175",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d5-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F69-chord-8-3",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2150,8 +2150,8 @@
   {
     "LineId": "STR-MEM-176",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d5-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F69-deckbeam-0,5-y-7,7",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2162,8 +2162,8 @@
   {
     "LineId": "STR-MEM-177",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d6-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F69-deckbeam-0,5-y7,3",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2174,8 +2174,8 @@
   {
     "LineId": "STR-MEM-178",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d6-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-annulus",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2186,8 +2186,8 @@
   {
     "LineId": "STR-MEM-179",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d6-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-chord-4,4-0",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2198,8 +2198,8 @@
   {
     "LineId": "STR-MEM-180",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d7-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-chord-8-1",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2210,8 +2210,8 @@
   {
     "LineId": "STR-MEM-181",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d7-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-deckseat-d4,4",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2222,8 +2222,8 @@
   {
     "LineId": "STR-MEM-182",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d7-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-deckseat-d8",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2234,8 +2234,8 @@
   {
     "LineId": "STR-MEM-183",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d8-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-join-keel-d4,4",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2246,8 +2246,8 @@
   {
     "LineId": "STR-MEM-184",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d8-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-join-keel-d8",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2258,8 +2258,8 @@
   {
     "LineId": "STR-MEM-185",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d8-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-join-port-d4,4",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2270,8 +2270,8 @@
   {
     "LineId": "STR-MEM-186",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-keel-d9-0,5",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-join-port-d8",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2282,8 +2282,8 @@
   {
     "LineId": "STR-MEM-187",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d0-4,4",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-join-stbd-d4,4",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2294,8 +2294,8 @@
   {
     "LineId": "STR-MEM-188",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d0-8",
-    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "frame-F9.8-join-stbd-d8",
+    "Description": "Primary member \u00B7 frame \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -2306,7 +2306,7 @@
   {
     "LineId": "STR-MEM-189",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d1-4,4",
+    "PartOrSpaceId": "girder-keel-d0-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2318,7 +2318,7 @@
   {
     "LineId": "STR-MEM-190",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d1-8",
+    "PartOrSpaceId": "girder-keel-d0-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2330,7 +2330,7 @@
   {
     "LineId": "STR-MEM-191",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d10-0,5",
+    "PartOrSpaceId": "girder-keel-d1-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2342,7 +2342,7 @@
   {
     "LineId": "STR-MEM-192",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d11-0,5",
+    "PartOrSpaceId": "girder-keel-d1-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2354,7 +2354,7 @@
   {
     "LineId": "STR-MEM-193",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d12-0,5",
+    "PartOrSpaceId": "girder-keel-d10-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2366,7 +2366,7 @@
   {
     "LineId": "STR-MEM-194",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d13-0,5",
+    "PartOrSpaceId": "girder-keel-d11-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2378,7 +2378,7 @@
   {
     "LineId": "STR-MEM-195",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d14-0,5",
+    "PartOrSpaceId": "girder-keel-d12-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2390,7 +2390,7 @@
   {
     "LineId": "STR-MEM-196",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d15-0,5",
+    "PartOrSpaceId": "girder-keel-d13-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2402,7 +2402,7 @@
   {
     "LineId": "STR-MEM-197",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d2-4,4",
+    "PartOrSpaceId": "girder-keel-d14-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2414,7 +2414,7 @@
   {
     "LineId": "STR-MEM-198",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d2-8",
+    "PartOrSpaceId": "girder-keel-d15-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2426,7 +2426,7 @@
   {
     "LineId": "STR-MEM-199",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d3-0,5",
+    "PartOrSpaceId": "girder-keel-d2-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2438,7 +2438,7 @@
   {
     "LineId": "STR-MEM-200",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d3-4,4",
+    "PartOrSpaceId": "girder-keel-d2-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2450,7 +2450,7 @@
   {
     "LineId": "STR-MEM-201",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d3-8",
+    "PartOrSpaceId": "girder-keel-d3-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2462,7 +2462,7 @@
   {
     "LineId": "STR-MEM-202",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d4-0,5",
+    "PartOrSpaceId": "girder-keel-d3-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2474,7 +2474,7 @@
   {
     "LineId": "STR-MEM-203",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d4-4,4",
+    "PartOrSpaceId": "girder-keel-d3-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2486,7 +2486,7 @@
   {
     "LineId": "STR-MEM-204",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d4-8",
+    "PartOrSpaceId": "girder-keel-d4-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2498,7 +2498,7 @@
   {
     "LineId": "STR-MEM-205",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d5-0,5",
+    "PartOrSpaceId": "girder-keel-d4-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2510,7 +2510,7 @@
   {
     "LineId": "STR-MEM-206",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d5-4,4",
+    "PartOrSpaceId": "girder-keel-d4-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2522,7 +2522,7 @@
   {
     "LineId": "STR-MEM-207",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d5-8",
+    "PartOrSpaceId": "girder-keel-d5-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2534,7 +2534,7 @@
   {
     "LineId": "STR-MEM-208",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d6-0,5",
+    "PartOrSpaceId": "girder-keel-d5-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2546,7 +2546,7 @@
   {
     "LineId": "STR-MEM-209",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d6-4,4",
+    "PartOrSpaceId": "girder-keel-d5-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2558,7 +2558,7 @@
   {
     "LineId": "STR-MEM-210",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d6-8",
+    "PartOrSpaceId": "girder-keel-d6-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2570,7 +2570,7 @@
   {
     "LineId": "STR-MEM-211",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d7-0,5",
+    "PartOrSpaceId": "girder-keel-d6-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2582,7 +2582,7 @@
   {
     "LineId": "STR-MEM-212",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d7-4,4",
+    "PartOrSpaceId": "girder-keel-d6-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2594,7 +2594,7 @@
   {
     "LineId": "STR-MEM-213",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d7-8",
+    "PartOrSpaceId": "girder-keel-d7-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2606,7 +2606,7 @@
   {
     "LineId": "STR-MEM-214",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d8-0,5",
+    "PartOrSpaceId": "girder-keel-d7-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2618,7 +2618,7 @@
   {
     "LineId": "STR-MEM-215",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d8-4,4",
+    "PartOrSpaceId": "girder-keel-d7-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2630,7 +2630,7 @@
   {
     "LineId": "STR-MEM-216",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d8-8",
+    "PartOrSpaceId": "girder-keel-d8-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2642,7 +2642,7 @@
   {
     "LineId": "STR-MEM-217",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-port-d9-0,5",
+    "PartOrSpaceId": "girder-keel-d8-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2654,7 +2654,7 @@
   {
     "LineId": "STR-MEM-218",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d0-4,4",
+    "PartOrSpaceId": "girder-keel-d8-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2666,7 +2666,7 @@
   {
     "LineId": "STR-MEM-219",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d0-8",
+    "PartOrSpaceId": "girder-keel-d9-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2678,7 +2678,7 @@
   {
     "LineId": "STR-MEM-220",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d1-4,4",
+    "PartOrSpaceId": "girder-port-d0-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2690,7 +2690,7 @@
   {
     "LineId": "STR-MEM-221",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d1-8",
+    "PartOrSpaceId": "girder-port-d0-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2702,7 +2702,7 @@
   {
     "LineId": "STR-MEM-222",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d10-0,5",
+    "PartOrSpaceId": "girder-port-d1-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2714,7 +2714,7 @@
   {
     "LineId": "STR-MEM-223",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d11-0,5",
+    "PartOrSpaceId": "girder-port-d1-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2726,7 +2726,7 @@
   {
     "LineId": "STR-MEM-224",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d12-0,5",
+    "PartOrSpaceId": "girder-port-d10-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2738,7 +2738,7 @@
   {
     "LineId": "STR-MEM-225",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d13-0,5",
+    "PartOrSpaceId": "girder-port-d11-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2750,7 +2750,7 @@
   {
     "LineId": "STR-MEM-226",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d14-0,5",
+    "PartOrSpaceId": "girder-port-d12-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2762,7 +2762,7 @@
   {
     "LineId": "STR-MEM-227",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d15-0,5",
+    "PartOrSpaceId": "girder-port-d13-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2774,7 +2774,7 @@
   {
     "LineId": "STR-MEM-228",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d2-4,4",
+    "PartOrSpaceId": "girder-port-d14-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2786,7 +2786,7 @@
   {
     "LineId": "STR-MEM-229",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d2-8",
+    "PartOrSpaceId": "girder-port-d15-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2798,7 +2798,7 @@
   {
     "LineId": "STR-MEM-230",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d3-0,5",
+    "PartOrSpaceId": "girder-port-d2-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2810,7 +2810,7 @@
   {
     "LineId": "STR-MEM-231",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d3-4,4",
+    "PartOrSpaceId": "girder-port-d2-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2822,7 +2822,7 @@
   {
     "LineId": "STR-MEM-232",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d3-8",
+    "PartOrSpaceId": "girder-port-d3-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2834,7 +2834,7 @@
   {
     "LineId": "STR-MEM-233",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d4-0,5",
+    "PartOrSpaceId": "girder-port-d3-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2846,7 +2846,7 @@
   {
     "LineId": "STR-MEM-234",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d4-4,4",
+    "PartOrSpaceId": "girder-port-d3-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2858,7 +2858,7 @@
   {
     "LineId": "STR-MEM-235",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d4-8",
+    "PartOrSpaceId": "girder-port-d4-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2870,7 +2870,7 @@
   {
     "LineId": "STR-MEM-236",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d5-0,5",
+    "PartOrSpaceId": "girder-port-d4-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2882,7 +2882,7 @@
   {
     "LineId": "STR-MEM-237",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d5-4,4",
+    "PartOrSpaceId": "girder-port-d4-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2894,7 +2894,7 @@
   {
     "LineId": "STR-MEM-238",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d5-8",
+    "PartOrSpaceId": "girder-port-d5-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2906,7 +2906,7 @@
   {
     "LineId": "STR-MEM-239",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d6-0,5",
+    "PartOrSpaceId": "girder-port-d5-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2918,7 +2918,7 @@
   {
     "LineId": "STR-MEM-240",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d6-4,4",
+    "PartOrSpaceId": "girder-port-d5-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2930,7 +2930,7 @@
   {
     "LineId": "STR-MEM-241",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d6-8",
+    "PartOrSpaceId": "girder-port-d6-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2942,7 +2942,7 @@
   {
     "LineId": "STR-MEM-242",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d7-0,5",
+    "PartOrSpaceId": "girder-port-d6-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2954,7 +2954,7 @@
   {
     "LineId": "STR-MEM-243",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d7-4,4",
+    "PartOrSpaceId": "girder-port-d6-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2966,7 +2966,7 @@
   {
     "LineId": "STR-MEM-244",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d7-8",
+    "PartOrSpaceId": "girder-port-d7-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2978,7 +2978,7 @@
   {
     "LineId": "STR-MEM-245",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d8-0,5",
+    "PartOrSpaceId": "girder-port-d7-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -2990,7 +2990,7 @@
   {
     "LineId": "STR-MEM-246",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d8-4,4",
+    "PartOrSpaceId": "girder-port-d7-8",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3002,7 +3002,7 @@
   {
     "LineId": "STR-MEM-247",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d8-8",
+    "PartOrSpaceId": "girder-port-d8-0,5",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3014,7 +3014,7 @@
   {
     "LineId": "STR-MEM-248",
     "Category": "structural-members",
-    "PartOrSpaceId": "girder-stbd-d9-0,5",
+    "PartOrSpaceId": "girder-port-d8-4,4",
     "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3026,8 +3026,8 @@
   {
     "LineId": "STR-MEM-249",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v0-b10",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-port-d8-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3038,8 +3038,8 @@
   {
     "LineId": "STR-MEM-250",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v0-b3",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-port-d9-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3050,8 +3050,8 @@
   {
     "LineId": "STR-MEM-251",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v0-b4",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d0-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3062,8 +3062,8 @@
   {
     "LineId": "STR-MEM-252",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v0-b5",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d0-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3074,8 +3074,8 @@
   {
     "LineId": "STR-MEM-253",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v0-b6",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d1-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3086,8 +3086,8 @@
   {
     "LineId": "STR-MEM-254",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v0-b7",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d1-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3098,8 +3098,8 @@
   {
     "LineId": "STR-MEM-255",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v0-b8",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d10-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3110,8 +3110,8 @@
   {
     "LineId": "STR-MEM-256",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v0-b9",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d11-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3122,8 +3122,8 @@
   {
     "LineId": "STR-MEM-257",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v1-b10",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d12-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3134,8 +3134,8 @@
   {
     "LineId": "STR-MEM-258",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v1-b3",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d13-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3146,8 +3146,8 @@
   {
     "LineId": "STR-MEM-259",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v1-b4",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d14-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3158,8 +3158,8 @@
   {
     "LineId": "STR-MEM-260",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v1-b5",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d15-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3170,8 +3170,8 @@
   {
     "LineId": "STR-MEM-261",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v1-b6",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d2-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3182,8 +3182,8 @@
   {
     "LineId": "STR-MEM-262",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v1-b7",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d2-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3194,8 +3194,8 @@
   {
     "LineId": "STR-MEM-263",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v1-b8",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d3-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3206,8 +3206,8 @@
   {
     "LineId": "STR-MEM-264",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v1-b9",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d3-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3218,8 +3218,8 @@
   {
     "LineId": "STR-MEM-265",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v2-b10",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d3-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3230,8 +3230,8 @@
   {
     "LineId": "STR-MEM-266",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v2-b3",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d4-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3242,8 +3242,8 @@
   {
     "LineId": "STR-MEM-267",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v2-b4",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d4-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3254,8 +3254,8 @@
   {
     "LineId": "STR-MEM-268",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v2-b5",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d4-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3266,8 +3266,8 @@
   {
     "LineId": "STR-MEM-269",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v2-b6",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d5-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3278,8 +3278,8 @@
   {
     "LineId": "STR-MEM-270",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v2-b7",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d5-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3290,8 +3290,8 @@
   {
     "LineId": "STR-MEM-271",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v2-b8",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d5-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3302,8 +3302,8 @@
   {
     "LineId": "STR-MEM-272",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v2-b9",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d6-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3314,8 +3314,8 @@
   {
     "LineId": "STR-MEM-273",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v3-b10",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d6-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3326,8 +3326,8 @@
   {
     "LineId": "STR-MEM-274",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v3-b3",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d6-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3338,8 +3338,8 @@
   {
     "LineId": "STR-MEM-275",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v3-b4",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d7-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3350,8 +3350,8 @@
   {
     "LineId": "STR-MEM-276",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v3-b5",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d7-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3362,8 +3362,8 @@
   {
     "LineId": "STR-MEM-277",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v3-b6",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d7-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3374,8 +3374,8 @@
   {
     "LineId": "STR-MEM-278",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v3-b7",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d8-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3386,8 +3386,8 @@
   {
     "LineId": "STR-MEM-279",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v3-b8",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d8-4,4",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3398,8 +3398,8 @@
   {
     "LineId": "STR-MEM-280",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v3-b9",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d8-8",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3410,8 +3410,8 @@
   {
     "LineId": "STR-MEM-281",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v4-b10",
-    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "PartOrSpaceId": "girder-stbd-d9-0,5",
+    "Description": "Primary member \u00B7 girder \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
     "MassKg": null,
@@ -3422,7 +3422,7 @@
   {
     "LineId": "STR-MEM-282",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v4-b3",
+    "PartOrSpaceId": "stringer-join-v0-b10",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3434,7 +3434,7 @@
   {
     "LineId": "STR-MEM-283",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v4-b4",
+    "PartOrSpaceId": "stringer-join-v0-b11",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3446,7 +3446,7 @@
   {
     "LineId": "STR-MEM-284",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v4-b5",
+    "PartOrSpaceId": "stringer-join-v0-b12",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3458,7 +3458,7 @@
   {
     "LineId": "STR-MEM-285",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v4-b6",
+    "PartOrSpaceId": "stringer-join-v0-b4",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3470,7 +3470,7 @@
   {
     "LineId": "STR-MEM-286",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v4-b7",
+    "PartOrSpaceId": "stringer-join-v0-b5",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3482,7 +3482,7 @@
   {
     "LineId": "STR-MEM-287",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v4-b8",
+    "PartOrSpaceId": "stringer-join-v0-b6",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3494,7 +3494,7 @@
   {
     "LineId": "STR-MEM-288",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v4-b9",
+    "PartOrSpaceId": "stringer-join-v0-b7",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3506,7 +3506,7 @@
   {
     "LineId": "STR-MEM-289",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v5-b10",
+    "PartOrSpaceId": "stringer-join-v0-b8",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3518,7 +3518,7 @@
   {
     "LineId": "STR-MEM-290",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v5-b3",
+    "PartOrSpaceId": "stringer-join-v0-b9",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3530,7 +3530,7 @@
   {
     "LineId": "STR-MEM-291",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v5-b4",
+    "PartOrSpaceId": "stringer-join-v1-b10",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3542,7 +3542,7 @@
   {
     "LineId": "STR-MEM-292",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v5-b5",
+    "PartOrSpaceId": "stringer-join-v1-b11",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3554,7 +3554,7 @@
   {
     "LineId": "STR-MEM-293",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v5-b6",
+    "PartOrSpaceId": "stringer-join-v1-b12",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3566,7 +3566,7 @@
   {
     "LineId": "STR-MEM-294",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v5-b7",
+    "PartOrSpaceId": "stringer-join-v1-b4",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3578,7 +3578,7 @@
   {
     "LineId": "STR-MEM-295",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v5-b8",
+    "PartOrSpaceId": "stringer-join-v1-b5",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3590,7 +3590,7 @@
   {
     "LineId": "STR-MEM-296",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v5-b9",
+    "PartOrSpaceId": "stringer-join-v1-b6",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3602,7 +3602,7 @@
   {
     "LineId": "STR-MEM-297",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v6-b10",
+    "PartOrSpaceId": "stringer-join-v1-b7",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3614,7 +3614,7 @@
   {
     "LineId": "STR-MEM-298",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v6-b3",
+    "PartOrSpaceId": "stringer-join-v1-b8",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3626,7 +3626,7 @@
   {
     "LineId": "STR-MEM-299",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v6-b4",
+    "PartOrSpaceId": "stringer-join-v1-b9",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3638,7 +3638,7 @@
   {
     "LineId": "STR-MEM-300",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v6-b5",
+    "PartOrSpaceId": "stringer-join-v2-b10",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3650,7 +3650,7 @@
   {
     "LineId": "STR-MEM-301",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v6-b6",
+    "PartOrSpaceId": "stringer-join-v2-b11",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3662,7 +3662,7 @@
   {
     "LineId": "STR-MEM-302",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v6-b7",
+    "PartOrSpaceId": "stringer-join-v2-b12",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3674,7 +3674,7 @@
   {
     "LineId": "STR-MEM-303",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v6-b8",
+    "PartOrSpaceId": "stringer-join-v2-b4",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3686,7 +3686,7 @@
   {
     "LineId": "STR-MEM-304",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v6-b9",
+    "PartOrSpaceId": "stringer-join-v2-b5",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3698,7 +3698,7 @@
   {
     "LineId": "STR-MEM-305",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v7-b10",
+    "PartOrSpaceId": "stringer-join-v2-b6",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3710,7 +3710,7 @@
   {
     "LineId": "STR-MEM-306",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v7-b3",
+    "PartOrSpaceId": "stringer-join-v2-b7",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3722,7 +3722,7 @@
   {
     "LineId": "STR-MEM-307",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v7-b4",
+    "PartOrSpaceId": "stringer-join-v2-b8",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3734,7 +3734,7 @@
   {
     "LineId": "STR-MEM-308",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v7-b5",
+    "PartOrSpaceId": "stringer-join-v2-b9",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3746,7 +3746,7 @@
   {
     "LineId": "STR-MEM-309",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v7-b6",
+    "PartOrSpaceId": "stringer-join-v3-b10",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3758,7 +3758,7 @@
   {
     "LineId": "STR-MEM-310",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v7-b7",
+    "PartOrSpaceId": "stringer-join-v3-b11",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3770,7 +3770,7 @@
   {
     "LineId": "STR-MEM-311",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v7-b8",
+    "PartOrSpaceId": "stringer-join-v3-b12",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3782,7 +3782,7 @@
   {
     "LineId": "STR-MEM-312",
     "Category": "structural-members",
-    "PartOrSpaceId": "stringer-join-v7-b9",
+    "PartOrSpaceId": "stringer-join-v3-b4",
     "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
     "Unit": "ea",
     "Qty": 1,
@@ -3790,6 +3790,498 @@
     "AreaM2": null,
     "Material": "AISI 316L",
     "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-313",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v3-b5",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-314",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v3-b6",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-315",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v3-b7",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-316",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v3-b8",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-317",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v3-b9",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-318",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b10",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-319",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b11",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-320",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b12",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-008"
+  },
+  {
+    "LineId": "STR-MEM-321",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b4",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-322",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b5",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-323",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b6",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-324",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b7",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-325",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b8",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-326",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v4-b9",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-327",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b10",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-328",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b11",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-329",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b12",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-330",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b4",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-331",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b5",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-332",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b6",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-333",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b7",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-334",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b8",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-335",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v5-b9",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-336",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b10",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-337",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b11",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-338",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b12",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-339",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b4",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-340",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b5",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-341",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b6",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-342",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b7",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-343",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b8",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-344",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v6-b9",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-345",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b10",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-346",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b11",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-347",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b12",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-348",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b4",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-349",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b5",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-350",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b6",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-351",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b7",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-352",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b8",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
+  },
+  {
+    "LineId": "STR-MEM-353",
+    "Category": "structural-members",
+    "PartOrSpaceId": "stringer-join-v7-b9",
+    "Description": "Primary member \u00B7 stringer \u00B7 mass unresolved (no section properties on entity)",
+    "Unit": "ea",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-240-009"
   },
   {
     "LineId": "STR-DWG-CAL-210-001",
@@ -3867,7 +4359,7 @@
     "LineId": "STR-DWG-CAL-220-001",
     "Category": "frames",
     "PartOrSpaceId": "frame-F0",
-    "Description": "Transverse frame frame-F0 @ z=0 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "Description": "Transverse frame frame-F0 @ z=0 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3878,8 +4370,8 @@
   {
     "LineId": "STR-DWG-CAL-220-002",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F4",
-    "Description": "Transverse frame frame-F4 @ z=4 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F3",
+    "Description": "Transverse frame frame-F3 @ z=3 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3890,8 +4382,8 @@
   {
     "LineId": "STR-DWG-CAL-220-003",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F8",
-    "Description": "Transverse frame frame-F8 @ z=8 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F6",
+    "Description": "Transverse frame frame-F6 @ z=6 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3902,8 +4394,8 @@
   {
     "LineId": "STR-DWG-CAL-220-004",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F16",
-    "Description": "Transverse frame frame-F16 @ z=16 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F9",
+    "Description": "Transverse frame frame-F9 @ z=9 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3914,8 +4406,8 @@
   {
     "LineId": "STR-DWG-CAL-220-005",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F28",
-    "Description": "Transverse frame frame-F28 @ z=28 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F16",
+    "Description": "Transverse frame frame-F16 @ z=16 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3926,8 +4418,8 @@
   {
     "LineId": "STR-DWG-CAL-220-006",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F36",
-    "Description": "Transverse frame frame-F36 @ z=36 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F26",
+    "Description": "Transverse frame frame-F26 @ z=26 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3938,8 +4430,8 @@
   {
     "LineId": "STR-DWG-CAL-220-007",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F44",
-    "Description": "Transverse frame frame-F44 @ z=44 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F33",
+    "Description": "Transverse frame frame-F33 @ z=33 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3950,8 +4442,8 @@
   {
     "LineId": "STR-DWG-CAL-220-008",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F52",
-    "Description": "Transverse frame frame-F52 @ z=52 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F37",
+    "Description": "Transverse frame frame-F37 @ z=37 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3962,8 +4454,8 @@
   {
     "LineId": "STR-DWG-CAL-220-009",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F56",
-    "Description": "Transverse frame frame-F56 @ z=56 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F43",
+    "Description": "Transverse frame frame-F43 @ z=43 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3974,8 +4466,8 @@
   {
     "LineId": "STR-DWG-CAL-220-010",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F60",
-    "Description": "Transverse frame frame-F60 @ z=60 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F46",
+    "Description": "Transverse frame frame-F46 @ z=46 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3986,8 +4478,8 @@
   {
     "LineId": "STR-DWG-CAL-220-011",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F64",
-    "Description": "Transverse frame frame-F64 @ z=64 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F53",
+    "Description": "Transverse frame frame-F53 @ z=53 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -3998,8 +4490,8 @@
   {
     "LineId": "STR-DWG-CAL-220-012",
     "Category": "frames",
-    "PartOrSpaceId": "frame-F68",
-    "Description": "Transverse frame frame-F68 @ z=68 m (2 ring parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "PartOrSpaceId": "frame-F57",
+    "Description": "Transverse frame frame-F57 @ z=57 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
     "Unit": "dwg",
     "Qty": 1,
     "MassKg": null,
@@ -4008,10 +4500,46 @@
     "DrawingNumber": "CAL-220-012"
   },
   {
+    "LineId": "STR-DWG-CAL-220-013",
+    "Category": "frames",
+    "PartOrSpaceId": "frame-F61",
+    "Description": "Transverse frame frame-F61 @ z=61 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "Unit": "dwg",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-220-013"
+  },
+  {
+    "LineId": "STR-DWG-CAL-220-014",
+    "Category": "frames",
+    "PartOrSpaceId": "frame-F65",
+    "Description": "Transverse frame frame-F65 @ z=65 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "Unit": "dwg",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-220-014"
+  },
+  {
+    "LineId": "STR-DWG-CAL-220-015",
+    "Category": "frames",
+    "PartOrSpaceId": "frame-F69",
+    "Description": "Transverse frame frame-F69 @ z=69 m (1 perimeter parts) \u00B7 mass unresolved (see CAD plate/frame solids)",
+    "Unit": "dwg",
+    "Qty": 1,
+    "MassKg": null,
+    "AreaM2": null,
+    "Material": "AISI 316L",
+    "DrawingNumber": "CAL-220-015"
+  },
+  {
     "LineId": "VOL-001",
     "Category": "Shirt-sleeves",
     "PartOrSpaceId": "ACCESS",
-    "Description": "Shirt-sleeves volume \u00B7 footprint 18 m\u00B2 \u00B7 \u2248192.6 m\u00B3",
+    "Description": "Shirt-sleeves volume \u00B7 footprint 18 m\u00B2 \u00B7 \u2248192,6 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4023,7 +4551,7 @@
     "LineId": "VOL-002",
     "Category": "Airlock anteroom",
     "PartOrSpaceId": "AIRLOCK_A_port",
-    "Description": "Airlock anteroom volume \u00B7 footprint 6.4 m\u00B2 \u00B7 \u224820.48 m\u00B3",
+    "Description": "Airlock anteroom volume \u00B7 footprint 6,4 m\u00B2 \u00B7 \u224820,48 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4035,7 +4563,7 @@
     "LineId": "VOL-003",
     "Category": "Airlock anteroom",
     "PartOrSpaceId": "AIRLOCK_A_stbd",
-    "Description": "Airlock anteroom volume \u00B7 footprint 6.4 m\u00B2 \u00B7 \u224820.48 m\u00B3",
+    "Description": "Airlock anteroom volume \u00B7 footprint 6,4 m\u00B2 \u00B7 \u224820,48 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4047,7 +4575,7 @@
     "LineId": "VOL-004",
     "Category": "Airlock",
     "PartOrSpaceId": "AIRLOCK_B_port",
-    "Description": "Airlock volume \u00B7 footprint 5.6 m\u00B2 \u00B7 \u224817.92 m\u00B3",
+    "Description": "Airlock volume \u00B7 footprint 5,6 m\u00B2 \u00B7 \u224817,92 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4059,7 +4587,7 @@
     "LineId": "VOL-005",
     "Category": "Airlock",
     "PartOrSpaceId": "AIRLOCK_B_stbd",
-    "Description": "Airlock volume \u00B7 footprint 5.6 m\u00B2 \u00B7 \u224817.92 m\u00B3",
+    "Description": "Airlock volume \u00B7 footprint 5,6 m\u00B2 \u00B7 \u224817,92 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4071,7 +4599,7 @@
     "LineId": "VOL-006",
     "Category": "Shirt-sleeves",
     "PartOrSpaceId": "CORR_P",
-    "Description": "Shirt-sleeves volume \u00B7 footprint 78.75 m\u00B2 \u00B7 \u2248842.63 m\u00B3",
+    "Description": "Shirt-sleeves volume \u00B7 footprint 78,75 m\u00B2 \u00B7 \u2248842,63 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4083,7 +4611,7 @@
     "LineId": "VOL-007",
     "Category": "Shirt-sleeves",
     "PartOrSpaceId": "CORR_S",
-    "Description": "Shirt-sleeves volume \u00B7 footprint 78.75 m\u00B2 \u00B7 \u2248842.63 m\u00B3",
+    "Description": "Shirt-sleeves volume \u00B7 footprint 78,75 m\u00B2 \u00B7 \u2248842,63 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4095,7 +4623,7 @@
     "LineId": "VOL-008",
     "Category": "Shirt-sleeves",
     "PartOrSpaceId": "CROSSING",
-    "Description": "Shirt-sleeves volume \u00B7 footprint 64 m\u00B2 \u00B7 \u2248684.8 m\u00B3",
+    "Description": "Shirt-sleeves volume \u00B7 footprint 64 m\u00B2 \u00B7 \u2248684,8 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4107,7 +4635,7 @@
     "LineId": "VOL-009",
     "Category": "Hybrid circulation",
     "PartOrSpaceId": "ELEV_S",
-    "Description": "Hybrid circulation volume \u00B7 footprint 17.4 m\u00B2 \u00B7 \u2248186.18 m\u00B3",
+    "Description": "Hybrid circulation volume \u00B7 footprint 17,4 m\u00B2 \u00B7 \u2248186,18 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,
@@ -4119,7 +4647,7 @@
     "LineId": "VOL-010",
     "Category": "Hybrid circulation",
     "PartOrSpaceId": "STAIRS_P",
-    "Description": "Hybrid circulation volume \u00B7 footprint 17.4 m\u00B2 \u00B7 \u2248186.18 m\u00B3",
+    "Description": "Hybrid circulation volume \u00B7 footprint 17,4 m\u00B2 \u00B7 \u2248186,18 m\u00B3",
     "Unit": "space",
     "Qty": 1,
     "MassKg": null,

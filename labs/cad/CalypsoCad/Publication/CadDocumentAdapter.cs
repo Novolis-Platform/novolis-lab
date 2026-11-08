@@ -39,7 +39,21 @@ internal static class CadDocumentAdapter
         PartFunction? functionsOverride = null)
     {
         ArgumentNullException.ThrowIfNull(entity);
-        var (system, kind, functions) = StructuralRoleMap.FromLegacyRole(legacyRole);
+        // Prefer name classification for annular web / deck chord / etc. over coarse legacy role.
+        CadSystem system;
+        CadPartKind kind;
+        PartFunction functions;
+        if (StructuralRoleMap.TryClassifyFromName(displayName) is { } named)
+        {
+            system = named.System;
+            kind = named.Kind;
+            functions = named.Functions;
+        }
+        else
+        {
+            (system, kind, functions) = StructuralRoleMap.FromLegacyRole(legacyRole);
+        }
+
         if (functionsOverride is { } fo)
             functions |= fo;
 

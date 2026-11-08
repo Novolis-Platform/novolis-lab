@@ -284,31 +284,28 @@ internal static class CalypsoAcceptance
             .Distinct()
             .ToList();
 
-        var uniform = frameZs.Count >= 3;
-        for (var i = 1; i < frameZs.Count; i++)
+        // Station-driven schedule: every structural bay (ring frame or heavy BH) ≤ target pitch.
+        var structuralZs = frameZs
+            .Concat(bhZs)
+            .Distinct()
+            .OrderBy(z => z)
+            .ToList();
+        var pitchOk = structuralZs.Count >= 3;
+        float maxBay = 0f;
+        for (var i = 1; i < structuralZs.Count; i++)
         {
-            var dz = frameZs[i] - frameZs[i - 1];
-            // Last bay to stern may be a short remnant; all others must match lock bayM.
-            if (i == frameZs.Count - 1 && dz < bay * 0.55f)
+            var dz = structuralZs[i] - structuralZs[i - 1];
+            if (i == structuralZs.Count - 1 && dz < bay * 0.55f)
                 continue;
-            // Open HOLD cargo cell omits webs — one large gap across the hold is expected.
-            if (dz > bay * 1.5f
-                && frameZs[i - 1] <= 49.5f
-                && frameZs[i] >= 66f)
-                continue;
-            // Heavy BH owns the skipped frame station — gap of ~2 bays is expected.
-            if (dz > bay * 1.5f
-                && bhZs.Any(bh => bh > frameZs[i - 1] + 0.5f && bh < frameZs[i] - 0.5f))
-                continue;
-            if (MathF.Abs(dz - bay) > 0.2f)
-                uniform = false;
+            maxBay = MathF.Max(maxBay, dz);
+            if (dz > bay + 0.25f)
+                pitchOk = false;
         }
 
-        // Open HOLD has no transverse webs — bay spacing only checked on framed stations.
         Add(
-            $"uniform frame bay {bay:0.#} m (outside open HOLD)",
-            uniform,
-            $"frames={frameZs.Count} bay={bay:0.#}");
+            $"frame bay ≤ {bay:0.#} m (station-driven)",
+            pitchOk,
+            $"frames={frameZs.Count} bh={bhZs.Count} stations={structuralZs.Count} maxBay={maxBay:0.##} target={bay:0.#}");
         static float? FrameStationZ(string? name)
         {
             if (name is null || !name.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase))

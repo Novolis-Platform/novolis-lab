@@ -1,5 +1,5 @@
 {
-  "frameAnnulusCount": 12,
+  "frameAnnulusCount": 15,
   "failures": 0,
   "toleranceMm": 25,
   "note": "Deviation is emit-time MaxRingDeviation vs HullSectionAuthority.InnerRing (geometric inset). Reconstructing from mesh verts is not used.",
@@ -15,8 +15,8 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F4",
-      "stationZStem": 4,
+      "partId": "frame-F3.3",
+      "stationZStem": 3.25,
       "structuralInsetM": 0.64,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -25,8 +25,18 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F8",
-      "stationZStem": 8,
+      "partId": "frame-F6.5",
+      "stationZStem": 6.5,
+      "structuralInsetM": 0.64,
+      "maxDeviationMm": 0,
+      "toleranceMm": 25,
+      "passed": true,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F9.8",
+      "stationZStem": 9.75,
       "structuralInsetM": 0.64,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -45,8 +55,8 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F28",
-      "stationZStem": 28,
+      "partId": "frame-F26.6",
+      "stationZStem": 26.64,
       "structuralInsetM": 0.46,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -55,8 +65,8 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F36",
-      "stationZStem": 36,
+      "partId": "frame-F33.9",
+      "stationZStem": 33.853333,
       "structuralInsetM": 0.46,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -65,8 +75,8 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F44",
-      "stationZStem": 44,
+      "partId": "frame-F37.4",
+      "stationZStem": 37.426666,
       "structuralInsetM": 0.46,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -75,8 +85,28 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F52-ring",
-      "stationZStem": 52,
+      "partId": "frame-F43.8",
+      "stationZStem": 43.75,
+      "structuralInsetM": 0.46,
+      "maxDeviationMm": 0,
+      "toleranceMm": 25,
+      "passed": true,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F46.5",
+      "stationZStem": 46.5,
+      "structuralInsetM": 0.46,
+      "maxDeviationMm": 0,
+      "toleranceMm": 25,
+      "passed": true,
+      "triangleCount": 64,
+      "vertexCount": 32
+    },
+    {
+      "partId": "frame-F53.2-ring",
+      "stationZStem": 53.19,
       "structuralInsetM": 0.24000001,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -85,8 +115,8 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F56-ring",
-      "stationZStem": 56,
+      "partId": "frame-F57.1-ring",
+      "stationZStem": 57.129997,
       "structuralInsetM": 0.24000001,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -95,8 +125,8 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F60-ring",
-      "stationZStem": 60,
+      "partId": "frame-F61.1-ring",
+      "stationZStem": 61.07,
       "structuralInsetM": 0.24000001,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -105,8 +135,8 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F64-ring",
-      "stationZStem": 64,
+      "partId": "frame-F65-ring",
+      "stationZStem": 65.009995,
       "structuralInsetM": 0.24000001,
       "maxDeviationMm": 0,
       "toleranceMm": 25,
@@ -115,8 +145,8 @@
       "vertexCount": 32
     },
     {
-      "partId": "frame-F68",
-      "stationZStem": 68,
+      "partId": "frame-F69",
+      "stationZStem": 68.867004,
       "structuralInsetM": 0.46,
       "maxDeviationMm": 0,
       "toleranceMm": 25,

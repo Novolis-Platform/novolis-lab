@@ -120,6 +120,25 @@ internal static class CadJsonStructureQuery
         return LockDraftGeometry.ParseLoft(wrap.RootElement);
     }
 
+    /// <summary>
+    /// Hydrate <see cref="Geometry.HullGeometry.Active"/> from cadjson loft so blueprint /
+    /// audit paths that call <see cref="Structure.HullSectionAuthority"/> work without a full generate.
+    /// </summary>
+    public static void EnsureHullGeometry(CadDocument doc)
+    {
+        if (Geometry.HullGeometry.Active is not null)
+            return;
+        var loft = HullLoft(doc);
+        if (loft.Count < 2)
+            throw new InvalidOperationException(
+                "calypso.cadjson missing Properties.hullLoft stations — regenerate CAD.");
+        var stations = loft
+            .Select(s => ((float)s.Z, (float)(s.HalfBeam * 2.0), (float)(s.HalfHeight * 2.0)))
+            .ToArray();
+        var oahMid = Oah(doc) * 0.5f;
+        Geometry.HullGeometry.SetActive(new Geometry.HullGeometry(stations, oahMid));
+    }
+
     public static Dictionary<string, float> StationMap(CadDocument doc)
     {
         var map = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
@@ -281,7 +300,10 @@ internal static class CadJsonStructureQuery
             var m = FrameAssembly.Match(e.Name);
             if (!m.Success)
                 continue;
-            if (!e.Name.Contains("-ring-", StringComparison.OrdinalIgnoreCase))
+            // Connected plate-web is mesh *-annulus (replaces legacy box *-ring-N bars).
+            var isPerimeter = e.Name.Contains("-annulus", StringComparison.OrdinalIgnoreCase)
+                              || e.Name.Contains("-ring-", StringComparison.OrdinalIgnoreCase);
+            if (!isPerimeter)
                 continue;
             var id = $"frame-F{m.Groups[1].Value}";
             if (!float.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var z))
@@ -296,6 +318,35 @@ internal static class CadJsonStructureQuery
             .Select(kv => new FrameStation(kv.Key, kv.Value.Z, kv.Value.N))
             .OrderBy(f => f.ZStem)
             .ToList();
+    }
+
+    /// <summary>
+    /// Annular plate-web mesh for a frame station (<c>frame-F*-annulus</c> or <c>frame-F*-ring-annulus</c>).
+    /// Vertices are Lock Y / Up / ZCad — same projection as BH plate meshes.
+    /// </summary>
+    public static bool TryFrameAnnulusMesh(
+        CadDocument doc,
+        string frameId,
+        out IReadOnlyList<float[]> vertices,
+        out IReadOnlyList<int> indices)
+    {
+        var prefix = frameId.EndsWith('-') ? frameId : frameId + "-";
+        var ent = doc.Entities.FirstOrDefault(e =>
+            e.Name is not null
+            && e.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            && e.Name.Contains("-annulus", StringComparison.OrdinalIgnoreCase)
+            && e.MeshVertices is { Count: >= 3 }
+            && e.MeshIndices is { Count: >= 3 });
+        if (ent?.MeshVertices is null || ent.MeshIndices is null)
+        {
+            vertices = Array.Empty<float[]>();
+            indices = Array.Empty<int>();
+            return false;
+        }
+
+        vertices = ent.MeshVertices;
+        indices = ent.MeshIndices;
+        return true;
     }
 
     public static IReadOnlyList<FramePartBox> FramePartsAt(CadDocument doc, string frameId)

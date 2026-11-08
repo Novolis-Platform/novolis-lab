@@ -29,14 +29,20 @@ internal static class ShipGenerationPipeline
         float apronD,
         float tShell)
     {
-        // Stage 1 — design model already on registry ship; build constraints.
+        // Stage 1 — design model; station-driven schedule (BH anchors → fill ring frames).
         var bhSchedule = CalypsoBulkheads.BuildSchedule(loa, bhStationMap);
-        var ordinaryFrames = topo.FrameStations
-            .Where(f => !CalypsoBulkheads.OwnsFrameStation(f.ZStem, bhSchedule))
+        var framing = FrameSchedule.Create(
+            loa,
+            topo.FrameBay,
+            bhSchedule.Select(b => (b.Id, b.ZStem)).ToList());
+        // Topology.FrameStations is already ordinary-only from BuildStructuralTopology;
+        // re-derive here so pipeline stays coherent if topo was built another way.
+        var ordinaryFrames = FrameSchedule.OrdinaryRingFrames(framing)
+            .Select(s => (s.Id, s.ZStem, BowAligned: s.ZStem < 18f))
             .ToList();
 
         var constraints = DesignConstraintsBuilder.Build(
-            loa, topo, bhSchedule, topo.FrameStations);
+            loa, topo, bhSchedule, ordinaryFrames);
 
         var ship = CadDocumentAdapter.Active.Ship
                    ?? new ShipDefinition("CALYPSO", loa, 20.8f, 12.4f, topo.DeckUps, bhStationMap);
@@ -83,12 +89,9 @@ internal static class ShipGenerationPipeline
                 Console.Error.WriteLine($"  {d}");
         }
 
-        // Stage 3b — ring frames (skip BH-owned; cargo hold → perimeter-only).
+        // Stage 3b — ring frames (schedule already excludes BH stations; hold → perimeter-only).
         void PlaceFrame(string id, float zStem, bool bowAligned = false)
         {
-            if (CalypsoBulkheads.OwnsFrameStation(zStem, bhSchedule))
-                return;
-
             var skin = tShell + 0.05f;
             var halfDepthZ = topo.Web * 0.5f;
             var zMax = context.Hull.Stations[^1].Z;

@@ -74,7 +74,22 @@ internal static class StructuralRoleMap
                     StructuralRoles.TransverseFrame, asm);
             }
 
-            return (CadSystem.Transverse, CadPartKind.RingFrame,
+            if (name.Contains("-chord-", StringComparison.OrdinalIgnoreCase))
+            {
+                return (CadSystem.Transverse, CadPartKind.DeckChord, PartFunction.LoadBearing,
+                    StructuralRoles.TransverseFrame, asm);
+            }
+
+            if (name.Contains("-annulus", StringComparison.OrdinalIgnoreCase)
+                || name.Contains("-ring-", StringComparison.OrdinalIgnoreCase))
+            {
+                return (CadSystem.Transverse, CadPartKind.AnnularWebPlate,
+                    PartFunction.LoadBearing | PartFunction.HullAttached,
+                    StructuralRoles.TransverseFrame, asm);
+            }
+
+            // Flange / unspecified frame steel — hull-attached transverse member.
+            return (CadSystem.Transverse, CadPartKind.AnnularWebPlate,
                 PartFunction.LoadBearing | PartFunction.HullAttached,
                 StructuralRoles.TransverseFrame, asm);
         }
@@ -125,7 +140,9 @@ internal static class StructuralRoleMap
         kind switch
         {
             CadPartKind.BulkheadPlate => StructuralRoles.PressureBulkhead,
-            CadPartKind.RingFrame or CadPartKind.WebFrame or CadPartKind.DeckBeam =>
+            CadPartKind.AnnularWebPlate or CadPartKind.RingFlange or CadPartKind.WebStiffener
+                or CadPartKind.DeckChord or CadPartKind.RingFrame or CadPartKind.WebFrame
+                or CadPartKind.DeckBeam =>
                 StructuralRoles.TransverseFrame,
             CadPartKind.LongitudinalGirder => StructuralRoles.LongitudinalGirder,
             CadPartKind.DeckPanel => StructuralRoles.StructuralDeck,

@@ -2188,9 +2188,15 @@ internal static class CalypsoLockGenerator
             : holdComp is not null ? (float)holdComp.Z0 : 49.25f;
         var holdAft = holdComp is not null ? (float)holdComp.Z1 : loa;
 
-        var frames = new List<(string Id, float ZStem, bool BowAligned)>();
-        foreach (var (id, zStem) in CalypsoDrafting.BuildUniformFrameSchedule(loa, frameBay))
-            frames.Add((id, zStem, zStem < 18f));
+        // Station-driven schedule: BH anchors first, ring frames fill spans (max pitch = bay).
+        var bhFaces = CalypsoBulkheads.BuildSchedule(loa, BulkheadStationMap(lockDoc));
+        var schedule = FrameSchedule.Create(
+            loa,
+            frameBay,
+            bhFaces.Select(b => (b.Id, b.ZStem)).ToList());
+        var frames = FrameSchedule.OrdinaryRingFrames(schedule)
+            .Select(s => (s.Id, s.ZStem, BowAligned: s.ZStem < 18f))
+            .ToList();
 
         return new StructuralTopology
         {

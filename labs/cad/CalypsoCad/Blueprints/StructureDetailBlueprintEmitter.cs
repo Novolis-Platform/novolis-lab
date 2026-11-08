@@ -41,20 +41,20 @@ internal static class StructureDetailBlueprintEmitter
         }
 
         var bayM = L.FrameBayM > 0.5f ? L.FrameBayM : 4f;
-        // Dense midbody + hold samples (passage portals live on F24–F48 CORR track).
-        var frameZs = new HashSet<float>();
-        foreach (var mult in new[] { 0, 3, 5, 6, 7, 8, 10, 12, 13, 14, 15 })
+        // Same station-driven schedule as structure emit (BH anchors → fill to max pitch).
+        var schedule = FrameSchedule.Create(
+            (float)L.Loa,
+            bayM,
+            L.BhSchedule.Select(b => (b.Id, b.ZStem)).ToList());
+        foreach (var station in FrameSchedule.OrdinaryRingFrames(schedule))
         {
-            var z = bayM * mult;
-            if (z <= (float)L.Loa - 0.5f)
-                frameZs.Add(z);
-        }
-
-        foreach (var z in frameZs.OrderBy(z => z))
-        {
-            var file = $"FRAME-z{z.ToString("0", CultureInfo.InvariantCulture)}.html";
+            var z = station.ZStem;
+            var zLabel = MathF.Abs(z - MathF.Round(z)) < 0.05f
+                ? MathF.Round(z).ToString("0", CultureInfo.InvariantCulture)
+                : z.ToString("0.#", CultureInfo.InvariantCulture);
+            var file = $"FRAME-z{zLabel}.html";
             Write(outDir, file, BuildFrameSheet(L, z, sandwiches));
-            index.Add((file, $"Transverse web station @ z={z:0} m — section + plan tick"));
+            index.Add((file, $"Transverse web station @ z={z:0.##} m — section + plan tick"));
         }
 
         foreach (var space in new[]

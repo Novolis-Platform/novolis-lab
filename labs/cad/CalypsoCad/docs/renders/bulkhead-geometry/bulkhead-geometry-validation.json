@@ -18,10 +18,10 @@
       "closed solid: no open boundary edges",
       "pinch-point vertical non-manifold edges=4",
       "no degenerate triangles",
-      "volume 36.43520 \u2248 36.43475 m\u00B3",
+      "volume 36,43520 \u2248 36,43475 m\u00B3",
       "closed solid: no open boundary edges",
       "no degenerate triangles",
-      "volume 36.43520 m\u00B3 \u2248 materialArea\u00D7thickness 36.43475 m\u00B3",
+      "volume 36,43520 m\u00B3 \u2248 materialArea\u00D7thickness 36,43475 m\u00B3",
       "openings preserved in plate faces",
       "pinch-point vertical non-manifold edges=4 (passage/outer junctions)"
     ]
@@ -45,10 +45,10 @@
       "closed solid: no open boundary edges",
       "pinch-point vertical non-manifold edges=4",
       "no degenerate triangles",
-      "volume 41.12356 \u2248 41.12355 m\u00B3",
+      "volume 41,12356 \u2248 41,12355 m\u00B3",
       "closed solid: no open boundary edges",
       "no degenerate triangles",
-      "volume 41.12356 m\u00B3 \u2248 materialArea\u00D7thickness 41.12355 m\u00B3",
+      "volume 41,12356 m\u00B3 \u2248 materialArea\u00D7thickness 41,12355 m\u00B3",
       "openings preserved in plate faces",
       "pinch-point vertical non-manifold edges=4 (passage/outer junctions)"
     ]
@@ -72,10 +72,10 @@
       "closed solid: no open boundary edges",
       "pinch-point vertical non-manifold edges=22",
       "no degenerate triangles",
-      "volume 34.48249 \u2248 34.43786 m\u00B3",
+      "volume 34,48249 \u2248 34,43786 m\u00B3",
       "closed solid: no open boundary edges",
       "no degenerate triangles",
-      "volume 34.48249 m\u00B3 \u2248 materialArea\u00D7thickness 34.43786 m\u00B3",
+      "volume 34,48249 m\u00B3 \u2248 materialArea\u00D7thickness 34,43786 m\u00B3",
       "openings preserved in plate faces",
       "pinch-point vertical non-manifold edges=22 (passage/outer junctions)"
     ]
@@ -99,10 +99,10 @@
       "closed solid: no open boundary edges",
       "pinch-point vertical non-manifold edges=8",
       "no degenerate triangles",
-      "volume 39.24506 \u2248 39.19852 m\u00B3",
+      "volume 39,24506 \u2248 39,19852 m\u00B3",
       "closed solid: no open boundary edges",
       "no degenerate triangles",
-      "volume 39.24506 m\u00B3 \u2248 materialArea\u00D7thickness 39.19852 m\u00B3",
+      "volume 39,24506 m\u00B3 \u2248 materialArea\u00D7thickness 39,19852 m\u00B3",
       "openings preserved in plate faces",
       "pinch-point vertical non-manifold edges=8 (passage/outer junctions)"
     ]
@@ -126,10 +126,10 @@
       "closed solid: no open boundary edges",
       "pinch-point vertical non-manifold edges=8",
       "no degenerate triangles",
-      "volume 99.34801 \u2248 99.30290 m\u00B3",
+      "volume 99,34801 \u2248 99,30290 m\u00B3",
       "closed solid: no open boundary edges",
       "no degenerate triangles",
-      "volume 99.34801 m\u00B3 \u2248 materialArea\u00D7thickness 99.30290 m\u00B3",
+      "volume 99,34801 m\u00B3 \u2248 materialArea\u00D7thickness 99,30290 m\u00B3",
       "openings preserved in plate faces",
       "pinch-point vertical non-manifold edges=8 (passage/outer junctions)"
     ]
@@ -153,10 +153,10 @@
       "closed solid: no open boundary edges",
       "pinch-point vertical non-manifold edges=8",
       "no degenerate triangles",
-      "volume 99.34808 \u2248 99.30290 m\u00B3",
+      "volume 99,34808 \u2248 99,30290 m\u00B3",
       "closed solid: no open boundary edges",
       "no degenerate triangles",
-      "volume 99.34808 m\u00B3 \u2248 materialArea\u00D7thickness 99.30290 m\u00B3",
+      "volume 99,34808 m\u00B3 \u2248 materialArea\u00D7thickness 99,30290 m\u00B3",
       "openings preserved in plate faces",
       "pinch-point vertical non-manifold edges=8 (passage/outer junctions)"
     ]

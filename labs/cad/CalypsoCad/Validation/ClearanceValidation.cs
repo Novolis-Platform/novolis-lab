@@ -12,7 +12,8 @@ internal static class ClearanceValidation
         var failures = new List<string>();
         foreach (var p in parts)
         {
-            if (p.Kind is not (CadPartKind.RingFrame or CadPartKind.WebFrame or CadPartKind.BulkheadPlate))
+            if (p.Kind is not (CadPartKind.RingFrame or CadPartKind.WebFrame or CadPartKind.AnnularWebPlate
+                or CadPartKind.BulkheadPlate))
                 continue;
             if (p.StationZStem is not { } z)
                 continue;

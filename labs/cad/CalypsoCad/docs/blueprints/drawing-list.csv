@@ -6,21 +6,24 @@ CAL-210-003,BH-CROSS-AFT,Bulkhead CROSS-AFT @ z=23 m from stem,Bulkheads,None,20
 CAL-210-004,BH-CREW-AFT,Bulkhead CREW-AFT @ z=30.28 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-004-BH-CREW-AFT.html,CREW-AFT
 CAL-210-005,BH-ENG-FORE,Bulkhead ENG-FORE @ z=41 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-005-BH-ENG-FORE.html,ENG-FORE
 CAL-210-006,BH-ENG-AFT,Bulkhead ENG-AFT @ z=49.25 m from stem,Bulkheads,None,200-structure/210-bulkheads/CAL-210-006-BH-ENG-AFT.html,ENG-AFT
-CAL-220-001,FRM-Z0,Transverse frame frame-F0 @ z=0 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-001-FRAME-z0.html,frame-F0
-CAL-220-002,FRM-Z4,Transverse frame frame-F4 @ z=4 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-002-FRAME-z4.html,frame-F4
-CAL-220-003,FRM-Z8,Transverse frame frame-F8 @ z=8 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-003-FRAME-z8.html,frame-F8
-CAL-220-004,FRM-Z16,Transverse frame frame-F16 @ z=16 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-004-FRAME-z16.html,frame-F16
-CAL-220-005,FRM-Z28,Transverse frame frame-F28 @ z=28 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-005-FRAME-z28.html,frame-F28
-CAL-220-006,FRM-Z36,Transverse frame frame-F36 @ z=36 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-006-FRAME-z36.html,frame-F36
-CAL-220-007,FRM-Z44,Transverse frame frame-F44 @ z=44 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-007-FRAME-z44.html,frame-F44
-CAL-220-008,FRM-Z52,Transverse frame frame-F52 @ z=52 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-008-FRAME-z52.html,frame-F52
-CAL-220-009,FRM-Z56,Transverse frame frame-F56 @ z=56 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-009-FRAME-z56.html,frame-F56
-CAL-220-010,FRM-Z60,Transverse frame frame-F60 @ z=60 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-010-FRAME-z60.html,frame-F60
-CAL-220-011,FRM-Z64,Transverse frame frame-F64 @ z=64 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-011-FRAME-z64.html,frame-F64
-CAL-220-012,FRM-Z68,Transverse frame frame-F68 @ z=68 m (2 ring parts),Frames,None,200-structure/220-frames/CAL-220-012-FRAME-z68.html,frame-F68
-CAL-230-001,DECK-DK−1,Deck plates — DK−1 sandwich face schedule (11 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-001-DECK-DKM1.html,deck:-1:DK−1
-CAL-230-002,DECK-DK0,Deck plates — DK0 sandwich face schedule (11 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-002-DECK-DK0.html,deck:0:DK0
-CAL-230-003,DECK-DK+1,Deck plates — DK+1 sandwich face schedule (11 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-003-DECK-DKP1.html,deck:1:DK+1
+CAL-220-001,FRM-Z0,Transverse frame frame-F0 @ z=0 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-001-FRAME-z0.html,frame-F0
+CAL-220-002,FRM-Z3,Transverse frame frame-F3 @ z=3 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-002-FRAME-z3.html,frame-F3
+CAL-220-003,FRM-Z6,Transverse frame frame-F6 @ z=6 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-003-FRAME-z6.html,frame-F6
+CAL-220-004,FRM-Z9,Transverse frame frame-F9 @ z=9 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-004-FRAME-z9.html,frame-F9
+CAL-220-005,FRM-Z16,Transverse frame frame-F16 @ z=16 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-005-FRAME-z16.html,frame-F16
+CAL-220-006,FRM-Z26,Transverse frame frame-F26 @ z=26 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-006-FRAME-z26.html,frame-F26
+CAL-220-007,FRM-Z33,Transverse frame frame-F33 @ z=33 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-007-FRAME-z33.html,frame-F33
+CAL-220-008,FRM-Z37,Transverse frame frame-F37 @ z=37 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-008-FRAME-z37.html,frame-F37
+CAL-220-009,FRM-Z43,Transverse frame frame-F43 @ z=43 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-009-FRAME-z43.html,frame-F43
+CAL-220-010,FRM-Z46,Transverse frame frame-F46 @ z=46 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-010-FRAME-z46.html,frame-F46
+CAL-220-011,FRM-Z53,Transverse frame frame-F53 @ z=53 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-011-FRAME-z53.html,frame-F53
+CAL-220-012,FRM-Z57,Transverse frame frame-F57 @ z=57 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-012-FRAME-z57.html,frame-F57
+CAL-220-013,FRM-Z61,Transverse frame frame-F61 @ z=61 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-013-FRAME-z61.html,frame-F61
+CAL-220-014,FRM-Z65,Transverse frame frame-F65 @ z=65 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-014-FRAME-z65.html,frame-F65
+CAL-220-015,FRM-Z69,Transverse frame frame-F69 @ z=69 m (1 perimeter parts),Frames,None,200-structure/220-frames/CAL-220-015-FRAME-z69.html,frame-F69
+CAL-230-001,DECK-DK−1,Deck plates — DK−1 sandwich face schedule (13 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-001-DECK-DKM1.html,deck:-1:DK−1
+CAL-230-002,DECK-DK0,Deck plates — DK0 sandwich face schedule (15 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-002-DECK-DK0.html,deck:0:DK0
+CAL-230-003,DECK-DK+1,Deck plates — DK+1 sandwich face schedule (15 panels),DeckPlates,None,200-structure/230-deck-plates/CAL-230-003-DECK-DKP1.html,deck:1:DK+1
 CAL-240-001,MEM-REG-01,Structural members register — sheet 1 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-001-MEMBERS-01.html,members-1
 CAL-240-002,MEM-REG-02,Structural members register — sheet 2 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-002-MEMBERS-02.html,members-2
 CAL-240-003,MEM-REG-03,Structural members register — sheet 3 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-003-MEMBERS-03.html,members-3
@@ -28,7 +31,8 @@ CAL-240-004,MEM-REG-04,Structural members register — sheet 4 (40 ids),Structur
 CAL-240-005,MEM-REG-05,Structural members register — sheet 5 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-005-MEMBERS-05.html,members-5
 CAL-240-006,MEM-REG-06,Structural members register — sheet 6 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-006-MEMBERS-06.html,members-6
 CAL-240-007,MEM-REG-07,Structural members register — sheet 7 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-007-MEMBERS-07.html,members-7
-CAL-240-008,MEM-REG-08,Structural members register — sheet 8 (32 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-008-MEMBERS-08.html,members-8
+CAL-240-008,MEM-REG-08,Structural members register — sheet 8 (40 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-008-MEMBERS-08.html,members-8
+CAL-240-009,MEM-REG-09,Structural members register — sheet 9 (33 ids),StructuralMembers,None,200-structure/240-structural-members/CAL-240-009-MEMBERS-09.html,members-9
 CAL-310-001,ACCESS,Shirt-sleeves — ACCESS,ShirtSleeves,ShirtSleeves,300-volumes/310-shirt-sleeves/CAL-310-001-ACCESS.html,ACCESS
 CAL-320-001,AIRLOCK_A_port,Airlock anteroom — AIRLOCK_A_port,AirlockAnteroom,AirlockAnteroom,300-volumes/320-airlock-anteroom/CAL-320-001-AIRLOCK_A_port.html,AIRLOCK_A_port
 CAL-320-002,AIRLOCK_A_stbd,Airlock anteroom — AIRLOCK_A_stbd,AirlockAnteroom,AirlockAnteroom,300-volumes/320-airlock-anteroom/CAL-320-002-AIRLOCK_A_stbd.html,AIRLOCK_A_stbd

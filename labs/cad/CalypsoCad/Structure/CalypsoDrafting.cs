@@ -46,8 +46,8 @@ internal static class CalypsoDrafting
     }
 
     /// <summary>
-    /// Sole frame schedule: constant <paramref name="frameBay"/> from the stem to near the stern.
-    /// Hull loft ST*/MB*/AFT stations define mold shape only — they are never mixed into this list.
+    /// Uniform pitch grid without bulkhead awareness. Prefer
+    /// <see cref="FrameSchedule.Create"/> for structure emit (BH-first, fill spans).
     /// </summary>
     public static List<(string Id, float ZStem)> BuildUniformFrameSchedule(
         float loa,

@@ -7,4 +7,5 @@ internal sealed record CadAssembly(
     string DisplayName,
     float? StationZStem = null,
     PartFunction Functions = PartFunction.None,
-    IReadOnlyList<PartId>? MemberPartIds = null);
+    IReadOnlyList<PartId>? MemberPartIds = null,
+    CadAssemblyKind Kind = CadAssemblyKind.Other);

@@ -19,6 +19,10 @@ internal static class DrawingPackageEmitter
     {
         var outDir = outputDirectory ?? CalypsoProjectPaths.BlueprintsPackageDirectory;
 
+        // Blueprint emit is CAD-only — hydrate hull authority from cadjson before schedule queries.
+        var cadEarly = CadJsonStructureQuery.Load(cadJsonPath);
+        CadJsonStructureQuery.EnsureHullGeometry(cadEarly);
+
         // Keep legacy detail pack for skills; package sheets are CAD-projected.
         StructureDetailBlueprintEmitter.Emit(cadJsonPath: cadJsonPath);
 

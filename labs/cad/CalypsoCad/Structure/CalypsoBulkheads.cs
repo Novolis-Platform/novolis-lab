@@ -5,7 +5,7 @@ namespace CalypsoCad.Structure;
 
 /// <summary>
 /// Heavy bulkhead schedule — explicit design stations (red plan lines), not frame pitch.
-/// Ordinary frames at the same station are suppressed (bulkhead owns the transverse station).
+/// Used as fixed anchors by <see cref="FrameSchedule"/>; ordinary ring frames fill the spans between.
 /// </summary>
 internal static class CalypsoBulkheads
 {
