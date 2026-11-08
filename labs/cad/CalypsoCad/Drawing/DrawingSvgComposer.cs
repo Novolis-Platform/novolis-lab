@@ -43,13 +43,26 @@ internal static class DrawingSvgComposer
             block,
             "Hierarchy-driven drawing · actual CAD geometry · ISO 128-15");
 
+        // Clip paths for every view slot — geometry must not spill into sibling panels.
+        sb.AppendLine("<defs>");
         var slots = LayoutSlots(request.Views.Count);
+        for (var i = 0; i < slots.Count; i++)
+        {
+            var (x, y, w, h) = slots[i];
+            sb.AppendLine(
+                $"<clipPath id=\"view-clip-{i}\"><rect x=\"{F(x)}\" y=\"{F(y)}\" width=\"{F(w)}\" height=\"{F(h)}\"/></clipPath>");
+        }
+
+        sb.AppendLine("</defs>");
+
         for (var i = 0; i < request.Views.Count; i++)
         {
             var view = request.Views[i];
             var (x, y, w, h) = slots[i];
             PackageDrawingChrome.Label(sb, x, y - 10, $"{view.Id} — {view.Title ?? view.Orientation.ToString()}");
+            sb.AppendLine($"<g clip-path=\"url(#view-clip-{i})\">");
             ComposeView(sb, x, y, w, h, view, resolved, ship, request.References);
+            sb.AppendLine("</g>");
         }
 
         if (register.Count > 0)
@@ -103,34 +116,126 @@ internal static class DrawingSvgComposer
             return;
         }
 
-        // Context hull for plan/profile reference panels.
-        if (view.Orientation is StandardViewOrientation.PlanSternLeft
-            && references.Flags.HasFlag(DrawingReferenceFlags.OmlOutline)
-            && w < 320)
+        // Small plan/profile panels: hull reference + subject extent (not full mesh dump).
+        var contextPanel = w < 320
+                           && references.Flags.HasFlag(DrawingReferenceFlags.OmlOutline)
+                           && view.Orientation is StandardViewOrientation.PlanSternLeft
+                               or StandardViewOrientation.ProfileSternLeft;
+        if (contextPanel && view.Orientation is StandardViewOrientation.PlanSternLeft)
         {
             PackageDrawingChrome.DrawPlanHull(sb, x, y, w, h, ship, (ox, oy, scale) =>
             {
-                DrawProjectedSubject(sb, resolved, view.Orientation, ox, oy, scale, planProfile: true, profile: false, ship.Loa);
+                DrawSubjectExtentOnPlan(sb, resolved, ship, ox, oy, scale);
             });
             DrawOrientationMarker(sb, x, y, view);
             return;
         }
 
-        if (view.Orientation is StandardViewOrientation.ProfileSternLeft
-            && references.Flags.HasFlag(DrawingReferenceFlags.OmlOutline)
-            && w < 320)
+        if (contextPanel && view.Orientation is StandardViewOrientation.ProfileSternLeft)
         {
             PackageDrawingChrome.DrawProfileHull(sb, x, y, w, h, ship, showDecks: true, (ox, keelY, scale) =>
             {
-                DrawProjectedSubject(sb, resolved, view.Orientation, ox, keelY, scale, planProfile: true, profile: true, ship.Loa);
+                DrawSubjectExtentOnProfile(sb, resolved, ship, ox, keelY, scale);
             });
             DrawOrientationMarker(sb, x, y, view);
             return;
         }
 
-        var proj = ViewProjector.ProjectOrthographic(resolved.Geometry, view.Orientation);
+        var fill = view.Orientation is StandardViewOrientation.TransverseLookingAft
+            or StandardViewOrientation.TransverseLookingForward;
+        var proj = ViewProjector.ProjectOrthographic(
+            resolved.Geometry,
+            view.Orientation,
+            ViewProjector.EdgeMode.SilhouetteAndPolylines,
+            includeFilledTriangles: fill);
         FitAndDraw(sb, x, y, w, h, view, proj);
         DrawOrientationMarker(sb, x, y, view);
+    }
+
+    /// <summary>
+    /// Location context: highlight subject world AABB on the plan — never dump triangulation.
+    /// </summary>
+    private static void DrawSubjectExtentOnPlan(
+        StringBuilder sb,
+        SubjectGeometryResolver.ResolveResult resolved,
+        PackageDrawingChrome.ShipBasics ship,
+        double ox,
+        double oy,
+        double scale)
+    {
+        var bounds = resolved.Geometry.Aggregate(DrawingBounds3.Empty, (a, g) => a.Union(g.Bounds));
+        if (bounds.IsEmpty)
+            return;
+
+        var z0 = Math.Clamp(bounds.Min.Z, 0, (float)ship.Loa);
+        var z1 = Math.Clamp(bounds.Max.Z, 0, (float)ship.Loa);
+        var y0 = bounds.Min.X;
+        var y1 = bounds.Max.X;
+        var x0 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, z0);
+        var x1 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, z1);
+        var sy0 = oy - y1 * scale;
+        var sy1 = oy - y0 * scale;
+        var left = Math.Min(x0, x1);
+        var right = Math.Max(x0, x1);
+        var top = Math.Min(sy0, sy1);
+        var bot = Math.Max(sy0, sy1);
+        sb.AppendLine(
+            $"<rect x=\"{F(left)}\" y=\"{F(top)}\" width=\"{F(Math.Max(1, right - left))}\" height=\"{F(Math.Max(1, bot - top))}\" fill=\"#c82828\" fill-opacity=\"0.18\" stroke=\"#c82828\" stroke-width=\"1.4\"/>");
+
+        // Light polylines only (paths), clipped to ship length.
+        var proj = ViewProjector.ProjectOrthographic(
+            resolved.Geometry, StandardViewOrientation.PlanSternLeft, ViewProjector.EdgeMode.PolylinesOnly, false);
+        foreach (var s in proj.Segments.Take(400))
+        {
+            var za = Math.Clamp(-s.A.U, 0, (float)ship.Loa);
+            var zb = Math.Clamp(-s.B.U, 0, (float)ship.Loa);
+            var xa = LockDraftGeometry.ShipX(ox, scale, ship.Loa, za);
+            var xb = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zb);
+            var ya = oy - (-s.A.V) * scale;
+            var yb = oy - (-s.B.V) * scale;
+            sb.AppendLine(
+                $"<line x1=\"{F(xa)}\" y1=\"{F(ya)}\" x2=\"{F(xb)}\" y2=\"{F(yb)}\" stroke=\"#c82828\" stroke-width=\"0.9\"/>");
+        }
+    }
+
+    private static void DrawSubjectExtentOnProfile(
+        StringBuilder sb,
+        SubjectGeometryResolver.ResolveResult resolved,
+        PackageDrawingChrome.ShipBasics ship,
+        double ox,
+        double keelY,
+        double scale)
+    {
+        var bounds = resolved.Geometry.Aggregate(DrawingBounds3.Empty, (a, g) => a.Union(g.Bounds));
+        if (bounds.IsEmpty)
+            return;
+
+        var z0 = Math.Clamp(bounds.Min.Z, 0, (float)ship.Loa);
+        var z1 = Math.Clamp(bounds.Max.Z, 0, (float)ship.Loa);
+        var u0 = Math.Clamp(bounds.Min.Y, 0, (float)ship.Oah);
+        var u1 = Math.Clamp(bounds.Max.Y, 0, (float)ship.Oah);
+        var x0 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, z0);
+        var x1 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, z1);
+        var yTop = keelY - u1 * scale;
+        var yBot = keelY - u0 * scale;
+        var left = Math.Min(x0, x1);
+        var right = Math.Max(x0, x1);
+        sb.AppendLine(
+            $"<rect x=\"{F(left)}\" y=\"{F(Math.Min(yTop, yBot))}\" width=\"{F(Math.Max(1, right - left))}\" height=\"{F(Math.Max(1, Math.Abs(yBot - yTop)))}\" fill=\"#c82828\" fill-opacity=\"0.18\" stroke=\"#c82828\" stroke-width=\"1.4\"/>");
+
+        var proj = ViewProjector.ProjectOrthographic(
+            resolved.Geometry, StandardViewOrientation.ProfileSternLeft, ViewProjector.EdgeMode.PolylinesOnly, false);
+        foreach (var s in proj.Segments.Take(400))
+        {
+            var za = Math.Clamp(-s.A.U, 0, (float)ship.Loa);
+            var zb = Math.Clamp(-s.B.U, 0, (float)ship.Loa);
+            var xa = LockDraftGeometry.ShipX(ox, scale, ship.Loa, za);
+            var xb = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zb);
+            var ya = keelY - s.A.V * scale;
+            var yb = keelY - s.B.V * scale;
+            sb.AppendLine(
+                $"<line x1=\"{F(xa)}\" y1=\"{F(ya)}\" x2=\"{F(xb)}\" y2=\"{F(yb)}\" stroke=\"#c82828\" stroke-width=\"0.9\"/>");
+        }
     }
 
     private static void ComposeSection(
@@ -151,7 +256,6 @@ internal static class DrawingSvgComposer
             return;
         }
 
-        // Project section edges into the view orientation (typically transverse).
         var segs = edges.Select(e =>
         {
             var a = ViewProjector.Map(e.A, view.Orientation);
@@ -166,48 +270,6 @@ internal static class DrawingSvgComposer
         FitAndDraw(sb, x, y, w, h, view,
             new ViewProjector.ProjectionResult(segs, [], DrawingBounds3.Empty, minU, maxU, minV, maxV),
             hatch: true);
-    }
-
-    private static void DrawProjectedSubject(
-        StringBuilder sb,
-        SubjectGeometryResolver.ResolveResult resolved,
-        StandardViewOrientation orientation,
-        double ox,
-        double oyOrKeel,
-        double scale,
-        bool planProfile,
-        bool profile,
-        double loa)
-    {
-        var proj = ViewProjector.ProjectOrthographic(resolved.Geometry, orientation);
-        foreach (var s in proj.Segments)
-        {
-            double x0, y0, x1, y1;
-            if (planProfile && !profile)
-            {
-                // PlanSternLeft: U=−Z, V=−X. ShipX uses zFromStem with stern left.
-                var z0 = -s.A.U;
-                var z1 = -s.B.U;
-                x0 = LockDraftGeometry.ShipX(ox, scale, loa, z0);
-                x1 = LockDraftGeometry.ShipX(ox, scale, loa, z1);
-                y0 = oyOrKeel - (-s.A.V) * scale; // V=−X → X = −V
-                y1 = oyOrKeel - (-s.B.V) * scale;
-            }
-            else if (planProfile && profile)
-            {
-                var z0 = -s.A.U;
-                var z1 = -s.B.U;
-                x0 = LockDraftGeometry.ShipX(ox, scale, loa, z0);
-                x1 = LockDraftGeometry.ShipX(ox, scale, loa, z1);
-                y0 = oyOrKeel - s.A.V * scale;
-                y1 = oyOrKeel - s.B.V * scale;
-            }
-            else
-                continue;
-
-            sb.AppendLine(
-                $"<line x1=\"{F(x0)}\" y1=\"{F(y0)}\" x2=\"{F(x1)}\" y2=\"{F(y1)}\" stroke=\"#c82828\" stroke-width=\"1.6\"/>");
-        }
     }
 
     private static void FitAndDraw(
@@ -230,11 +292,10 @@ internal static class DrawingSvgComposer
         var midV = (proj.MinV + proj.MaxV) * 0.5;
 
         double SX(float u) => cx + (u - midU) * scale;
-        double SY(float v) => cy - (v - midV) * scale; // V up on page
+        double SY(float v) => cy - (v - midV) * scale;
 
         foreach (var t in proj.FilledTriangles)
         {
-            // Fill only for transverse orthographic of meshes (plate body).
             if (view.Orientation is not (StandardViewOrientation.TransverseLookingAft
                 or StandardViewOrientation.TransverseLookingForward))
                 continue;
@@ -250,7 +311,6 @@ internal static class DrawingSvgComposer
                 $"<line x1=\"{F(SX(s.A.U))}\" y1=\"{F(SY(s.A.V))}\" x2=\"{F(SX(s.B.U))}\" y2=\"{F(SY(s.B.V))}\" stroke=\"{stroke}\" stroke-width=\"{width}\"/>");
             if (hatch && s.IsSectionCut)
             {
-                // Simple hatch tick mid-edge.
                 var mx = (SX(s.A.U) + SX(s.B.U)) * 0.5;
                 var my = (SY(s.A.V) + SY(s.B.V)) * 0.5;
                 sb.AppendLine(
@@ -258,7 +318,6 @@ internal static class DrawingSvgComposer
             }
         }
 
-        // Overall dimensions (model-space).
         sb.AppendLine(
             $"<text x=\"{F(x + 6)}\" y=\"{F(y + h - 8)}\" font-size=\"9\" fill=\"#555\">{Esc(view.Orientation.ToString())} · {spanU.ToString("0.##", CultureInfo.InvariantCulture)}×{spanV.ToString("0.##", CultureInfo.InvariantCulture)} m</text>");
     }

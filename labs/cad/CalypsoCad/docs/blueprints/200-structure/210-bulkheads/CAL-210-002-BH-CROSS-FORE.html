@@ -24,18 +24,29 @@ svg{display:block;width:100%;height:auto;background:#fff;border:1px solid #333}
 <p class="meta">Hierarchy-driven drawing &#183; actual CAD geometry &#183; ISO 128-15</p>
 <svg viewBox="0 0 841 594" xmlns="http://www.w3.org/2000/svg">
 <rect x="10" y="10" width="821" height="574" fill="none" stroke="#111" stroke-width="1.2"/>
+<defs>
+<clipPath id="view-clip-0"><rect x="28" y="42" width="520" height="360"/></clipPath>
+<clipPath id="view-clip-1"><rect x="560" y="42" width="260" height="160"/></clipPath>
+<clipPath id="view-clip-2"><rect x="560" y="230" width="260" height="172"/></clipPath>
+</defs>
 <text x="28" y="32" font-size="11" font-weight="600" fill="#222">A — Transverse plate &#183; looking aft &#183; z=19</text>
+<g clip-path="url(#view-clip-0)">
 <rect x="28" y="42" width="520" height="360" fill="#fff" stroke="#333"/>
 <text x="288" y="222" text-anchor="middle" fill="#c00">no drawable geometry</text>
 <text x="34" y="56" font-size="9" fill="#0645ad">TRANSVERSE &#183; looking aft</text>
+</g>
 <text x="560" y="32" font-size="11" font-weight="600" fill="#222">B — Plan station</text>
+<g clip-path="url(#view-clip-1)">
 <rect x="560" y="42" width="260" height="160" fill="#fff" stroke="#333"/>
 <text x="690" y="122" text-anchor="middle" fill="#c00">no drawable geometry</text>
 <text x="566" y="56" font-size="9" fill="#0645ad">PLAN &#183; stern← &#183; bow→</text>
+</g>
 <text x="560" y="220" font-size="11" font-weight="600" fill="#222">C — Profile station</text>
+<g clip-path="url(#view-clip-2)">
 <rect x="560" y="230" width="260" height="172" fill="#fff" stroke="#333"/>
 <text x="690" y="316" text-anchor="middle" fill="#c00">no drawable geometry</text>
 <text x="566" y="244" font-size="9" fill="#0645ad">PROFILE CL &#183; stern← &#183; bow→</text>
+</g>
 <text x="28" y="520" font-size="11" font-weight="600" fill="#222">NOTES</text>
 <text x="28" y="540" font-size="10" fill="#333">Unknown subject &#39;CROSS-FORE&#39; — not a part, assembly, or reference in ShipPartRegistry.</text>
 <text x="28" y="554" font-size="10" fill="#333">Subject &#39;CROSS-FORE&#39; has no drawable geometry.</text>

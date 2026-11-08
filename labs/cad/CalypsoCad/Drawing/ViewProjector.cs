@@ -30,9 +30,21 @@ internal static class ViewProjector
         float MinV,
         float MaxV);
 
+    public enum EdgeMode
+    {
+        /// <summary>Camera-facing silhouette edges only (no triangulation seams).</summary>
+        Silhouette,
+        /// <summary>Explicit polylines only (paths / box wires) — for location context overlays.</summary>
+        PolylinesOnly,
+        /// <summary>Silhouette + polylines.</summary>
+        SilhouetteAndPolylines,
+    }
+
     public static ProjectionResult ProjectOrthographic(
         IReadOnlyList<DrawableGeometry> geometry,
-        StandardViewOrientation orientation)
+        StandardViewOrientation orientation,
+        EdgeMode edges = EdgeMode.SilhouetteAndPolylines,
+        bool includeFilledTriangles = true)
     {
         var segments = new List<ProjectedSegment>();
         var tris = new List<ProjectedTriangle>();
@@ -41,6 +53,7 @@ internal static class ViewProjector
         var maxU = float.NegativeInfinity;
         var minV = float.PositiveInfinity;
         var maxV = float.NegativeInfinity;
+        var viewDir = ViewDirection(orientation);
 
         void Track(ViewPoint2 p)
         {
@@ -54,8 +67,16 @@ internal static class ViewProjector
         {
             world = world.Union(g.Bounds);
 
-            if (g.Vertices is { Length: > 0 } verts && g.Indices is { Length: >= 3 } idx)
+            // Boxes already carry explicit edge polylines — do not also emit triangulated seams.
+            var skipMeshEdges = g.Kind == DrawablePrimitiveKind.Box && g.Polylines is { Count: > 0 };
+
+            if (!skipMeshEdges
+                && edges is EdgeMode.Silhouette or EdgeMode.SilhouetteAndPolylines
+                && g.Vertices is { Length: > 0 } verts
+                && g.Indices is { Length: >= 3 } idx)
             {
+                // Per undirected edge → list of triangle facing signs (+1 front, -1 back).
+                var edgeFacing = new Dictionary<(int, int), List<int>>();
                 for (var i = 0; i + 2 < idx.Length; i += 3)
                 {
                     var i0 = idx[i];
@@ -64,20 +85,49 @@ internal static class ViewProjector
                     if (i0 < 0 || i1 < 0 || i2 < 0
                         || i0 >= verts.Length || i1 >= verts.Length || i2 >= verts.Length)
                         continue;
-                    var a = Map(verts[i0], orientation);
-                    var b = Map(verts[i1], orientation);
-                    var c = Map(verts[i2], orientation);
+
+                    var w0 = verts[i0];
+                    var w1 = verts[i1];
+                    var w2 = verts[i2];
+                    var n = Vector3.Cross(w1 - w0, w2 - w0);
+                    if (n.LengthSquared() < 1e-14f)
+                        continue;
+                    n = Vector3.Normalize(n);
+                    var facing = Vector3.Dot(n, viewDir) >= 0f ? 1 : -1;
+
+                    var a = Map(w0, orientation);
+                    var b = Map(w1, orientation);
+                    var c = Map(w2, orientation);
                     Track(a); Track(b); Track(c);
-                    tris.Add(new ProjectedTriangle(a, b, c, g.SourceEntityId, g.SourceName));
-                    // Boundary edges only when they are silhouette candidates — emit all outer edges;
-                    // composer styles them. Avoid inventing every wire as a seam by de-duping later.
+                    if (includeFilledTriangles && facing > 0)
+                        tris.Add(new ProjectedTriangle(a, b, c, g.SourceEntityId, g.SourceName));
+
+                    AccumulateEdge(edgeFacing, i0, i1, facing);
+                    AccumulateEdge(edgeFacing, i1, i2, facing);
+                    AccumulateEdge(edgeFacing, i2, i0, facing);
+                }
+
+                foreach (var ((ia, ib), facings) in edgeFacing)
+                {
+                    // Silhouette: boundary (one triangle) or front/back junction.
+                    var front = facings.Count(f => f > 0);
+                    var back = facings.Count(f => f < 0);
+                    if (!(facings.Count == 1 || (front > 0 && back > 0)))
+                        continue;
+                    var a = Map(verts[ia], orientation);
+                    var b = Map(verts[ib], orientation);
                     AddEdge(segments, a, b, g, false);
-                    AddEdge(segments, b, c, g, false);
-                    AddEdge(segments, c, a, g, false);
                 }
             }
+            else if (g.Vertices is { Length: > 0 } vTrack)
+            {
+                // Still track bounds even when skipping mesh edges.
+                foreach (var p in vTrack)
+                    Track(Map(p, orientation));
+            }
 
-            if (g.Polylines is { } polys)
+            if (edges is EdgeMode.PolylinesOnly or EdgeMode.SilhouetteAndPolylines
+                && g.Polylines is { } polys)
             {
                 foreach (var poly in polys)
                 {
@@ -93,20 +143,24 @@ internal static class ViewProjector
         }
 
         if (float.IsInfinity(minU))
-        {
             minU = maxU = minV = maxV = 0;
-        }
 
         return new ProjectionResult(segments, tris, world, minU, maxU, minV, maxV);
     }
 
+    public static Vector3 ViewDirection(StandardViewOrientation orientation) =>
+        orientation switch
+        {
+            StandardViewOrientation.PlanSternLeft => -Vector3.UnitY,
+            StandardViewOrientation.ProfileSternLeft => -Vector3.UnitX, // looking toward port from starboard
+            StandardViewOrientation.TransverseLookingAft => -Vector3.UnitZ,
+            StandardViewOrientation.TransverseLookingForward => Vector3.UnitZ,
+            _ => -Vector3.UnitX,
+        };
+
     public static ViewPoint2 Map(Vector3 world, StandardViewOrientation orientation) =>
         orientation switch
         {
-            // Stern left: U = −Z so larger ZStem (aft) → smaller U… wait ISO stern left means
-            // aft appears on left. World +Z is bow, so aft is −Z direction from bow.
-            // Drawing U increases to the right (bow). U = world.Z (bow right) would put stem left.
-            // Existing ShipX: ox + (loa - zFromStem)*scale → larger z → left. So U_model = −Z.
             StandardViewOrientation.PlanSternLeft =>
                 new ViewPoint2(-world.Z, -world.X, world.Y),
             StandardViewOrientation.ProfileSternLeft =>
@@ -118,6 +172,19 @@ internal static class ViewProjector
             _ => new ViewPoint2(-world.Z, world.Y, world.X),
         };
 
+    private static void AccumulateEdge(
+        Dictionary<(int, int), List<int>> map, int a, int b, int facing)
+    {
+        var key = a < b ? (a, b) : (b, a);
+        if (!map.TryGetValue(key, out var list))
+        {
+            list = [];
+            map[key] = list;
+        }
+
+        list.Add(facing);
+    }
+
     private static void AddEdge(
         List<ProjectedSegment> segments,
         ViewPoint2 a,
@@ -125,7 +192,6 @@ internal static class ViewProjector
         DrawableGeometry g,
         bool section)
     {
-        // Skip near-zero edges.
         var du = a.U - b.U;
         var dv = a.V - b.V;
         if (du * du + dv * dv < 1e-12f)
