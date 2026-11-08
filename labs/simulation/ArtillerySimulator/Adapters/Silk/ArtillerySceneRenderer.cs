@@ -23,29 +23,10 @@ internal sealed class ArtillerySceneRenderer
     public SilkWireBatch Wires => _wires;
     public float Fps => _fps.Value;
 
-    public void DrawPlaying(
-        SilkFrame frame,
-        ArtilleryCameras camera,
-        TerrainWorld terrain,
-        AtmosphereModel atmosphere,
-        GunModel gun,
-        CrewDrill crew,
-        ArtilleryRoundPool rounds,
-        AimPreviewService aim,
-        ArtilleryBattleLoop battle,
-        ArtilleryParticles particles,
-        IDefenseMission? mission,
-        IGameLevel level,
-        FireControlUi ui,
-        ArtilleryAudioHub? audio,
-        Func<string?> fireBlockReason,
-        Func<bool> solutionUnsafe,
-        Func<bool> launchDetonation,
-        float fxTime,
-        FrameProfiler? profiler)
+    public void DrawPlaying(SilkFrame frame, FrameViewModel vm, FrameProfiler? profiler)
     {
         frame.Clear(ClearSky);
-        var cam = camera.Build(frame.DeltaSeconds);
+        var cam = vm.Camera.Build(frame.DeltaSeconds);
         var aspect = frame.Width / (float)Math.Max(1, frame.Height);
         var view = KristiansandGeoref.CreateMapView(cam.Position, cam.Target, cam.Up);
         var near = 2f;
@@ -58,30 +39,30 @@ internal sealed class ArtillerySceneRenderer
         var mvp = view * proj;
 
         _solids.Clear();
-        DrawAtmosphere(_solids, cam.Position, terrain.GunBaseline);
+        DrawAtmosphere(_solids, cam.Position, vm.Terrain.GunBaseline);
         frame.DrawWorldTriangles(_solids.Triangles, mvp);
 
         if (profiler is not null)
-            profiler.Time("draw.static", () => terrain.DrawStatic(frame, mvp));
+            profiler.Time("draw.static", () => vm.Terrain.DrawStatic(frame, mvp));
         else
-            terrain.DrawStatic(frame, mvp);
+            vm.Terrain.DrawStatic(frame, mvp);
 
         _wires.Clear();
         void BuildDynamic()
         {
-            DrawSkyHaze(_wires, cam.Position, terrain);
-            terrain.DrawDynamic(_wires);
-            mission?.Draw(_wires);
-            _wires.Ring(terrain.GunBaseline, gun.Spec.MinEffectiveRangeMeters, BallisticArcColors.MinRange);
-            DrawAimPreview(_wires, terrain, aim, solutionUnsafe());
-            gun.Draw(
+            DrawSkyHaze(_wires, cam.Position, vm.Terrain);
+            vm.Terrain.DrawDynamic(_wires);
+            vm.Mission?.Draw(_wires);
+            _wires.Ring(vm.Terrain.GunBaseline, vm.Gun.Spec.MinEffectiveRangeMeters, BallisticArcColors.MinRange);
+            DrawAimPreview(_wires, vm.Terrain, vm.Aim, vm.SolutionUnsafe);
+            vm.Gun.Draw(
                 _wires,
-                terrain.GunBaseline,
-                showPivotGlow: crew.BreechReady,
-                loading: crew.Loading);
-            DrawMuzzleFlash(_wires, gun, terrain, battle.MuzzleFlash);
-            DrawShot(_wires, terrain, rounds, battle, mission, gun);
-            particles.Draw(_wires);
+                vm.Terrain.GunBaseline,
+                showPivotGlow: vm.Crew.BreechReady,
+                loading: vm.Crew.Loading);
+            DrawMuzzleFlash(_wires, vm.Gun, vm.Terrain, vm.Battle.MuzzleFlash);
+            DrawShot(_wires, vm.Terrain, vm.Rounds, vm.Battle, vm.Mission, vm.Gun);
+            vm.Particles.Draw(_wires);
         }
 
         if (profiler is not null)
@@ -94,36 +75,36 @@ internal sealed class ArtillerySceneRenderer
         else
             frame.DrawWorldLines(_wires.AsSpan(), mvp);
 
-        frame.DrawScreenGrade(fxTime, intensity: 0.92f);
+        frame.DrawScreenGrade(vm.FxTime, intensity: 0.92f);
 
         _fps.Update(frame.DeltaSeconds);
-        var predicted = aim.PredictedImpact();
-        var predictedRange = aim.PredictedRangeMeters();
-        var tof = aim.EstimatedTofSeconds();
+        var predicted = vm.Aim.PredictedImpact();
+        var predictedRange = vm.PredictedRangeMeters;
+        var tof = vm.Aim.EstimatedTofSeconds();
 
         void DrawHud()
         {
-            ui.Draw(
+            vm.Ui.Draw(
                 frame,
-                gun,
-                crew.OrderedElevation,
-                crew.OrderedAzimuth,
-                terrain,
-                atmosphere,
-                rounds.Active,
-                camera.FollowProjectile,
+                vm.Gun,
+                vm.Crew.OrderedElevation,
+                vm.Crew.OrderedAzimuth,
+                vm.Terrain,
+                vm.Atmosphere,
+                vm.Rounds.Active,
+                vm.FollowProjectile,
                 _fps.Value,
                 predictedRange,
                 tof,
                 predicted,
-                mission is null
-                    ? $"{level.DisplayName} — {level.SiteName}"
-                    : $"{level.DisplayName.ToUpperInvariant()}  |  {mission.HudLine()}",
-                fireBlockReason(),
-                solutionUnsafe(),
-                launchDetonation(),
-                audio?.RadioLine,
-                audio?.RadioSpeaker);
+                vm.Mission is null
+                    ? $"{vm.Level.DisplayName} — {vm.Level.SiteName}"
+                    : $"{vm.Level.DisplayName.ToUpperInvariant()}  |  {vm.Mission.HudLine()}",
+                vm.FireBlockReason,
+                vm.SolutionUnsafe,
+                vm.LaunchDetonation,
+                vm.Audio?.RadioLine,
+                vm.Audio?.RadioSpeaker);
         }
 
         if (profiler is not null)

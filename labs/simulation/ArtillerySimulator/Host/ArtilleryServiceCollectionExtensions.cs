@@ -56,6 +56,7 @@ internal static class ArtilleryServiceCollectionExtensions
         services.AddSingleton<ArtillerySceneRenderer>();
         services.AddSingleton<PlayerBattleInput>();
         services.AddSingleton<BattleFxSink>();
+        services.AddSingleton<BattlePresentationBinder>();
         return services;
     }
 
@@ -68,6 +69,7 @@ internal static class ArtilleryServiceCollectionExtensions
 
     private static IServiceCollection AddArtilleryPlayComposition(this IServiceCollection services)
     {
+        // Binder before BattleWorld — world ctor calls Bind(...).
         services.AddSingleton<BattleWorld>();
         services.AddSingleton<IPlayQuery>(sp => sp.GetRequiredService<BattleWorld>());
         services.AddSingleton<IBatteryApplier>(sp => sp.GetRequiredService<BattleWorld>());

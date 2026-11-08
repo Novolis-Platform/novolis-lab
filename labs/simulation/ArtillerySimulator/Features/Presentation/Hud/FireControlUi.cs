@@ -201,7 +201,6 @@ internal sealed class FireControlUi : IDisposable
         }
         else if (_overlayUploaded)
         {
-            frame.ClearDepth();
             frame.DrawOverlay();
         }
 

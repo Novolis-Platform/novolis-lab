@@ -1,12 +1,13 @@
 {
-  "generatedUtc": "2026-11-07T23:45:00.0000000Z",
+  "generatedUtc": "2026-11-08T00:44:22.2531377Z",
   "partCount": 1087,
+  "vertexCount": 9460,
+  "triangleCount": 13496,
   "files": [
     "calypso.obj",
     "calypso.stl",
     "calypso.glb",
     "calypso.dae"
   ],
-  "filter": "structure role + hull/oml/iml meshes",
-  "note": "FBX omitted — Assimp native build has no FBX writer; Collada DAE is the fallback interchange format."
+  "filter": "structure role \u002B hull/oml/iml meshes"
 }

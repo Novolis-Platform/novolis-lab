@@ -159,26 +159,8 @@ internal sealed class FrameDirector : IDisposable
 
     private void Render(SilkFrame frame)
     {
-        _renderer.DrawPlaying(
-            frame,
-            _world.Camera,
-            _world.Terrain,
-            _world.Atmosphere,
-            _world.Gun,
-            _world.Crew,
-            _world.Rounds,
-            _world.Aim,
-            _world.Battle,
-            _world.Particles,
-            _world.Mission,
-            _world.Level,
-            _world.Ui,
-            _world.Audio,
-            _world.FireBlockReason,
-            () => _world.SolutionUnsafe,
-            () => _world.LaunchDetonation,
-            _world.FxTime,
-            ActiveProfiler());
+        var vm = _world.CreateFrameViewModel();
+        _renderer.DrawPlaying(frame, vm, ActiveProfiler());
 
         if (_showProfile)
         {
@@ -188,13 +170,13 @@ internal sealed class FrameDirector : IDisposable
                     frame,
                     ActiveProfiler() ?? _liveProfiler,
                     _renderer,
-                    _world.Terrain,
-                    _world.Atmosphere,
-                    _world.Gun,
-                    _world.Rounds,
-                    _world.PredictedRangeMeters,
-                    _world.Camera,
-                    _world.Mission,
+                    vm.Terrain,
+                    vm.Atmosphere,
+                    vm.Gun,
+                    vm.Rounds,
+                    vm.PredictedRangeMeters,
+                    vm.Camera,
+                    vm.Mission,
                     _profileFlash,
                     _profileFlashAge));
         }

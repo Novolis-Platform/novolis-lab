@@ -6,7 +6,8 @@ using Novolis.Silk;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Domain play kernel: gun, mission, fixed-step battle. No Silk frame loop, no agent host.
+/// Play kernel: gun, mission, fixed-step battle, command apply.
+/// No Silk frame loop, no agent host, no particle/audio wiring (see <see cref="BattlePresentationBinder"/>).
 /// </summary>
 internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
 {
@@ -16,11 +17,11 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     private readonly AtmosphereModel _atmosphere;
     private readonly CrewDrill _crew = new();
     private readonly ArtilleryCameras _camera;
-    private readonly ArtilleryParticles _particles;
     private readonly FireControlUi _ui;
     private readonly PlayerBattleInput _input;
     private readonly BattleFxSink _fx;
     private readonly ArtilleryShellController _shell;
+    private readonly BattlePresentationBinder _presentation;
     private readonly AimPreviewService _aim;
     private readonly ArtilleryRoundPool _rounds;
     private readonly ArtilleryBattleLoop _battle;
@@ -30,7 +31,6 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     private GunModel _gun = null!;
     private ProjectileBallisticSimulation _ballistics = null!;
     private IDefenseMission? _mission;
-    private float _fxTime;
     private bool _worldReady;
 
     public BattleWorld(
@@ -38,11 +38,11 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
         TerrainWorld terrain,
         AtmosphereModel atmosphere,
         ArtilleryCameras camera,
-        ArtilleryParticles particles,
         FireControlUi ui,
         PlayerBattleInput input,
         BattleFxSink fx,
         ArtilleryShellController shell,
+        BattlePresentationBinder presentation,
         ILogger<BattleWorld> log,
         ILoggerFactory logs)
     {
@@ -50,11 +50,11 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
         _terrain = terrain;
         _atmosphere = atmosphere;
         _camera = camera;
-        _particles = particles;
         _ui = ui;
         _input = input;
         _fx = fx;
         _shell = shell;
+        _presentation = presentation;
         _log = log;
 
         var level = options.Level;
@@ -75,18 +75,17 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
         _battle = new ArtilleryBattleLoop(
             _terrain,
             _atmosphere,
-            _session,
             _rounds,
             _aim,
             _fx,
             logs.CreateLogger<ArtilleryBattleLoop>());
         _battle.Bind(_gun, _crew, _ballistics);
-        WireFx();
 
         _audio = ArtilleryAudioHub.TryCreate(
             _session.Seed,
             enabled: !options.SkipShell,
             logs.CreateLogger<ArtilleryAudioHub>());
+        _presentation.Bind(this, _audio);
 
         _log.LogInformation(
             "Session ready: level={LevelId} piece={PieceId} seed={Seed} skipShell={SkipShell}",
@@ -97,14 +96,12 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     }
 
     public ArtilleryCameras Camera => _camera;
-    public ArtilleryParticles Particles => _particles;
     public FireControlUi Ui => _ui;
     public ArtilleryRoundPool Rounds => _rounds;
     public ArtilleryBattleLoop Battle => _battle;
     public AimPreviewService Aim => _aim;
     public ArtilleryAudioHub? Audio => _audio;
     public ArtilleryShellController Shell => _shell;
-    public float FxTime => _fxTime;
     public ArtilleryRunOptions Options => _options;
 
     public IGameLevel Level => _shell.Level;
@@ -127,38 +124,28 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
     public bool IsMissionTerminal => _mission?.IsTerminal == true;
     public MissionOutcome MissionOutcome => _mission?.Outcome ?? MissionOutcome.Open;
 
-    private void WireFx()
+    public FrameViewModel CreateFrameViewModel() => new()
     {
-        _fx.Muzzle = (muzzle, dir) =>
-        {
-            _particles.SpawnMuzzle(muzzle, dir);
-            _audio?.OnFire();
-        };
-        _fx.Burst = (at, airburst) =>
-        {
-            _particles.SpawnBurst(at, airburst);
-            _audio?.OnImpact(airburst);
-        };
-        _fx.KillcamExpired = () =>
-        {
-            _camera.FollowProjectile = false;
-            _camera.SnapToGun(_terrain.GunBaseline, _gun.BarrelDirection());
-        };
-        _fx.FrameFx = (wall, playing, mission) =>
-        {
-            _particles.Update(wall);
-            _fxTime += wall;
-            if (playing)
-            {
-                _audio?.Update(
-                    wall,
-                    playing: true,
-                    remaining: mission?.Remaining ?? 0,
-                    nearestMeters: mission?.NearestMeters ?? 0f,
-                    mission?.Outcome ?? MissionOutcome.Open);
-            }
-        };
-    }
+        Camera = _camera,
+        Terrain = _terrain,
+        Atmosphere = _atmosphere,
+        Gun = _gun,
+        Crew = _crew,
+        Rounds = _rounds,
+        Aim = _aim,
+        Battle = _battle,
+        Particles = _presentation.Particles,
+        Mission = _mission,
+        Level = Level,
+        Ui = _ui,
+        Audio = _audio,
+        FireBlockReason = FireBlockReason(),
+        SolutionUnsafe = SolutionUnsafe,
+        LaunchDetonation = LaunchDetonation,
+        FxTime = _presentation.FxTime,
+        FollowProjectile = _camera.FollowProjectile,
+        PredictedRangeMeters = PredictedRangeMeters,
+    };
 
     private BallisticTrajectoryRunner CreateRound() =>
         new(new BallisticTrajectoryRunnerOptions
@@ -340,7 +327,6 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             _mission.Remaining);
     }
 
-    /// <summary>Player input only — never advances physics.</summary>
     public void HandleInput(SilkFrame frame, IBatteryApplier applier)
     {
         if (!_worldReady)
@@ -357,10 +343,6 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             _input.Handle(frame, controlSeconds, paused: false, IsMissionTerminal, applier, _ui);
     }
 
-    /// <summary>
-    /// Fixed-step physics from wall time. Independent of how long render will take;
-    /// <see cref="FixedStepClock"/> caps steps so a hitch cannot explode this call.
-    /// </summary>
     public int TickPhysics(float wallSeconds)
     {
         if (!_worldReady || IsPaused || IsMissionTerminal)
@@ -374,7 +356,6 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
         return steps;
     }
 
-    /// <summary>Camera + FX + aim preview at display rate — never calls ballistics steps.</summary>
     public void PresentFrame(SilkFrame frame, float wallSeconds)
     {
         if (!_worldReady)
