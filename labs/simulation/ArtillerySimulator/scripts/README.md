@@ -33,6 +33,16 @@ dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scri
 dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\fetch-nvdb-roads.cs -- --write-debug-png
 ```
 
+## Oslofjorden / Oscarsborg (NHM only)
+
+South-heavy Drøbak Sound box — Kartverket `NHM_DTM_25833` via hoydedata.no (no Norgeskart PDF).
+
+```powershell
+dotnet run --file d:\novolis\novolis-lab\labs\simulation\ArtillerySimulator\scripts\build-oslofjorden-map.cs -p:NovolisUseProjectReferences=true
+```
+
+Writes `map/oslofjorden/layers/heightfield-1025.bin` + land/sea mask. Re-run after changing `OslofjordenGeodesy` WGS84 bounds.
+
 ## Debug POC comparison (not game inputs)
 
 ```powershell

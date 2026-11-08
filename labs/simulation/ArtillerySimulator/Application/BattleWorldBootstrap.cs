@@ -5,6 +5,7 @@ namespace ArtillerySimulator;
 internal sealed class BattleWorldBootstrap
 {
     private readonly TerrainWorld _terrain;
+    private readonly AtmosphereModel _atmosphere;
     private readonly BattleSession _session;
     private readonly ArtilleryRoundPool _rounds;
     private readonly ArtilleryBattleLoop _battle;
@@ -15,6 +16,7 @@ internal sealed class BattleWorldBootstrap
 
     public BattleWorldBootstrap(
         TerrainWorld terrain,
+        AtmosphereModel atmosphere,
         BattleSession session,
         ArtilleryRoundPool rounds,
         ArtilleryBattleLoop battle,
@@ -24,6 +26,7 @@ internal sealed class BattleWorldBootstrap
         ILogger logger)
     {
         _terrain = terrain;
+        _atmosphere = atmosphere;
         _session = session;
         _rounds = rounds;
         _battle = battle;
@@ -44,6 +47,7 @@ internal sealed class BattleWorldBootstrap
         var level = _shell.Level;
         _shell.SetLoadingStatus($"Building {level.DisplayName}…");
         level.RebuildMap(_terrain);
+        _atmosphere.BindMap(_terrain.Profile);
         _shell.SetLoadingStatus($"Seating {level.SiteName} battery…");
         _session.Clock.Reset();
         mission = level.StartMission(_terrain, _session.Piece, _session.Seed);

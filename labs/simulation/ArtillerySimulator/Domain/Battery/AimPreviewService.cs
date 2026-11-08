@@ -120,16 +120,16 @@ internal sealed class AimPreviewService
     {
         tofSeconds = 0f;
         var start = _gun.PredictState(_terrain.GunBaseline, elevation, azimuth, speed);
-        // Match live round dt family: fine ~30 Hz preview, coarse ~20 Hz for PE footprint.
-        var dt = coarse ? 1.0 / 20.0 : FixedStepClock.DtSeconds;
-        var maxPoints = coarse ? 400 : 900;
+        // Match live round dt family: fine ~120 Hz preview, coarse ~20 Hz for PE footprint.
+        var dt = coarse ? 1.0 / 20.0 : (double)FixedStepClock.DtSeconds;
+        var maxDraw = coarse ? 160 : 512;
         const double maxTimeSeconds = 120.0;
-        var points = new List<Vector3>(Math.Min(Math.Max(64, maxPoints), 2_048)) { start.Position };
+        var hardSteps = (int)Math.Ceiling(maxTimeSeconds / dt) + 8;
+
+        // Pass 1 — integrate the full ballistic flight at physics resolution (never overwrite tips).
+        var path = new List<Vector3>(Math.Min(hardSteps + 2, 16_384)) { start.Position };
         var state = start;
         var finished = false;
-        var drawCap = Math.Max(8, maxPoints);
-        var hardSteps = Math.Max(drawCap * 4, (int)Math.Ceiling(maxTimeSeconds / dt) + 8);
-        // Same contact path family as live rounds: heightfield + BVH collision world.
         var terrain = _terrain.Field;
         var collision = _terrain.Collision;
         var radius = MathF.Max(0.08f, _gun.Spec.MuzzleRadiusMeters);
@@ -152,45 +152,68 @@ internal sealed class AimPreviewService
 
             if (terrain.TrySegmentLeavesRange(prev, p, out var boundaryHit, out _))
             {
-                points.Add(terrain.ProjectOntoSurface(boundaryHit));
+                path.Add(terrain.ProjectOntoSurface(boundaryHit));
                 finished = true;
                 break;
             }
 
             if (!terrain.IsInside(p.X, p.Z))
             {
-                points.Add(terrain.ProjectOntoSurface(p));
+                path.Add(terrain.ProjectOntoSurface(p));
                 finished = true;
                 break;
             }
 
-            // Prefer collision mesh contact (same as BallisticTrajectoryRunner) then fine field.
             var sphere = new Sphere(prev, radius);
             var displacement = p - prev;
             if (displacement.LengthSquared() > 1e-8f
                 && BallisticsQueries.SweepProjectileSphere(collision, in sphere, displacement, out var meshHit))
             {
-                points.Add(meshHit.Point);
+                path.Add(meshHit.Point);
                 finished = true;
                 break;
             }
 
             if (terrain.TryHeightfieldContact(p, radius))
             {
-                points.Add(p);
+                path.Add(p);
                 finished = true;
                 break;
             }
 
-            if (points.Count < drawCap)
-                points.Add(p);
-            else if (step % 3 == 0)
-                points[^1] = p;
+            path.Add(p);
         }
 
-        if (!finished && points.Count >= 1)
-            points[^1] = terrain.ProjectOntoSurface(state.Position);
+        if (!finished)
+            path.Add(terrain.ProjectOntoSurface(state.Position));
 
-        return points;
+        return ResampleArcUniform(path, maxDraw);
+    }
+
+    /// <summary>
+    /// Evenly spaced polyline samples along the flight path so the HUD reads as a continuous
+    /// ballistic parabola (not two chords from sparse / overwritten tips).
+    /// </summary>
+    private static IReadOnlyList<Vector3> ResampleArcUniform(IReadOnlyList<Vector3> path, int maxDraw)
+    {
+        if (path.Count <= maxDraw)
+            return path;
+
+        var count = Math.Max(8, maxDraw);
+        var sampled = new Vector3[count];
+        sampled[0] = path[0];
+        sampled[^1] = path[^1];
+        var denom = count - 1;
+        for (var i = 1; i < denom; i++)
+        {
+            var t = i / (float)denom;
+            var src = t * (path.Count - 1);
+            var i0 = (int)MathF.Floor(src);
+            var i1 = Math.Min(i0 + 1, path.Count - 1);
+            var frac = src - i0;
+            sampled[i] = Vector3.Lerp(path[i0], path[i1], frac);
+        }
+
+        return sampled;
     }
 }

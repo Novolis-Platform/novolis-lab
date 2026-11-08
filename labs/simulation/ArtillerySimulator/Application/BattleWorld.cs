@@ -122,6 +122,7 @@ internal sealed class BattleWorld : IPlayQuery, IBatteryApplier, IDisposable
             log);
         _bootstrap = new BattleWorldBootstrap(
             _terrain,
+            _atmosphere,
             _session,
             _rounds,
             _battle,

@@ -1,0 +1,10 @@
+{
+  "PixelWidth": 1717,
+  "PixelHeight": 4096,
+  "EastMeters": 17011.4472535564,
+  "NorthMeters": 40584.86901354883,
+  "UtmOriginEasting": 243462.15019889298,
+  "UtmOriginNorthing": 6593310.34618413,
+  "Crs": "EPSG:25833",
+  "ElevationSource": "NHM_DTM_25833"
+}

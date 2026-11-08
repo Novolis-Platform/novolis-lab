@@ -1,0 +1,19 @@
+{
+  "schema": "novolis.artillery.map-stack/3",
+  "citation": "Oslofjorden / Oscarsborg educational cutout from Kartverket NHM_DTM_25833 (hoydedata.no).",
+  "world": {
+    "northUp": true,
+    "origin": "southwest_corner_meters",
+    "crs": "EPSG:25833",
+    "eastMeters": 17011.4472535564,
+    "northMeters": 40584.86901354883,
+    "meshGrid": 1025,
+    "elevationSource": "NHM_DTM_25833",
+    "elevationMinMeters": 0,
+    "elevationMaxMeters": 359,
+    "wgs84": { "south": 59.4, "north": 59.765, "west": 10.48, "east": 10.78 },
+    "utmOriginEasting": 243462.15019889298,
+    "utmOriginNorthing": 6593310.34618413,
+    "raster": { "width": 1717, "height": 4096 }
+  }
+}

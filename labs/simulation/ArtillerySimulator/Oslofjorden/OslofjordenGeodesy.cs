@@ -4,7 +4,7 @@ namespace ArtillerySimulator;
 
 /// <summary>
 /// Drøbak Sound / Oscarsborg frame for the 9 April 1940 educational scenario.
-/// Approximate EPSG:25833 box — not a Kartverket height bake.
+/// EPSG:25833 WGS84 box matched by <c>scripts/build-oslofjorden-map.cs</c> (Kartverket NHM_DTM_25833 via hoydedata.no).
 /// Frame is south-heavy: long outer-fjord run-in, short northern pocket past the objective.
 /// </summary>
 internal static class OslofjordenGeodesy

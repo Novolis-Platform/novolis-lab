@@ -19,11 +19,11 @@ internal static class AimWireComposer
         DrawProbabilityFootprint(wires, terrain, aim, unsafeSol);
 
         if (aim.Tube.Count >= 2)
-            BallisticArcWire.Draw(wires, aim.Tube, BallisticArcColors.Tube, maxSegments: 160);
+            BallisticArcWire.Draw(wires, aim.Tube, BallisticArcColors.Tube, maxSegments: 320);
 
         if (aim.Ordered.Count >= 2)
         {
-            BallisticArcWire.Draw(wires, aim.Ordered, ordered, maxSegments: 280);
+            BallisticArcWire.Draw(wires, aim.Ordered, ordered, maxSegments: 480);
             var mpi = aim.Ordered[^1];
             wires.WireSphere(mpi, 28f, mpiColor, segments: 10);
             wires.Ring(mpi, 40f, mpiColor);

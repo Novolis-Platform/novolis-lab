@@ -23,8 +23,10 @@ internal sealed class ArtillerySceneRenderer : IDisposable
         var cam = vm.Camera.Build(frame.DeltaSeconds);
         var aspect = frame.Width / (float)Math.Max(1, frame.Height);
         var view = KristiansandGeoref.CreateMapView(cam.Position, cam.Target, cam.Up);
+        var extent = MathF.Max(vm.Terrain.EastMeters, vm.Terrain.NorthMeters);
         var near = 2f;
-        var far = MathF.Max(40_000f, Vector3.Distance(cam.Position, cam.Target) * 8f);
+        var far = MathF.Max(extent * 6f, Vector3.Distance(cam.Position, cam.Target) * 12f);
+        far = MathF.Max(far, 250_000f);
         var proj = Matrix4x4.CreatePerspectiveFieldOfView(
             cam.FieldOfViewDegrees * (MathF.PI / 180f),
             aspect,
@@ -32,7 +34,7 @@ internal sealed class ArtillerySceneRenderer : IDisposable
             far);
         var mvp = view * proj;
 
-        _sky.Ensure(frame, cam.Position, vm.Terrain.GunBaseline);
+        _sky.Ensure(frame, cam.Position, vm.Terrain.GunBaseline, extent);
         _sky.DrawIfReady(frame, mvp);
 
         if (profiler is not null)

@@ -14,6 +14,8 @@
     <None Include="map\layers\water-mask.png" CopyToOutputDirectory="PreserveNewest" Link="map\layers\water-mask.png" />
     <None Include="map\layers\water-mask.bin" CopyToOutputDirectory="PreserveNewest" Link="map\layers\water-mask.bin" />
     <None Include="map\kristiansand-land-sea-mask.bin" CopyToOutputDirectory="PreserveNewest" Link="map\kristiansand-land-sea-mask.bin" />
+    <None Include="map\oslofjorden\layers\heightfield-1025.bin" CopyToOutputDirectory="PreserveNewest" Link="map\oslofjorden\layers\heightfield-1025.bin" />
+    <None Include="map\oslofjorden\oslofjorden-land-sea-mask.bin" CopyToOutputDirectory="PreserveNewest" Link="map\oslofjorden\oslofjorden-land-sea-mask.bin" />
     <None Include="map\kommunekart-3d-view.json" CopyToOutputDirectory="PreserveNewest" Link="map\kommunekart-3d-view.json" />
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="assets" />
     <!-- File-based map pipeline apps; not part of the game compile. -->

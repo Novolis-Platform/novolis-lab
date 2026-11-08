@@ -11,7 +11,7 @@ internal sealed class OslofjordenMapTerrain : IMapTerrainProfile
     public float EastMeters => OslofjordenGeodesy.EastMeters;
     public float NorthMeters => OslofjordenGeodesy.NorthMeters;
     public float MeanLatitudeDegrees => (float)OslofjordenGeodesy.MeanLatitudeDegrees;
-    public float MaxElevationMeters => 140f;
+    public float MaxElevationMeters => OslofjordenHeightSampler.MaxElevationMeters;
 
     public IHeightSampler CreateSampler() => new OslofjordenHeightSampler();
 

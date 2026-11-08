@@ -13,18 +13,24 @@ internal sealed class SkyDomeCache : IDisposable
     private readonly WorldSolidBatch _solids = new();
     private WorldSolidGpuMesh? _skyMesh;
     private Vector3 _skyCenter;
+    private float _skyRadius;
 
-    public void Ensure(SilkFrame frame, Vector3 camera, Vector3 gunBaseline)
+    public void Ensure(SilkFrame frame, Vector3 camera, Vector3 gunBaseline, float mapExtentMeters)
     {
-        var center = new Vector3(camera.X, MathF.Min(camera.Y, gunBaseline.Y + 40f), camera.Z);
-        if (_skyMesh is not null && Vector3.DistanceSquared(center, _skyCenter) < 500f * 500f)
+        // Oslofjorden spans ~40 km; a short dome reads as nearby orange "mountains" from overview cam.
+        var radius = MathF.Max(120_000f, mapExtentMeters * 4.5f);
+        var center = new Vector3(camera.X, gunBaseline.Y + 40f, camera.Z);
+        if (_skyMesh is not null
+            && MathF.Abs(radius - _skyRadius) < 500f
+            && Vector3.DistanceSquared(center, _skyCenter) < 2_000f * 2_000f)
             return;
 
         _skyMesh?.Dispose();
         _solids.Clear();
-        _solids.SkyDome(center, radius: 28_000f, SkyZenith, SkyHorizon, slices: 24, stacks: 8);
+        _solids.SkyDome(center, radius, SkyZenith, SkyHorizon, slices: 48, stacks: 16);
         _skyMesh = frame.CreateWorldSolidMesh(_solids.Triangles);
         _skyCenter = center;
+        _skyRadius = radius;
     }
 
     public void DrawIfReady(SilkFrame frame, Matrix4x4 mvp)

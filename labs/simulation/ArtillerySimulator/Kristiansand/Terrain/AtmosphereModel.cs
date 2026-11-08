@@ -62,11 +62,24 @@ internal sealed class AtmosphereModel
 
     public float WindSpeedMetersPerSecond => _speedMps;
 
+    /// <summary>Scenario mean latitude (°N) — drives Coriolis in the ballistic environment.</summary>
+    public double LatitudeDegrees { get; private set; } = KristiansandHeightSampler.MeanLatitudeDegrees;
+
+    public string RegionLabel { get; private set; } = "KRS coastal";
+
     public static AtmosphereModel CreateRegionalDefault()
     {
         var model = new AtmosphereModel();
         model.PublishState(force: true);
         return model;
+    }
+
+    public void BindMap(IMapTerrainProfile profile)
+    {
+        LatitudeDegrees = profile.MeanLatitudeDegrees;
+        RegionLabel = profile.Id.Equals("oslofjorden", StringComparison.OrdinalIgnoreCase)
+            ? "OSL fjord"
+            : "KRS coastal";
     }
 
     /// <summary>
@@ -169,7 +182,7 @@ internal sealed class AtmosphereModel
             DensityKgPerM3At(altitudeMeters),
             WindAt(altitudeMeters),
             TemperatureAt(altitudeMeters),
-            KristiansandHeightSampler.MeanLatitudeDegrees);
+            LatitudeDegrees);
 
     public string SummaryLine(float sampleAltitudeMeters)
     {
@@ -178,7 +191,7 @@ internal sealed class AtmosphereModel
         var qnh = ReferencePressurePa / 100.0;
         return string.Create(
             CultureInfo.InvariantCulture,
-            $"KRS coastal  ρ={rho:F3} kg/m³  {tc:F1}°C  RH={RelativeHumidity * 100:F0}%  QNH={qnh:F0}  wind {_speedMps:F1} m/s from {WindFromDegrees:F0}°  {KristiansandHeightSampler.MeanLatitudeDegrees:F1} N  t={_battleSeconds:F0}s");
+            $"{RegionLabel}  ρ={rho:F3} kg/m³  {tc:F1}°C  RH={RelativeHumidity * 100:F0}%  QNH={qnh:F0}  wind {_speedMps:F1} m/s from {WindFromDegrees:F0}°  {LatitudeDegrees:F1} N  t={_battleSeconds:F0}s");
     }
 
     private void PublishState(bool force)

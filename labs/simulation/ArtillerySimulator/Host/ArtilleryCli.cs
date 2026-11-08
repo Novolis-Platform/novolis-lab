@@ -131,6 +131,7 @@ internal static class ArtilleryCli
     private static void DumpAim(TerrainWorld terrain, IArtilleryPieceSpec piece, IDefenseMission mission, Vector3 gun)
     {
         var atmosphere = AtmosphereModel.CreateRegionalDefault();
+        atmosphere.BindMap(terrain.Profile);
         var session = new BattleSession(piece, seed: 42);
         var gunModel = new GunModel(piece);
         gunModel.LayCenter(mission.TrailBearingDegrees);

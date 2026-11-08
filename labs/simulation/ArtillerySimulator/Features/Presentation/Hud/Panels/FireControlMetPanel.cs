@@ -42,7 +42,13 @@ internal static class FireControlMetPanel
         ly += lh;
         chrome.DrawText(canvas, string.Create(CultureInfo.InvariantCulture, $"WIND  {windSpeed:F1} M/S  FROM {windFrom:F0}"), lx, ly, ls, FireControlTheme.Text);
         ly += lh;
-        chrome.DrawText(canvas, $"LAT   {KristiansandHeightSampler.MeanLatitudeDegrees:F1} N  KRS COAST", lx, ly, ls, FireControlTheme.Text);
+        chrome.DrawText(
+            canvas,
+            string.Create(CultureInfo.InvariantCulture, $"LAT   {atmosphere.LatitudeDegrees:F1} N  {atmosphere.RegionLabel.ToUpperInvariant()}"),
+            lx,
+            ly,
+            ls,
+            FireControlTheme.Text);
         ly += lh;
         var mpiRange = FireControlHudMath.HorizontalDistance(terrain.GunBaseline, predictedImpact);
         chrome.DrawText(
