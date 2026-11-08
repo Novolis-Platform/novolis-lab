@@ -2453,17 +2453,22 @@ internal sealed class CalypsoRenderer
         {
             var fromKind = kind switch
             {
-                Model.CadPartKind.RingFrame or Model.CadPartKind.WebFrame or Model.CadPartKind.DeckBeam
+                // Ring + chords only — transverse deckbeams belong under Longitudinals (UI: girders/deckbeams).
+                Model.CadPartKind.RingFrame or Model.CadPartKind.WebFrame
                     or Model.CadPartKind.AnnularWebPlate or Model.CadPartKind.DeckChord
                     or Model.CadPartKind.RingFlange or Model.CadPartKind.WebStiffener =>
                     CalypsoVisualLayers.Frames | outer,
+                Model.CadPartKind.DeckBeam =>
+                    CalypsoVisualLayers.Longitudinals | outer,
                 Model.CadPartKind.BulkheadPlate => CalypsoVisualLayers.Bulkheads,
                 Model.CadPartKind.StructuralBracket => CalypsoVisualLayers.Joinery,
                 Model.CadPartKind.DeckPanel => DeckPlateFlags(box) | outer,
                 Model.CadPartKind.LongitudinalGirder or Model.CadPartKind.ThrustMember =>
                     CalypsoVisualLayers.Longitudinals | outer,
+                // Continuous knuckle paths: show with open-web frames AND girders (not shell-only).
                 Model.CadPartKind.HullStringer =>
-                    CalypsoVisualLayers.HullShell | CalypsoVisualLayers.OuterHull,
+                    CalypsoVisualLayers.Frames | CalypsoVisualLayers.Longitudinals
+                    | CalypsoVisualLayers.OuterHull,
                 Model.CadPartKind.ShellPanel => CalypsoVisualLayers.HullShell,
                 _ => CalypsoVisualLayers.None,
             };
@@ -2493,7 +2498,8 @@ internal sealed class CalypsoRenderer
                 || string.Equals(role, "ThrustStructure", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.Longitudinals | outer;
             if (string.Equals(role, "ShellStiffener", StringComparison.OrdinalIgnoreCase))
-                return CalypsoVisualLayers.HullShell | CalypsoVisualLayers.OuterHull;
+                return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Longitudinals
+                       | CalypsoVisualLayers.OuterHull;
             if (string.Equals(role, "ShellPanel", StringComparison.OrdinalIgnoreCase))
                 return CalypsoVisualLayers.HullShell;
         }
@@ -2501,25 +2507,29 @@ internal sealed class CalypsoRenderer
         if (n.StartsWith("shell-panel-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.HullShell;
         if (n.StartsWith("shell-stiffener-", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.HullShell | CalypsoVisualLayers.OuterHull;
-        if (n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
+            return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Longitudinals
+                   | CalypsoVisualLayers.OuterHull;
+        // Knuckle / plating-join stringers before generic stringer- (same continuous outer cage).
+        if (n.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase)
             || n.StartsWith("stringer-join-", StringComparison.OrdinalIgnoreCase)
-            || n.StartsWith("stringer-knuckle-", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.OuterHull;
+            || n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.Frames | CalypsoVisualLayers.Longitudinals
+                   | CalypsoVisualLayers.OuterHull;
         if (n.Contains("-join-", StringComparison.OrdinalIgnoreCase)
             || n.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Joinery;
+        // frame-*-deckbeam-* before generic frame- (deckbeams are Longitudinals, not open webs).
+        if (n.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
+            || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase))
+            return CalypsoVisualLayers.Longitudinals | outer;
         if (n.StartsWith("frame-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Frames | outer;
         if (n.StartsWith("bh-", StringComparison.OrdinalIgnoreCase))
             return CalypsoVisualLayers.Bulkheads;
         if (n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase))
             return DeckPlateFlags(box) | outer;
-        if (n.StartsWith("girder-", StringComparison.OrdinalIgnoreCase)
-            || n.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)
-            || n.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
-            || n.StartsWith("ramp-aft", StringComparison.OrdinalIgnoreCase))
-            return CalypsoVisualLayers.Longitudinals | outer;
         // Unclassified structure: do not flood every layer — Joinery as least-surprise inspect bucket.
         return CalypsoVisualLayers.Joinery;
     }

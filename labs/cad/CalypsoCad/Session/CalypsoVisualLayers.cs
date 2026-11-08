@@ -17,7 +17,7 @@ internal enum CalypsoVisualLayers
     /// <summary>Pressure / compartment bulkheads (<c>bh-*</c>).</summary>
     Bulkheads = 1 << 2,
 
-    /// <summary>Longitudinal girders + transverse deckbeams.</summary>
+    /// <summary>Longitudinal girders, hull knuckle stringers, and transverse deckbeams.</summary>
     Longitudinals = 1 << 3,
 
     /// <summary>Cellular sandwich deck panels (<c>deck-sandwich-*</c>) — faces + cores.</summary>

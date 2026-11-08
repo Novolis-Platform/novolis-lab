@@ -133,6 +133,8 @@ internal static class HullKnuckleStringerGenerator
                     entities, loa, name, zMid, mesh, fabPartId: $"P-{path.AssemblyId}-S{segIndex}", meta: meta))
                 continue;
 
+            // Cyan accent — distinct from orange annular webs and grey deckbeams.
+            entities[^1].Color = [0.28f, 0.78f, 0.88f];
             StampSegmentProps(entities[^1], path.VertexIndex, a.ZStem, b.ZStem, path.AssemblyId);
 
             var part = new CadPart(

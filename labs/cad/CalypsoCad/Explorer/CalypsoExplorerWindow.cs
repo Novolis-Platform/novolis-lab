@@ -158,9 +158,9 @@ internal sealed class CalypsoExplorerWindow : Window
             _controller.Session.ShowOmlGuide = _omlGuideCheck.IsChecked == true;
         };
         panel.Children.Add(_omlGuideCheck);
-        AddLayerCheck(panel, "Open web frames (ring+chords)", CalypsoVisualLayers.Frames);
+        AddLayerCheck(panel, "Open web frames (ring+chords+knuckles)", CalypsoVisualLayers.Frames);
         AddLayerCheck(panel, "Pressure bulkheads (closed)", CalypsoVisualLayers.Bulkheads);
-        AddLayerCheck(panel, "Girders / deckbeams", CalypsoVisualLayers.Longitudinals);
+        AddLayerCheck(panel, "Girders / deckbeams / knuckles", CalypsoVisualLayers.Longitudinals);
 
         panel.Children.Add(Header("Deck-scoped"));
         AddLayerCheck(panel, "Sandwich deck plates", CalypsoVisualLayers.DeckPlates);
