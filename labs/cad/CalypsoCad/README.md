@@ -63,12 +63,13 @@ dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.cspro
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --blueprints
 ```
 
-Holistic fab / visual gates:
+Holistic fab / visual / blueprint gates (file-based apps next to this lab, not governance):
 
 ```powershell
-dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-fab-release.cs
-dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-visual-gate.cs
-dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-blueprints.cs
+dotnet run --file d:\novolis\novolis-lab\labs\cad\CalypsoCad\scripts\verify-calypso-fab-release.cs
+dotnet run --file d:\novolis\novolis-lab\labs\cad\CalypsoCad\scripts\verify-calypso-visual-gate.cs
+dotnet run --file d:\novolis\novolis-lab\labs\cad\CalypsoCad\scripts\verify-calypso-blueprints.cs
+dotnet run --file d:\novolis\novolis-lab\labs\cad\CalypsoCad\scripts\verify-calypso-bh-spine.cs
 ```
 
 ## Repair map

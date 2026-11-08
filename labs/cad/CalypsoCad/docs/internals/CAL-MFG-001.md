@@ -24,7 +24,7 @@ Outputs under `%LocalAppData%\Novolis\CalypsoCad\generated\CAL-MFG-001\`:
 Verify:
 
 ```powershell
-dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-fab-release.cs
+dotnet run --file d:\novolis\novolis-lab\labs\cad\CalypsoCad\scripts\verify-calypso-fab-release.cs
 ```
 
 Acceptance (`--acceptance`) gates on **CAL-MFG-002** after `--fab-release` (this package id is historical only).

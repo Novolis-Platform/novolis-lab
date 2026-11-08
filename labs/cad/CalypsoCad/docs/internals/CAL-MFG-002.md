@@ -9,7 +9,7 @@ CAL-MFG-002 is the **fab authority** for Calypso automated plate cutting and orb
 - **Kerf / part-gap** aware nesting from `CAL-HULL-CAD-001.json` process fields
 - Material-aware **BOM** (316L structure/hull, aluminum outfit install kit)
 - Hull **weld seam** traceability plus `welds/hull-program.json` (ordered steps with seam midpoints)
-- Hard **acceptance** and governance gates (`verify-calypso-fab-release.cs`, `verify-calypso-visual-gate.cs`)
+- Hard **acceptance** and lab gates (`scripts/verify-calypso-fab-release.cs`, `scripts/verify-calypso-visual-gate.cs`)
 
 ## Deltas from CAL-MFG-001
 
@@ -28,5 +28,5 @@ STEP AP242, GD&T, fastener torque sheets, and certification claims remain **CAL-
 
 ```powershell
 dotnet run --project d:\novolis\novolis-lab\labs\cad\CalypsoCad\CalypsoCad.csproj -p:NovolisUseProjectReferences=true -- --fab-release
-dotnet run --file d:\novolis\novolis-governance\scripts\verify-calypso-fab-release.cs
+dotnet run --file d:\novolis\novolis-lab\labs\cad\CalypsoCad\scripts\verify-calypso-fab-release.cs
 ```

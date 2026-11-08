@@ -1,0 +1,14 @@
+<Project>
+  <!-- Isolate Calypso file-based verify apps from lab CPM / SourceLink. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <PublishAot>false</PublishAot>
+    <PackAsTool>false</PackAsTool>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Remove="Microsoft.SourceLink.GitHub" />
+  </ItemGroup>
+</Project>
