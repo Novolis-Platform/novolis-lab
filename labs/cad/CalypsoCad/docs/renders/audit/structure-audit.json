@@ -1,5 +1,5 @@
 {
-  "generatedUtc": "2026-11-08T04:40:41.1784222Z",
+  "generatedUtc": "2026-11-08T11:18:51.6711193Z",
   "loa": 69,
   "spine": "mid athwart (X=0) \u00D7 mid height (SectionAt.mid) \u00D7 stem\u2192stern",
   "tolX": 0.05,
@@ -134,11 +134,11 @@
     }
   ],
   "semanticRegistry": {
-    "partCount": 1511,
-    "assemblyCount": 75,
+    "partCount": 1582,
+    "assemblyCount": 77,
     "bulkheadPlates": 6,
     "frameAssemblies": 15,
-    "transverseParts": 207,
+    "transverseParts": 302,
     "unclassifiedCount": 0,
     "unclassified": []
   },
@@ -1176,13 +1176,13 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F3.3-chord-4,4-0",
+          "Name": "frame-F3.3-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F3.3",
           "IsShell": false
         },
         {
-          "Name": "frame-F3.3-chord-8-1",
+          "Name": "frame-F3.3-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F3.3",
           "IsShell": false
@@ -1194,13 +1194,13 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F6.5-chord-4,4-0",
+          "Name": "frame-F6.5-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F6.5",
           "IsShell": false
         },
         {
-          "Name": "frame-F6.5-chord-8-1",
+          "Name": "frame-F6.5-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F6.5",
           "IsShell": false
@@ -1212,13 +1212,13 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F9.8-chord-4,4-0",
+          "Name": "frame-F9.8-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F9.8",
           "IsShell": false
         },
         {
-          "Name": "frame-F9.8-chord-8-1",
+          "Name": "frame-F9.8-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F9.8",
           "IsShell": false
@@ -1230,25 +1230,13 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F16-chord-4,4-0",
+          "Name": "frame-F16-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F16",
           "IsShell": false
         },
         {
-          "Name": "frame-F16-chord-4,4-1",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-chord-8-2",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-chord-8-3",
+          "Name": "frame-F16-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F16",
           "IsShell": false
@@ -1260,81 +1248,177 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-chord-4,4-0",
+          "Name": "frame-F26.6-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-chord-4,4-1",
+          "Name": "frame-F26.6-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-chord-4,4-2",
+          "Name": "frame-F26.6-deckbeam-0,5",
           "Role": "TransverseFrame",
           "Assembly": "frame-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-chord-8-3",
+          "Name": "frame-F26.6-deckbeam-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-chord-8-4",
+          "Name": "frame-F26.6-deckbeam-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-chord-8-5",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F26.6",
+          "Name": "frame-F26.6-int-post-0-y-4,9",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-deckbeam-0,5-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F26.6",
+          "Name": "frame-F26.6-int-post-1-y-3",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-deckbeam-4,4-y-9,8",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F26.6",
+          "Name": "frame-F26.6-int-post-2-y-1",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-deckbeam-4,4-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F26.6",
+          "Name": "frame-F26.6-int-post-3-y1",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-deckbeam-4,4-y8,3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F26.6",
+          "Name": "frame-F26.6-int-post-4-y3",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-deckbeam-8-y-9,8",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F26.6",
+          "Name": "frame-F26.6-int-post-5-y5",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-deckbeam-8-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F26.6",
+          "Name": "frame-F26.6-int-jamb-0-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
           "IsShell": false
         },
         {
-          "Name": "frame-F26.6-deckbeam-8-y8,3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F26.6",
+          "Name": "frame-F26.6-int-jamb-1-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-hdr-0-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-2-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-3-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-hdr-1-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-4-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-5-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-hdr-2-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-6-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-7-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-hdr-3-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-8-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-9-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-hdr-4-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-10-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-jamb-11-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F26.6-int-hdr-5-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F26.6",
           "IsShell": false
         },
         {
@@ -1344,81 +1428,159 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-chord-4,4-0",
+          "Name": "frame-F33.9-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-chord-4,4-1",
+          "Name": "frame-F33.9-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-chord-4,4-2",
+          "Name": "frame-F33.9-deckbeam-0,5",
           "Role": "TransverseFrame",
           "Assembly": "frame-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-chord-8-3",
+          "Name": "frame-F33.9-deckbeam-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-chord-8-4",
+          "Name": "frame-F33.9-deckbeam-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-chord-8-5",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F33.9",
+          "Name": "frame-F33.9-int-post-0-y-4,9",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-deckbeam-0,5-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F33.9",
+          "Name": "frame-F33.9-int-post-1-y0",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-deckbeam-4,4-y-9,8",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F33.9",
+          "Name": "frame-F33.9-int-post-2-y5",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-deckbeam-4,4-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F33.9",
+          "Name": "frame-F33.9-int-jamb-0-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-deckbeam-4,4-y8,3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F33.9",
+          "Name": "frame-F33.9-int-jamb-1-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-deckbeam-8-y-9,8",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F33.9",
+          "Name": "frame-F33.9-int-hdr-0-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-deckbeam-8-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F33.9",
+          "Name": "frame-F33.9-int-jamb-2-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
           "IsShell": false
         },
         {
-          "Name": "frame-F33.9-deckbeam-8-y8,3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F33.9",
+          "Name": "frame-F33.9-int-jamb-3-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-hdr-1-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-jamb-4-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-jamb-5-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-hdr-2-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-jamb-6-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-jamb-7-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-hdr-3-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-jamb-8-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-jamb-9-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-hdr-4-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-jamb-10-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-jamb-11-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F33.9-int-hdr-5-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F33.9",
           "IsShell": false
         },
         {
@@ -1428,81 +1590,159 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-chord-4,4-0",
+          "Name": "frame-F37.4-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-chord-4,4-1",
+          "Name": "frame-F37.4-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-chord-4,4-2",
+          "Name": "frame-F37.4-deckbeam-0,5",
           "Role": "TransverseFrame",
           "Assembly": "frame-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-chord-8-3",
+          "Name": "frame-F37.4-deckbeam-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-chord-8-4",
+          "Name": "frame-F37.4-deckbeam-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-chord-8-5",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F37.4",
+          "Name": "frame-F37.4-int-post-0-y-4,9",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-deckbeam-0,5-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F37.4",
+          "Name": "frame-F37.4-int-post-1-y0",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-deckbeam-4,4-y-9,8",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F37.4",
+          "Name": "frame-F37.4-int-post-2-y5",
+          "Role": "PartitionAttachment",
+          "Assembly": "FRAME-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-deckbeam-4,4-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F37.4",
+          "Name": "frame-F37.4-int-jamb-0-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-deckbeam-4,4-y8,3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F37.4",
+          "Name": "frame-F37.4-int-jamb-1-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-deckbeam-8-y-9,8",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F37.4",
+          "Name": "frame-F37.4-int-hdr-0-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-deckbeam-8-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F37.4",
+          "Name": "frame-F37.4-int-jamb-2-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
           "IsShell": false
         },
         {
-          "Name": "frame-F37.4-deckbeam-8-y8,3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F37.4",
+          "Name": "frame-F37.4-int-jamb-3-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-hdr-1-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-jamb-4-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-jamb-5-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-hdr-2-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-jamb-6-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-jamb-7-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-hdr-3-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-jamb-8-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-jamb-9-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-hdr-4-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-jamb-10-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-jamb-11-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F37.4-int-hdr-5-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F37.4",
           "IsShell": false
         },
         {
@@ -1512,45 +1752,129 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F43.8-chord-4,4-0",
+          "Name": "frame-F43.8-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F43.8",
           "IsShell": false
         },
         {
-          "Name": "frame-F43.8-chord-4,4-1",
+          "Name": "frame-F43.8-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F43.8",
           "IsShell": false
         },
         {
-          "Name": "frame-F43.8-chord-4,4-2",
+          "Name": "frame-F43.8-deckbeam-0,5",
           "Role": "TransverseFrame",
           "Assembly": "frame-F43.8",
           "IsShell": false
         },
         {
-          "Name": "frame-F43.8-chord-8-3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F43.8",
+          "Name": "frame-F43.8-int-jamb-0-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
           "IsShell": false
         },
         {
-          "Name": "frame-F43.8-chord-8-4",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F43.8",
+          "Name": "frame-F43.8-int-jamb-1-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
           "IsShell": false
         },
         {
-          "Name": "frame-F43.8-chord-8-5",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F43.8",
+          "Name": "frame-F43.8-int-hdr-0-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
           "IsShell": false
         },
         {
-          "Name": "frame-F43.8-deckbeam-0,5-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F43.8",
+          "Name": "frame-F43.8-int-jamb-2-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-3-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-hdr-1-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-4-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-5-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-hdr-2-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-6-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-7-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-hdr-3-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-8-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-9-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-hdr-4-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-10-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-jamb-11-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F43.8-int-hdr-5-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F43.8",
           "IsShell": false
         },
         {
@@ -1560,45 +1884,129 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F46.5-chord-4,4-0",
+          "Name": "frame-F46.5-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F46.5",
           "IsShell": false
         },
         {
-          "Name": "frame-F46.5-chord-4,4-1",
+          "Name": "frame-F46.5-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F46.5",
           "IsShell": false
         },
         {
-          "Name": "frame-F46.5-chord-4,4-2",
+          "Name": "frame-F46.5-deckbeam-0,5",
           "Role": "TransverseFrame",
           "Assembly": "frame-F46.5",
           "IsShell": false
         },
         {
-          "Name": "frame-F46.5-chord-8-3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F46.5",
+          "Name": "frame-F46.5-int-jamb-0-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
           "IsShell": false
         },
         {
-          "Name": "frame-F46.5-chord-8-4",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F46.5",
+          "Name": "frame-F46.5-int-jamb-1-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
           "IsShell": false
         },
         {
-          "Name": "frame-F46.5-chord-8-5",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F46.5",
+          "Name": "frame-F46.5-int-hdr-0-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
           "IsShell": false
         },
         {
-          "Name": "frame-F46.5-deckbeam-0,5-y-4,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F46.5",
+          "Name": "frame-F46.5-int-jamb-2-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-3-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-hdr-1-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-4-y-8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-5-y-5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-hdr-2-y-6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-6-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-7-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-hdr-3-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-8-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-9-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-hdr-4-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-10-y5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-jamb-11-y8",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
+          "IsShell": false
+        },
+        {
+          "Name": "frame-F46.5-int-hdr-5-y6,5",
+          "Role": "PortalFrame",
+          "Assembly": "FRAME-F46.5",
           "IsShell": false
         },
         {
@@ -1656,597 +2064,21 @@
           "IsShell": false
         },
         {
-          "Name": "frame-F69-chord-4,4-0",
+          "Name": "frame-F69-chord-4,4",
           "Role": "TransverseFrame",
           "Assembly": "frame-F69",
           "IsShell": false
         },
         {
-          "Name": "frame-F69-chord-4,4-1",
+          "Name": "frame-F69-chord-8",
           "Role": "TransverseFrame",
           "Assembly": "frame-F69",
           "IsShell": false
         },
         {
-          "Name": "frame-F69-chord-8-2",
+          "Name": "frame-F69-deckbeam-0,5",
           "Role": "TransverseFrame",
           "Assembly": "frame-F69",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F69-chord-8-3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F69",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F69-deckbeam-0,5-y-7,7",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F69",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F69-deckbeam-0,5-y7,3",
-          "Role": "TransverseFrame",
-          "Assembly": "frame-F69",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d0-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d0-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d0-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d0-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d0-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d0-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d1-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d1-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d1-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d1-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d1-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d1-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d2-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d2-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d2-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d2-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d2-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d2-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d3-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d3-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d3-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d3-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d3-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d3-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d3-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d3-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d3-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d4-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d4-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d4-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d4-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d4-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d4-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d4-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d4-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d4-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d5-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d5-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d5-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d5-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d5-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d5-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d5-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d5-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d5-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d6-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d6-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d6-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d6-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d6-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d6-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d6-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d6-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d6-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d7-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d7-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d7-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d7-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d7-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d7-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d7-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d7-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d7-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d8-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d8-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d8-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d8-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d8-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d8-4,4",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d8-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d8-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d8-8",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d9-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d9-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d9-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d10-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d10-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d10-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d11-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d11-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d11-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d12-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d12-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d12-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d13-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d13-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d13-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d14-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d14-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d14-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-keel-d15-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-keel",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-port-d15-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-port",
-          "IsShell": false
-        },
-        {
-          "Name": "girder-stbd-d15-0,5",
-          "Role": "LongitudinalGirder",
-          "Assembly": "girder-stbd",
           "IsShell": false
         },
         {
@@ -4168,438 +4000,6 @@
           "Role": "ShellPanel",
           "Assembly": "bay-shell",
           "IsShell": true
-        },
-        {
-          "Name": "frame-F3.3-join-keel-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F3.3",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F3.3-join-port-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F3.3",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F3.3-join-stbd-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F3.3",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F3.3-join-keel-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F3.3",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F3.3-join-port-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F3.3",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F3.3-join-stbd-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F3.3",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F6.5-join-keel-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F6.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F6.5-join-port-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F6.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F6.5-join-stbd-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F6.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F6.5-join-keel-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F6.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F6.5-join-port-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F6.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F6.5-join-stbd-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F6.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F9.8-join-keel-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F9.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F9.8-join-port-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F9.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F9.8-join-stbd-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F9.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F9.8-join-keel-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F9.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F9.8-join-port-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F9.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F9.8-join-stbd-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F9.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-keel-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-port-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-stbd-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-keel-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-port-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F16-join-stbd-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F16",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-keel-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-port-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-stbd-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-keel-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-port-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F26.6-join-stbd-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F26.6",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-keel-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-port-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-stbd-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-keel-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-port-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F33.9-join-stbd-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F33.9",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-keel-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-port-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-stbd-d4,4",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-keel-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-port-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F37.4-join-stbd-d8",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F37.4",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F43.8-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F43.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F43.8-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F43.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F43.8-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F43.8",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F46.5-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F46.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F46.5-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F46.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F46.5-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F46.5",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F53.2-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F53.2",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F53.2-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F53.2",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F53.2-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F53.2",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F57.1-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F57.1",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F57.1-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F57.1",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F57.1-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F57.1",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F61.1-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F61.1",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F61.1-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F61.1",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F61.1-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F61.1",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F65-join-keel-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F65",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F65-join-port-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F65",
-          "IsShell": false
-        },
-        {
-          "Name": "frame-F65-join-stbd-d0,5",
-          "Role": "StructuralBracket",
-          "Assembly": "frame-F65",
-          "IsShell": false
         },
         {
           "Name": "deck-sandwich-dk0-z4-s0-b0-face-top",
@@ -9930,7 +9330,7 @@
       "GirderGaps": [],
       "Ok": true
     },
-    "RegistryParts": 1511,
+    "RegistryParts": 1582,
     "BulkheadPlates": 6,
     "FrameAssemblies": 15,
     "MissingBulkheads": [],
