@@ -1,5 +1,5 @@
 {
-  "generatedUtc": "2026-11-08T03:31:02.5034882Z",
+  "generatedUtc": "2026-11-08T04:40:41.1784222Z",
   "loa": 69,
   "spine": "mid athwart (X=0) \u00D7 mid height (SectionAt.mid) \u00D7 stem\u2192stern",
   "tolX": 0.05,
@@ -135,7 +135,7 @@
   ],
   "semanticRegistry": {
     "partCount": 1511,
-    "assemblyCount": 47,
+    "assemblyCount": 75,
     "bulkheadPlates": 6,
     "frameAssemblies": 15,
     "transverseParts": 207,
