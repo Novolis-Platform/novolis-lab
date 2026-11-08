@@ -1,9 +1,16 @@
 namespace CalypsoCad.Model;
 
-/// <summary>Engineering assembly kinds under transverse / longitudinal / deck systems.</summary>
+/// <summary>Engineering and organizational assembly kinds for the ownership tree.</summary>
 internal enum CadAssemblyKind
 {
     Other,
+
+    // —— Organizational (Explorer tree, not manufactured) ——
+    ShipRoot,
+    ReferenceGeometry,
+    PhysicalStructure,
+    SystemGroup,
+    DiagnosticsGroup,
 
     // —— Transverse / RingFrames ——
     OrdinaryRingFrame,
@@ -23,4 +30,11 @@ internal enum CadAssemblyKind
 
     // —— Deck ——
     DeckBay,
+
+    // —— Closures / Interior / Cargo ——
+    AirlockAssembly,
+    HatchAssembly,
+    PartitionGroup,
+    OutfitGroup,
+    CargoStack,
 }

@@ -36,6 +36,8 @@ internal static class StructuralRoleMap
         };
     }
 
+    // Interior / closures / cargo classification lives in TryClassifyFromName below.
+
     /// <summary>
     /// Classify from entity display name when stamped semantic properties are absent.
     /// Returns null when the name is not recognized as primary structure (caller reports unclassified).
@@ -107,6 +109,15 @@ internal static class StructuralRoleMap
         if (name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase))
         {
             var asm = AssemblyFromDeckName(name);
+            if (name.Contains("-face-", StringComparison.OrdinalIgnoreCase))
+                return (CadSystem.Deck, CadPartKind.DeckFaceSheet, PartFunction.LoadBearing,
+                    StructuralRoles.StructuralDeck, asm);
+            if (name.Contains("-rib-", StringComparison.OrdinalIgnoreCase))
+                return (CadSystem.Deck, CadPartKind.DeckCoreWeb, PartFunction.LoadBearing,
+                    StructuralRoles.StructuralDeck, asm);
+            if (name.Contains("-peri-", StringComparison.OrdinalIgnoreCase))
+                return (CadSystem.Deck, CadPartKind.DeckPerimeterMember, PartFunction.LoadBearing,
+                    StructuralRoles.StructuralDeck, asm);
             return (CadSystem.Deck, CadPartKind.DeckPanel, PartFunction.LoadBearing,
                 StructuralRoles.StructuralDeck, asm);
         }
@@ -114,7 +125,7 @@ internal static class StructuralRoleMap
         if (name.StartsWith("stringer-knuckle-v", StringComparison.OrdinalIgnoreCase))
         {
             var asm = KnuckleAssemblyFromName(name);
-            return (CadSystem.Hull, CadPartKind.HullStringer,
+            return (CadSystem.Hull, CadPartKind.KnuckleStringer,
                 PartFunction.LoadBearing | PartFunction.HullAttached,
                 StructuralRoles.ShellStiffener, asm);
         }
@@ -141,6 +152,38 @@ internal static class StructuralRoleMap
                 StructuralRoles.ThrustStructure, "coaming-aft");
         }
 
+        if (name.StartsWith("outfit-AIRLOCK", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("outfit-hatch-", StringComparison.OrdinalIgnoreCase))
+        {
+            return (CadSystem.Closures, CadPartKind.AirlockStructure, PartFunction.Replaceable,
+                "Closure", "closures-airlock");
+        }
+
+        if (name.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase))
+        {
+            return (CadSystem.Interior, CadPartKind.Furniture, PartFunction.Replaceable,
+                "Outfit", "interior-furniture");
+        }
+
+        if (name.StartsWith("C40", StringComparison.OrdinalIgnoreCase))
+        {
+            return (CadSystem.Cargo, CadPartKind.CargoContainer, PartFunction.Replaceable,
+                "Cargo", "loaded-cargo-c40");
+        }
+
+        if (name.StartsWith("w-", StringComparison.OrdinalIgnoreCase))
+        {
+            return (CadSystem.Interior, CadPartKind.Partition, PartFunction.None,
+                "Partition", "interior-partitions");
+        }
+
+        if (name.StartsWith("hatch-", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("door-", StringComparison.OrdinalIgnoreCase))
+        {
+            return (CadSystem.Closures, CadPartKind.Hatch, PartFunction.Replaceable,
+                "Closure", "closures-hatches");
+        }
+
         return null;
     }
 
@@ -156,8 +199,11 @@ internal static class StructuralRoleMap
             CadPartKind.DeckPanel => StructuralRoles.StructuralDeck,
             CadPartKind.ThrustMember => StructuralRoles.ThrustStructure,
             CadPartKind.ShellPanel => StructuralRoles.ShellPanel,
-            CadPartKind.HullStringer => StructuralRoles.ShellStiffener,
-            CadPartKind.StructuralBracket => StructuralRoles.StructuralBracket,
+            CadPartKind.HullStringer or CadPartKind.KnuckleStringer or CadPartKind.HullStiffener =>
+                StructuralRoles.ShellStiffener,
+            CadPartKind.DeckFaceSheet or CadPartKind.DeckCoreWeb or CadPartKind.DeckPerimeterMember =>
+                StructuralRoles.StructuralDeck,
+            CadPartKind.StructuralBracket or CadPartKind.ConnectionBracket => StructuralRoles.StructuralBracket,
             _ when functions.HasFlag(PartFunction.PressureTight) => StructuralRoles.PressureBulkhead,
             _ => StructuralRoles.TransverseFrame,
         };

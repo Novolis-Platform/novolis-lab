@@ -1,6 +1,8 @@
 using CalypsoCad.Export;
 using System.Drawing;
 using System.Numerics;
+using CalypsoCad.Model;
+using CalypsoCad.Publication;
 using Novolis.Cad.Primitives;
 using CalypsoCad.Structure;
 
@@ -23,11 +25,20 @@ internal sealed class CalypsoSession
     public CalypsoVisualLayers VisualLayers { get; set; } = CalypsoVisualLayers.PrimaryStructure;
     public string StatusText { get; set; } = "";
 
+    /// <summary>Explorer selection — assembly and/or part (ownership, not visibility).</summary>
+    public AssemblyId? SelectedAssemblyId { get; set; }
+    public PartId? SelectedPartId { get; set; }
+    public string? SelectedReferenceId { get; set; }
+    public string InspectorText { get; set; } = "";
+
     /// <summary>
-    /// When set, only these entity ids draw (progressive build-step slides).
-    /// Null means show the full document.
+    /// When set, only these entity ids draw (progressive build-step slides / isolate).
+    /// Null means show the full document (minus <see cref="HiddenEntityIds"/>).
     /// </summary>
     public HashSet<Guid>? RevealEntityIds { get; set; }
+
+    /// <summary>Explorer hide — entity ids suppressed without mutating the engineering model.</summary>
+    public HashSet<Guid> HiddenEntityIds { get; } = new();
 
     /// <summary>
     /// OML boundary-edge wire guide when HullShell is off (never a filled second hull).
@@ -90,6 +101,7 @@ internal sealed class CalypsoSession
         ShapeById = Shapes.Shapes.ToDictionary(s => s.Id);
         SelectedSpaceId = Spaces.FirstOrDefault(s => s.Name == "BRIDGE" && s.Deck == 0)?.Id
                           ?? Spaces.FirstOrDefault()?.Id;
+        RebuildSemanticRegistry();
         StatusText = $"Loaded → {dir}";
         return true;
     }
@@ -101,8 +113,22 @@ internal sealed class CalypsoSession
         ShapeById = Shapes.Shapes.ToDictionary(s => s.Id);
         SelectedSpaceId = Spaces.FirstOrDefault(s => s.Name == "BRIDGE" && s.Deck == 0)?.Id
                           ?? Spaces.FirstOrDefault()?.Id;
+        RebuildSemanticRegistry();
         StatusText = $"Generated → {GeneratedDirectory}";
     }
+
+    public void RebuildSemanticRegistry()
+    {
+        HiddenEntityIds.Clear();
+        RevealEntityIds = null;
+        SelectedAssemblyId = null;
+        SelectedPartId = null;
+        SelectedReferenceId = null;
+        InspectorText = "";
+        CadDocumentAdapter.LoadFromDocument(Document);
+    }
+
+    public ShipPartRegistry Registry => CadDocumentAdapter.Active;
 
     /// <summary>Generate and load the two-bay structural proof CAD (not the full ship).</summary>
     public void RegenerateAndLoadStructuralBay()

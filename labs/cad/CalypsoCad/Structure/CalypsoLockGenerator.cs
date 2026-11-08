@@ -570,6 +570,9 @@ internal static class CalypsoLockGenerator
             Lines = [SkinMassRollup.ToBomLine(mass)],
         };
         ShipStructureDocument.Attach(cad, spec, bom, mass);
+
+        // Semantic hierarchy snapshot — Explorer / round-trip ownership (not geometry).
+        Publication.CadDocumentAdapter.WriteRegistryToDocument(cad);
         return cad;
     }
 

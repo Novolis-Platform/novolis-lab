@@ -134,22 +134,19 @@ internal static class HullKnuckleStringerGenerator
                 continue;
 
             // Cyan accent — distinct from orange annular webs and grey deckbeams.
-            entities[^1].Color = [0.28f, 0.78f, 0.88f];
-            StampSegmentProps(entities[^1], path.VertexIndex, a.ZStem, b.ZStem, path.AssemblyId);
+            var entity = entities[^1];
+            entity.Color = [0.28f, 0.78f, 0.88f];
+            StampSegmentProps(entity, path.VertexIndex, a.ZStem, b.ZStem, path.AssemblyId);
 
-            var part = new CadPart(
-                PartId.Of(name),
-                asmId,
-                CadSystem.Hull,
-                CadPartKind.HullStringer,
-                functions,
-                name,
-                Geometry: null,
-                StationZStem: zMid,
-                FabPartId: $"P-{path.AssemblyId}-S{segIndex}",
-                LegacyRole: StructuralRoles.ShellStiffener,
-                Classified: true);
-            context.Registry.RegisterPart(part);
+            // TryAddStructureMesh → StampAndRegister already owns the CadPart + EntityId.
+            // Do not RegisterPart again (that overwrote EntityId and risked duplicate ownership).
+            if (!context.Registry.TryGetPartByDisplayName(name, out var part))
+            {
+                diagnostics.Add($"WARN {path.AssemblyId} s{segIndex}: stamped part missing after mesh emit");
+                return false;
+            }
+
+            context.Registry.TryAttachEntity(part.Id, entity.Id);
             parts.Add(part);
             return true;
         }

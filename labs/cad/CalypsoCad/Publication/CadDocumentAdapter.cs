@@ -17,6 +17,8 @@ internal static class CadDocumentAdapter
     public const string PropPartFunctions = "partFunctions";
     public const string PropStructuralRole = "structuralRole";
     public const string PropAssembly = "assembly";
+    public const string PropParentAssemblyId = "parentAssemblyId";
+    public const string PropObjectClass = "objectClass"; // physical | reference | annotation | diagnostic
 
     /// <summary>Active registry for the current generate / load pass.</summary>
     public static ShipPartRegistry Active { get; } = new();
@@ -97,6 +99,7 @@ internal static class CadDocumentAdapter
         props[PropCadSystem] = JsonSerializer.SerializeToElement(part.System.ToString());
         props[PropCadPartKind] = JsonSerializer.SerializeToElement(part.Kind.ToString());
         props[PropPartFunctions] = JsonSerializer.SerializeToElement((int)part.Functions);
+        props[PropObjectClass] = JsonSerializer.SerializeToElement("physical");
 
         var role = legacyRole ?? part.LegacyRole ?? StructuralRoleMap.LegacyRoleOf(part.Kind, part.Functions);
         var asm = legacyAssembly ?? part.Assembly.Value;
@@ -109,22 +112,39 @@ internal static class CadDocumentAdapter
             props["deckUp"] = JsonSerializer.SerializeToElement(d);
         if (!string.IsNullOrWhiteSpace(part.FabPartId))
             props["fabPartId"] = JsonSerializer.SerializeToElement(part.FabPartId);
+
+        if (Active.TryGetAssembly(part.Assembly, out var assembly)
+            && assembly.ParentAssemblyId is { } parent)
+            props[PropParentAssemblyId] = JsonSerializer.SerializeToElement(parent.Value);
+    }
+
+    /// <summary>Finalize hierarchy + write the semantic snapshot into the document properties.</summary>
+    public static void WriteRegistryToDocument(CadDocument doc)
+    {
+        SemanticRegistrySnapshot.WriteToDocument(doc, Active);
     }
 
     /// <summary>
-    /// Rebuild registry from a loaded document. Prefers stamped semantic properties;
-    /// falls back to name classification and reports unclassified primary-looking entities.
+    /// Rebuild registry from a loaded document. Prefers the serialized semantic snapshot,
+    /// then stamped entity properties, then name classification. Builds the ownership tree.
     /// </summary>
     public static ShipPartRegistry LoadFromDocument(CadDocument doc)
     {
         ArgumentNullException.ThrowIfNull(doc);
         Active.Clear();
+
+        var fromSnapshot = SemanticRegistrySnapshot.TryReadFromDocument(doc, Active);
+
         foreach (var e in doc.Entities ?? [])
         {
             if (e.Name is null)
                 continue;
-            if (!IsStructureEntity(e))
+
+            if (string.Equals(e.Kind, "space", StringComparison.OrdinalIgnoreCase))
+            {
+                // Spaces are reference compartment envelopes — not steel parts.
                 continue;
+            }
 
             if (TryReadStamped(e, out var stamped))
             {
@@ -132,10 +152,13 @@ internal static class CadDocumentAdapter
                 continue;
             }
 
+            if (!IsClassifiableEntity(e))
+                continue;
+
             var classified = StructuralRoleMap.TryClassifyFromName(e.Name);
             if (classified is null)
             {
-                if (LooksPrimary(e.Name))
+                if (LooksPrimary(e.Name) || LooksInteriorOrCargo(e.Name))
                     Active.ReportUnclassified(e.Name);
                 continue;
             }
@@ -160,10 +183,15 @@ internal static class CadDocumentAdapter
                 EntityId: e.Id,
                 Classified: true));
 
-            // Back-stamp so subsequent consumers see semantic keys.
             if (Active.TryGetPart(partId, out var part))
                 WriteProperties(e, part, legacyRole, legacyAsm);
         }
+
+        ShipHierarchyBuilder.EnsureCanonicalHierarchy(Active, doc);
+
+        // When no snapshot was present, persist one so the next open round-trips cleanly.
+        if (!fromSnapshot)
+            SemanticRegistrySnapshot.WriteToDocument(doc, Active);
 
         return Active;
     }
@@ -208,7 +236,9 @@ internal static class CadDocumentAdapter
         return true;
     }
 
-    public static bool IsStructureEntity(CadEntity e)
+    public static bool IsStructureEntity(CadEntity e) => IsClassifiableEntity(e) && LooksPrimary(e.Name);
+
+    public static bool IsClassifiableEntity(CadEntity e)
     {
         if (string.Equals(e.Kind, "box", StringComparison.OrdinalIgnoreCase)
             || string.Equals(e.Kind, "mesh", StringComparison.OrdinalIgnoreCase))
@@ -218,8 +248,12 @@ internal static class CadDocumentAdapter
                 && role.ValueKind == JsonValueKind.String
                 && !string.IsNullOrEmpty(role.GetString()))
                 return true;
-            return LooksPrimary(e.Name);
+            return LooksPrimary(e.Name) || LooksInteriorOrCargo(e.Name);
         }
+
+        if (string.Equals(e.Kind, "wall", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(e.Kind, "opening", StringComparison.OrdinalIgnoreCase))
+            return true;
 
         return false;
     }
@@ -237,6 +271,17 @@ internal static class CadDocumentAdapter
                || name.StartsWith("coaming-", StringComparison.OrdinalIgnoreCase)
                || name.StartsWith("ramp-", StringComparison.OrdinalIgnoreCase)
                || name.Contains("-join-", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool LooksInteriorOrCargo(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return false;
+        return name.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase)
+               || name.StartsWith("C40", StringComparison.OrdinalIgnoreCase)
+               || name.StartsWith("w-", StringComparison.OrdinalIgnoreCase)
+               || name.StartsWith("hatch-", StringComparison.OrdinalIgnoreCase)
+               || name.StartsWith("door-", StringComparison.OrdinalIgnoreCase);
     }
 
     private static float? ReadFloat(CadEntity e, string key)

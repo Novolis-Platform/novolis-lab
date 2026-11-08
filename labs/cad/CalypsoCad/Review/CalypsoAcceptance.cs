@@ -526,6 +526,28 @@ internal static class CalypsoAcceptance
             asmVal.Ok,
             $"bh={asmVal.BulkheadPlates} frames={asmVal.FrameAssemblies} isolated/gaps via graph.Ok={asmVal.Graph.Ok}");
 
+        var hierarchy = CalypsoCad.Model.HierarchyValidation.Validate(reg);
+        Add(
+            "semantic hierarchy integrity",
+            hierarchy.Ok,
+            $"roots={hierarchy.RootCount} knuckles={hierarchy.KnuckleAssemblies} bh={hierarchy.BulkheadAssemblies} frames={hierarchy.FrameAssemblies} decks={hierarchy.DeckAssemblies} orphans={hierarchy.OrphanAssemblies.Count} cycles={hierarchy.Cycles.Count} conflicts={hierarchy.DuplicateRegistrationConflicts.Count}");
+
+        // Round-trip: capture → clear → restore from document snapshot.
+        Publication.SemanticRegistrySnapshot.WriteToDocument(doc, reg);
+        var knuckleBefore = reg.KnuckleAssemblyCount;
+        var partsBefore = reg.Parts.Count;
+        CadDocumentAdapter.Reset();
+        CadDocumentAdapter.LoadFromDocument(doc);
+        var reg2 = CadDocumentAdapter.Active;
+        var hierarchy2 = CalypsoCad.Model.HierarchyValidation.Validate(reg2);
+        Add(
+            "semantic registry round-trip",
+            hierarchy2.Ok
+            && reg2.KnuckleAssemblyCount == knuckleBefore
+            && reg2.Parts.Count == partsBefore
+            && reg2.BulkheadPlateCount >= 6,
+            $"knuckles={reg2.KnuckleAssemblyCount}/{knuckleBefore} parts={reg2.Parts.Count}/{partsBefore} bh={reg2.BulkheadPlateCount}");
+
         var sandwichFaces = entities.Count(e =>
             e.Name?.Contains("-face-top", StringComparison.OrdinalIgnoreCase) == true
             && e.Name.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase));

@@ -22,6 +22,7 @@ internal sealed class CalypsoExplorerWindow : Window
     private readonly List<ToggleButton> _displayToggles = [];
     private readonly List<ToggleButton> _deckToggles = [];
     private readonly Panel _cutPanel;
+    private readonly CalypsoObjectBrowser _objectBrowser;
     private CheckBox? _omlGuideCheck;
     private bool _syncingUi;
 
@@ -63,6 +64,7 @@ internal sealed class CalypsoExplorerWindow : Window
         GraphicalProfileBinding.Bind(_status, TextBlock.ForegroundProperty, GraphicalProfile.MutedResourceKey);
 
         _cutPanel = new StackPanel { Spacing = 4 };
+        _objectBrowser = new CalypsoObjectBrowser(controller);
         var chrome = BuildChrome();
         chrome[DockPanel.DockProperty] = Dock.Left;
 
@@ -147,6 +149,9 @@ internal sealed class CalypsoExplorerWindow : Window
             CalypsoVisualLayers.CompleteArrangement, "CompleteArrangement · full ship")));
         panel.Children.Add(Btn("HOLD cargo", ApplyPresetHoldCargo));
 
+        panel.Children.Add(_objectBrowser);
+        panel.Children.Add(Btn("Refresh object tree", () => _objectBrowser.RebuildTree()));
+
         panel.Children.Add(Header("Ship (full-height)"));
         panel.Children.Add(Hint("Keel→weather skeleton — frames are open rings, not walls."));
         AddLayerCheck(panel, "OML / IML shell", CalypsoVisualLayers.HullShell);
@@ -183,7 +188,11 @@ internal sealed class CalypsoExplorerWindow : Window
         panel.Children.Add(_cutPanel);
 
         panel.Children.Add(Header("Session"));
-        panel.Children.Add(Btn("Regenerate model", () => _controller.Regenerate()));
+        panel.Children.Add(Btn("Regenerate model", () =>
+        {
+            _controller.Regenerate();
+            _objectBrowser.RebuildTree();
+        }));
         panel.Children.Add(Btn("Export blueprints", () =>
         {
             try

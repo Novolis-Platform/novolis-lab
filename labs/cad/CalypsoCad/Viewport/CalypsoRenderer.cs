@@ -622,6 +622,8 @@ internal sealed class CalypsoRenderer
         {
             if (_session.RevealEntityIds is { } reveal && !reveal.Contains(entity.Id))
                 continue;
+            if (_session.HiddenEntityIds.Contains(entity.Id))
+                continue;
 
             if (!IsEntityVisibleForLayers(entity))
                 continue;
@@ -2466,7 +2468,8 @@ internal sealed class CalypsoRenderer
                 Model.CadPartKind.LongitudinalGirder or Model.CadPartKind.ThrustMember =>
                     CalypsoVisualLayers.Longitudinals | outer,
                 // Continuous knuckle paths: show with open-web frames AND girders (not shell-only).
-                Model.CadPartKind.HullStringer =>
+                Model.CadPartKind.HullStringer or Model.CadPartKind.KnuckleStringer
+                    or Model.CadPartKind.HullStiffener =>
                     CalypsoVisualLayers.Frames | CalypsoVisualLayers.Longitudinals
                     | CalypsoVisualLayers.OuterHull,
                 Model.CadPartKind.ShellPanel => CalypsoVisualLayers.HullShell,
