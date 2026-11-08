@@ -76,10 +76,10 @@ internal static class NavalWaveSpawner
         float ring;
         if (state.SouthernApproachesOnly)
         {
-            // Longer southern box: start the fleet farther out so Oscarsborg has more clock.
-            minOpen = 3_200f;
-            maxOpen = 16_500f;
-            ring = 9_000f;
+            // South-heavy box: fleet starts deep in the outer approaches.
+            minOpen = 4_500f;
+            maxOpen = 22_000f;
+            ring = 12_000f;
         }
         else
         {

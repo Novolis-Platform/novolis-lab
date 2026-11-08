@@ -15,13 +15,14 @@ internal static class FireControlGunPanel
         bool solutionUnsafe,
         bool launchDetonation,
         float predictedRange,
-        float tof)
+        float tof,
+        string? batteryLabel = null)
     {
         var scale = m.Scale;
         var px = 8f;
         var py = 92f * scale;
         var pw = 360f * scale;
-        var ph = 230f * scale;
+        var ph = 258f * scale;
         chrome.PanelBox(canvas, px, py, pw, ph);
 
         var lx = px + 16 * scale;
@@ -30,6 +31,15 @@ internal static class FireControlGunPanel
         var lh = 28f * scale;
 
         chrome.DrawText(canvas, "FIRE CONTROL", lx, ly, 18f * scale, FireControlTheme.Accent);
+        ly += lh;
+        var tube = string.IsNullOrWhiteSpace(batteryLabel) ? gun.Spec.ShortName : batteryLabel;
+        chrome.DrawText(
+            canvas,
+            FireControlChromePrimitives.Truncate($"TUBE  {tube}  (TAB)", 34),
+            lx,
+            ly,
+            ls,
+            FireControlTheme.Accent);
         ly += lh;
         chrome.DrawText(canvas, $"QE    {gun.ElevationMils:F0} -> {orderedElevMils:F0} MIL", lx, ly, ls, FireControlTheme.Text);
         ly += lh;

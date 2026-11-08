@@ -4,14 +4,15 @@ namespace ArtillerySimulator;
 
 /// <summary>
 /// Drøbak Sound / Oscarsborg frame for the 9 April 1940 educational scenario.
-/// Approximate EPSG:25833 box covering the narrows — not a full Kartverket bake yet.
-/// Southern edge is stretched ~20% beyond the original cutout so the fleet has a longer run-in.
+/// Approximate EPSG:25833 box — not a Kartverket height bake.
+/// Frame is south-heavy: long outer-fjord run-in, short northern pocket past the objective.
 /// </summary>
 internal static class OslofjordenGeodesy
 {
-    // Original educational box was 59.58–59.78 (0.20°). Keep the north gate; push south to 0.24° span (+20%).
-    public const double SouthLatitude = 59.54;
-    public const double NorthLatitude = 59.78;
+    // Oscarsborg ≈ 59.674 sits ~¾ of the way north in this box so the overview shows
+    // a long southern approach and only a short gate toward Oslo.
+    public const double SouthLatitude = 59.40;
+    public const double NorthLatitude = 59.765;
     public const double WestLongitude = 10.48;
     public const double EastLongitude = 10.78;
     public const double MeanLatitudeDegrees = (SouthLatitude + NorthLatitude) / 2.0;
@@ -27,6 +28,19 @@ internal static class OslofjordenGeodesy
     public static float EastMeters { get; } = ComputeEastMeters();
     public static float NorthMeters { get; } = ComputeNorthMeters();
     public static float MapExtentMeters => MathF.Max(EastMeters, NorthMeters);
+
+    /// <summary>
+    /// Fractional northing of Oscarsborg in this box (0 = south edge, 1 = north edge).
+    /// Drøbak pinch / fairway math must track this — never hardcode 0.5.
+    /// </summary>
+    public static float OscarsborgNorthFraction
+    {
+        get
+        {
+            var z = ToWorldMeters(OscarsborgLatitude, OscarsborgLongitude).Y;
+            return Math.Clamp(z / MathF.Max(1f, NorthMeters), 0.05f, 0.95f);
+        }
+    }
 
     public static double UtmOriginEasting { get; } =
         Etrs89Utm33N.ToEastingNorthing(SouthLatitude, WestLongitude).Easting;

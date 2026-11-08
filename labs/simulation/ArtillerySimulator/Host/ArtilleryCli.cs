@@ -78,7 +78,7 @@ internal static class ArtilleryCli
               ArtillerySimulator --attach-agent   (desktop + HTTP agent; or ARTILLERY_ATTACH_AGENT=1)
 
             Splash: ← → change level, Enter begin, L licenses.
-            Play:   WASD/arrows lay, Space fire, 1-4 charge, Esc/P pause, L licenses.
+            Play:   WASD/arrows lay, Space fire, Tab gun, 1-4 charge, Esc/P pause, L licenses.
             """);
     }
 

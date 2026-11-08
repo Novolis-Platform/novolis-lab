@@ -42,7 +42,8 @@ internal static class OslofjordenDecorativeRoads
                 west ? OslofjordenGeodesy.WestLongitude + 0.04 : OslofjordenGeodesy.EastLongitude - 0.04);
             // Pull toward shore from inland seed.
             var fjordX = east * (0.46f + 0.04f * MathF.Sin(t * MathF.PI * 1.6f));
-            var half = 3200f - 2100f * MathF.Exp(-MathF.Pow((t - 0.48f) / 0.09f, 2f));
+            var pinchAt = OslofjordenGeodesy.OscarsborgNorthFraction;
+            var half = 3200f - 2100f * MathF.Exp(-MathF.Pow((t - pinchAt) / 0.08f, 2f));
             var x = west ? fjordX - half - 220f : fjordX + half + 220f;
             x = Math.Clamp(x, 80f, east - 80f);
             z = Math.Clamp(z, 80f, north - 80f);

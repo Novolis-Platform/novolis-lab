@@ -91,9 +91,14 @@ internal sealed class TerrainWorld : IDisposable
         var pivotY = _field.SampleHeight(SimulationUnits.GunPivotX, _northMeters * 0.5f);
         GunBaseline = new Vector3(SimulationUnits.GunPivotX, pivotY, _northMeters * 0.5f);
 
+        var frameNote = string.Equals(profile.Id, "oslofjorden", StringComparison.OrdinalIgnoreCase)
+            ? string.Create(
+                CultureInfo.InvariantCulture,
+                $" east={_eastMeters:F0}m north={_northMeters:F0}m oscarsborgT={OslofjordenGeodesy.OscarsborgNorthFraction:F2}")
+            : string.Empty;
         Console.WriteLine(string.Create(
             CultureInfo.InvariantCulture,
-            $"Terrain rebuild [{profile.Id}]: mesh={afterMesh}ms fill={afterFill - afterMesh}ms roads={sw.ElapsedMilliseconds - afterFill}ms total={sw.ElapsedMilliseconds}ms (draw={DisplayCells} coll={CollisionCells} tris={TerrainTriangleCount} roadSeg={RoadLineCount})"));
+            $"Terrain rebuild [{profile.Id}]: mesh={afterMesh}ms fill={afterFill - afterMesh}ms roads={sw.ElapsedMilliseconds - afterFill}ms total={sw.ElapsedMilliseconds}ms (draw={DisplayCells} coll={CollisionCells} tris={TerrainTriangleCount} roadSeg={RoadLineCount}){frameNote}"));
     }
 
     public void PlaceGun(float x, float z, float gunHeightOffsetMeters = 0f)

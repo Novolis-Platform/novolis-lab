@@ -16,7 +16,7 @@ internal static class OslofjordenSurface
         if (InsideOscarsborgIsland(x, z))
             return false;
 
-        // Fjord fairway: north-south channel with a Drøbak pinch.
+        // Fjord fairway: north-south channel with a Drøbak pinch at Oscarsborg.
         var centerX = FjordCenterX(z);
         var halfWidth = FjordHalfWidth(z);
         var dx = MathF.Abs(x - centerX);
@@ -78,8 +78,9 @@ internal static class OslofjordenSurface
     {
         var north = OslofjordenGeodesy.NorthMeters;
         var t = Math.Clamp(z / north, 0f, 1f);
-        // Wide southern approach → pinch at Oscarsborg (~mid) → opens again north.
-        var pinch = MathF.Exp(-MathF.Pow((t - 0.48f) / 0.09f, 2f));
+        // Wide southern approach → pinch at Oscarsborg (not mid-map) → opens again north.
+        var pinchAt = OslofjordenGeodesy.OscarsborgNorthFraction;
+        var pinch = MathF.Exp(-MathF.Pow((t - pinchAt) / 0.08f, 2f));
         return 3200f - 2100f * pinch;
     }
 
