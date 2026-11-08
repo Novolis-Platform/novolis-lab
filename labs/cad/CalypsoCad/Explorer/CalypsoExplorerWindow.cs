@@ -6,24 +6,23 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using CalypsoCad.Session;
 using CalypsoCad.Viewport;
+using CalypsoCad.Visibility;
 using Novolis.Avalonia.GraphicalProfile;
 
 namespace CalypsoCad.Explorer;
 
-/// <summary>CAD-style explorer: radio groups for mode, checkboxes for layers, live state.</summary>
+/// <summary>CAD explorer: camera / display / cut plane + hierarchical object visibility.</summary>
 internal sealed class CalypsoExplorerWindow : Window
 {
     private readonly CalypsoViewportController _controller;
     private readonly TextBlock _status;
     private readonly TextBlock _modeReadout;
     private readonly DispatcherTimer _statusTimer;
-    private readonly Dictionary<CalypsoVisualLayers, CheckBox> _layerChecks = new();
     private readonly List<ToggleButton> _viewToggles = [];
     private readonly List<ToggleButton> _displayToggles = [];
     private readonly List<ToggleButton> _deckToggles = [];
     private readonly Panel _cutPanel;
     private readonly CalypsoObjectBrowser _objectBrowser;
-    private CheckBox? _omlGuideCheck;
     private bool _syncingUi;
 
     public CalypsoExplorerWindow(CalypsoViewportController controller)
@@ -34,14 +33,13 @@ internal sealed class CalypsoExplorerWindow : Window
         Height = 940;
         FontFamily = GraphicalProfile.BodyFont;
 
-        ApplyStagePreset(CalypsoVisualLayers.PrimaryStructure, "PrimaryStructure · rings + girders + BH");
+        ApplyHierarchyPreset(VisibilityPresets.PrimaryStructure, "primary", "PrimaryStructure · rings + girders + BH");
 
         GraphicalProfileBinding.Bind(this, BackgroundProperty, GraphicalProfile.BackgroundResourceKey);
 
         var viewport = new CalypsoSilkViewportControl
         {
             Controller = controller,
-            // Live Silk framebuffer — 4K UHD (headless stills remain 8K Ultra).
             FrameWidth = Novolis.Silk.Capture.SilkCaptureSize.UhdWidth,
             FrameHeight = Novolis.Silk.Capture.SilkCaptureSize.UhdHeight,
             [DockPanel.DockProperty] = Dock.Right,
@@ -83,27 +81,27 @@ internal sealed class CalypsoExplorerWindow : Window
             Children = { statusBar, chrome, viewport },
         };
 
+        _controller.Session.Visibility.Changed += () =>
+            Dispatcher.UIThread.Post(() => _objectBrowser.RebuildTree());
+
         _statusTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(200), DispatcherPriority.Background, (_, _) => SyncUiFromSession());
         _statusTimer.Start();
         Closed += (_, _) => _statusTimer.Stop();
         SyncUiFromSession();
     }
 
-    private void ApplyStagePreset(CalypsoVisualLayers layers, string status)
+    private void ApplyHierarchyPreset(Func<VisibilitySnapshot> build, string id, string status)
     {
         _controller.SetView(CalypsoViewMode.Orbit);
         _controller.SetWire(CalypsoWireMeshMode.None);
-        _controller.Session.VisualLayers = layers;
-        _controller.Session.ShowOmlGuide = layers == CalypsoVisualLayers.PressureStructure
-                                          || layers == CalypsoVisualLayers.HoldCargo;
+        _controller.Session.Visibility.ApplySnapshot(build(), asPreset: id);
+        if (string.Equals(id, "pressure", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(id, "cargo", StringComparison.OrdinalIgnoreCase))
+            _controller.Session.Visibility.SetLocal("ref-oml-edge-guide", LocalVisibility.Visible, recordUndo: false);
         _controller.Session.DeckFilter = null;
+        _controller.Session.Visibility.ApplyDeckFocus(null, recordUndo: false);
         _controller.Session.StatusText = $"preset:{status}";
-    }
-
-    private void ApplyPresetHoldCargo()
-    {
-        ApplyStagePreset(CalypsoVisualLayers.HoldCargo, "HOLD cargo · Shaded");
-        _controller.Session.ShowOmlGuide = true;
+        _objectBrowser.RebuildTree();
     }
 
     private Control BuildChrome()
@@ -129,54 +127,30 @@ internal sealed class CalypsoExplorerWindow : Window
             ("Shaded", () => _controller.SetWire(CalypsoWireMeshMode.None)),
             ("Wire", () => _controller.SetWire(CalypsoWireMeshMode.Wire)),
             ("Cutaway", () => _controller.SetWire(CalypsoWireMeshMode.CutawayPartial))));
-        panel.Children.Add(Hint("Shaded = full solids (no cut). Cutaway enables the section plane."));
+        panel.Children.Add(Hint("Shaded / Wire / Cutaway are presentation modes — not object visibility."));
 
-        panel.Children.Add(Header("Deck filter (deck-scoped only)"));
+        panel.Children.Add(Header("Deck focus"));
         panel.Children.Add(RadioRow(_deckToggles,
-            ("−1", () => _controller.SetDeckFilter(-1)),
-            ("0", () => _controller.SetDeckFilter(0)),
-            ("+1", () => _controller.SetDeckFilter(1)),
-            ("All", () => _controller.SetDeckFilter(null))));
-        panel.Children.Add(Hint("Does not hide Ship layer (hull / frames / BHs / girders)."));
+            ("−1", () => ApplyDeck(-1)),
+            ("0", () => ApplyDeck(0)),
+            ("+1", () => ApplyDeck(1)),
+            ("All", () => ApplyDeck(null))));
+        panel.Children.Add(Hint("Overrides Deck −1/0/+1 nodes in the hierarchy. Full-height structure stays."));
 
-        panel.Children.Add(Header("Presets"));
-        panel.Children.Add(Btn("1 Primary structure", () => ApplyStagePreset(
-            CalypsoVisualLayers.PrimaryStructure, "PrimaryStructure · rings + girders + BH")));
-        panel.Children.Add(Btn("2 Primary + decks", () => ApplyStagePreset(
-            CalypsoVisualLayers.PrimaryPlusDecks, "PrimaryPlusDecks · + sandwich plates")));
-        panel.Children.Add(Btn("3 Pressure structure", () => ApplyStagePreset(
-            CalypsoVisualLayers.PressureStructure, "PressureStructure · shell + BH + openings")));
-        panel.Children.Add(Btn("4 Complete arrangement", () => ApplyStagePreset(
-            CalypsoVisualLayers.CompleteArrangement, "CompleteArrangement · full ship")));
-        panel.Children.Add(Btn("HOLD cargo", ApplyPresetHoldCargo));
+        panel.Children.Add(Header("Visibility presets"));
+        panel.Children.Add(Btn("1 Primary structure", () => ApplyHierarchyPreset(
+            VisibilityPresets.PrimaryStructure, "primary", "PrimaryStructure · rings + girders + BH")));
+        panel.Children.Add(Btn("2 Primary + decks", () => ApplyHierarchyPreset(
+            VisibilityPresets.PrimaryPlusDecks, "primary-decks", "PrimaryPlusDecks · + sandwich plates")));
+        panel.Children.Add(Btn("3 Pressure structure", () => ApplyHierarchyPreset(
+            VisibilityPresets.PressureStructure, "pressure", "PressureStructure · shell + BH + openings")));
+        panel.Children.Add(Btn("4 Complete arrangement", () => ApplyHierarchyPreset(
+            VisibilityPresets.Complete, "complete", "CompleteArrangement · full ship")));
+        panel.Children.Add(Btn("HOLD cargo", () => ApplyHierarchyPreset(
+            VisibilityPresets.CargoHold, "cargo", "HOLD cargo · Shaded")));
 
         panel.Children.Add(_objectBrowser);
         panel.Children.Add(Btn("Refresh object tree", () => _objectBrowser.RebuildTree()));
-
-        panel.Children.Add(Header("Ship (full-height)"));
-        panel.Children.Add(Hint("Keel→weather skeleton — frames are open rings, not walls."));
-        AddLayerCheck(panel, "OML / IML shell", CalypsoVisualLayers.HullShell);
-        _omlGuideCheck = new CheckBox { Content = "OML edge guide", FontSize = 11, Margin = new Thickness(2, 1) };
-        GraphicalProfileBinding.Bind(_omlGuideCheck, ForegroundProperty, GraphicalProfile.TextResourceKey);
-        _omlGuideCheck.IsCheckedChanged += (_, _) =>
-        {
-            if (_syncingUi) return;
-            _controller.Session.ShowOmlGuide = _omlGuideCheck.IsChecked == true;
-        };
-        panel.Children.Add(_omlGuideCheck);
-        AddLayerCheck(panel, "Open web frames (ring+chords+knuckles)", CalypsoVisualLayers.Frames);
-        AddLayerCheck(panel, "Pressure bulkheads (closed)", CalypsoVisualLayers.Bulkheads);
-        AddLayerCheck(panel, "Girders / deckbeams / knuckles", CalypsoVisualLayers.Longitudinals);
-
-        panel.Children.Add(Header("Deck-scoped"));
-        AddLayerCheck(panel, "Sandwich deck plates", CalypsoVisualLayers.DeckPlates);
-        AddLayerCheck(panel, "Partition walls", CalypsoVisualLayers.Partitions);
-        AddLayerCheck(panel, "Space volumes (finish)", CalypsoVisualLayers.SpaceFinish);
-        AddLayerCheck(panel, "Outfit / furniture", CalypsoVisualLayers.Outfit);
-        AddLayerCheck(panel, "C40 cargo (HOLD)", CalypsoVisualLayers.Cargo);
-        AddLayerCheck(panel, "Openings / hatches", CalypsoVisualLayers.Openings);
-        AddLayerCheck(panel, "Passage track overlay (diag)", CalypsoVisualLayers.PassagewayCutouts);
-        panel.Children.Add(Hint("Overlay only — portals are cut into Ship webs/BHs."));
 
         panel.Children.Add(Header("Section cut (Cutaway only)"));
         _cutPanel.Children.Add(Row(
@@ -227,6 +201,14 @@ internal sealed class CalypsoExplorerWindow : Window
         return border;
     }
 
+    private void ApplyDeck(int? deck)
+    {
+        _controller.SetDeckFilter(deck);
+        _controller.Session.Visibility.ApplyDeckFocus(deck);
+        _controller.Session.StatusText = deck is null ? "deck:all" : $"deck:{deck.Value}";
+        _objectBrowser.RebuildTree();
+    }
+
     private void SyncUiFromSession()
     {
         _syncingUi = true;
@@ -246,8 +228,10 @@ internal sealed class CalypsoExplorerWindow : Window
                 1 => "DK+1",
                 _ => "all decks",
             };
+            var iso = s.Visibility.IsolationActive ? " · ISOLATION" : "";
+            var preset = s.Visibility.ActivePresetLabel is { } p ? $"\nVis: {p}" : "";
             _modeReadout.Text =
-                $"Camera: {s.ViewMode}\nDisplay: {display}\nDeck: {deck}\n" +
+                $"Camera: {s.ViewMode}\nDisplay: {display}\nDeck: {deck}{iso}{preset}\n" +
                 $"Cut: {(s.WireMeshMode == CalypsoWireMeshMode.CutawayPartial ? (s.CutPlaneLongitudinal ? "L" : "B") + $" @ {s.CutPlaneOffset:0.#} m" : "off")}";
             _status.Text = s.StatusText;
 
@@ -274,16 +258,6 @@ internal sealed class CalypsoExplorerWindow : Window
             var cutOn = s.WireMeshMode == CalypsoWireMeshMode.CutawayPartial;
             _cutPanel.IsEnabled = cutOn;
             _cutPanel.Opacity = cutOn ? 1 : 0.45;
-
-            foreach (var (flag, box) in _layerChecks)
-            {
-                var on = s.VisualLayers.HasFlag(flag);
-                if (box.IsChecked != on)
-                    box.IsChecked = on;
-            }
-
-            if (_omlGuideCheck is not null && _omlGuideCheck.IsChecked != s.ShowOmlGuide)
-                _omlGuideCheck.IsChecked = s.ShowOmlGuide;
         }
         finally
         {
@@ -291,36 +265,11 @@ internal sealed class CalypsoExplorerWindow : Window
         }
     }
 
-    private void AddLayerCheck(Panel panel, string label, CalypsoVisualLayers flag)
-    {
-        var box = new CheckBox
-        {
-            Content = label,
-            IsChecked = _controller.Session.VisualLayers.HasFlag(flag),
-            FontSize = 11,
-            Margin = new Thickness(2, 1),
-        };
-        GraphicalProfileBinding.Bind(box, ForegroundProperty, GraphicalProfile.TextResourceKey);
-        box.IsCheckedChanged += (_, _) =>
-        {
-            if (_syncingUi)
-                return;
-            if (box.IsChecked == true)
-                _controller.Session.VisualLayers |= flag;
-            else
-                _controller.Session.VisualLayers &= ~flag;
-            _controller.Session.StatusText = $"layer {(box.IsChecked == true ? "on" : "off")}: {label}";
-        };
-        _layerChecks[flag] = box;
-        panel.Children.Add(box);
-    }
-
     private StackPanel RadioRow(List<ToggleButton> store, params (string Label, Action Act)[] items)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
         for (var i = 0; i < items.Length; i++)
         {
-            var idx = i;
             var (label, act) = items[i];
             var tb = new ToggleButton
             {
@@ -348,14 +297,18 @@ internal sealed class CalypsoExplorerWindow : Window
         return row;
     }
 
-    private static void SetRadio(List<ToggleButton> group, int index)
+    private static void SetRadio(List<ToggleButton> store, int index)
     {
-        for (var i = 0; i < group.Count; i++)
-        {
-            var on = i == index;
-            if (group[i].IsChecked != on)
-                group[i].IsChecked = on;
-        }
+        for (var i = 0; i < store.Count; i++)
+            store[i].IsChecked = i == index;
+    }
+
+    private static StackPanel Row(params Control[] children)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        foreach (var c in children)
+            row.Children.Add(c);
+        return row;
     }
 
     private static TextBlock Header(string text)
@@ -364,7 +317,7 @@ internal sealed class CalypsoExplorerWindow : Window
         {
             Text = text,
             FontWeight = FontWeight.SemiBold,
-            Margin = new Thickness(0, 10, 0, 2),
+            Margin = new Thickness(0, 8, 0, 2),
             FontSize = 12,
         };
         GraphicalProfileBinding.Bind(t, TextBlock.ForegroundProperty, GraphicalProfile.TextResourceKey);
@@ -377,32 +330,23 @@ internal sealed class CalypsoExplorerWindow : Window
         {
             Text = text,
             FontSize = 10,
+            Margin = new Thickness(0, 2, 0, 0),
             TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(2, 0, 2, 4),
         };
         GraphicalProfileBinding.Bind(t, TextBlock.ForegroundProperty, GraphicalProfile.MutedResourceKey);
         return t;
     }
 
-    private static Button Btn(string text, Action onClick)
+    private static Button Btn(string text, Action act)
     {
         var b = new Button
         {
             Content = text,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
             Padding = new Thickness(8, 4),
             FontSize = 11,
-            Margin = new Thickness(0, 1),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
         };
-        b.Click += (_, _) => onClick();
+        b.Click += (_, _) => act();
         return b;
-    }
-
-    private static StackPanel Row(params Control[] children)
-    {
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
-        foreach (var c in children)
-            row.Children.Add(c);
-        return row;
     }
 }

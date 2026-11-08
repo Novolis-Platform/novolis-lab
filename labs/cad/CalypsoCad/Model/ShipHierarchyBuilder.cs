@@ -276,6 +276,11 @@ internal static class ShipHierarchyBuilder
                 CadReferenceKind.InnerMoldedLine,
                 "Inner molded line (IML)",
                 AssemblyId.Of(ShipHierarchyIds.HullLoft)));
+            registry.RegisterReference(new CadReferenceObject(
+                "ref-oml-edge-guide",
+                CadReferenceKind.RenderingGuide,
+                "OML edge guide",
+                AssemblyId.Of(ShipHierarchyIds.HullLoft)));
         }
 
         if (doc.Properties.TryGetValue("decks", out var decksEl)

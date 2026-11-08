@@ -622,6 +622,9 @@ internal static class CalypsoAcceptance
             attach.PassageViolations == 0,
             $"passageHits={attach.PassageViolations}");
 
+        foreach (var (name, ok, detail) in Visibility.HierarchyVisibilityAcceptance.Run())
+            Add($"hierarchy visibility · {name}", ok, detail);
+
         var deckSeats = entities.Count(e =>
             e.Name?.Contains("-deckseat-", StringComparison.OrdinalIgnoreCase) == true);
         Add("critical deck seats (BH×deck + frame×deck)", deckSeats >= 24, $"deckSeats={deckSeats}");

@@ -5,6 +5,7 @@ using Avalonia.Media;
 using CalypsoCad.Export;
 using CalypsoCad.Model;
 using CalypsoCad.Session;
+using CalypsoCad.Visibility;
 using Novolis.Avalonia.GraphicalProfile;
 
 namespace CalypsoCad.Explorer;
@@ -70,22 +71,44 @@ internal sealed class CalypsoObjectBrowser : UserControl
         };
 
         var isolates = new WrapPanel { Margin = new Thickness(0, 4, 0, 0) };
-        isolates.Children.Add(ActionBtn("Frames", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectRingFrames)));
-        isolates.Children.Add(ActionBtn("Bulkheads", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectBulkheads)));
-        isolates.Children.Add(ActionBtn("Knuckles", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectKnuckles)));
-        isolates.Children.Add(ActionBtn("Primary L", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectPrimaryLongitudinal)));
-        isolates.Children.Add(ActionBtn("Deck 0", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectDeck0Supports)));
-        isolates.Children.Add(ActionBtn("Cargo fl", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectCargoFloorSupports)));
-        isolates.Children.Add(ActionBtn("All long.", () => IsolateCategory(HeadlessStructureInspectionExporter.CollectAllLongitudinalLoadBearing)));
-        isolates.Children.Add(ActionBtn("Int.supp", () => IsolateCategory(HeadlessFrameInteriorInspectionExporter.CollectInteriorSupports)));
+        isolates.Children.Add(ActionBtn("Frames", () => IsolateNode(ShipHierarchyIds.RingFrames)));
+        isolates.Children.Add(ActionBtn("Bulkheads", () => IsolateNode(ShipHierarchyIds.HeavyBulkheads)));
+        isolates.Children.Add(ActionBtn("Knuckles", () => IsolateNode(ShipHierarchyIds.KnuckleStringers)));
+        isolates.Children.Add(ActionBtn("Primary L", () => IsolateNode(ShipHierarchyIds.Longitudinal)));
+        isolates.Children.Add(ActionBtn("Deck 0", () => IsolateNode(ShipHierarchyIds.Deck0)));
+        isolates.Children.Add(ActionBtn("Cargo fl", () => IsolateNode(ShipHierarchyIds.DeckM1)));
+        isolates.Children.Add(ActionBtn("Int.supp", () => IsolateNode(ShipHierarchyIds.RingFrames)));
+        isolates.Children.Add(ActionBtn("Exit iso", () =>
+        {
+            _controller.Session.Visibility.EndIsolation();
+            _controller.Session.StatusText = "isolation:exit";
+            RebuildTree();
+        }));
+
+        var presets = new WrapPanel { Margin = new Thickness(0, 4, 0, 0) };
+        foreach (var (id, label, build) in VisibilityPresets.All.Take(6))
+        {
+            var captured = build;
+            var lid = label;
+            presets.Children.Add(ActionBtn(label.Length > 14 ? label[..14] : label, () =>
+            {
+                _controller.Session.Visibility.ApplySnapshot(captured(), asPreset: id);
+                _controller.Session.StatusText = $"preset:{lid}";
+                RebuildTree();
+            }));
+        }
 
         var root = new StackPanel { Spacing = 2 };
         root.Children.Add(Header("Object browser"));
+        if (_controller.Session.Visibility.IsolationActive)
+            root.Children.Add(Hint("ISOLATION active — Exit iso restores prior visibility."));
         root.Children.Add(_search);
         root.Children.Add(_tree);
         root.Children.Add(actions);
-        root.Children.Add(Hint("Isolate (registry ownership). All long. = virtual filter."));
+        root.Children.Add(Hint("Visibility: Inherit / Visible / Hidden on each row. Isolate uses the same service."));
         root.Children.Add(isolates);
+        root.Children.Add(Hint("Presets:"));
+        root.Children.Add(presets);
         root.Children.Add(Header("Inspector"));
         root.Children.Add(_inspector);
         Content = root;
@@ -112,9 +135,73 @@ internal sealed class CalypsoObjectBrowser : UserControl
         if (!PassesFilter(node))
             return null;
 
+        var vis = _controller.Session.Visibility;
+        var local = vis.GetLocal(node.Id);
+        var effective = vis.IsEffectivelyVisible(node.Id);
+        var mixed = vis.SummarizeChildren(node.Id) == ChildVisibilitySummary.Mixed;
+
+        var tip = BuildVisibilityTooltip(node.Id, local, effective);
+        var eye = new TextBlock
+        {
+            Text = effective ? (mixed ? "◑" : "◉") : "○",
+            FontSize = 11,
+            Width = 18,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        ToolTip.SetTip(eye, tip);
+        GraphicalProfileBinding.Bind(eye, TextBlock.ForegroundProperty,
+            effective ? GraphicalProfile.TextResourceKey : GraphicalProfile.MutedResourceKey);
+
+        var combo = new ComboBox
+        {
+            Width = 78,
+            FontSize = 10,
+            MinHeight = 22,
+            ItemsSource = new[] { "Inherit", "Visible", "Hidden" },
+            SelectedIndex = local switch
+            {
+                LocalVisibility.Visible => 1,
+                LocalVisibility.Hidden => 2,
+                _ => 0,
+            },
+        };
+        ToolTip.SetTip(combo, tip);
+        var nodeId = node.Id;
+        combo.SelectionChanged += (_, _) =>
+        {
+            if (combo.SelectedIndex < 0)
+                return;
+            var state = combo.SelectedIndex switch
+            {
+                1 => LocalVisibility.Visible,
+                2 => LocalVisibility.Hidden,
+                _ => LocalVisibility.Inherit,
+            };
+            if (vis.GetLocal(nodeId) == state)
+                return;
+            vis.SetLocal(nodeId, state);
+            RebuildTree();
+        };
+
+        var title = new TextBlock
+        {
+            Text = node.Title,
+            FontSize = 12,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(4, 0, 0, 0),
+        };
+        GraphicalProfileBinding.Bind(title, TextBlock.ForegroundProperty, GraphicalProfile.TextResourceKey);
+
+        var header = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 4,
+            Children = { eye, combo, title },
+        };
+
         var item = new TreeViewItem
         {
-            Header = node.Title,
+            Header = header,
             Tag = node,
             IsExpanded = node.Kind is ShipExplorerNodeKind.Root or ShipExplorerNodeKind.Assembly
                          && (node.AssemblyId?.Value.StartsWith("PHYS-", StringComparison.OrdinalIgnoreCase) == true
@@ -167,9 +254,11 @@ internal sealed class CalypsoObjectBrowser : UserControl
     private string FormatInspector(ShipExplorerNode node)
     {
         var reg = _controller.Session.Registry;
+        var visBlock = FormatVisibilityBlock(node.Id);
         if (node.PartId is { } pid && reg.TryGetPart(pid, out var part))
         {
             return
+                visBlock +
                 $"ID          {part.Id.Value}\n" +
                 $"Name        {part.DisplayName}\n" +
                 $"System      {part.System}\n" +
@@ -188,6 +277,7 @@ internal sealed class CalypsoObjectBrowser : UserControl
             var childCount = reg.ChildAssemblies(aid).Count();
             var partCount = reg.PartsOf(aid).Count();
             return
+                visBlock +
                 $"Assembly    {asm.Id.Value}\n" +
                 $"Name        {asm.DisplayName}\n" +
                 $"System      {asm.System}\n" +
@@ -203,6 +293,7 @@ internal sealed class CalypsoObjectBrowser : UserControl
         if (node.ReferenceId is { } rid && reg.TryGetReference(rid, out var reference))
         {
             return
+                visBlock +
                 $"Reference   {reference.Id}\n" +
                 $"Kind        {reference.Kind}\n" +
                 $"Name        {reference.DisplayName}\n" +
@@ -211,37 +302,61 @@ internal sealed class CalypsoObjectBrowser : UserControl
                 $"Entity      {reference.EntityId?.ToString("N") ?? "unresolved"}";
         }
 
-        return node.Title;
+        return visBlock + node.Title;
+    }
+
+    private string FormatVisibilityBlock(string nodeId)
+    {
+        var vis = _controller.Session.Visibility;
+        var local = vis.GetLocal(nodeId);
+        var effective = vis.IsEffectivelyVisible(nodeId);
+        var from = vis.InheritedFrom(nodeId);
+        var summary = vis.SummarizeChildren(nodeId);
+        var inheritLine = local == LocalVisibility.Inherit
+            ? $"Inherited from: {from ?? "(root)"}\n"
+            : "Explicit override\n";
+        var mixed = summary == ChildVisibilitySummary.Mixed ? "Children: mixed\n" : "";
+        return
+            $"Local       {local}\n" +
+            $"Effective   {(effective ? "Visible" : "Hidden")}\n" +
+            inheritLine +
+            mixed;
     }
 
     private void HideSelected()
     {
-        foreach (var id in SelectedEntityIds())
-            _controller.Session.HiddenEntityIds.Add(id);
-        _controller.Session.StatusText = $"hide:{_controller.Session.HiddenEntityIds.Count}";
+        var nodeId = SelectedNodeId();
+        if (nodeId is null)
+            return;
+        _controller.Session.Visibility.SetLocal(nodeId, LocalVisibility.Hidden);
+        _controller.Session.StatusText = $"hide:{nodeId}";
+        RebuildTree();
     }
 
     private void ShowSelected()
     {
-        foreach (var id in SelectedEntityIds())
-            _controller.Session.HiddenEntityIds.Remove(id);
-        _controller.Session.StatusText = "show:selection";
+        var nodeId = SelectedNodeId();
+        if (nodeId is null)
+            return;
+        _controller.Session.Visibility.SetLocal(nodeId, LocalVisibility.Visible);
+        _controller.Session.StatusText = $"show:{nodeId}";
+        RebuildTree();
     }
 
     private void IsolateSelected()
     {
-        var ids = SelectedEntityIds();
-        _controller.Session.RevealEntityIds = ids.Count == 0 ? null : ids;
-        _controller.Session.StatusText = $"isolate:{ids.Count}";
+        var nodeId = SelectedNodeId();
+        if (nodeId is null)
+            return;
+        IsolateNode(nodeId);
     }
 
-    private void IsolateCategory(Func<ShipPartRegistry, HashSet<Guid>> collect)
+    private void IsolateNode(string nodeId)
     {
         EnsureRegistry();
-        var ids = collect(_controller.Session.Registry);
-        _controller.Session.RevealEntityIds = ids.Count == 0 ? null : ids;
-        _controller.Session.VisualLayers = CalypsoVisualLayers.ShipSkeleton | CalypsoVisualLayers.OuterHull;
-        _controller.Session.StatusText = $"isolate-category:{ids.Count}";
+        _controller.Session.Visibility.BeginIsolation(nodeId);
+        _controller.Session.StatusText = $"isolate:{nodeId}";
+        RebuildTree();
     }
 
     private void EnsureRegistry()
@@ -253,9 +368,35 @@ internal sealed class CalypsoObjectBrowser : UserControl
 
     private void ClearIsolateAndHide()
     {
-        _controller.Session.RevealEntityIds = null;
-        _controller.Session.HiddenEntityIds.Clear();
+        if (_controller.Session.Visibility.IsolationActive)
+            _controller.Session.Visibility.EndIsolation();
+        else
+            _controller.Session.Visibility.ClearAllOverrides();
         _controller.Session.StatusText = "visibility:cleared";
+        RebuildTree();
+    }
+
+    private string? SelectedNodeId()
+    {
+        var session = _controller.Session;
+        if (session.SelectedPartId is { } pid)
+            return pid.Value;
+        if (session.SelectedAssemblyId is { } aid)
+            return aid.Value;
+        return session.SelectedReferenceId;
+    }
+
+    private string BuildVisibilityTooltip(string nodeId, LocalVisibility local, bool effective)
+    {
+        var vis = _controller.Session.Visibility;
+        var effLabel = effective ? "Visible" : "Hidden";
+        if (local == LocalVisibility.Inherit)
+        {
+            var from = vis.InheritedFrom(nodeId) ?? "(root)";
+            return $"Local: Inherit\nEffective: {effLabel}\nInherited from: {from}";
+        }
+
+        return $"Local: {local}\nEffective: {effLabel}\nExplicit override";
     }
 
     private void FocusSelected()

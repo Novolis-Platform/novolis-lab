@@ -2,6 +2,7 @@ using CalypsoCad.Model;
 using CalypsoCad.Publication;
 using CalypsoCad.Session;
 using CalypsoCad.Viewport;
+using CalypsoCad.Visibility;
 using Novolis.Silk;
 using Novolis.Silk.Capture;
 
@@ -27,11 +28,9 @@ internal static class HeadlessFrameInteriorInspectionExporter
 
         PartitionAttachmentValidator.WriteJson(session.Document, layout: null, outDir);
 
-        var previousLayers = session.VisualLayers;
+        var previousVis = session.Visibility.CaptureSnapshot();
         var previousWire = session.WireMeshMode;
         var previousView = session.ViewMode;
-        var previousOml = session.ShowOmlGuide;
-        var previousReveal = session.RevealEntityIds;
 
         var jobs = new List<(string Path, Action Prepare)>();
 
@@ -39,7 +38,9 @@ internal static class HeadlessFrameInteriorInspectionExporter
         {
             session.ViewMode = CalypsoViewMode.Orbit;
             session.WireMeshMode = CalypsoWireMeshMode.None;
-            session.ShowOmlGuide = false;
+            session.Visibility.ApplySnapshot(VisibilityPresets.Complete(), recordUndo: false);
+            session.Visibility.SetLocal("ref-oml-edge-guide", LocalVisibility.Hidden, recordUndo: false);
+            session.Visibility.SetLocal(ShipHierarchyIds.PressureHullShell, LocalVisibility.Hidden, recordUndo: false);
             renderer.ApplyOrbitPreset("bow-quarter");
             renderer.ZoomOrbit(1.45f);
         }
@@ -50,33 +51,29 @@ internal static class HeadlessFrameInteriorInspectionExporter
         Add("A-annular-rings-only", () =>
         {
             Cam();
-            session.VisualLayers = CalypsoVisualLayers.Frames;
-            session.RevealEntityIds = CollectAnnularOnly(registry);
+            session.Visibility.SetEntityRevealFilter(CollectAnnularOnly(registry));
             session.StatusText = "frame-int:A annular rings";
         });
 
         Add("B-rings-and-chords", () =>
         {
             Cam();
-            session.VisualLayers = CalypsoVisualLayers.Frames;
-            session.RevealEntityIds = CollectRingsAndChords(registry);
+            session.Visibility.SetEntityRevealFilter(CollectRingsAndChords(registry));
             session.StatusText = "frame-int:B rings + deck chords";
         });
 
         Add("C-rings-with-interior-supports", () =>
         {
             Cam();
-            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.Joinery;
-            session.RevealEntityIds = CollectRingsChordsAndInterior(registry);
+            session.Visibility.SetEntityRevealFilter(CollectRingsChordsAndInterior(registry));
             session.StatusText = "frame-int:C rings + interior supports";
         });
 
         Add("D-supports-with-passage-highlight", () =>
         {
             Cam();
-            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.Joinery
-                                   | CalypsoVisualLayers.PassagewayCutouts;
-            session.RevealEntityIds = CollectInteriorSupports(registry);
+            session.Visibility.SetEntityRevealFilter(CollectInteriorSupports(registry));
+            session.Visibility.SetLocal(ShipHierarchyIds.ClearanceVolumes, LocalVisibility.Visible, recordUndo: false);
             session.WireMeshMode = CalypsoWireMeshMode.CutawayPartial;
             session.StatusText = "frame-int:D interiors + passage envelopes";
         });
@@ -84,19 +81,19 @@ internal static class HeadlessFrameInteriorInspectionExporter
         Add("E-supports-with-partition-walls", () =>
         {
             Cam();
-            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.Joinery
-                                   | CalypsoVisualLayers.Partitions;
-            session.RevealEntityIds = null; // walls + supports together (full model filter by layers)
+            session.Visibility.ClearEntityRevealFilter();
+            session.Visibility.ApplySnapshot(VisibilityPresets.InteriorStructure(), recordUndo: false, asPreset: "frame-int-E");
+            session.Visibility.BeginIsolation(ShipHierarchyIds.Transverse);
+            session.Visibility.SetLocal(ShipHierarchyIds.Partitions, LocalVisibility.Visible, recordUndo: false);
             session.StatusText = "frame-int:E supports + partition walls";
         });
 
         Add("F-complete-transverse-hull-outline", () =>
         {
             Cam();
-            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.Bulkheads
-                                   | CalypsoVisualLayers.Joinery | CalypsoVisualLayers.OuterHull;
-            session.ShowOmlGuide = true;
-            session.RevealEntityIds = null;
+            session.Visibility.ClearEntityRevealFilter();
+            session.Visibility.BeginIsolation(ShipHierarchyIds.Transverse);
+            session.Visibility.SetLocal("ref-oml-edge-guide", LocalVisibility.Visible, recordUndo: false);
             session.StatusText = "frame-int:F complete transverse + hull outline";
         });
 
@@ -107,11 +104,12 @@ internal static class HeadlessFrameInteriorInspectionExporter
         }
         finally
         {
-            session.VisualLayers = previousLayers;
+            while (session.Visibility.IsolationActive)
+                session.Visibility.EndIsolation();
+            session.Visibility.ClearEntityRevealFilter();
+            session.Visibility.ApplySnapshot(previousVis, recordUndo: false, asPreset: previousVis.Label);
             session.WireMeshMode = previousWire;
             session.ViewMode = previousView;
-            session.ShowOmlGuide = previousOml;
-            session.RevealEntityIds = previousReveal;
         }
     }
 

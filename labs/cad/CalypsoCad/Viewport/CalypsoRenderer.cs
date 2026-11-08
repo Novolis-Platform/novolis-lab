@@ -610,28 +610,17 @@ internal sealed class CalypsoRenderer
         if (cutaway)
             DrawCutFaceCue();
 
-        // Hull: sealed in Solid orbit; cut-plane culled in Cutaway.
-        if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell)
-            && (_session.ViewMode == CalypsoViewMode.Orbit || cutaway))
+        // Hull shell: semantic PressureHullShell / OML ownership — not a parallel layer flag.
+        if ((_session.ViewMode == CalypsoViewMode.Orbit || cutaway)
+            && _session.Visibility.IsEffectivelyVisible(Model.ShipHierarchyIds.PressureHullShell))
         {
             DrawExteriorShell(cutaway && !solidOrbit, frameCutPt, frameCutN);
         }
 
-        // Always draw layer-visible entities — Solid Orbit used to skip this loop (empty viewport).
+        // Hierarchy visibility is the sole physical-object gate.
         foreach (var entity in _session.Document.Entities)
         {
-            if (_session.RevealEntityIds is { } reveal && !reveal.Contains(entity.Id))
-                continue;
-            if (_session.HiddenEntityIds.Contains(entity.Id))
-                continue;
-
-            if (!IsEntityVisibleForLayers(entity))
-                continue;
-
-            if (entity.Kind == "wall" && deckForWalls is { } walls && !WallVisibleOnDecks(entity, walls))
-                continue;
-
-            if (entity.Kind == "space" && deckForSpaces is { } spacesDeck && !SpaceVisibleOnDeck(entity, spacesDeck))
+            if (!_session.Visibility.IsEntityEffectivelyVisible(entity.Id))
                 continue;
 
             // Exterior solids/meshes already drawn above — skip duplicate in orbit.
@@ -708,7 +697,7 @@ internal sealed class CalypsoRenderer
                                 break;
                             DrawStructureMesh(entity, cutaway, frameCutPt, frameCutN);
                         }
-                        else if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
+                        else if (_session.Visibility.IsEffectivelyVisible(Model.ShipHierarchyIds.PressureHullShell))
                         {
                             if (cutaway)
                                 CalypsoExterior.DrawOne(_world, entity, frameCutPt, frameCutN);
@@ -721,20 +710,16 @@ internal sealed class CalypsoRenderer
         }
 
         // Highlight shirt-sleeves cutouts in frame/BH webs (wire + cutaway structure reads).
-        if (_session.VisualLayers.HasFlag(CalypsoVisualLayers.PassagewayCutouts)
+        if (_session.Visibility.IsEffectivelyVisible(Model.ShipHierarchyIds.ClearanceVolumes)
             && (_session.WireMeshMode is CalypsoWireMeshMode.CutawayPartial or CalypsoWireMeshMode.Wire)
             && (_session.ViewMode == CalypsoViewMode.Orbit
                 || _session.ViewMode == CalypsoViewMode.Interior))
             DrawPassagewayCutoutHighlights();
 
-        // Faceted OML guide only when explicitly requested — never on structure-wire
-        // progressive slides (it fills the volume and blocks the skeleton read).
-        // Isolation mode: reference guides are not selected physical components — suppress
-        // unless the caller cleared RevealEntityIds (full model) or set ShowOmlGuide with no isolate.
+        // OML edge guide is hierarchy reference `ref-oml-edge-guide` (not a parallel toggle).
         if (_session.ViewMode == CalypsoViewMode.Orbit
-            && _session.ShowOmlGuide
-            && _session.RevealEntityIds is null
-            && !_session.VisualLayers.HasFlag(CalypsoVisualLayers.HullShell))
+            && _session.Visibility.IsEffectivelyVisible("ref-oml-edge-guide")
+            && !_session.Visibility.IsEffectivelyVisible(Model.ShipHierarchyIds.PressureHullShell))
             CalypsoExterior.DrawOmlWireGuide(_world, _session.Document);
 
         if (_session.ViewMode == CalypsoViewMode.Plan)
@@ -770,36 +755,19 @@ internal sealed class CalypsoRenderer
 
     private void DrawExteriorShell(bool cutaway, Vector3 frameCutPt, Vector3 frameCutN)
     {
-        if (_session.RevealEntityIds is null)
-        {
-            if (cutaway)
-                CalypsoExterior.Draw(_world, _session.Document, frameCutPt, frameCutN);
-            else
-                CalypsoExterior.Draw(_world, _session.Document);
-            return;
-        }
-
-        foreach (var entity in _session.Document.Entities)
-        {
-            if (!_session.RevealEntityIds.Contains(entity.Id))
-                continue;
-            if (!CalypsoExterior.IsExteriorDrawable(entity))
-                continue;
-            if (cutaway)
-                CalypsoExterior.DrawOne(_world, entity, frameCutPt, frameCutN);
-            else
-                CalypsoExterior.DrawOne(_world, entity);
-        }
+        if (cutaway)
+            CalypsoExterior.Draw(_world, _session.Document, frameCutPt, frameCutN);
+        else
+            CalypsoExterior.Draw(_world, _session.Document);
     }
 
     private void DrawSpace(CadEntity space)
     {
         if (space.Points is not { Count: >= 3 } pts)
             return;
-        var showFinish = _session.VisualLayers.HasFlag(CalypsoVisualLayers.SpaceFinish);
-        var showSpacePartitions = _session.VisualLayers.HasFlag(CalypsoVisualLayers.Partitions);
-        if (!showFinish && !showSpacePartitions)
-            return;
+        // Hierarchy already gated the entity; draw finish + perimeter from space data.
+        var showFinish = true;
+        var showSpacePartitions = true;
 
         var selected = space.Id == _session.SelectedSpaceId;
         var interior = _session.ViewMode == CalypsoViewMode.Interior;
@@ -1070,7 +1038,7 @@ internal sealed class CalypsoRenderer
 
     private void DrawCompartmentProps(CadEntity space, Vector3 center, Vector3 size, Vector3 min, Vector3 max, float h)
     {
-        if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.Outfit))
+        if (!_session.Visibility.IsEffectivelyVisible(Model.ShipHierarchyIds.Furniture))
             return;
 
         var name = space.Name ?? "";
@@ -2002,8 +1970,7 @@ internal sealed class CalypsoRenderer
 
     private void DrawOpeningFrame(CadEntity opening)
     {
-        if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.Openings))
-            return;
+        // Entity already hierarchy-gated in the draw loop.
         if (opening.Footprint is not { Count: >= 3 } fp)
             return;
         var ring = fp.Select(SvgCoords.FromArray).ToArray();
@@ -2082,9 +2049,7 @@ internal sealed class CalypsoRenderer
 
     private void DrawWall(CadEntity wall)
     {
-        if (!_session.VisualLayers.HasFlag(CalypsoVisualLayers.Partitions))
-            return;
-
+        // Entity already hierarchy-gated in the draw loop.
         var segments = GetBaseline(wall);
         if (segments.Count == 0)
             return;
@@ -2617,47 +2582,8 @@ internal sealed class CalypsoRenderer
         return false;
     }
 
-    private bool IsBoxLayerVisible(CadEntity box)
-    {
-        var layers = _session.VisualLayers;
-        var n = box.Name ?? "";
-        if (n.StartsWith("C40", StringComparison.OrdinalIgnoreCase))
-            return layers.HasFlag(CalypsoVisualLayers.Cargo);
-        if (n.StartsWith("outfit-AIRLOCK", StringComparison.OrdinalIgnoreCase)
-            || n.StartsWith("outfit-hatch-", StringComparison.OrdinalIgnoreCase)
-               && (n.Contains("-D1-", StringComparison.OrdinalIgnoreCase)
-                   || n.Contains("-D2-", StringComparison.OrdinalIgnoreCase)
-                   || n.Contains("-D3-", StringComparison.OrdinalIgnoreCase)))
-            return layers.HasFlag(CalypsoVisualLayers.Airlocks)
-                   || layers.HasFlag(CalypsoVisualLayers.Outfit);
-        if (n.StartsWith("outfit-", StringComparison.OrdinalIgnoreCase))
-            return layers.HasFlag(CalypsoVisualLayers.Outfit);
-        if (IsStructureBox(box))
-        {
-            // OuterSkeleton: exclusive cage — rings/stringers/girders/floor, no BH / internal chords.
-            if (layers == CalypsoVisualLayers.OuterSkeleton
-                || layers == CalypsoVisualLayers.OuterHull)
-                return IsOuterHullMember(n);
-            // Deck filter: sandwich panels are deck-scoped (dkm1 / dk0 / dk1).
-            if (_session.DeckFilter is { } deckFilter
-                && n.StartsWith("deck-sandwich-", StringComparison.OrdinalIgnoreCase)
-                && !DeckSandwichMatchesFilter(n, deckFilter))
-                return false;
-            // Peri+girder inspection: hide skin stringers/shell so primary girders stay readable.
-            if (layers.HasFlag(CalypsoVisualLayers.DeckPerimeters)
-                && layers.HasFlag(CalypsoVisualLayers.Longitudinals)
-                && !layers.HasFlag(CalypsoVisualLayers.Frames)
-                && (n.StartsWith("stringer-", StringComparison.OrdinalIgnoreCase)
-                    || n.StartsWith("shell-", StringComparison.OrdinalIgnoreCase)
-                    || n.Contains("-deckbeam-", StringComparison.OrdinalIgnoreCase)))
-                return false;
-            // Multi-bit box flags (Frames|OuterHull): any intersecting bit is enough.
-            return (StructureFlagForBox(box) & layers) != 0;
-        }
-
-        return layers.HasFlag(CalypsoVisualLayers.HullShell)
-               || layers.HasFlag(CalypsoVisualLayers.Outfit);
-    }
+    private bool IsBoxLayerVisible(CadEntity box) =>
+        _session.Visibility.IsEntityEffectivelyVisible(box.Id);
 
     private static SortedSet<float> BulkheadWorldStations(float loa = 69f)
     {
@@ -2793,36 +2719,8 @@ internal sealed class CalypsoRenderer
             yield return sel;
     }
 
-    private bool IsEntityVisibleForLayers(CadEntity entity)
-    {
-        var layers = _session.VisualLayers;
-        // Plan legend: bh-* bulkheads always visible (red) even on Dk001Plan without Structure.
-        if (_session.ViewMode == CalypsoViewMode.Plan
-            && entity.Kind == "box"
-            && entity.Name?.StartsWith("bh-", StringComparison.OrdinalIgnoreCase) == true)
-            return true;
-
-        return entity.Kind switch
-        {
-            "wall" => layers.HasFlag(CalypsoVisualLayers.Partitions),
-            "opening" => layers.HasFlag(CalypsoVisualLayers.Openings)
-                         || ((entity.Name?.StartsWith("D1-", StringComparison.OrdinalIgnoreCase) == true
-                              || entity.Name?.StartsWith("D2-", StringComparison.OrdinalIgnoreCase) == true
-                              || entity.Name?.StartsWith("D3-", StringComparison.OrdinalIgnoreCase) == true)
-                             && layers.HasFlag(CalypsoVisualLayers.Airlocks)),
-            "space" => entity.Name?.StartsWith("AIRLOCK_", StringComparison.OrdinalIgnoreCase) == true
-                ? layers.HasFlag(CalypsoVisualLayers.Airlocks)
-                  || layers.HasFlag(CalypsoVisualLayers.SpaceFinish)
-                : layers.HasFlag(CalypsoVisualLayers.SpaceFinish)
-                  || layers.HasFlag(CalypsoVisualLayers.Partitions),
-            "box" => IsBoxLayerVisible(entity),
-            // Hull shells on HullShell; polygonal BH plates use structure layer flags.
-            "mesh" => IsStructureMesh(entity)
-                ? IsBoxLayerVisible(entity)
-                : layers.HasFlag(CalypsoVisualLayers.HullShell),
-            _ => true,
-        };
-    }
+    private bool IsEntityVisibleForLayers(CadEntity entity) =>
+        _session.Visibility.IsEntityEffectivelyVisible(entity.Id);
 
     private void DrawPassagewayCutoutHighlights()
     {

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Numerics;
 using CalypsoCad.Model;
 using CalypsoCad.Publication;
+using CalypsoCad.Visibility;
 using Novolis.Cad.Primitives;
 using CalypsoCad.Structure;
 
@@ -10,6 +11,9 @@ namespace CalypsoCad.Session;
 
 internal sealed class CalypsoSession
 {
+    /// <summary>Authoritative physical/reference object visibility (Explorer + renderer).</summary>
+    public HierarchyVisibilityService Visibility { get; } = new();
+
     public string GeneratedDirectory { get; private set; } = "";
     public CadDocument Document { get; private set; } = new();
     public CadShapesDocument Shapes { get; private set; } = new();
@@ -32,19 +36,18 @@ internal sealed class CalypsoSession
     public string InspectorText { get; set; } = "";
 
     /// <summary>
-    /// When set, only these entity ids draw (progressive build-step slides / isolate).
-    /// Null means show the full document (minus <see cref="HiddenEntityIds"/>).
+    /// Deprecated presentation toggle — OML guide visibility is owned by hierarchy node
+    /// <c>ref-oml-edge-guide</c>. Kept only for headless exporters that still flip a bool;
+    /// renderer does not consult this flag.
     /// </summary>
-    public HashSet<Guid>? RevealEntityIds { get; set; }
-
-    /// <summary>Explorer hide — entity ids suppressed without mutating the engineering model.</summary>
-    public HashSet<Guid> HiddenEntityIds { get; } = new();
-
-    /// <summary>
-    /// OML boundary-edge wire guide when HullShell is off (never a filled second hull).
-    /// Toggle with H in the interactive host.
-    /// </summary>
-    public bool ShowOmlGuide { get; set; } = true;
+    public bool ShowOmlGuide
+    {
+        get => Visibility.IsEffectivelyVisible("ref-oml-edge-guide");
+        set => Visibility.SetLocal(
+            "ref-oml-edge-guide",
+            value ? LocalVisibility.Visible : LocalVisibility.Hidden,
+            recordUndo: false);
+    }
 
     /// <summary>World cutaway plane origin (used when <see cref="WireMeshMode"/> is CutawayPartial).</summary>
     public Vector3 CutPlaneOrigin { get; set; } = new(0f, 4f, 0f);
@@ -119,13 +122,31 @@ internal sealed class CalypsoSession
 
     public void RebuildSemanticRegistry()
     {
-        HiddenEntityIds.Clear();
-        RevealEntityIds = null;
         SelectedAssemblyId = null;
         SelectedPartId = null;
         SelectedReferenceId = null;
         InspectorText = "";
         CadDocumentAdapter.LoadFromDocument(Document);
+        ShipHierarchyBuilder.EnsureCanonicalHierarchy(Registry, Document);
+        Visibility.BindRegistry(Registry, Document);
+        var visPath = VisibilityPersistence.DefaultPath(GeneratedDirectory);
+        if (!string.IsNullOrWhiteSpace(GeneratedDirectory)
+            && VisibilityPersistence.TryLoad(Visibility, visPath, out _))
+        {
+            // Restored saved overrides.
+        }
+        else
+        {
+            Visibility.ApplySnapshot(VisibilityPresets.PrimaryStructure(), recordUndo: false, asPreset: "primary");
+            Visibility.SetLocal("ref-oml-edge-guide", LocalVisibility.Visible, recordUndo: false);
+        }
+    }
+
+    public void SaveVisibilityOverrides()
+    {
+        if (string.IsNullOrWhiteSpace(GeneratedDirectory))
+            return;
+        VisibilityPersistence.Save(Visibility, VisibilityPersistence.DefaultPath(GeneratedDirectory));
     }
 
     public ShipPartRegistry Registry => CadDocumentAdapter.Active;
@@ -137,9 +158,10 @@ internal sealed class CalypsoSession
         (LayersCatalog, Shapes, Document) = CadDocumentBundle.Read(GeneratedDirectory, "calypso-structural-bay");
         ShapeById = Shapes.Shapes.ToDictionary(s => s.Id);
         SelectedSpaceId = null;
-        RevealEntityIds = null;
         VisualLayers = CalypsoVisualLayers.StructureInspect;
-        ShowOmlGuide = false;
+        RebuildSemanticRegistry();
+        Visibility.ApplySnapshot(VisibilityPresets.PrimaryStructure(), recordUndo: false, asPreset: "bay");
+        Visibility.SetLocal("ref-oml-edge-guide", LocalVisibility.Hidden, recordUndo: false);
         StatusText = $"Structural bay proof → {GeneratedDirectory}";
     }
 

@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Text.Json;
 using CalypsoCad.Session;
 using CalypsoCad.Viewport;
+using CalypsoCad.Visibility;
 using Novolis.Silk;
 using Novolis.Silk.Capture;
 
@@ -39,19 +40,17 @@ internal static class HeadlessConstructionOrbitExporter
         var keyDir = Path.Combine(outDir, "_keys-tmp");
         Directory.CreateDirectory(keyDir);
 
-        var previousLayers = session.VisualLayers;
+        var previousVis = session.Visibility.CaptureSnapshot();
         var previousView = session.ViewMode;
         var previousWire = session.WireMeshMode;
-        var previousReveal = session.RevealEntityIds;
         var previousStatus = session.StatusText;
         var previousDeck = session.DeckFilter;
         var previousCut = session.CutPlaneLongitudinal;
         var previousCutUser = session.CutPlaneUserDriven;
         var previousCutOff = session.CutPlaneOffset;
-        var previousOml = session.ShowOmlGuide;
 
-        session.RevealEntityIds = null;
-        session.ShowOmlGuide = true;
+        session.Visibility.ClearEntityRevealFilter();
+        session.Visibility.SetLocal("ref-oml-edge-guide", LocalVisibility.Visible, recordUndo: false);
         session.ViewMode = CalypsoViewMode.Orbit;
         session.DeckFilter = null;
 
@@ -79,8 +78,9 @@ internal static class HeadlessConstructionOrbitExporter
                 {
                     session.VisualLayers = stage.Layers;
                     session.WireMeshMode = stage.Wire;
-                    session.ShowOmlGuide = true;
-                    session.RevealEntityIds = null;
+                    session.Visibility.ApplySnapshot(stage.Visibility(), recordUndo: false, asPreset: stage.Id);
+                    session.Visibility.SetLocal("ref-oml-edge-guide", LocalVisibility.Visible, recordUndo: false);
+                    session.Visibility.ClearEntityRevealFilter();
                     session.CutPlaneLongitudinal = true;
                     session.CutPlaneUserDriven = stage.Wire == CalypsoWireMeshMode.CutawayPartial;
                     session.CutPlaneOffset = stage.Wire == CalypsoWireMeshMode.CutawayPartial
@@ -172,16 +172,14 @@ internal static class HeadlessConstructionOrbitExporter
             }
             catch { /* ignore */ }
 
-            session.VisualLayers = previousLayers;
+            session.Visibility.ApplySnapshot(previousVis, recordUndo: false, asPreset: previousVis.Label);
             session.ViewMode = previousView;
             session.WireMeshMode = previousWire;
-            session.RevealEntityIds = previousReveal;
             session.StatusText = previousStatus;
             session.DeckFilter = previousDeck;
             session.CutPlaneLongitudinal = previousCut;
             session.CutPlaneUserDriven = previousCutUser;
             session.CutPlaneOffset = previousCutOff;
-            session.ShowOmlGuide = previousOml;
         }
     }
 
@@ -204,23 +202,32 @@ internal static class HeadlessConstructionOrbitExporter
     }
 
     private sealed record LayerStage(
-        string Id, string Title, CalypsoVisualLayers Layers, CalypsoWireMeshMode Wire);
+        string Id,
+        string Title,
+        CalypsoVisualLayers Layers,
+        CalypsoWireMeshMode Wire,
+        Func<VisibilitySnapshot> Visibility);
 
     private static List<LayerStage> BuildLayerStages() =>
     [
         new("structure", "Structure · frames / BH / girders",
-            CalypsoVisualLayers.StructureNoHull, CalypsoWireMeshMode.Wire),
+            CalypsoVisualLayers.StructureNoHull, CalypsoWireMeshMode.Wire,
+            VisibilityPresets.PrimaryStructure),
         new("passage", "Structure + passageway cutouts",
-            CalypsoVisualLayers.StructureNoHull, CalypsoWireMeshMode.CutawayPartial),
+            CalypsoVisualLayers.StructureNoHull, CalypsoWireMeshMode.CutawayPartial,
+            VisibilityPresets.PrimaryStructure),
         new("interiors", "Interiors · partitions / spaces",
-            CalypsoVisualLayers.InteriorStructureNoHull, CalypsoWireMeshMode.CutawayPartial),
+            CalypsoVisualLayers.InteriorStructureNoHull, CalypsoWireMeshMode.CutawayPartial,
+            VisibilityPresets.InteriorStructure),
         new("fitout", "Fitout · outfit + openings",
             CalypsoVisualLayers.InteriorStructureNoHull | CalypsoVisualLayers.Outfit,
-            CalypsoWireMeshMode.CutawayPartial),
+            CalypsoWireMeshMode.CutawayPartial,
+            VisibilityPresets.InteriorStructure),
         new("all", "All layers (no solid OML)",
             CalypsoVisualLayers.InteriorStructureNoHull
             | CalypsoVisualLayers.Outfit
             | CalypsoVisualLayers.SpaceFinish,
-            CalypsoWireMeshMode.CutawayPartial),
+            CalypsoWireMeshMode.CutawayPartial,
+            VisibilityPresets.ArrangementNoSolidOml),
     ];
 }

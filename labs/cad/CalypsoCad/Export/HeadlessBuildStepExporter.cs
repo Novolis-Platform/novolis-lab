@@ -1,5 +1,7 @@
 using CalypsoCad.Viewport;
 using CalypsoCad.Session;
+using CalypsoCad.Model;
+using CalypsoCad.Visibility;
 using Novolis.Silk;
 using System.Globalization;
 using System.Text;
@@ -46,10 +48,9 @@ internal static class HeadlessBuildStepExporter
         // Overwrite in place — do not wipe the tree first (keeps viewers/diffs stable mid-run).
 
         var steps = BuildSteps(session.Document);
-        var previousLayers = session.VisualLayers;
+        var previousVis = session.Visibility.CaptureSnapshot();
         var previousView = session.ViewMode;
         var previousWire = session.WireMeshMode;
-        var previousReveal = session.RevealEntityIds;
         var previousStatus = session.StatusText;
         var previousDeck = session.DeckFilter;
 
@@ -84,7 +85,20 @@ internal static class HeadlessBuildStepExporter
                     : step.Layers.HasFlag(CalypsoVisualLayers.Partitions)
                         ? CalypsoWireMeshMode.CutawayPartial
                         : CalypsoWireMeshMode.Wire;
-                session.RevealEntityIds = isComplete ? null : new HashSet<Guid>(cumulative);
+                session.Visibility.ApplySnapshot(
+                    VisibilityPresets.ArrangementNoSolidOml(),
+                    recordUndo: false,
+                    asPreset: $"build:{step.Id}");
+                if (step.Layers.HasFlag(CalypsoVisualLayers.HullShell))
+                    session.Visibility.SetLocal(
+                        ShipHierarchyIds.PressureHullShell,
+                        LocalVisibility.Visible,
+                        recordUndo: false);
+                session.Visibility.SetLocal(
+                    "ref-oml-edge-guide",
+                    LocalVisibility.Visible,
+                    recordUndo: false);
+                session.Visibility.SetEntityRevealFilter(isComplete ? null : cumulative);
                 session.StatusText = $"build-step:{stepIndex + 1}/{steps.Count} {step.Id}";
             }));
 
@@ -112,10 +126,10 @@ internal static class HeadlessBuildStepExporter
         }
         finally
         {
-            session.VisualLayers = previousLayers;
+            session.Visibility.ClearEntityRevealFilter();
+            session.Visibility.ApplySnapshot(previousVis, recordUndo: false, asPreset: previousVis.Label);
             session.ViewMode = previousView;
             session.WireMeshMode = previousWire;
-            session.RevealEntityIds = previousReveal;
             session.StatusText = previousStatus;
             session.DeckFilter = previousDeck;
         }

@@ -4,6 +4,7 @@ using CalypsoCad.Publication;
 using CalypsoCad.Session;
 using CalypsoCad.Structure;
 using CalypsoCad.Viewport;
+using CalypsoCad.Visibility;
 using Novolis.Silk;
 using Novolis.Silk.Capture;
 
@@ -11,7 +12,7 @@ namespace CalypsoCad.Export;
 
 /// <summary>
 /// Fixed-camera longitudinal / structure inspection views A–E + inventory / knuckle reports.
-/// Same physical model; isolation via RevealEntityIds from the registry.
+/// Same physical model; isolation via HierarchyVisibilityService entity reveal.
 /// </summary>
 internal static class HeadlessStructureInspectionExporter
 {
@@ -45,12 +46,10 @@ internal static class HeadlessStructureInspectionExporter
             Console.WriteLine($"  WARN knuckle continuity skipped: {ex.Message}");
         }
 
-        var previousLayers = session.VisualLayers;
+        var previousVis = session.Visibility.CaptureSnapshot();
         var previousWire = session.WireMeshMode;
         var previousView = session.ViewMode;
-        var previousOml = session.ShowOmlGuide;
         var previousDeck = session.DeckFilter;
-        var previousReveal = session.RevealEntityIds;
 
         var jobs = new List<(string Path, Action Prepare)>();
 
@@ -59,8 +58,8 @@ internal static class HeadlessStructureInspectionExporter
             session.ViewMode = CalypsoViewMode.Orbit;
             session.DeckFilter = null;
             session.WireMeshMode = CalypsoWireMeshMode.None;
-            // Isolation: never draw OML reference guide unless reveal is cleared.
-            session.ShowOmlGuide = false;
+            session.Visibility.ApplySnapshot(VisibilityPresets.Complete(), recordUndo: false);
+            session.Visibility.SetLocal("ref-oml-edge-guide", LocalVisibility.Hidden, recordUndo: false);
             renderer.ApplyOrbitPreset("bow-quarter");
             renderer.ZoomOrbit(1.45f);
         }
@@ -71,40 +70,35 @@ internal static class HeadlessStructureInspectionExporter
         Add("A-knuckle-stringers", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Frames | CalypsoVisualLayers.Longitudinals;
-            session.RevealEntityIds = CollectKnuckles(registry);
+            session.Visibility.SetEntityRevealFilter(CollectKnuckles(registry));
             session.StatusText = "inspect:A hull knuckle stringers";
         });
 
         Add("B-deck0-supports", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Longitudinals;
-            session.RevealEntityIds = CollectDeck0Supports(registry);
+            session.Visibility.SetEntityRevealFilter(CollectDeck0Supports(registry));
             session.StatusText = "inspect:B Deck 0 edge supports";
         });
 
         Add("C-deck-m1-cargo-floor", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Longitudinals;
-            session.RevealEntityIds = CollectCargoFloorSupports(registry);
+            session.Visibility.SetEntityRevealFilter(CollectCargoFloorSupports(registry));
             session.StatusText = "inspect:C Deck -1 cargo-floor supports";
         });
 
         Add("D-primary-longitudinal", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Longitudinals;
-            session.RevealEntityIds = CollectPrimaryLongitudinal(registry);
+            session.Visibility.SetEntityRevealFilter(CollectPrimaryLongitudinal(registry));
             session.StatusText = "inspect:D primary keel + thrust";
         });
 
         Add("E-all-longitudinal-loadbearing", () =>
         {
             ShipCamera();
-            session.VisualLayers = CalypsoVisualLayers.Longitudinals | CalypsoVisualLayers.Frames;
-            session.RevealEntityIds = CollectAllLongitudinalLoadBearing(registry);
+            session.Visibility.SetEntityRevealFilter(CollectAllLongitudinalLoadBearing(registry));
             session.StatusText = "inspect:E all longitudinal load-bearing";
         });
 
@@ -118,12 +112,11 @@ internal static class HeadlessStructureInspectionExporter
         }
         finally
         {
-            session.VisualLayers = previousLayers;
+            session.Visibility.ClearEntityRevealFilter();
+            session.Visibility.ApplySnapshot(previousVis, recordUndo: false, asPreset: previousVis.Label);
             session.WireMeshMode = previousWire;
             session.ViewMode = previousView;
-            session.ShowOmlGuide = previousOml;
             session.DeckFilter = previousDeck;
-            session.RevealEntityIds = previousReveal;
         }
     }
 
