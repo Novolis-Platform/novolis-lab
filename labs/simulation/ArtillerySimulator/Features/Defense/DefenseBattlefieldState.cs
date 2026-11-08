@@ -11,8 +11,10 @@ internal sealed class DefenseBattlefieldState
     public const int MaxTrackedWrecks = 96;
 
     public TerrainWorld Terrain { get; }
-    public IArtilleryPieceSpec Piece { get; }
+    public IArtilleryPieceSpec Piece { get; set; }
     public Random Rng { get; }
+    /// <summary>When true, OPFOR only spawns south of the fort and steams north.</summary>
+    public bool SouthernApproachesOnly { get; set; }
 
     public List<string> Approaches { get; } = [];
     public List<RouteLane> Lanes { get; } = [];
@@ -35,8 +37,8 @@ internal sealed class DefenseBattlefieldState
     public int LastPinned;
     public float NearestMeters;
 
-    public float CaughtMeters { get; init; }
-    public float PinnedMeters { get; init; }
+    public float CaughtMeters { get; set; }
+    public float PinnedMeters { get; set; }
     public float GunX { get; set; }
     public float GunZ { get; set; }
     public Vector3 Objective { get; set; }

@@ -39,6 +39,28 @@ internal static class NatoSymbolDraw
         wires.Line(center, center + Vector3.UnitY * (size * 0.18f), stroke);
     }
 
+    /// <summary>Simple warship silhouette for the Oslofjorden naval level.</summary>
+    public static void HostileWarship(SilkWireBatch wires, Vector3 at, float yawDegrees, float size, Color stroke, bool wreck)
+    {
+        var scale = wreck ? 0.6f : 1f;
+        var s = size * scale;
+        var yawRad = yawDegrees * MathF.PI / 180f;
+        var c = MathF.Cos(yawRad);
+        var sn = MathF.Sin(yawRad);
+        var bow = Transform(at, c, sn, 0, -s * 0.85f);
+        var stern = Transform(at, c, sn, 0, s * 0.7f);
+        var port = Transform(at, c, sn, -s * 0.22f, s * 0.15f);
+        var starboard = Transform(at, c, sn, s * 0.22f, s * 0.15f);
+        wires.Line(bow, port, stroke);
+        wires.Line(port, stern, stroke);
+        wires.Line(stern, starboard, stroke);
+        wires.Line(starboard, bow, stroke);
+        var mast = at + Vector3.UnitY * (wreck ? s * 0.35f : s * 0.9f);
+        wires.Line(at + Vector3.UnitY * (s * 0.08f), mast, stroke);
+        if (!wreck)
+            wires.Ring(at + Vector3.UnitY * 2f, s * 0.55f, stroke, segments: 14, yLift: 0f);
+    }
+
     private static void DrawDiamond(SilkWireBatch wires, Vector3 at, float yaw, float size, Color stroke)
     {
         var yawRad = yaw * MathF.PI / 180f;

@@ -110,23 +110,74 @@ internal static class ArtilleryCli
         logger.LogInformation("Dump sites for {LevelId} ({DisplayName})", level.Id, level.DisplayName);
         Console.WriteLine($"level {level.Id}  {level.DisplayName}");
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-            $"gun   {FmtLatLon(gun.X, gun.Z)}  h={gun.Y:F1}"));
+            $"gun   {FmtLatLon(terrain, gun.X, gun.Z)}  xyz=({gun.X:F0},{gun.Y:F1},{gun.Z:F0}) water={terrain.Profile.IsWater(gun.X, gun.Z)}"));
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-            $"obj   {FmtLatLon(mission.Objective.X, mission.Objective.Z)}  gun→obj={Horizontal(gun, mission.Objective):F0}m"));
+            $"obj   {FmtLatLon(terrain, mission.Objective.X, mission.Objective.Z)}  gun→obj={Horizontal(gun, mission.Objective):F0}m"));
 
         foreach (var d in mission.DefenderReports())
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-                $"def {d.Label}  {FmtLatLon(d.X, d.Z)}"));
+                $"def {d.Label}  {FmtLatLon(terrain, d.X, d.Z)}"));
 
         foreach (var t in mission.Reports(gun))
+        {
+            var toGun = MathF.Sqrt((t.X - gun.X) * (t.X - gun.X) + (t.Z - gun.Z) * (t.Z - gun.Z));
             Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-                $"atk {t.Road}#{t.Id}  {FmtLatLon(t.X, t.Z)}  toObj={t.MetersToCrossing / 1000f:F1}km"));
+                $"atk {t.Road}#{t.Id}  {FmtLatLon(terrain, t.X, t.Z)}  toObj={t.MetersToCrossing / 1000f:F1}km  toGun={toGun / 1000f:F1}km"));
+        }
+
+        DumpAim(terrain, piece, mission, gun);
     }
 
-    private static string FmtLatLon(float x, float z)
+    private static void DumpAim(TerrainWorld terrain, IArtilleryPieceSpec piece, IDefenseMission mission, Vector3 gun)
     {
-        var (lat, lon) = KristiansandHeightSampler.ToLonLat(x, z);
-        return string.Create(CultureInfo.InvariantCulture, $"lat={lat:F5} lon={lon:F5}");
+        var atmosphere = AtmosphereModel.CreateRegionalDefault();
+        var session = new BattleSession(piece, seed: 42);
+        var gunModel = new GunModel(piece);
+        gunModel.LayCenter(mission.TrailBearingDegrees);
+        gunModel.SetElevation(mission.OpeningElevationDegrees);
+        gunModel.NudgeAzimuth(OpeningFirePlan.DeltaDegrees(mission.OpeningAzimuthDegrees, gunModel.AzimuthDegrees));
+        gunModel.SetCharge(mission.OpeningChargeIndex);
+
+        var crew = new CrewDrill();
+        crew.OrderAim(gunModel, mission.OpeningElevationDegrees, mission.OpeningAzimuthDegrees);
+        gunModel.SetCharge(mission.OpeningChargeIndex);
+        crew.SeatOpening(gunModel);
+
+        var ballistics = new Novolis.Physics.Ballistics.ProjectileBallisticSimulation(
+            piece.Projectile,
+            Novolis.Physics.Ballistics.DragCoefficientLaw.BoatTail);
+        var aim = new AimPreviewService(terrain, atmosphere, session);
+        aim.Bind(gunModel, ballistics);
+        aim.Rebuild(crew);
+
+        var mpi = aim.PredictedImpact();
+        var range = aim.PredictedRangeMeters();
+        var ground = terrain.Field.SampleHeight(mpi.X, mpi.Z);
+        var maxY = 0f;
+        foreach (var p in aim.Ordered)
+            maxY = MathF.Max(maxY, p.Y);
+        var unsafeSol = range < piece.LaunchClearanceMeters || range < piece.MinEffectiveRangeMeters;
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"aim   elev={mission.OpeningElevationDegrees:F1}° az={mission.OpeningAzimuthDegrees:F1}° ch={mission.OpeningChargeIndex} pts={aim.Ordered.Count} range={range:F0}m tof={aim.EstimatedTofSeconds():F1}s maxY={maxY:F0} mpiY={mpi.Y:F1} ground={ground:F1} unsafe={unsafeSol}"));
+        if (aim.Ordered.Count >= 1)
+        {
+            var a0 = aim.Ordered[0];
+            var a1 = aim.Ordered[^1];
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"arc   first=({a0.X:F0},{a0.Y:F1},{a0.Z:F0}) last=({a1.X:F0},{a1.Y:F1},{a1.Z:F0})"));
+        }
+    }
+
+    private static string FmtLatLon(TerrainWorld terrain, float x, float z)
+    {
+        if (string.Equals(terrain.Profile.Id, "oslofjorden", StringComparison.OrdinalIgnoreCase))
+        {
+            var (lat, lon) = OslofjordenGeodesy.ToLonLat(x, z);
+            return string.Create(CultureInfo.InvariantCulture, $"lat={lat:F5} lon={lon:F5}");
+        }
+
+        var krs = KristiansandHeightSampler.ToLonLat(x, z);
+        return string.Create(CultureInfo.InvariantCulture, $"lat={krs.Latitude:F5} lon={krs.Longitude:F5}");
     }
 
     private static float Horizontal(Vector3 a, Vector3 b)

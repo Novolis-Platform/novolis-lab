@@ -5,7 +5,7 @@ namespace ArtillerySimulator;
 /// <summary>Recycles ballistic runners so multi-round fire stays bounded.</summary>
 internal sealed class ArtilleryRoundPool
 {
-    public const int MaxLiveRounds = 12;
+    public const int MaxLiveRounds = 18;
 
     private readonly List<BallisticTrajectoryRunner> _rounds = [];
     private readonly Func<BallisticTrajectoryRunner> _factory;

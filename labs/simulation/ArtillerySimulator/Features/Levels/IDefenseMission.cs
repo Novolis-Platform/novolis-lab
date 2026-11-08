@@ -41,6 +41,11 @@ internal interface IDefenseMission
     /// <summary>Accumulated battle-clock seconds since mission boot (paused when terminal).</summary>
     float BattleElapsedSeconds { get; }
 
+    /// <summary>Retune warhead / scare radii when the player Tabs to another tube.</summary>
+    void RetuneEquipment(IArtilleryPieceSpec piece)
+    {
+    }
+
     void Advance(float simSeconds, Vector3? incomingShell);
     void ResolveImpact(Vector3 impact);
     void Draw(SilkWireBatch wires);

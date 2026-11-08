@@ -49,4 +49,12 @@ internal sealed class BattleCommand
             CorrelationId = correlationId,
             Completion = completion,
         };
+
+    public static BattleCommand CycleGun(string? correlationId = null, TaskCompletionSource<BattleCommandResult>? completion = null) =>
+        new()
+        {
+            Kind = BattleCommandKind.CycleGun,
+            CorrelationId = correlationId,
+            Completion = completion,
+        };
 }

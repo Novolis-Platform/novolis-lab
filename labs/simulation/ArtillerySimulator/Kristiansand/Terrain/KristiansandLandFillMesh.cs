@@ -15,14 +15,25 @@ internal static class KristiansandLandFillMesh
     /// Builds triangle vertices for a <paramref name="cellsX"/>×<paramref name="cellsZ"/> heightfield grid
     /// (<paramref name="vertices"/> length = (cellsX+1)*(cellsZ+1), row-major Z then X).
     /// </summary>
-    public static WorldSolidVertex[] Build(ReadOnlySpan<Vector3> vertices, int cellsX, int cellsZ)
+    public static WorldSolidVertex[] Build(ReadOnlySpan<Vector3> vertices, int cellsX, int cellsZ) =>
+        Build(vertices, cellsX, cellsZ, static (x, z) =>
+            KristiansandSurface.KindAt(x, z) == KristiansandSurfaceKind.Water);
+
+    public static WorldSolidVertex[] Build(
+        ReadOnlySpan<Vector3> vertices,
+        int cellsX,
+        int cellsZ,
+        Func<float, float, bool> isWater)
     {
+        ArgumentNullException.ThrowIfNull(isWater);
         if (cellsX < 1 || cellsZ < 1)
             return [];
 
         var stride = cellsX + 1;
         if (vertices.Length < stride * (cellsZ + 1))
             throw new ArgumentException("Vertex buffer shorter than cells imply.", nameof(vertices));
+
+        Rgba32 ColorAt(Vector3 p) => isWater(p.X, p.Z) ? Water : Land;
 
         // Worst case: every cell straddles shore → 2×2 subdivide (8 tris × 3 verts).
         var tris = new WorldSolidVertex[cellsX * cellsZ * 24];
@@ -85,9 +96,6 @@ internal static class KristiansandLandFillMesh
 
     private static Vector3 Mid(Vector3 p, Vector3 q) =>
         new((p.X + q.X) * 0.5f, (p.Y + q.Y) * 0.5f, (p.Z + q.Z) * 0.5f);
-
-    private static Rgba32 ColorAt(Vector3 p) =>
-        KristiansandSurface.KindAt(p.X, p.Z) == KristiansandSurfaceKind.Water ? Water : Land;
 
     private static void Write(
         WorldSolidVertex[] dest,

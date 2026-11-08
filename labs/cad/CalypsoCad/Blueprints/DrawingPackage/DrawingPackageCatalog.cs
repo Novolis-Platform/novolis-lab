@@ -64,15 +64,18 @@ internal static class DrawingPackageCatalog
         // —— Structure: frames (stations with annular plate-web mesh and/or legacy ring bars) ——
         foreach (var fr in CadJsonStructureQuery.PhysicalFrameStations(cad))
         {
-            var zLabel = fr.ZStem.ToString("0", CultureInfo.InvariantCulture);
+            // Prefer id token (F61.1) over rounded metres so sheets match CAD entity names.
+            var token = fr.FrameId.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase)
+                ? fr.FrameId["frame-F".Length..]
+                : fr.ZStem.ToString("0.#", CultureInfo.InvariantCulture);
             Add(DrawingCategoryId.Frames,
-                $"Transverse frame {fr.FrameId} @ z={zLabel} m ({fr.PartCount} perimeter parts)",
-                $"FRM-Z{zLabel}",
-                $"FRAME-z{zLabel}",
+                $"Transverse frame {fr.FrameId} @ z={fr.ZStem.ToString("0.##", CultureInfo.InvariantCulture)} m ({fr.PartCount} perimeter parts)",
+                $"FRM-Z{token}",
+                $"FRAME-z{token}",
                 detailSource: null,
                 fr.FrameId,
                 VolumeCirculationKind.None,
-                "structure", "frame", $"z={zLabel}", fr.FrameId);
+                "structure", "frame", $"z={fr.ZStem.ToString("0.##", CultureInfo.InvariantCulture)}", fr.FrameId);
         }
 
         // —— Structure: deck plates ——

@@ -11,6 +11,7 @@ internal static class GameLevelCatalog
     static GameLevelCatalog()
     {
         Register(new KristiansandDefenseLevel());
+        Register(new OslofjordenBlucherLevel());
     }
 
     public static IGameLevel Default => Require(KristiansandDefenseLevel.LevelId);

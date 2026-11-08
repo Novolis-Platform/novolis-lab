@@ -107,6 +107,14 @@ internal sealed class KristiansandDefenseMission : IDefenseMission
 
     public void ResolveImpact(Vector3 point) => WarheadEffectsResolver.ResolveImpact(_state, point);
 
+    public void RetuneEquipment(IArtilleryPieceSpec piece)
+    {
+        ArgumentNullException.ThrowIfNull(piece);
+        _state.Piece = piece;
+        _state.CaughtMeters = piece.Warhead.CaughtMeters;
+        _state.PinnedMeters = piece.Warhead.PinnedMeters;
+    }
+
     public void Draw(SilkWireBatch wires) =>
         DefenseSceneDraw.Draw(
             wires,

@@ -3,19 +3,12 @@ using System.Globalization;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Educational K9 DOG autoloader + powered turret drill on the battle clock.
-/// Autoloader rams while the turret lays; a repeat at the same data is mostly the load cycle.
+/// Autoloader + powered turret drill on the battle clock.
+/// Cycle times and slew rates come from the active <see cref="IArtilleryPieceSpec"/>.
 /// </summary>
 internal sealed class CrewDrill
 {
-    public const float RamSeconds = 3.2f;
-    public const float ChargeSeconds = 1.6f;
-    public const float ChargeSwapSeconds = 4.5f;
-    public const float CloseSeconds = 0.6f;
-    /// <summary>
-    /// Powered-turret slew (battle clock). ~4.5°/s traverse / ~2.5°/s elevate —
-    /// a 30° azimuth change takes ~7 s; Shift is for fine corrections.
-    /// </summary>
+    /// <summary>Legacy defaults (K9 howitzer). Prefer <see cref="IArtilleryPieceSpec"/> rates.</summary>
     public const float ElevateMilsPerSecond = 45f;
     public const float TraverseMilsPerSecond = 80f;
 
@@ -25,6 +18,7 @@ internal sealed class CrewDrill
     private float _remaining;
     private bool _swap;
     private int _seatedCharge;
+    private GunModel? _loaderGun;
 
     public float OrderedElevation { get; private set; }
 
@@ -39,6 +33,7 @@ internal sealed class CrewDrill
 
     public void SeatOpening(GunModel gun)
     {
+        _loaderGun = gun;
         OrderedElevation = gun.ElevationDegrees;
         OrderedAzimuth = gun.AzimuthDegrees;
         OrderedCharge = gun.ChargeIndex;
@@ -50,6 +45,7 @@ internal sealed class CrewDrill
 
     public void OrderAim(GunModel gun, float elevation, float azimuth)
     {
+        _loaderGun = gun;
         OrderedElevation = Math.Clamp(elevation, gun.Spec.MinElevationDegrees, gun.Spec.MaxElevationDegrees);
         var delta = azimuth - gun.CenterAzimuthDegrees;
         while (delta > 180f)
@@ -65,6 +61,7 @@ internal sealed class CrewDrill
 
     public void OrderCharge(GunModel gun, int index)
     {
+        _loaderGun = gun;
         index = Math.Clamp(index, 0, gun.Spec.Charges.Count - 1);
         if (index == OrderedCharge)
             return;
@@ -76,27 +73,30 @@ internal sealed class CrewDrill
         {
             case Stage.Ready:
                 _stage = Stage.Charge;
-                _remaining = ChargeSwapSeconds;
+                _remaining = gun.Spec.LoaderChargeSwapSeconds;
                 break;
             case Stage.Charge:
-                _remaining = _swap ? ChargeSwapSeconds : ChargeSeconds;
+                _remaining = _swap ? gun.Spec.LoaderChargeSwapSeconds : gun.Spec.LoaderChargeSeconds;
                 break;
             case Stage.Close when _swap:
                 _stage = Stage.Charge;
-                _remaining = ChargeSwapSeconds;
+                _remaining = gun.Spec.LoaderChargeSwapSeconds;
                 break;
         }
     }
 
-    public void BeginReload()
+    public void BeginReload(GunModel gun)
     {
+        ArgumentNullException.ThrowIfNull(gun);
+        _loaderGun = gun;
         _stage = Stage.Ram;
-        _remaining = RamSeconds;
+        _remaining = gun.Spec.LoaderRamSeconds;
         _swap = OrderedCharge != _seatedCharge;
     }
 
     public void Advance(GunModel gun, float seconds)
     {
+        _loaderGun = gun;
         if (seconds > 0f)
             Slew(gun, seconds);
 
@@ -111,11 +111,11 @@ internal sealed class CrewDrill
             {
                 case Stage.Ram:
                     _stage = Stage.Charge;
-                    _remaining = (_swap ? ChargeSwapSeconds : ChargeSeconds) - overflow;
+                    _remaining = (_swap ? gun.Spec.LoaderChargeSwapSeconds : gun.Spec.LoaderChargeSeconds) - overflow;
                     break;
                 case Stage.Charge:
                     _stage = Stage.Close;
-                    _remaining = CloseSeconds - overflow;
+                    _remaining = gun.Spec.LoaderCloseSeconds - overflow;
                     break;
                 default:
                     gun.SetCharge(OrderedCharge);
@@ -137,11 +137,11 @@ internal sealed class CrewDrill
         gun.NudgeAzimuth(Wrap(OrderedAzimuth - gun.AzimuthDegrees));
     }
 
-    public float BusySeconds(GunModel gun) => MathF.Max(LoaderSeconds(), LaySeconds(gun));
+    public float BusySeconds(GunModel gun) => MathF.Max(LoaderSeconds(gun), LaySeconds(gun));
 
     public string Token(GunModel gun)
     {
-        if (_stage != Stage.Ready && LoaderSeconds() >= LaySeconds(gun))
+        if (_stage != Stage.Ready && LoaderSeconds(gun) >= LaySeconds(gun))
         {
             return _stage switch
             {
@@ -157,7 +157,7 @@ internal sealed class CrewDrill
     public string Phrase(GunModel gun)
     {
         var lay = LaySeconds(gun);
-        var load = LoaderSeconds();
+        var load = LoaderSeconds(gun);
         if (load <= 0.05f && lay <= 0.05f)
             return "Ready to fire.";
 
@@ -175,10 +175,12 @@ internal sealed class CrewDrill
         return string.Create(CultureInfo.InvariantCulture, $"Laying, {Ceil(lay)} s.");
     }
 
-    private float LoaderSeconds() => _stage switch
+    private float LoaderSeconds(GunModel gun) => _stage switch
     {
-        Stage.Ram => _remaining + (_swap ? ChargeSwapSeconds : ChargeSeconds) + CloseSeconds,
-        Stage.Charge => _remaining + CloseSeconds,
+        Stage.Ram => _remaining
+            + (_swap ? gun.Spec.LoaderChargeSwapSeconds : gun.Spec.LoaderChargeSeconds)
+            + gun.Spec.LoaderCloseSeconds,
+        Stage.Charge => _remaining + gun.Spec.LoaderCloseSeconds,
         Stage.Close => _remaining,
         _ => 0f,
     };
@@ -190,13 +192,15 @@ internal sealed class CrewDrill
         if (elevation <= OnLayMils && azimuth <= OnLayMils)
             return 0f;
 
-        return MathF.Max(elevation / ElevateMilsPerSecond, azimuth / TraverseMilsPerSecond);
+        return MathF.Max(
+            elevation / gun.Spec.ElevateMilsPerSecond,
+            azimuth / gun.Spec.TraverseMilsPerSecond);
     }
 
     private void Slew(GunModel gun, float seconds)
     {
-        var elevate = ElevateMilsPerSecond / NatoMils.MilsPerDegree * seconds;
-        var traverse = TraverseMilsPerSecond / NatoMils.MilsPerDegree * seconds;
+        var elevate = gun.Spec.ElevateMilsPerSecond / NatoMils.MilsPerDegree * seconds;
+        var traverse = gun.Spec.TraverseMilsPerSecond / NatoMils.MilsPerDegree * seconds;
         gun.NudgeElevation(Math.Clamp(OrderedElevation - gun.ElevationDegrees, -elevate, elevate));
         gun.NudgeAzimuth(Math.Clamp(Wrap(OrderedAzimuth - gun.AzimuthDegrees), -traverse, traverse));
     }

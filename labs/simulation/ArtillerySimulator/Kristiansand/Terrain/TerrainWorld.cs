@@ -11,17 +11,12 @@ using Novolis.Simulation.World.Builders;
 
 namespace ArtillerySimulator;
 
-/// <summary>Kristiansand NDH heightfield — solid land/water fill + primary-road overlay.</summary>
+/// <summary>Shared heightfield host — rebuilt from an <see cref="IMapTerrainProfile"/>.</summary>
 internal sealed class TerrainWorld : IDisposable
 {
     private static readonly Color BoundaryColor = Color.FromArgb(255, 200, 180, 90);
 
-    /// <summary>
-    /// Fill mesh density (512 ≈ 47 m/cell on the long axis). Collision stays coarse for boot.
-    /// </summary>
     public const int DisplayCells = 512;
-
-    /// <summary>~125 m/cell — closer aim/impact agreement than 128 without DisplayCells (512) BVH build cost.</summary>
     public const int CollisionCells = 192;
 
     private WorldExtentOptions _extentOptions = new()
@@ -32,6 +27,7 @@ internal sealed class TerrainWorld : IDisposable
         DrawCells = DisplayCells,
     };
 
+    private IMapTerrainProfile _profile = KristiansandMapTerrain.Instance;
     private BoundedHeightfield _field = null!;
     private IHeightSampler _sampler = null!;
     private BvhStaticWorld _collision = null!;
@@ -41,35 +37,41 @@ internal sealed class TerrainWorld : IDisposable
     private WorldSolidGpuMesh? _fillMesh;
     private WorldLineGpuMesh? _roadMesh;
     private int _drawCells;
+    private float _eastMeters = KristiansandHeightSampler.EastMeters;
+    private float _northMeters = KristiansandHeightSampler.NorthMeters;
 
-    public float ExtentMeters => KristiansandHeightSampler.MapExtentMeters;
-    public float EastMeters => KristiansandHeightSampler.EastMeters;
-    public float NorthMeters => KristiansandHeightSampler.NorthMeters;
+    public IMapTerrainProfile Profile => _profile;
+    public float ExtentMeters => MathF.Max(_eastMeters, _northMeters);
+    public float EastMeters => _eastMeters;
+    public float NorthMeters => _northMeters;
     public BoundedHeightfield Field => _field;
     public BvhStaticWorld Collision => _collision;
     public Vector3 GunBaseline { get; private set; }
 
-    /// <summary>Legacy wire count — terrain is solid now (always 0).</summary>
     public int TerrainLineCount => 0;
-
     public int TerrainTriangleCount => _cachedFill.Length / 3;
-
     public int RoadLineCount => _cachedRoadWires.Length / 2;
 
-    public void Rebuild()
+    public void Rebuild() => Rebuild(KristiansandMapTerrain.Instance);
+
+    public void Rebuild(IMapTerrainProfile profile)
     {
+        ArgumentNullException.ThrowIfNull(profile);
         var sw = Stopwatch.StartNew();
         InvalidateGpuMeshes();
+        _profile = profile;
+        _eastMeters = profile.EastMeters;
+        _northMeters = profile.NorthMeters;
         _extentOptions = new WorldExtentOptions
         {
-            ExtentMeters = KristiansandHeightSampler.EastMeters,
-            ExtentNorthMeters = KristiansandHeightSampler.NorthMeters,
+            ExtentMeters = _eastMeters,
+            ExtentNorthMeters = _northMeters,
             CollisionCells = CollisionCells,
             DrawCells = DisplayCells,
         };
 
-        _sampler = new KristiansandHeightSampler();
-        _field = new BoundedHeightfield(_sampler, new AxisAlignedRangeBox(EastMeters, NorthMeters));
+        _sampler = profile.CreateSampler();
+        _field = new BoundedHeightfield(_sampler, new AxisAlignedRangeBox(_eastMeters, _northMeters));
 
         var mesh = HeightfieldMeshBuilder.Build(_sampler, _extentOptions);
         _collision = mesh.Collision;
@@ -77,29 +79,30 @@ internal sealed class TerrainWorld : IDisposable
         _drawCells = mesh.DrawCells;
         var afterMesh = sw.ElapsedMilliseconds;
 
-        _cachedFill = KristiansandLandFillMesh.Build(_drawVertices, _drawCells, _drawCells);
+        _cachedFill = KristiansandLandFillMesh.Build(
+            _drawVertices,
+            _drawCells,
+            _drawCells,
+            profile.IsWater);
         var afterFill = sw.ElapsedMilliseconds;
 
-        KristiansandMapFeatures.ResetClipCache();
-        KristiansandNvdbRoads.Reset();
-        _cachedRoadWires = KristiansandNvdbRoads.Build(_sampler);
+        _cachedRoadWires = profile.BuildDecorativeRoads(_sampler);
 
-        var pivotY = _field.SampleHeight(SimulationUnits.GunPivotX, NorthMeters * 0.5f);
-        GunBaseline = new Vector3(SimulationUnits.GunPivotX, pivotY, NorthMeters * 0.5f);
+        var pivotY = _field.SampleHeight(SimulationUnits.GunPivotX, _northMeters * 0.5f);
+        GunBaseline = new Vector3(SimulationUnits.GunPivotX, pivotY, _northMeters * 0.5f);
 
         Console.WriteLine(string.Create(
             CultureInfo.InvariantCulture,
-            $"Terrain rebuild: mesh={afterMesh}ms fill={afterFill - afterMesh}ms roads={sw.ElapsedMilliseconds - afterFill}ms total={sw.ElapsedMilliseconds}ms (draw={DisplayCells} coll={CollisionCells} tris={TerrainTriangleCount} roadSeg={RoadLineCount})"));
+            $"Terrain rebuild [{profile.Id}]: mesh={afterMesh}ms fill={afterFill - afterMesh}ms roads={sw.ElapsedMilliseconds - afterFill}ms total={sw.ElapsedMilliseconds}ms (draw={DisplayCells} coll={CollisionCells} tris={TerrainTriangleCount} roadSeg={RoadLineCount})"));
     }
 
     public void PlaceGun(float x, float z, float gunHeightOffsetMeters = 0f)
     {
-        x = Math.Clamp(x, 0f, EastMeters);
-        z = Math.Clamp(z, 0f, NorthMeters);
+        x = Math.Clamp(x, 0f, _eastMeters);
+        z = Math.Clamp(z, 0f, _northMeters);
         GunBaseline = new Vector3(x, _field.SampleHeight(x, z) + gunHeightOffsetMeters, z);
     }
 
-    /// <summary>Uploads solid fill + roads once; redraws from GPU each frame.</summary>
     public void DrawStatic(SilkFrame frame, in Matrix4x4 viewProjection)
     {
         EnsureGpuMeshes(frame);
@@ -109,10 +112,7 @@ internal sealed class TerrainWorld : IDisposable
             frame.DrawWorldLineMesh(_roadMesh, viewProjection, depthTest: false);
     }
 
-    public void DrawDynamic(SilkWireBatch wires)
-    {
-        DrawRangeBoundary(wires);
-    }
+    public void DrawDynamic(SilkWireBatch wires) => DrawRangeBoundary(wires);
 
     public void Dispose() => InvalidateGpuMeshes();
 

@@ -22,7 +22,15 @@ internal sealed class ArtilleryPieceSpec : IArtilleryPieceSpec
         ProjectileProfile projectile,
         BallisticErrorBudget errors,
         WarheadEffectSpec warhead,
-        IReadOnlyList<ChargeZoneSpec> charges)
+        IReadOnlyList<ChargeZoneSpec> charges,
+        float loaderRamSeconds = 3.2f,
+        float loaderChargeSeconds = 1.6f,
+        float loaderChargeSwapSeconds = 4.5f,
+        float loaderCloseSeconds = 0.6f,
+        float elevateMilsPerSecond = 45f,
+        float traverseMilsPerSecond = 80f,
+        int salvoRoundCount = 1,
+        float salvoSpreadMeters = 0f)
     {
         Id = id;
         DisplayName = displayName;
@@ -41,6 +49,14 @@ internal sealed class ArtilleryPieceSpec : IArtilleryPieceSpec
         Errors = errors;
         Warhead = warhead;
         Charges = charges;
+        LoaderRamSeconds = loaderRamSeconds;
+        LoaderChargeSeconds = loaderChargeSeconds;
+        LoaderChargeSwapSeconds = loaderChargeSwapSeconds;
+        LoaderCloseSeconds = loaderCloseSeconds;
+        ElevateMilsPerSecond = elevateMilsPerSecond;
+        TraverseMilsPerSecond = traverseMilsPerSecond;
+        SalvoRoundCount = Math.Max(1, salvoRoundCount);
+        SalvoSpreadMeters = MathF.Max(0f, salvoSpreadMeters);
     }
 
     public string Id { get; }
@@ -56,6 +72,14 @@ internal sealed class ArtilleryPieceSpec : IArtilleryPieceSpec
     public bool ContinuousTraverse { get; }
     public float MinEffectiveRangeMeters { get; }
     public float LaunchClearanceMeters { get; }
+    public float LoaderRamSeconds { get; }
+    public float LoaderChargeSeconds { get; }
+    public float LoaderChargeSwapSeconds { get; }
+    public float LoaderCloseSeconds { get; }
+    public float ElevateMilsPerSecond { get; }
+    public float TraverseMilsPerSecond { get; }
+    public int SalvoRoundCount { get; }
+    public float SalvoSpreadMeters { get; }
     public ProjectileProfile Projectile { get; }
     public BallisticErrorBudget Errors { get; }
     public WarheadEffectSpec Warhead { get; }

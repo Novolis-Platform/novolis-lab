@@ -26,6 +26,22 @@ internal interface IArtilleryPieceSpec
     float MinEffectiveRangeMeters { get; }
     float LaunchClearanceMeters { get; }
 
+    /// <summary>Autoloader / breech cycle (battle clock).</summary>
+    float LoaderRamSeconds { get; }
+    float LoaderChargeSeconds { get; }
+    float LoaderChargeSwapSeconds { get; }
+    float LoaderCloseSeconds { get; }
+
+    /// <summary>Powered traverse / elevation rates (NATO mils per battle-clock second).</summary>
+    float ElevateMilsPerSecond { get; }
+    float TraverseMilsPerSecond { get; }
+
+    /// <summary>HIMARS-style ripple: rockets per FIRE (1 = single tube).</summary>
+    int SalvoRoundCount { get; }
+
+    /// <summary>Horizontal sheaf radius for salvo impacts (meters).</summary>
+    float SalvoSpreadMeters { get; }
+
     ProjectileProfile Projectile { get; }
     BallisticErrorBudget Errors { get; }
     WarheadEffectSpec Warhead { get; }

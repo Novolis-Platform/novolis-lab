@@ -62,15 +62,16 @@ internal sealed class BattleFrameCoordinator
             return;
 
         var missionTerminal = _fireRules.IsMissionTerminal;
+        var gun = _gun();
         if (_isPaused())
         {
-            _input.Handle(frame, 0f, paused: true, missionTerminal, applier, _ui);
+            _input.Handle(frame, 0f, paused: true, missionTerminal, applier, _ui, gun);
             return;
         }
 
         var controlSeconds = MathF.Max(1e-4f, frame.DeltaSeconds);
         if (!missionTerminal)
-            _input.Handle(frame, controlSeconds, paused: false, missionTerminal, applier, _ui);
+            _input.Handle(frame, controlSeconds, paused: false, missionTerminal, applier, _ui, gun);
     }
 
     public int TickPhysics(float wallSeconds)

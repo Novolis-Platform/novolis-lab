@@ -4,7 +4,7 @@ using Novolis.Silk;
 namespace ArtillerySimulator;
 
 /// <summary>
-/// Silk → intents. Discrete fire/charge/follow go through <see cref="BattleCommand"/> channel;
+/// Silk → intents. Discrete fire/charge/follow/Tab go through <see cref="BattleCommand"/> channel;
 /// continuous WASD lay stays sync via <see cref="IBatteryApplier.NudgeOrder"/>.
 /// </summary>
 internal sealed class PlayerBattleInput
@@ -28,7 +28,8 @@ internal sealed class PlayerBattleInput
         bool paused,
         bool missionTerminal,
         IBatteryApplier battery,
-        FireControlUi ui)
+        FireControlUi ui,
+        GunModel gun)
     {
         if (paused)
             return;
@@ -39,6 +40,9 @@ internal sealed class PlayerBattleInput
 
         if (!missionTerminal && (actions.Fire || frame.IsKeyPressed(Key.Space)))
             _ = _commands.TryWrite(BattleCommand.Fire());
+
+        if (!missionTerminal && frame.IsKeyPressed(Key.Tab))
+            _ = _commands.TryWrite(BattleCommand.CycleGun());
 
         var ctrl = frame.IsKeyDown(Key.ControlLeft) || frame.IsKeyDown(Key.ControlRight);
         if (actions.ToggleFollow || frame.IsKeyPressed(Key.F) || (frame.IsKeyPressed(Key.C) && !ctrl))
@@ -68,8 +72,10 @@ internal sealed class PlayerBattleInput
             _layHoldSeconds = 0f;
 
         var ramp = Math.Clamp(_layHoldSeconds / LayRampSeconds, 0.2f, 1f);
-        var elevate = (fine ? FineMilsPerSecond : CrewDrill.ElevateMilsPerSecond) / NatoMils.MilsPerDegree * battleSeconds * ramp;
-        var traverse = (fine ? FineMilsPerSecond : CrewDrill.TraverseMilsPerSecond) / NatoMils.MilsPerDegree * battleSeconds * ramp;
+        var elevRate = fine ? FineMilsPerSecond : gun.Spec.ElevateMilsPerSecond;
+        var travRate = fine ? FineMilsPerSecond : gun.Spec.TraverseMilsPerSecond;
+        var elevate = elevRate / NatoMils.MilsPerDegree * battleSeconds * ramp;
+        var traverse = travRate / NatoMils.MilsPerDegree * battleSeconds * ramp;
 
         var dElev = 0f;
         var dTrav = 0f;

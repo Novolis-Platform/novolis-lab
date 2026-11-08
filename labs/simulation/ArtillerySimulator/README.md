@@ -2,7 +2,12 @@
 
 Educational Silk artillery sandbox (single executable). **K9 DOG** is a cheeky lab name for a fictional 155 mm L52-class piece — not a manufacturer product, not an official training system.
 
-Levels are pluggable (`GameLevelCatalog` / `IGameLevel`). Shipped: **Defense of Kristiansand** (`kristiansand.defense`).
+Levels are pluggable (`GameLevelCatalog` / `IGameLevel`). Shipped:
+
+| Id | Scenario |
+| --- | --- |
+| `kristiansand.defense` | Odderøya vs road columns into Kvadraturen |
+| `oslofjorden.blucher` | Oscarsborg vs 9 April 1940 fleet (decorative roads; invisible ship fairways) |
 
 ## Demo runbook
 
@@ -87,6 +92,7 @@ Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force,
 | `Features/Audio/` | SFX, music loop, voice |
 | `Features/Score/` | `ScoreBoard`, ledger, play clock, high-score store |
 | `Kristiansand/` | Geodesy, terrain, roads, atmosphere |
+| `Oslofjorden/` | Procedural Drøbak Sound map + invisible ship lanes |
 
 Physics (`TickPhysics`) and render (`CreateFrameViewModel` → draw) are budget-isolated. Commands use `Novolis.Messaging.Channels` — no MediatR.
 

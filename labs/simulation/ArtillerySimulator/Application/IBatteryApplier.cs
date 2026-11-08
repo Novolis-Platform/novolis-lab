@@ -19,4 +19,7 @@ internal interface IBatteryApplier
     void SnapCameraToBattle();
 
     void ShowMapOverview();
+
+    /// <summary>Tab — next tube in the level battery (no-op when only one mount).</summary>
+    void CycleGun();
 }

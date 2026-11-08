@@ -6,4 +6,5 @@ internal enum BattleCommandKind : byte
     Charge = 2,
     Fire = 3,
     FollowCamera = 4,
+    CycleGun = 5,
 }

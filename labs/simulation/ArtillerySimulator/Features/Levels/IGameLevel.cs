@@ -20,6 +20,21 @@ internal interface IGameLevel
             ? piece
             : ArtilleryPieceCatalog.Default;
 
+    /// <summary>Battery mounts for Tab cycling. Default: single tube from <see cref="PieceSpecId"/>.</summary>
+    IReadOnlyList<BatteryMount> ResolveBattery()
+    {
+        var piece = ResolvePiece();
+        return
+        [
+            new BatteryMount(
+                piece.Id,
+                piece.ShortName,
+                OffsetEastMeters: 0f,
+                OffsetNorthMeters: 0f,
+                OpeningElevationDegrees: 32f),
+        ];
+    }
+
     /// <summary>Rebuild heightfield / roads for this level into the shared terrain host.</summary>
     void RebuildMap(TerrainWorld terrain);
 

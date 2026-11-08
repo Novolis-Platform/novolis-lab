@@ -17,8 +17,9 @@ internal static class CadJsonStructureQuery
         @"^deck-sandwich-dk(m1|-1|0|1)-",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
+    /// <summary>Captures station id token including fractional metres (e.g. F61.1, F3.3).</summary>
     private static readonly Regex FrameAssembly = new(
-        @"^frame-F(\d+)",
+        @"^frame-F(\d+(?:\.\d+)?)",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     public const float SteelDensityKgPerM3 = 8000f;
@@ -305,9 +306,12 @@ internal static class CadJsonStructureQuery
                               || e.Name.Contains("-ring-", StringComparison.OrdinalIgnoreCase);
             if (!isPerimeter)
                 continue;
-            var id = $"frame-F{m.Groups[1].Value}";
-            if (!float.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var z))
+            var token = m.Groups[1].Value;
+            var id = $"frame-F{token}";
+            if (!float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out var zFromName))
                 continue;
+            // Prefer stamped stationZ (clamped emit) over the id token.
+            var z = TryReadStationZ(e) ?? zFromName;
             if (counts.TryGetValue(id, out var cur))
                 counts[id] = (z, cur.N + 1);
             else
@@ -330,13 +334,7 @@ internal static class CadJsonStructureQuery
         out IReadOnlyList<float[]> vertices,
         out IReadOnlyList<int> indices)
     {
-        var prefix = frameId.EndsWith('-') ? frameId : frameId + "-";
-        var ent = doc.Entities.FirstOrDefault(e =>
-            e.Name is not null
-            && e.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-            && e.Name.Contains("-annulus", StringComparison.OrdinalIgnoreCase)
-            && e.MeshVertices is { Count: >= 3 }
-            && e.MeshIndices is { Count: >= 3 });
+        var ent = FindFrameAnnulusEntity(doc, frameId);
         if (ent?.MeshVertices is null || ent.MeshIndices is null)
         {
             vertices = Array.Empty<float[]>();
@@ -352,11 +350,10 @@ internal static class CadJsonStructureQuery
     public static IReadOnlyList<FramePartBox> FramePartsAt(CadDocument doc, string frameId)
     {
         var list = new List<FramePartBox>();
-        var prefix = frameId.EndsWith('-') ? frameId : frameId + "-";
         foreach (var e in doc.Entities ?? [])
         {
             if (e.Name is null
-                || !e.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                || !IsFrameEntity(e.Name, frameId)
                 || !TryBox(e, out var center, out var half))
                 continue;
             // Skip join/connector bars that are mostly longitudinal (deep Z, thin Y/Up).
@@ -373,6 +370,76 @@ internal static class CadJsonStructureQuery
         }
 
         return list;
+    }
+
+    private static CadEntity? FindFrameAnnulusEntity(CadDocument doc, string frameId)
+    {
+        CadEntity? byPrefix = null;
+        foreach (var e in doc.Entities ?? [])
+        {
+            if (e.Name is null
+                || !e.Name.Contains("-annulus", StringComparison.OrdinalIgnoreCase)
+                || e.MeshVertices is not { Count: >= 3 }
+                || e.MeshIndices is not { Count: >= 3 })
+                continue;
+            if (!IsFrameEntity(e.Name, frameId))
+                continue;
+            byPrefix = e;
+            break;
+        }
+
+        if (byPrefix is not null)
+            return byPrefix;
+
+        // Fallback: match by stamped station Z when catalog id was truncated (legacy Integer parse).
+        if (!TryParseFrameTokenZ(frameId, out var wantZ))
+            return null;
+        return (doc.Entities ?? [])
+            .Where(e =>
+                e.Name is not null
+                && e.Name.StartsWith("frame-F", StringComparison.OrdinalIgnoreCase)
+                && e.Name.Contains("-annulus", StringComparison.OrdinalIgnoreCase)
+                && e.MeshVertices is { Count: >= 3 }
+                && e.MeshIndices is { Count: >= 3 }
+                && TryReadStationZ(e) is float sz
+                && MathF.Abs(sz - wantZ) <= 0.2f)
+            .OrderBy(e => MathF.Abs(TryReadStationZ(e)!.Value - wantZ))
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// True when <paramref name="entityName"/> belongs to assembly <paramref name="frameId"/>
+    /// (<c>frame-F61.1-…</c> must not match <c>frame-F61</c>).
+    /// </summary>
+    private static bool IsFrameEntity(string entityName, string frameId)
+    {
+        var id = frameId.TrimEnd('-');
+        if (!entityName.StartsWith(id, StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (entityName.Length == id.Length)
+            return true;
+        var next = entityName[id.Length];
+        // Boundary: next char must start the part suffix ("-annulus"), not continue a longer token ("61.1").
+        return next is '-' or '_';
+    }
+
+    private static bool TryParseFrameTokenZ(string frameId, out float z)
+    {
+        z = 0f;
+        var m = FrameAssembly.Match(frameId.EndsWith('-') ? frameId : frameId + "-");
+        if (!m.Success)
+            m = FrameAssembly.Match(frameId);
+        return m.Success
+               && float.TryParse(m.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out z);
+    }
+
+    private static float? TryReadStationZ(CadEntity e)
+    {
+        if (e.Properties is null
+            || !e.Properties.TryGetValue("stationZ", out var el)
+            || el.ValueKind != JsonValueKind.Number)
+            return null;
+        return el.GetSingle();
     }
 
     public static bool TryBhPlateMesh(
