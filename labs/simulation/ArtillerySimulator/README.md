@@ -50,21 +50,19 @@ Educational sandbox. Fiction. Not affiliated with any manufacturer, armed force,
 
 | Folder | Role |
 | --- | --- |
-| `Host/` | `Program`, DI modules, CLI, `ArtilleryGameRunner`, shell/profiler |
-| `Domain/` | `BattleSession`, `FixedStepClock` |
-| `Application/` | `BattleWorld`, `BattleCommand` + pump, `IPlayQuery` / `IBatteryApplier` |
-| `Adapters/Silk/` | `FrameDirector` — drains channel, Silk loop |
-| `Adapters/Agent/` | `ArtilleryLiveHost` → `ChannelWriter<BattleCommand>` (no MediatR) |
-| `Features/Battery/` | Gun, crew, round pool, aim, battle loop, player input |
+| `Host/` | `Program`, DI, CLI, `ArtilleryGameRunner`, profiler |
+| `Domain/` | `BattleSession`, clock, `Battery/` (gun, crew, ballistics loop, piece tech) |
+| `Application/` | `BattleWorld`, `FrameViewModel`, commands + pump, `BattleFxSink`, ports |
+| `Adapters/Silk/` | `FrameDirector`, renderer, shell, input, presentation binder |
+| `Adapters/Agent/` | `ArtilleryLiveHost` → `ChannelWriter<BattleCommand>` |
 | `Features/Product/` | Title, legal, MenuFlows shell screens |
-| `Features/Levels/` | `IGameLevel`, catalog, Kristiansand level |
-| `Features/Defense/` | Mission loop, outcomes, columns, opening fire plan |
-| `Features/Presentation/` | Camera, scene renderer, HUD, particles |
-| `Features/Audio/` | SFX, score bake, voice chatter |
+| `Features/Levels/` | `IGameLevel`, catalog |
+| `Features/Defense/` | Mission loop, columns, opening fire plan |
+| `Features/Presentation/` | Camera, HUD Skia, particles (drawn via adapters) |
+| `Features/Audio/` | SFX, score, voice |
 | `Kristiansand/` | Geodesy, terrain, roads, atmosphere |
-| `assets/` / `map/` / `scripts/` | Runtime assets, layers, bake tools |
 
-Commands use `Novolis.Messaging.Channels` (`AddChannel<BattleCommand>`). The 120 Hz battle loop stays synchronous; continuous WASD lay never allocates channel messages.
+Physics (`TickPhysics`) and render (`CreateFrameViewModel` → draw) are budget-isolated. Commands use `Novolis.Messaging.Channels` — no MediatR.
 
 ## Icons
 
