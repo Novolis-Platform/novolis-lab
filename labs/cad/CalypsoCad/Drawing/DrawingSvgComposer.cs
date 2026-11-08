@@ -125,7 +125,7 @@ internal static class DrawingSvgComposer
         {
             PackageDrawingChrome.DrawPlanHull(sb, x, y, w, h, ship, (ox, oy, scale) =>
             {
-                DrawSubjectExtentOnPlan(sb, resolved, ship, ox, oy, scale);
+                DrawSubjectExtentOnPlan(sb, resolved, ship, ox, oy, scale, x, y, w, h);
             });
             DrawOrientationMarker(sb, x, y, view);
             return;
@@ -135,7 +135,7 @@ internal static class DrawingSvgComposer
         {
             PackageDrawingChrome.DrawProfileHull(sb, x, y, w, h, ship, showDecks: true, (ox, keelY, scale) =>
             {
-                DrawSubjectExtentOnProfile(sb, resolved, ship, ox, keelY, scale);
+                DrawSubjectExtentOnProfile(sb, resolved, ship, ox, keelY, scale, x, y, w, h);
             });
             DrawOrientationMarker(sb, x, y, view);
             return;
@@ -154,6 +154,7 @@ internal static class DrawingSvgComposer
 
     /// <summary>
     /// Location context: highlight subject world AABB on the plan — never dump triangulation.
+    /// Adds LOA / beam overall dims and subject offsets from stern/bow and port/stbd hull edges.
     /// </summary>
     private static void DrawSubjectExtentOnPlan(
         StringBuilder sb,
@@ -161,7 +162,11 @@ internal static class DrawingSvgComposer
         PackageDrawingChrome.ShipBasics ship,
         double ox,
         double oy,
-        double scale)
+        double scale,
+        double panelX,
+        double panelY,
+        double panelW,
+        double panelH)
     {
         var bounds = resolved.Geometry.Aggregate(DrawingBounds3.Empty, (a, g) => a.Union(g.Bounds));
         if (bounds.IsEmpty)
@@ -171,18 +176,65 @@ internal static class DrawingSvgComposer
         // World Z is midships-relative — convert before ShipX(zFromStem).
         var zStem0 = CadShipCoords.ClampZStem(CadShipCoords.ZStemFromWorld(bounds.Min.Z, loa), loa);
         var zStem1 = CadShipCoords.ClampZStem(CadShipCoords.ZStemFromWorld(bounds.Max.Z, loa), loa);
-        var y0 = bounds.Min.X;
-        var y1 = bounds.Max.X;
-        var x0 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zStem0);
-        var x1 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zStem1);
-        var sy0 = oy - y1 * scale;
-        var sy1 = oy - y0 * scale;
-        var left = Math.Min(x0, x1);
-        var right = Math.Max(x0, x1);
-        var top = Math.Min(sy0, sy1);
-        var bot = Math.Max(sy0, sy1);
+        var yPort = Math.Min(bounds.Min.X, bounds.Max.X);
+        var yStbd = Math.Max(bounds.Min.X, bounds.Max.X);
+        var zAft = Math.Max(zStem0, zStem1);
+        var zFore = Math.Min(zStem0, zStem1);
+        var xAft = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zAft);
+        var xFore = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zFore);
+        var sternX = LockDraftGeometry.ShipX(ox, scale, ship.Loa, loa);
+        var bowX = LockDraftGeometry.ShipX(ox, scale, ship.Loa, 0);
+        var syStbd = oy - yStbd * scale;
+        var syPort = oy - yPort * scale;
+        var left = Math.Min(xAft, xFore);
+        var right = Math.Max(xAft, xFore);
+        var top = Math.Min(syStbd, syPort);
+        var bot = Math.Max(syStbd, syPort);
         sb.AppendLine(
             $"<rect x=\"{F(left)}\" y=\"{F(top)}\" width=\"{F(Math.Max(1, right - left))}\" height=\"{F(Math.Max(1, bot - top))}\" fill=\"#c82828\" fill-opacity=\"0.18\" stroke=\"#c82828\" stroke-width=\"1.4\"/>");
+
+        var zMid = (zAft + zFore) * 0.5;
+        var halfBeam = LockDraftGeometry.LoftHalfBeam(ship.Loft, zMid);
+        var hullStbdY = oy - halfBeam * scale;
+        var hullPortY = oy + halfBeam * scale;
+
+        // Overall ship: LOA under hull, beam at bow side.
+        var loaY = Math.Min(panelY + panelH - 14, Math.Max(hullPortY + 12, oy + halfBeam * scale + 10));
+        PackageDrawingChrome.DimH(sb, sternX, loaY, bowX, PackageDrawingChrome.Nice(ship.Loa), labelAbove: true);
+        var beamX = Math.Min(panelX + panelW - 8, bowX + 10);
+        PackageDrawingChrome.DimV(sb, beamX, hullStbdY, hullPortY, PackageDrawingChrome.Nice(ship.Beam), labelRight: false);
+
+        // Longitudinal offsets: stern→aft edge, fore edge→bow (or single station from both ends).
+        var offY = Math.Max(panelY + 28, oy - halfBeam * scale - 10);
+        var fromStern = loa - zAft;
+        var fromBow = zFore;
+        if (Math.Abs(xFore - xAft) < 2.5)
+        {
+            // Thin station — dim both ends to the same line.
+            if (fromStern > 0.05)
+                PackageDrawingChrome.DimH(sb, sternX, offY, xAft, PackageDrawingChrome.Nice(fromStern));
+            if (fromBow > 0.05)
+                PackageDrawingChrome.DimH(sb, xFore, offY + 11, bowX, PackageDrawingChrome.Nice(fromBow));
+        }
+        else
+        {
+            if (fromStern > 0.05)
+                PackageDrawingChrome.DimH(sb, sternX, offY, xAft, PackageDrawingChrome.Nice(fromStern));
+            if (fromBow > 0.05)
+                PackageDrawingChrome.DimH(sb, xFore, offY, bowX, PackageDrawingChrome.Nice(fromBow));
+            var span = Math.Abs(zAft - zFore);
+            if (span > 0.05)
+                PackageDrawingChrome.DimH(sb, xAft, offY + 11, xFore, PackageDrawingChrome.Nice(span));
+        }
+
+        // Athwartship offsets from hull edges to part edges (skip when flush / full-beam).
+        var fromStbd = halfBeam - yStbd;
+        var fromPort = halfBeam + yPort; // port X is negative
+        var athX = Math.Max(panelX + 10, left - 10);
+        if (fromStbd > 0.15 && fromStbd < halfBeam - 0.05)
+            PackageDrawingChrome.DimV(sb, athX, hullStbdY, syStbd, PackageDrawingChrome.Nice(fromStbd));
+        if (fromPort > 0.15 && fromPort < halfBeam - 0.05)
+            PackageDrawingChrome.DimV(sb, athX, syPort, hullPortY, PackageDrawingChrome.Nice(fromPort));
     }
 
     private static void DrawSubjectExtentOnProfile(
@@ -191,7 +243,11 @@ internal static class DrawingSvgComposer
         PackageDrawingChrome.ShipBasics ship,
         double ox,
         double keelY,
-        double scale)
+        double scale,
+        double panelX,
+        double panelY,
+        double panelW,
+        double panelH)
     {
         var bounds = resolved.Geometry.Aggregate(DrawingBounds3.Empty, (a, g) => a.Union(g.Bounds));
         if (bounds.IsEmpty)
@@ -202,14 +258,63 @@ internal static class DrawingSvgComposer
         var zStem1 = CadShipCoords.ClampZStem(CadShipCoords.ZStemFromWorld(bounds.Max.Z, loa), loa);
         var u0 = Math.Clamp(bounds.Min.Y, 0, (float)ship.Oah);
         var u1 = Math.Clamp(bounds.Max.Y, 0, (float)ship.Oah);
-        var x0 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zStem0);
-        var x1 = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zStem1);
+        var zAft = Math.Max(zStem0, zStem1);
+        var zFore = Math.Min(zStem0, zStem1);
+        var xAft = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zAft);
+        var xFore = LockDraftGeometry.ShipX(ox, scale, ship.Loa, zFore);
+        var sternX = LockDraftGeometry.ShipX(ox, scale, ship.Loa, loa);
+        var bowX = LockDraftGeometry.ShipX(ox, scale, ship.Loa, 0);
         var yTop = keelY - u1 * scale;
         var yBot = keelY - u0 * scale;
-        var left = Math.Min(x0, x1);
-        var right = Math.Max(x0, x1);
+        var left = Math.Min(xAft, xFore);
+        var right = Math.Max(xAft, xFore);
         sb.AppendLine(
             $"<rect x=\"{F(left)}\" y=\"{F(Math.Min(yTop, yBot))}\" width=\"{F(Math.Max(1, right - left))}\" height=\"{F(Math.Max(1, Math.Abs(yBot - yTop)))}\" fill=\"#c82828\" fill-opacity=\"0.18\" stroke=\"#c82828\" stroke-width=\"1.4\"/>");
+
+        LockDraftGeometry.SampleLoftUpRange(ship.Loft, (zAft + zFore) * 0.5, ship.Oah, out var hullU0, out var hullU1);
+        var hullTopY = keelY - hullU1 * scale;
+        var hullBotY = keelY - hullU0 * scale;
+        var oahTopY = keelY - ship.Oah * scale;
+
+        // Overall ship: LOA under hull, OAH at bow side.
+        var loaY = Math.Min(panelY + panelH - 14, Math.Max(hullBotY + 12, keelY + 8));
+        PackageDrawingChrome.DimH(sb, sternX, loaY, bowX, PackageDrawingChrome.Nice(ship.Loa), labelAbove: true);
+        var oahX = Math.Min(panelX + panelW - 8, bowX + 10);
+        PackageDrawingChrome.DimV(sb, oahX, oahTopY, keelY, PackageDrawingChrome.Nice(ship.Oah), labelRight: false);
+
+        // Longitudinal offsets from stern / bow.
+        var offY = Math.Max(panelY + 28, hullTopY - 8);
+        var fromStern = loa - zAft;
+        var fromBow = zFore;
+        if (Math.Abs(xFore - xAft) < 2.5)
+        {
+            if (fromStern > 0.05)
+                PackageDrawingChrome.DimH(sb, sternX, offY, xAft, PackageDrawingChrome.Nice(fromStern));
+            if (fromBow > 0.05)
+                PackageDrawingChrome.DimH(sb, xFore, offY + 11, bowX, PackageDrawingChrome.Nice(fromBow));
+        }
+        else
+        {
+            if (fromStern > 0.05)
+                PackageDrawingChrome.DimH(sb, sternX, offY, xAft, PackageDrawingChrome.Nice(fromStern));
+            if (fromBow > 0.05)
+                PackageDrawingChrome.DimH(sb, xFore, offY, bowX, PackageDrawingChrome.Nice(fromBow));
+            var span = Math.Abs(zAft - zFore);
+            if (span > 0.05)
+                PackageDrawingChrome.DimH(sb, xAft, offY + 11, xFore, PackageDrawingChrome.Nice(span));
+        }
+
+        // Vertical offsets: keel→part bottom, part top→hull top (skip when flush).
+        var athX = Math.Max(panelX + 10, left - 10);
+        var fromKeel = u0 - hullU0;
+        var fromTop = hullU1 - u1;
+        if (fromKeel > 0.15)
+            PackageDrawingChrome.DimV(sb, athX, yBot, hullBotY, PackageDrawingChrome.Nice(fromKeel));
+        if (fromTop > 0.15)
+            PackageDrawingChrome.DimV(sb, athX, hullTopY, yTop, PackageDrawingChrome.Nice(fromTop));
+        var height = u1 - u0;
+        if (height > 0.15 && Math.Abs(yTop - yBot) > 4)
+            PackageDrawingChrome.DimV(sb, Math.Min(panelX + panelW - 18, right + 8), yTop, yBot, PackageDrawingChrome.Nice(height));
     }
 
     private static void ComposeSection(

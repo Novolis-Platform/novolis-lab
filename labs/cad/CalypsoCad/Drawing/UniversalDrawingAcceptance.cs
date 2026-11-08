@@ -1,5 +1,6 @@
 using System.Globalization;
 using CalypsoCad.Blueprints;
+using CalypsoCad.Blueprints.DrawingPackage;
 using CalypsoCad.Model;
 using CalypsoCad.Publication;
 using CalypsoCad.Structure;
@@ -66,6 +67,14 @@ internal static class UniversalDrawingAcceptance
                 Check("B ring frame has transverse view",
                     r.Manifest.ViewIds.Contains("A"),
                     string.Join(",", r.Manifest.ViewIds));
+                var loaLabel = PackageDrawingChrome.Nice(CadJsonStructureQuery.Loa(cad));
+                var beamLabel = PackageDrawingChrome.Nice(CadJsonStructureQuery.Beam(cad));
+                var oahLabel = PackageDrawingChrome.Nice(CadJsonStructureQuery.Oah(cad));
+                Check("B plan/profile location dims",
+                    r.Html.Contains(loaLabel, StringComparison.Ordinal)
+                    && r.Html.Contains(beamLabel, StringComparison.Ordinal)
+                    && r.Html.Contains(oahLabel, StringComparison.Ordinal),
+                    $"loa={loaLabel} beam={beamLabel} oah={oahLabel}");
             }
         }
 

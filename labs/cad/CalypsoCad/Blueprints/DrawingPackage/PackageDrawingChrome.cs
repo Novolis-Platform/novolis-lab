@@ -84,16 +84,27 @@ internal static class PackageDrawingChrome
             sb.AppendLine($"<text x=\"{F(x)}\" y=\"{F(y + 20 + i * 14)}\" font-size=\"10\" fill=\"#333\">{Esc(lines[i])}</text>");
     }
 
-    public static void DimH(StringBuilder sb, double x0, double y, double x1, string label)
+    public static void DimH(StringBuilder sb, double x0, double y, double x1, string label, bool labelAbove = true)
     {
-        sb.AppendLine($"<line x1=\"{F(x0)}\" y1=\"{F(y)}\" x2=\"{F(x1)}\" y2=\"{F(y)}\" stroke=\"#333\" stroke-width=\"0.6\"/>");
-        sb.AppendLine($"<text x=\"{F((x0 + x1) * 0.5)}\" y=\"{F(y + 10)}\" text-anchor=\"middle\" font-size=\"9\" fill=\"#333\">{Esc(label)}</text>");
+        const double tick = 2.4;
+        sb.AppendLine($"<line x1=\"{F(x0)}\" y1=\"{F(y)}\" x2=\"{F(x1)}\" y2=\"{F(y)}\" stroke=\"#222\" stroke-width=\"0.55\"/>");
+        sb.AppendLine($"<line x1=\"{F(x0)}\" y1=\"{F(y - tick)}\" x2=\"{F(x0)}\" y2=\"{F(y + tick)}\" stroke=\"#222\" stroke-width=\"0.55\"/>");
+        sb.AppendLine($"<line x1=\"{F(x1)}\" y1=\"{F(y - tick)}\" x2=\"{F(x1)}\" y2=\"{F(y + tick)}\" stroke=\"#222\" stroke-width=\"0.55\"/>");
+        var ty = labelAbove ? y - 3 : y + 10;
+        sb.AppendLine(
+            $"<text x=\"{F((x0 + x1) * 0.5)}\" y=\"{F(ty)}\" text-anchor=\"middle\" font-size=\"8\" fill=\"#111\">{Esc(label)}</text>");
     }
 
-    public static void DimV(StringBuilder sb, double x, double y0, double y1, string label)
+    public static void DimV(StringBuilder sb, double x, double y0, double y1, string label, bool labelRight = true)
     {
-        sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(y0)}\" x2=\"{F(x)}\" y2=\"{F(y1)}\" stroke=\"#333\" stroke-width=\"0.6\"/>");
-        sb.AppendLine($"<text x=\"{F(x + 4)}\" y=\"{F((y0 + y1) * 0.5)}\" font-size=\"9\" fill=\"#333\">{Esc(label)}</text>");
+        const double tick = 2.4;
+        sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(y0)}\" x2=\"{F(x)}\" y2=\"{F(y1)}\" stroke=\"#222\" stroke-width=\"0.55\"/>");
+        sb.AppendLine($"<line x1=\"{F(x - tick)}\" y1=\"{F(y0)}\" x2=\"{F(x + tick)}\" y2=\"{F(y0)}\" stroke=\"#222\" stroke-width=\"0.55\"/>");
+        sb.AppendLine($"<line x1=\"{F(x - tick)}\" y1=\"{F(y1)}\" x2=\"{F(x + tick)}\" y2=\"{F(y1)}\" stroke=\"#222\" stroke-width=\"0.55\"/>");
+        var tx = labelRight ? x + 4 : x - 4;
+        var anchor = labelRight ? "start" : "end";
+        sb.AppendLine(
+            $"<text x=\"{F(tx)}\" y=\"{F((y0 + y1) * 0.5 + 2.5)}\" text-anchor=\"{anchor}\" font-size=\"8\" fill=\"#111\">{Esc(label)}</text>");
     }
 
     public static void DrawPlanHull(
