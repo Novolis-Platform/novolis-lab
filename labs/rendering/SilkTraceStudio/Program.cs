@@ -11,7 +11,9 @@ internal static class Program
     private const int OrbitSamplesPerFrame = 24;
     private const int AccumulateSamplesPerBatch = 24;
     private const float MouseLookSensitivity = 0.004f;
-    private const float ScrollZoomSensitivity = 0.15f;
+    private const float ScrollZoomFactor = 0.12f;
+    private const float DefaultDistance = 2.6f;
+    private const float DefaultPitch = 0.35f;
 
     public static void Main()
     {
@@ -20,7 +22,7 @@ internal static class Program
         var display = new PathTraceDisplayBuffer();
         using var worker = new PathTraceBackgroundWorker(session.Backend, display);
         var fps = new SilkSmoothedFps();
-        var orbit = new OrbitCameraRig { Target = ShowcaseScenes.OrbitTarget, Distance = 2.6f };
+        var orbit = CreateDefaultOrbit();
         var sample = 0;
         var frameWidth = 0;
         var frameHeight = 0;
@@ -46,12 +48,16 @@ internal static class Program
 
             if (frame.IsResetPressed())
             {
+                autoOrbit = false;
+                autoOrbitAngle = 0f;
+                orbit = CreateDefaultOrbit();
                 ResetTrace(worker, session, display, ref sample, traceWidth, traceHeight);
             }
 
             if (frame.IsOrbitTogglePressed())
             {
                 autoOrbit = !autoOrbit;
+                autoOrbitAngle = orbit.Yaw;
                 ResetTrace(worker, session, display, ref sample, traceWidth, traceHeight);
             }
 
@@ -78,22 +84,26 @@ internal static class Program
             }
 
             var cameraMoved = false;
-            if (!autoOrbit)
+            if (!autoOrbit
+                && frame.IsMouseButtonDown(MouseButton.Left)
+                && (MathF.Abs(frame.MouseDelta.X) > 1e-4f || MathF.Abs(frame.MouseDelta.Y) > 1e-4f))
             {
-                if (frame.IsMouseButtonDown(MouseButton.Left)
-                    && (MathF.Abs(frame.MouseDelta.X) > 1e-4f || MathF.Abs(frame.MouseDelta.Y) > 1e-4f))
-                {
-                    orbit.AddLookDelta(frame.MouseDelta.X * MouseLookSensitivity, -frame.MouseDelta.Y * MouseLookSensitivity);
-                    cameraMoved = true;
-                }
-
-                if (MathF.Abs(frame.ScrollDelta) > 1e-4f)
-                {
-                    orbit.AdjustDistance(-frame.ScrollDelta * ScrollZoomSensitivity);
-                    cameraMoved = true;
-                }
+                orbit.AddLookDelta(frame.MouseDelta.X * MouseLookSensitivity, -frame.MouseDelta.Y * MouseLookSensitivity);
+                cameraMoved = true;
             }
-            else
+
+            // Zoom works in both free-look and auto-orbit (dolly toward target).
+            if (MathF.Abs(frame.ScrollDelta) > 1e-4f)
+            {
+                var scale = MathF.Exp(-frame.ScrollDelta * ScrollZoomFactor);
+                orbit.Distance = Math.Clamp(
+                    orbit.Distance * scale,
+                    orbit.MinDistance,
+                    orbit.MaxDistance);
+                cameraMoved = true;
+            }
+
+            if (autoOrbit)
             {
                 autoOrbitAngle += frame.DeltaSeconds * 0.35f;
                 orbit.Yaw = autoOrbitAngle;
@@ -132,8 +142,26 @@ internal static class Program
                 autoOrbit,
                 fps.Value,
                 worker.IsBusy,
-                $"trace {traceWidth}x{traceHeight} · drag LMB · scroll zoom · Space auto-orbit · B cycle · 1/2/3 · R reset"));
+                $"trace {traceWidth}x{traceHeight} · dist {orbit.Distance:F2} · drag LMB · scroll zoom · Space orbit · B · 1/2/3 · R reset view"));
         });
+    }
+
+    private static OrbitCameraRig CreateDefaultOrbit()
+    {
+        var orbit = new OrbitCameraRig
+        {
+            Target = ShowcaseScenes.OrbitTarget,
+            Distance = DefaultDistance,
+            Yaw = 0f,
+            Pitch = DefaultPitch,
+            // Scene is meter-scale; Simulation defaults (80…24000) are for CAD/world units.
+            MinDistance = 0.35f,
+            MaxDistance = 18f,
+            MinPitch = -1.2f,
+            FieldOfViewDegrees = 52f,
+        };
+        orbit.SnapTarget(ShowcaseScenes.OrbitTarget);
+        return orbit;
     }
 
     private static void ResetTrace(
