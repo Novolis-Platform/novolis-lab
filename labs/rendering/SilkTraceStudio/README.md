@@ -12,7 +12,15 @@ Open the filtered solution, then run:
 dotnet run --project d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.csproj
 ```
 
-`Directory.Build.rsp` forces ProjectRef and turns off NuGetAudit / SourceLink GitHub queries (those were the multi‑tens‑of‑seconds Restore hangs under GitHub rate limits). Or open `SilkTraceStudio.slnx` and F5.
+`Directory.Build.rsp` forces ProjectRef and turns off NuGetAudit / SourceLink GitHub queries.
+
+If Restore still sits for tens of seconds, the machine almost certainly has a herd of leftover MSBuild node-reuse / Rider / VS workers locking NuGet — not Studio itself. Clear them, then rerun:
+
+```powershell
+dotnet build-server shutdown
+```
+
+Or open `SilkTraceStudio.slnx` and F5.
 
 ## Controls
 

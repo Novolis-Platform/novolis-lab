@@ -3,3 +3,5 @@
 /p:EnableSourceLink=false
 /p:EnableSourceControlManagerQueries=false
 /p:NovolisUseProjectReferences=true
+# Avoid accumulating dozens of MSBuild node-reuse workers that starve NuGet (see build-server shutdown).
+/p:DisableNodeReuse=true
