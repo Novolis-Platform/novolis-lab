@@ -1,5 +1,6 @@
 using System.Numerics;
 using Microsoft.Extensions.DependencyInjection;
+using Novolis.Math.Geometry;
 using Novolis.Rendering.DependencyInjection;
 using Novolis.Rendering.PathTrace.Demos;
 using Novolis.Rendering.Runtime;
@@ -9,7 +10,7 @@ namespace SilkTraceHello;
 
 internal static class Program
 {
-    private const int MovingPreviewSamples = 6;
+    private const int MovingPreviewSamples = 1;
     private const int AccumulateSamplesPerBatch = 4;
     private const int MaxProgressiveSamples = 512;
 
@@ -28,6 +29,9 @@ internal static class Program
         var frameHeight = 0;
         var orbitAngle = 0f;
         var orbitEnabled = false;
+        Rgba32[]? lastBlitPixels = null;
+        var lastBlitWidth = 0;
+        var lastBlitHeight = 0;
 
         SilkGame.Run("SilkTraceHello — path tracing", 960, 540, frame =>
         {
@@ -41,6 +45,7 @@ internal static class Program
                 display.Invalidate(frameWidth, frameHeight);
                 sample = 0;
                 blitGeneration = -1;
+                lastBlitPixels = null;
             }
 
             if (frame.IsResetPressed())
@@ -87,7 +92,14 @@ internal static class Program
 
             if (display.TryCopyFrameIfNew(ref blitGeneration, out var pixels, out var blitWidth, out var blitHeight))
             {
-                frame.Blit(pixels, blitWidth, blitHeight);
+                lastBlitPixels = pixels;
+                lastBlitWidth = blitWidth;
+                lastBlitHeight = blitHeight;
+            }
+
+            if (lastBlitPixels is not null && lastBlitWidth > 0 && lastBlitHeight > 0)
+            {
+                frame.Blit(lastBlitPixels, lastBlitWidth, lastBlitHeight);
             }
 
             frame.SetTitle(PathTraceStatusTitle.Format(backend, display.DisplayedSampleCount, orbitEnabled));
