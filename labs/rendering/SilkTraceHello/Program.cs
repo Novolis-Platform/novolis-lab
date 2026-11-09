@@ -9,9 +9,9 @@ namespace SilkTraceHello;
 
 internal static class Program
 {
-    private const int OrbitPreviewSamples = 6;
-    private const int AccumulateSamplesPerBatch = 8;
-    private const int MaxProgressiveSamples = 256;
+    private const int OrbitPreviewSamples = 32;
+    private const int AccumulateSamplesPerBatch = 16;
+    private const int MaxProgressiveSamples = 512;
 
     public static void Main()
     {
