@@ -4,14 +4,9 @@
     <RootNamespace>SilkTraceStudio</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <LibraryReference Include="Novolis.Rendering.Backends.Cpu" />
-    <LibraryReference Include="Novolis.Rendering.Backends.Igpu" />
-    <LibraryReference Include="Novolis.Rendering.Backends.Vulkan" />
+    <!-- PathTrace.Demos already pulls Cpu / Igpu / Vulkan / Runtime / Scene. -->
     <LibraryReference Include="Novolis.Rendering.PathTrace.Demos" />
-    <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
-    <LibraryReference Include="Novolis.Rendering.Presentation.Abstractions" />
     <LibraryReference Include="Novolis.Silk" />
-    <LibraryReference Include="Novolis.Rendering.Runtime" />
     <LibraryReference Include="Novolis.Simulation.View" />
   </ItemGroup>
 </Project>

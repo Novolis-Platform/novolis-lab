@@ -1,7 +1,11 @@
 {
   "profiles": {
     "SilkTraceStudio": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "NOVOLIS_USE_PROJECT_REFERENCES": "true",
+        "NovolisReadabilityComplexity": "false"
+      }
     }
   }
 }

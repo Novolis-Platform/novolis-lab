@@ -1,15 +1,18 @@
 # SilkTraceStudio
 
-Studio-style path-tracing showcase lab **Novolis.Rendering.Backends.*** (Cpu, Ilgpu, Vulkan), **Novolis.Rendering.PathTrace.Demos**, **Novolis.Rendering.Presentation.*** (Abstractions, Silk), **Novolis.Rendering.Runtime**, and **Novolis.Simulation.View** (orbit rig).
+Studio-style path-tracing showcase over **Novolis.Rendering.PathTrace.Demos** (Cpu / Ilgpu / Vulkan), **Novolis.Silk**, and **Novolis.Simulation.View**.
 
-Glass/emissive studio scene with status strip, FPS smoothing, and hot backend switching.
+## Fast local run (ProjectRef)
 
-## Run
+Do **not** F5 against `Novolis.Lab.slnx` / `Novolis.Platform.slnx` — that restores the whole forest and can sit on Restore for a minute+.
+
+Open the filtered solution, then run:
 
 ```powershell
-cd novolis-lab
-dotnet run --project labs/rendering/SilkTraceStudio
+dotnet run --project d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.csproj -p:NovolisUseProjectReferences=true
 ```
+
+Or open `d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.slnx` in Cursor and F5 (launch profile sets ProjectRef + skips NOV2301).
 
 ## Controls
 
@@ -18,12 +21,8 @@ dotnet run --project labs/rendering/SilkTraceStudio
 | LMB drag | Orbit camera |
 | Scroll | Zoom |
 | Space | Toggle auto-orbit |
-| B | Cycle ray-tracing backend |
-| 1 / 2 / 3 | ILGPU / Vulkan / CPU |
+| B | Cycle ILGPU ↔ CPU |
+| 1 / 2 / 3 | ILGPU / Vulkan shim / CPU |
 | R | Reset accumulation |
 
 Title bar shows backend, samples, FPS, and control hints.
-
-## ProjectRef note
-
-For local iteration against sibling repos, open `Novolis.Platform.slnx` or pass `-p:NovolisUseProjectReferences=true`. Committed `.csproj` files use `PackageReference` from GitHub Packages only.
