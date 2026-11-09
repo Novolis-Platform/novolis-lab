@@ -15,9 +15,9 @@
     <ProjectReference Include="..\..\shared\Novolis.Lab.Voice\Novolis.Lab.Voice.csproj" />
     <LibraryReference Include="Novolis.Audio.Voice.Profiles" />
     <LibraryReference Include="Novolis.Audio.Voice.SherpaOnnx" />
-    <PackageReference Include="Novolis.Raylib">
+    <LibraryReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
-    </PackageReference>
+    </LibraryReference>
     <LibraryReference Include="Novolis.Raylib.Game" />
     <LibraryReference Include="Novolis.Raylib.Bindings" />
     <LibraryReference Include="Novolis.Raylib.Runtime" />

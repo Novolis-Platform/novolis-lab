@@ -6,9 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Novolis.Raylib">
+    <LibraryReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
-    </PackageReference>
+    </LibraryReference>
     <LibraryReference Include="Novolis.Raylib.Abstractions" />
     <LibraryReference Include="Novolis.Raylib.Hosting" />
     <LibraryReference Include="Novolis.Raylib.Runtime" />

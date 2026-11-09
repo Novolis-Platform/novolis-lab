@@ -17,7 +17,7 @@
     <LibraryReference Include="Novolis.Agent.Surface" />
     <LibraryReference Include="Novolis.Modeling.Scene" />
     <LibraryReference Include="Novolis.Avalonia.Raylib" />
-    <PackageReference Include="Novolis.Raylib" />
+    <LibraryReference Include="Novolis.Raylib" />
     <LibraryReference Include="Novolis.Raylib.Abstractions" />
     <LibraryReference Include="Novolis.Raylib.Bindings" />
     <LibraryReference Include="Novolis.Raylib.Runtime" />

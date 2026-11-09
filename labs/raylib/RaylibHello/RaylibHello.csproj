@@ -3,8 +3,8 @@
     <RootNamespace>RaylibHello</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Raylib">
+    <LibraryReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
-    </PackageReference>
+    </LibraryReference>
   </ItemGroup>
 </Project>

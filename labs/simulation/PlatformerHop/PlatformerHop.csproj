@@ -4,9 +4,9 @@
     <RootNamespace>PlatformerHop</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Raylib">
+    <LibraryReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
-    </PackageReference>
+    </LibraryReference>
     <LibraryReference Include="Novolis.Math.Arrays" />
     <LibraryReference Include="Novolis.Simulation.Kinematics" />
     <LibraryReference Include="Novolis.Simulation.View" />

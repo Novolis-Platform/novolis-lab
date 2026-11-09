@@ -4,9 +4,9 @@
     <RootNamespace>BouncingBall</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Novolis.Raylib">
+    <LibraryReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
-    </PackageReference>
+    </LibraryReference>
     <LibraryReference Include="Novolis.Math.Arrays" />
     <LibraryReference Include="Novolis.Simulation.World" />
     <LibraryReference Include="Novolis.Simulation.World.Builders" />

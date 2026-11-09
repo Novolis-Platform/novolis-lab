@@ -16,7 +16,7 @@
     <LibraryReference Include="Novolis.Avalonia.Raylib" />
     <LibraryReference Include="Novolis.Avalonia.Rendering" />
     <LibraryReference Include="Novolis.Avalonia.Studio" />
-    <PackageReference Include="Novolis.Raylib" />
+    <LibraryReference Include="Novolis.Raylib" />
     <LibraryReference Include="Novolis.Raylib.Abstractions" />
     <LibraryReference Include="Novolis.Raylib.Bindings" />
     <LibraryReference Include="Novolis.Raylib.Runtime" />

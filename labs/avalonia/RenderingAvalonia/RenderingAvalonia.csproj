@@ -16,9 +16,9 @@
     <LibraryReference Include="Novolis.Math.Geometry" />
     <LibraryReference Include="Novolis.Math.Topology" />
     <LibraryReference Include="Novolis.Rendering.Planar" />
-    <PackageReference Include="Novolis.Raylib">
+    <LibraryReference Include="Novolis.Raylib">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
-    </PackageReference>
+    </LibraryReference>
     <LibraryReference Include="Novolis.Raylib.Abstractions" />
     <LibraryReference Include="Novolis.Raylib.Runtime" />
   </ItemGroup>

@@ -20,7 +20,7 @@
     <LibraryReference Include="Novolis.Modeling.Scene" />
     <!-- Explicit: ProjectRef mode is non-transitive for NuGet graphs (same pattern as CalypsoCad). -->
     <LibraryReference Include="Novolis.Avalonia.Raylib" />
-    <PackageReference Include="Novolis.Raylib" />
+    <LibraryReference Include="Novolis.Raylib" />
     <LibraryReference Include="Novolis.Raylib.Abstractions" />
     <LibraryReference Include="Novolis.Raylib.Bindings" />
     <LibraryReference Include="Novolis.Raylib.Runtime" />

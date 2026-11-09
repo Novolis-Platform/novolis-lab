@@ -59,6 +59,13 @@
     <PackageReference Update="Novolis.Raylib.Native">
       <ExcludeAssets>buildTransitive</ExcludeAssets>
     </PackageReference>
+    <!-- Forest ProjectRef / LibraryReference expansion copies this onto the sibling project. -->
+    <LibraryReference Update="Novolis.Raylib">
+      <ExcludeAssets>buildTransitive</ExcludeAssets>
+    </LibraryReference>
+    <LibraryReference Update="Novolis.Raylib.Native">
+      <ExcludeAssets>buildTransitive</ExcludeAssets>
+    </LibraryReference>
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.OneTypePerFile.props" Condition="Exists('$(MSBuildThisFileDirectory)..\novolis-governance\build\Novolis.OneTypePerFile.props')" />

@@ -22,5 +22,11 @@
     <PackageReference Update="Novolis.Raylib.Native">
       <ExcludeAssets></ExcludeAssets>
     </PackageReference>
+    <LibraryReference Update="Novolis.Raylib">
+      <ExcludeAssets></ExcludeAssets>
+    </LibraryReference>
+    <LibraryReference Update="Novolis.Raylib.Native">
+      <ExcludeAssets></ExcludeAssets>
+    </LibraryReference>
   </ItemGroup>
 </Project>
