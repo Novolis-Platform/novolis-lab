@@ -1,9 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-nbp-format="novolis.cad.blueprint" data-nbp-schema="1">
-<head><meta charset="utf-8"/>
-<title>Demo cottage — ground floor GA</title>
-<style>
-:root { --nbp-sheet:#fff; --nbp-ink:#111; --nbp-accent:#5a9fd4; --nbp-wall:#2a2a2a; }
+<html lang="en" data-nbp-format="novolis.cad.blueprint" data-nbp-schema="1"><head><meta charset="utf-8"><title>Demo cottage — ground floor GA</title><style>:root { --nbp-sheet:#fff; --nbp-ink:#111; --nbp-accent:#5a9fd4; }
 @page { size: 841mm 594mm; margin: 0; }
 html, body { margin:0; padding:0; background:#fff; color:#111; font:13px/1.35 system-ui,sans-serif; }
 #nbp-stage { margin:0; padding:0; }
@@ -15,145 +11,22 @@ html, body { margin:0; padding:0; background:#fff; color:#111; font:13px/1.35 sy
 #nbp-ui legend { padding:0 4px; color:var(--nbp-accent); font-size:11px; }
 #nbp-ui label { display:flex; gap:8px; align-items:center; margin:4px 0; cursor:pointer; }
 #nbp-ui label.locked { opacity:0.65; cursor:default; }
-.ol { fill:none; stroke:#888; stroke-width:0.45; stroke-dasharray:2 1.2; }
-.space { fill:#fafafa; stroke:none; }
-.wall { fill:#333; stroke:#111; stroke-width:0.2; }
-.wall-out { fill:none; stroke:#111; stroke-width:0.55; }
-.door-leaf { stroke:#111; stroke-width:0.55; fill:none; }
-.door-swing { stroke:#444; stroke-width:0.28; fill:none; stroke-dasharray:1.2 0.8; }
-.window { stroke:#1a4a7a; stroke-width:0.4; fill:none; }
-.window-glass { stroke:#5a9fd4; stroke-width:0.35; fill:none; }
-.dim { stroke:#222; stroke-width:0.22; fill:none; }
-.dim-tick { stroke:#222; stroke-width:0.35; }
-.dimt { font:2.8px "IBM Plex Mono",Consolas,monospace; fill:#111; }
-.title { font:5px "IBM Plex Mono",Consolas,monospace; fill:#111; font-weight:600; }
-.room { font:3.4px "IBM Plex Mono",Consolas,monospace; fill:#111; }
-.classnote { font:2.4px "IBM Plex Mono",Consolas,monospace; fill:#555; }
-.tbl { font:2.1px "IBM Plex Mono",Consolas,monospace; fill:#666; }
-.tbv { font:2.8px "IBM Plex Mono",Consolas,monospace; fill:#111; }
-.tbv-lg { font:3.6px "IBM Plex Mono",Consolas,monospace; fill:#111; font-weight:600; }
+
 @media print {
   #nbp-ui { display:none !important; }
   #nbp-sheet { width:841mm; height:594mm; }
   g[data-nbp-plot="false"] { display:none !important; }
 }
+
 body:has(#t-exterior-shell:not(:checked)) g[data-nbp-layer="exterior.shell"] { display:none; }
+
 body:has(#t-structure-walls:not(:checked)) g[data-nbp-layer="structure.walls"] { display:none; }
+
 body:has(#t-interior-spaces:not(:checked)) g[data-nbp-layer="interior.spaces"] { display:none; }
+
 body:has(#t-openings-all:not(:checked)) g[data-nbp-layer="openings.all"] { display:none; }
-body:has(#t-dims-primary:not(:checked)) g[data-nbp-layer="dims.primary"] { display:none; }
-</style>
-</head><body>
-<main id="nbp-stage">
-<svg id="nbp-sheet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 841 594" width="100%" role="img" aria-label="Demo cottage — ground floor GA">
-<g data-nbp-layer="chrome.frame" data-nbp-path="chrome/frame" data-nbp-kind="chrome" data-nbp-plot="true">
-<rect x="0" y="0" width="841" height="594" fill="#f7f4ea"/>
-<rect x="20" y="10" width="811" height="574" fill="none" stroke="#111" stroke-width="0.9"/>
-<rect x="23" y="13" width="805" height="568" fill="none" stroke="#111" stroke-width="0.35"/>
-<text x="30" y="24" class="title">Demo cottage — ground floor GA</text>
-<text x="30" y="34" class="dimt">house · plan north up · m · SCALE 1:20</text>
-<g transform="translate(803 38)" class="north">
-<polygon points="0,-10 3.5,6 -3.5,6" fill="#111"/>
-<text x="0" y="14" class="dimt" text-anchor="middle">N</text>
-</g>
-<text x="30" y="576" class="classnote">ARCHITECTURAL GA COMPANION (novolis.cad.blueprint) — NOT FOR BUILDING PERMIT. ISO 5457 / 7200 sheet chrome.</text>
-<g class="titleblock" data-nbp-iso="7200">
-<rect x="648" y="525" width="180" height="56" fill="#fff" stroke="#111" stroke-width="0.7"/>
-<line x1="700" y1="525" x2="700" y2="581" stroke="#111" stroke-width="0.35"/>
-<line x1="766" y1="525" x2="766" y2="581" stroke="#111" stroke-width="0.35"/>
-<line x1="648" y1="537" x2="828" y2="537" stroke="#111" stroke-width="0.35"/>
-<line x1="648" y1="553" x2="828" y2="553" stroke="#111" stroke-width="0.35"/>
-<line x1="648" y1="567" x2="828" y2="567" stroke="#111" stroke-width="0.35"/>
-<text x="650" y="530" class="tbl">OWNER / LEGAL</text>
-<text x="650" y="535" class="tbv">Novolis</text>
-<text x="702" y="530" class="tbl">DRAWING TITLE</text>
-<text x="702" y="535" class="tbv">Demo cottage — ground floor…</text>
-<text x="768" y="530" class="tbl">SHEET</text>
-<text x="768" y="535" class="tbv">A1 LANDSCAPE</text>
-<text x="650" y="542" class="tbl">PROJECT</text>
-<text x="650" y="547" class="tbv">Demo cottage &#183; gr…</text>
-<text x="702" y="542" class="tbl">DRAWING NO.</text>
-<text x="702" y="547" class="tbv-lg">NBP-HOUSE-001</text>
-<text x="768" y="542" class="tbl">REV</text>
-<text x="768" y="547" class="tbv-lg">A</text>
-<text x="650" y="558" class="tbl">CONTEXT</text>
-<text x="650" y="563" class="tbv">house</text>
-<text x="702" y="558" class="tbl">SCALE</text>
-<text x="702" y="563" class="tbv">1:20</text>
-<text x="768" y="558" class="tbl">UNITS</text>
-<text x="768" y="563" class="tbv">m</text>
-<text x="650" y="572" class="tbl">CREATED</text>
-<text x="650" y="577" class="tbv">2026-11-09T20:3…</text>
-<text x="702" y="572" class="tbl">STANDARD</text>
-<text x="702" y="577" class="tbv">ISO 5457 / 7200</text>
-<text x="768" y="572" class="tbl">STATUS</text>
-<text x="768" y="577" class="tbv">PRELIMINARY</text>
-</g>
-</g>
-<g data-nbp-view="level-0" data-nbp-view-kind="plan">
-<g data-nbp-layer="exterior.shell" data-nbp-path="exterior/shell" data-nbp-kind="outline" data-nbp-plot="true">
-<path d="M 174.611 478.111 L 663.5 478.111 L 663.5 87 L 174.611 87 Z" class="ol"/>
-</g>
-<g data-nbp-layer="interior.spaces" data-nbp-path="interior/spaces" data-nbp-kind="space" data-nbp-plot="true">
-<path d="M 174.611 478.111 L 370.167 478.111 L 370.167 331.444 L 174.611 331.444 Z" class="space"/>
-<text x="272.389" y="404.778" class="room" text-anchor="middle">Entry</text>
-<path d="M 174.611 331.444 L 370.167 331.444 L 370.167 87 L 174.611 87 Z" class="space"/>
-<text x="272.389" y="209.222" class="room" text-anchor="middle">Bath</text>
-<path d="M 370.167 478.111 L 663.5 478.111 L 663.5 282.556 L 370.167 282.556 Z" class="space"/>
-<text x="516.833" y="380.333" class="room" text-anchor="middle">Living</text>
-<path d="M 370.167 282.556 L 663.5 282.556 L 663.5 87 L 370.167 87 Z" class="space"/>
-<text x="516.833" y="184.778" class="room" text-anchor="middle">Kitchen</text>
-</g>
-<g data-nbp-layer="structure.walls" data-nbp-path="structure/walls" data-nbp-kind="structure" data-nbp-plot="true">
-<path d="M 174.611 474.444 L 663.5 474.444 L 663.5 481.778 L 174.611 481.778 Z" class="wall"/>
-<path d="M 174.611 474.444 L 663.5 474.444 L 663.5 481.778 L 174.611 481.778 Z" class="wall-out"/>
-<path d="M 659.833 478.111 L 659.833 87 L 667.167 87 L 667.167 478.111 Z" class="wall"/>
-<path d="M 659.833 478.111 L 659.833 87 L 667.167 87 L 667.167 478.111 Z" class="wall-out"/>
-<path d="M 663.5 90.667 L 174.611 90.667 L 174.611 83.333 L 663.5 83.333 Z" class="wall"/>
-<path d="M 663.5 90.667 L 174.611 90.667 L 174.611 83.333 L 663.5 83.333 Z" class="wall-out"/>
-<path d="M 178.278 87 L 178.278 478.111 L 170.944 478.111 L 170.944 87 Z" class="wall"/>
-<path d="M 178.278 87 L 178.278 478.111 L 170.944 478.111 L 170.944 87 Z" class="wall-out"/>
-<path d="M 366.5 478.111 L 366.5 87 L 373.833 87 L 373.833 478.111 Z" class="wall"/>
-<path d="M 366.5 478.111 L 366.5 87 L 373.833 87 L 373.833 478.111 Z" class="wall-out"/>
-<path d="M 370.167 278.889 L 663.5 278.889 L 663.5 286.222 L 370.167 286.222 Z" class="wall"/>
-<path d="M 370.167 278.889 L 663.5 278.889 L 663.5 286.222 L 370.167 286.222 Z" class="wall-out"/>
-<path d="M 174.611 327.778 L 370.167 327.778 L 370.167 335.111 L 174.611 335.111 Z" class="wall"/>
-<path d="M 174.611 327.778 L 370.167 327.778 L 370.167 335.111 L 174.611 335.111 Z" class="wall-out"/>
-</g>
-<g data-nbp-layer="openings.all" data-nbp-path="openings/all" data-nbp-kind="opening" data-nbp-plot="true">
-<path d="M 340.833 471.756 L 399.5 471.756 L 399.5 484.467 L 340.833 484.467 Z" fill="#f7f4ea" stroke="none"/>
-<line x1="340.833" y1="478.111" x2="340.833" y2="419.444" class="door-leaf"/>
-<path d="M 340.833 419.444 A 58.667 58.667 0 0 1 399.5 478.111" class="door-swing"/>
-<path d="M 247.944 325.089 L 296.833 325.089 L 296.833 337.8 L 247.944 337.8 Z" fill="#f7f4ea" stroke="none"/>
-<line x1="247.944" y1="331.444" x2="247.944" y2="282.556" class="door-leaf"/>
-<path d="M 247.944 282.556 A 48.889 48.889 0 0 1 296.833 331.444" class="door-swing"/>
-<path d="M 467.944 471.756 L 565.722 471.756 L 565.722 484.467 L 467.944 484.467 Z" fill="#f7f4ea" stroke="none"/>
-<line x1="467.944" y1="474.689" x2="565.722" y2="474.689" class="window"/>
-<line x1="467.944" y1="481.533" x2="565.722" y2="481.533" class="window"/>
-<line x1="467.944" y1="478.111" x2="565.722" y2="478.111" class="window-glass"/>
-<path d="M 657.144 233.667 L 657.144 135.889 L 669.856 135.889 L 669.856 233.667 Z" fill="#f7f4ea" stroke="none"/>
-<line x1="660.078" y1="233.667" x2="660.078" y2="135.889" class="window"/>
-<line x1="666.922" y1="233.667" x2="666.922" y2="135.889" class="window"/>
-<line x1="663.5" y1="233.667" x2="663.5" y2="135.889" class="window-glass"/>
-</g>
-<g data-nbp-layer="dims.primary" data-nbp-path="dims/primary" data-nbp-kind="dimension" data-nbp-plot="true">
-<line x1="174.611" y1="485" x2="174.611" y2="497" class="dim"/>
-<line x1="668.389" y1="485" x2="668.389" y2="497" class="dim"/>
-<line x1="174.611" y1="497" x2="668.389" y2="497" class="dim"/>
-<line x1="173.411" y1="495.8" x2="175.811" y2="498.2" class="dim-tick"/>
-<line x1="667.189" y1="495.8" x2="669.589" y2="498.2" class="dim-tick"/>
-<text x="421.5" y="504" class="dimt" text-anchor="middle">10.1 m</text>
-<line x1="670.389" y1="87" x2="682.389" y2="87" class="dim"/>
-<line x1="670.389" y1="483" x2="682.389" y2="483" class="dim"/>
-<line x1="682.389" y1="87" x2="682.389" y2="483" class="dim"/>
-<line x1="681.189" y1="85.8" x2="683.589" y2="88.2" class="dim-tick"/>
-<line x1="681.189" y1="481.8" x2="683.589" y2="484.2" class="dim-tick"/>
-<text x="687.389" y="285" class="dimt">8.1 m</text>
-</g>
-</g>
-</svg></main>
-<script type="application/json" id="nbp-manifest">
-{
+
+body:has(#t-dims-primary:not(:checked)) g[data-nbp-layer="dims.primary"] { display:none; }</style></head><body><main id="nbp-stage"><svg id="nbp-sheet" width="841" height="594" viewBox="0 0 841 594" role="img" aria-label="Demo cottage — ground floor GA" data-nbp-format="novolis.cad.blueprint" xmlns="http://www.w3.org/2000/svg"><g data-nbp-layer="chrome.frame" data-nbp-path="chrome/frame" data-nbp-kind="chrome" data-nbp-plot="true"><rect x="0" y="0" width="841" height="594" fill="#f7f4ea" stroke="none" /><rect x="20" y="10" width="811" height="574" fill="none" stroke="#111" stroke-width="0.9" /><rect x="23" y="13" width="805" height="568" fill="none" stroke="#111" stroke-width="0.35" /><text x="30" y="24" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="5" style="font-weight:600">Demo cottage — ground floor GA</text><text x="30" y="34" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">house · plan north up · m · SCALE 1:20</text><g transform="translate(803 38)"><polygon points="0,-10 3.5,6 -3.5,6" fill="#111" stroke="none" /><text x="0" y="14" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8" text-anchor="middle">N</text></g><text x="30" y="576" fill="#555" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.4">ARCHITECTURAL GA COMPANION (novolis.cad.blueprint) — NOT FOR BUILDING PERMIT. ISO 5457 / 7200 sheet chrome.</text><g class="titleblock" data-nbp-iso="7200"><rect x="648" y="525" width="180" height="56" fill="#fff" stroke="#111" stroke-width="0.7" /><line x1="700" y1="525" x2="700" y2="581" stroke="#111" stroke-width="0.35" /><line x1="766" y1="525" x2="766" y2="581" stroke="#111" stroke-width="0.35" /><line x1="648" y1="537" x2="828" y2="537" stroke="#111" stroke-width="0.35" /><line x1="648" y1="553" x2="828" y2="553" stroke="#111" stroke-width="0.35" /><line x1="648" y1="567" x2="828" y2="567" stroke="#111" stroke-width="0.35" /><text x="650" y="530" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">OWNER / LEGAL</text><text x="650" y="535" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">Novolis</text><text x="702" y="530" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">DRAWING TITLE</text><text x="702" y="535" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">Demo cottage — ground floor…</text><text x="768" y="530" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">SHEET</text><text x="768" y="535" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">A1 LANDSCAPE</text><text x="650" y="542" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">PROJECT</text><text x="650" y="547" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">Demo cottage · gr…</text><text x="702" y="542" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">DRAWING NO.</text><text x="702" y="547" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="3.6" style="font-weight:600">NBP-HOUSE-001</text><text x="768" y="542" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">REV</text><text x="768" y="547" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="3.6" style="font-weight:600">A</text><text x="650" y="558" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">CONTEXT</text><text x="650" y="563" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">house</text><text x="702" y="558" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">SCALE</text><text x="702" y="563" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">1:20</text><text x="768" y="558" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">UNITS</text><text x="768" y="563" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">m</text><text x="650" y="572" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">CREATED</text><text x="650" y="577" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">2026-11-09T20:4…</text><text x="702" y="572" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">STANDARD</text><text x="702" y="577" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">ISO 5457 / 7200</text><text x="768" y="572" fill="#666" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.1">STATUS</text><text x="768" y="577" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">PRELIMINARY</text></g></g><g data-nbp-view="level-0" data-nbp-view-kind="plan"><g data-nbp-layer="exterior.shell" data-nbp-path="exterior/shell" data-nbp-kind="outline" data-nbp-plot="true"><path d="M 174.611101832 478.111111039 L 663.499990631 478.111111039 L 663.499990631 87 L 174.611101832 87 Z" fill="none" stroke="#888" stroke-width="0.45" stroke-dasharray="2 1.2" /></g><g data-nbp-layer="interior.spaces" data-nbp-path="interior/spaces" data-nbp-kind="space" data-nbp-plot="true"><path d="M 174.611101832 478.111111039 L 370.166657351 478.111111039 L 370.166657351 331.444444399 L 174.611101832 331.444444399 Z" fill="#fafafa" stroke="none" /><text x="272.388879592" y="404.777777719" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="3.4" text-anchor="middle">Entry</text><path d="M 174.611101832 331.444444399 L 370.166657351 331.444444399 L 370.166657351 87 L 174.611101832 87 Z" fill="#fafafa" stroke="none" /><text x="272.388879592" y="209.2222222" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="3.4" text-anchor="middle">Bath</text><path d="M 370.166657351 478.111111039 L 663.499990631 478.111111039 L 663.499990631 282.55555552 L 370.166657351 282.55555552 Z" fill="#fafafa" stroke="none" /><text x="516.833323991" y="380.333333279" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="3.4" text-anchor="middle">Living</text><path d="M 370.166657351 282.55555552 L 663.499990631 282.55555552 L 663.499990631 87 L 370.166657351 87 Z" fill="#fafafa" stroke="none" /><text x="516.833323991" y="184.77777776" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="3.4" text-anchor="middle">Kitchen</text></g><g data-nbp-layer="structure.walls" data-nbp-path="structure/walls" data-nbp-kind="structure" data-nbp-plot="true"><path d="M 174.611101832 474.444444227 L 663.499990631 474.444444227 L 663.499990631 481.777777851 L 174.611101832 481.777777851 Z" fill="#333" stroke="#111" stroke-width="0.2" /><path d="M 659.833333289 478.111111039 L 659.833333289 87 L 667.166647972 87 L 667.166647972 478.111111039 Z" fill="#333" stroke="#111" stroke-width="0.2" /><path d="M 663.499990631 90.666657341 L 174.611101832 90.666657341 L 174.611101832 83.333342659 L 663.499990631 83.333342659 Z" fill="#333" stroke="#111" stroke-width="0.2" /><path d="M 178.277768643 87 L 178.277768643 478.111111039 L 170.94443502 478.111111039 L 170.94443502 87 Z" fill="#333" stroke="#111" stroke-width="0.2" /><path d="M 366.499988354 478.111111039 L 366.499988354 87 L 373.833314692 87 L 373.833314692 478.111111039 Z" fill="#333" stroke="#111" stroke-width="0.2" /><path d="M 370.166657351 278.888898178 L 663.499990631 278.888898178 L 663.499990631 286.222224517 L 370.166657351 286.222224517 Z" fill="#333" stroke="#111" stroke-width="0.2" /><path d="M 174.611101832 327.777775402 L 370.166657351 327.777775402 L 370.166657351 335.111113397 L 174.611101832 335.111113397 Z" fill="#333" stroke="#111" stroke-width="0.2" /></g><g data-nbp-layer="openings.all" data-nbp-path="openings/all" data-nbp-kind="opening" data-nbp-plot="true"><path d="M 340.833328686 471.755554989 L 399.499986017 471.755554989 L 399.499986017 484.466667089 L 340.833328686 484.466667089 Z" fill="#f7f4ea" stroke="none" /><line x1="340.833328686" y1="478.111111039" x2="340.833328686" y2="419.444453708" stroke="#111" stroke-width="0.55" fill="none" /><path d="M 340.833328686 419.444453708 A 58.666657331 58.666657331 0 0 1 399.499986017 478.111111039" fill="none" stroke="#444" stroke-width="0.28" stroke-dasharray="1.2 0.8" /><path d="M 247.944435152 325.088894906 L 296.833324031 325.088894906 L 296.833324031 337.799993893 L 247.944435152 337.799993893 Z" fill="#f7f4ea" stroke="none" /><line x1="247.944435152" y1="331.444444399" x2="247.944435152" y2="282.55555552" stroke="#111" stroke-width="0.55" fill="none" /><path d="M 247.944435152 282.55555552 A 48.88888888 48.88888888 0 0 1 296.833324031 331.444444399" fill="none" stroke="#444" stroke-width="0.28" stroke-dasharray="1.2 0.8" /><path d="M 467.944435111 471.755554989 L 565.722212871 471.755554989 L 565.722212871 484.466667089 L 467.944435111 484.466667089 Z" fill="#f7f4ea" stroke="none" /><line x1="467.944435111" y1="474.688888803" x2="565.722212871" y2="474.688888803" stroke="#1a4a7a" stroke-width="0.4" /><line x1="467.944435111" y1="481.533333275" x2="565.722212871" y2="481.533333275" stroke="#1a4a7a" stroke-width="0.4" /><line x1="467.944435111" y1="478.111111039" x2="565.722212871" y2="478.111111039" stroke="#5a9fd4" stroke-width="0.35" /><path d="M 657.144429481 233.66666664 L 657.144429481 135.88888888 L 669.85555178 135.88888888 L 669.85555178 233.66666664 Z" fill="#f7f4ea" stroke="none" /><line x1="660.077736705" y1="233.66666664" x2="660.077736705" y2="135.88888888" stroke="#1a4a7a" stroke-width="0.4" /><line x1="666.922244557" y1="233.66666664" x2="666.922244557" y2="135.88888888" stroke="#1a4a7a" stroke-width="0.4" /><line x1="663.499990631" y1="233.66666664" x2="663.499990631" y2="135.88888888" stroke="#5a9fd4" stroke-width="0.35" /></g><g data-nbp-layer="dims.primary" data-nbp-path="dims/primary" data-nbp-kind="dimension" data-nbp-plot="true"><line x1="174.611101832" y1="485" x2="174.611101832" y2="497" stroke="#222" stroke-width="0.22" /><line x1="668.388898168" y1="485" x2="668.388898168" y2="497" stroke="#222" stroke-width="0.22" /><line x1="174.611101832" y1="497" x2="668.388898168" y2="497" stroke="#222" stroke-width="0.22" /><line x1="173.411101832" y1="495.8" x2="175.811101832" y2="498.2" stroke="#222" stroke-width="0.35" /><line x1="667.188898168" y1="495.8" x2="669.588898168" y2="498.2" stroke="#222" stroke-width="0.35" /><text x="421.5" y="504" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8" text-anchor="middle">10.1 m</text><line x1="670.388898168" y1="87" x2="682.388898168" y2="87" stroke="#222" stroke-width="0.22" /><line x1="670.388898168" y1="483" x2="682.388898168" y2="483" stroke="#222" stroke-width="0.22" /><line x1="682.388898168" y1="87" x2="682.388898168" y2="483" stroke="#222" stroke-width="0.22" /><line x1="681.188898168" y1="85.8" x2="683.588898168" y2="88.2" stroke="#222" stroke-width="0.35" /><line x1="681.188898168" y1="481.8" x2="683.588898168" y2="484.2" stroke="#222" stroke-width="0.35" /><text x="687.388898168" y="285" fill="#111" font-family="IBM Plex Mono,Consolas,monospace" font-size="2.8">8.1 m</text></g></g></svg></main><script id="nbp-manifest" type="application/json">{
   "format": "novolis.cad.blueprint",
   "schemaVersion": 1,
   "name": "Demo cottage \u00B7 ground floor plan",
@@ -288,6 +161,4 @@ body:has(#t-dims-primary:not(:checked)) g[data-nbp-layer="dims.primary"] { displ
       "defaultPresetId": "print"
     }
   ]
-}
-</script>
-</body></html>
+}</script></body></html>

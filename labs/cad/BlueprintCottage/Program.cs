@@ -8,18 +8,8 @@ if (args.Length > 0)
 }
 else
 {
-    outDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "docs"));
-    var dir = new DirectoryInfo(AppContext.BaseDirectory);
-    while (dir is not null)
-    {
-        if (File.Exists(Path.Combine(dir.FullName, "BlueprintCottage.csproj")))
-        {
-            outDir = Path.Combine(dir.FullName, "docs");
-            break;
-        }
-
-        dir = dir.Parent;
-    }
+    outDir = ResolveDocsDir()
+             ?? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "docs"));
 }
 
 Console.WriteLine($"Exporting demo cottage blueprints → {outDir}");
@@ -37,3 +27,23 @@ foreach (var p in result.WrittenPaths)
     Console.WriteLine($"  wrote {p}");
 Console.WriteLine("OK");
 return 0;
+
+static string? ResolveDocsDir()
+{
+    var dir = new DirectoryInfo(AppContext.BaseDirectory);
+    while (dir is not null)
+    {
+        var local = Path.Combine(dir.FullName, "BlueprintCottage.csproj");
+        if (File.Exists(local))
+            return Path.Combine(dir.FullName, "docs");
+
+        // artifacts/bin/... → walk up to novolis-lab, then labs/cad/BlueprintCottage
+        var nested = Path.Combine(dir.FullName, "labs", "cad", "BlueprintCottage", "BlueprintCottage.csproj");
+        if (File.Exists(nested))
+            return Path.Combine(Path.GetDirectoryName(nested)!, "docs");
+
+        dir = dir.Parent;
+    }
+
+    return null;
+}
