@@ -2,36 +2,52 @@
 
 Studio-style path-tracing showcase over **Novolis.Rendering.PathTrace.Demos** (Cpu / Ilgpu / Vulkan), **Novolis.Silk**, and **Novolis.Simulation.View**.
 
-## Fast local run (ProjectRef)
+## Fast local run
 
-Do **not** F5 against `Novolis.Lab.slnx` / `Novolis.Platform.slnx` — that restores the whole forest and can sit on Restore for a minute+.
-
-Open the filtered solution, then run:
+**Do not** run `dotnet … --project d:\…\SilkTraceStudio.csproj` from `C:\Users\frank` (or any cwd without a Novolis `global.json`). That picks **SDK 11 preview** instead of lab-pinned **10.0.403** and makes Restore much slower.
 
 ```powershell
-dotnet run --project d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.csproj
+pwsh -File d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\run.ps1
 ```
 
-`Directory.Build.rsp` forces ProjectRef and turns off NuGetAudit / SourceLink GitHub queries.
+Or:
 
-A clean Studio restore is a **~24-project ProjectRef graph** (typically several seconds for “Determining projects…”, not package download). The multi‑tens‑of‑seconds hangs happen when leftover MSBuild node-reuse / Rider / VS workers contend on NuGet — clear them first:
+```powershell
+Set-Location d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio
+dotnet run
+```
+
+After the first restore in a session:
+
+```powershell
+Set-Location d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio
+dotnet run --no-restore
+```
+
+Do **not** F5 against `Novolis.Lab.slnx` / `Novolis.Platform.slnx` — that restores the whole forest.
+
+## Why Restore was 20–90s (measured)
+
+| Situation | SilkTraceStudio restore |
+| --- | --- |
+| cwd = Studio dir (SDK 10), machine quiet, node reuse off | **~3s** |
+| cwd = `C:\Users\frank` (SDK 11 preview), quiet | **~7s** |
+| Parallel restores / Platform.slnx + MSBuild node farm (~100 `dotnet` procs) | **~27s+** (UI shows “Restore” the whole time) |
+
+Timestamped logs under contention show: print `Determining projects to restore…`, then **~20s of silence**, then `_GenerateProjectRestoreGraph` for the 24 ProjectRef projects, then “up-to-date” in milliseconds. **No package download** in that gap — it is CPU/scheduler contention evaluating the restore graph.
+
+Orphan MSBuild workers (`/nodemode:1 /nodeReuse:true`) from SDK 10 **and** 11 accumulate because node reuse is on by default and parents exit. Clear with:
 
 ```powershell
 dotnet build-server shutdown
 ```
 
-Day-to-day after the first restore:
-
-```powershell
-dotnet run --project d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.csproj --no-restore
-```
-
-Or open `SilkTraceStudio.slnx` and F5.
+`Directory.Build.rsp` + launch profile set ProjectRef, disable NuGetAudit/SourceLink GitHub queries, and disable node reuse for this host.
 
 ## Controls
 
 | Input | Action |
-|-------|--------|
+| --- | --- |
 | LMB drag | Orbit camera |
 | Scroll | Zoom |
 | Space | Toggle auto-orbit |
@@ -39,4 +55,4 @@ Or open `SilkTraceStudio.slnx` and F5.
 | 1 / 2 / 3 | ILGPU / Vulkan shim / CPU |
 | R | Reset accumulation |
 
-Title bar shows backend, samples, FPS, and control hints.
+Title bar shows backend, samples, FPS, and control hints. Console gets a 5s `ILogger` perf pulse.
