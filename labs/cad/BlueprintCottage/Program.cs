@@ -1,9 +1,26 @@
 using Novolis.Cad.Blueprint;
 
 // Golden drafting fixture: complete house CadDocument → CadBlueprint sheet export.
-var outDir = args.Length > 0
-    ? Path.GetFullPath(args[0])
-    : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "docs"));
+string outDir;
+if (args.Length > 0)
+{
+    outDir = Path.GetFullPath(args[0]);
+}
+else
+{
+    outDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "docs"));
+    var dir = new DirectoryInfo(AppContext.BaseDirectory);
+    while (dir is not null)
+    {
+        if (File.Exists(Path.Combine(dir.FullName, "BlueprintCottage.csproj")))
+        {
+            outDir = Path.Combine(dir.FullName, "docs");
+            break;
+        }
+
+        dir = dir.Parent;
+    }
+}
 
 Console.WriteLine($"Exporting demo cottage blueprints → {outDir}");
 var result = CadBlueprintDemoCottage.Export(outDir);
