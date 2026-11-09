@@ -9,7 +9,7 @@ namespace SilkTraceStudio;
 
 internal static class Program
 {
-    // Orbit/drag: 1 spp + worker pose-chaining. Title "fps" is the window loop; path-trace presents are rarer.
+    // Drag: 1 spp replace + pose-chaining. Auto-orbit: accumulate in small yaw buckets (samples climb).
     private const int MovingPreviewSamplesGpu = 1;
     private const int MovingPreviewSamplesCpu = 1;
     private const int AccumulateSamplesPerBatchGpu = 4;
@@ -17,6 +17,7 @@ internal static class Program
     private const int MovingTraceMaxWidth = 480;
     private const int MovingTraceMaxHeight = 270;
     private const float MovingSettleSeconds = 0.18f;
+    private const float AutoOrbitSampleBucketRadians = 0.045f;
     private const int MaxProgressiveSamples = 512;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomFactor = 0.12f;
@@ -52,6 +53,7 @@ internal static class Program
         var traceHeight = 0;
         var autoOrbit = false;
         var autoOrbitAngle = 0f;
+        var autoOrbitSampleAnchor = 0f;
         var hasBlitTexture = false;
         var movingTrace = false;
         var stillSeconds = 0f;
@@ -87,6 +89,7 @@ internal static class Program
             {
                 autoOrbit = false;
                 autoOrbitAngle = 0f;
+                autoOrbitSampleAnchor = 0f;
                 orbit = CreateDefaultOrbit();
                 SoftReset(worker, ref sample);
             }
@@ -95,6 +98,7 @@ internal static class Program
             {
                 autoOrbit = !autoOrbit;
                 autoOrbitAngle = orbit.Yaw;
+                autoOrbitSampleAnchor = autoOrbitAngle;
                 SoftReset(worker, ref sample);
             }
 
@@ -149,7 +153,8 @@ internal static class Program
                 orbit.Yaw = autoOrbitAngle;
             }
 
-            var cameraBusy = autoOrbit || cameraMoved || dragging;
+            // Idle LMB must not count as motion — that stuck hosts at 1 spp ("eventing" feel).
+            var cameraBusy = autoOrbit || cameraMoved;
             if (cameraBusy)
             {
                 stillSeconds = 0f;
@@ -187,9 +192,28 @@ internal static class Program
                 aspect);
 
             var onGpu = IsRealGpu(session.Backend);
-            if (cameraBusy)
+            if (autoOrbit)
             {
-                // Coalesce poses — do not SoftReset/cancel every mouse delta (that made ILGPU feel sticky).
+                // Refine within a small yaw bucket so samples climb instead of strobing 1 spp replaces.
+                if (MathF.Abs(autoOrbitAngle - autoOrbitSampleAnchor) >= AutoOrbitSampleBucketRadians)
+                {
+                    worker.ArmAccumulationReset();
+                    sample = 0;
+                    autoOrbitSampleAnchor = autoOrbitAngle;
+                }
+
+                if (sample < MaxProgressiveSamples)
+                {
+                    perf.NoteEnqueue(worker.TryEnqueueAccumulate(
+                        camera,
+                        ref sample,
+                        onGpu ? AccumulateSamplesPerBatchGpu : AccumulateSamplesPerBatchCpu));
+                }
+            }
+            else if (cameraMoved)
+            {
+                // Drag/zoom: coalesce poses — do not SoftReset/cancel every mouse delta.
+                autoOrbitSampleAnchor = orbit.Yaw;
                 perf.NoteEnqueue(worker.TryEnqueueMovingPreview(
                     camera,
                     onGpu ? MovingPreviewSamplesGpu : MovingPreviewSamplesCpu));
