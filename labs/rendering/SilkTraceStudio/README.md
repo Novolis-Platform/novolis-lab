@@ -9,10 +9,10 @@ Do **not** F5 against `Novolis.Lab.slnx` / `Novolis.Platform.slnx` — that rest
 Open the filtered solution, then run:
 
 ```powershell
-dotnet run --project d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.csproj -p:NovolisUseProjectReferences=true
+dotnet run --project d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.csproj
 ```
 
-Or open `d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.slnx` in Cursor and F5 (launch profile sets ProjectRef + skips NOV2301).
+`Directory.Build.rsp` forces ProjectRef and turns off NuGetAudit / SourceLink GitHub queries (those were the multi‑tens‑of‑seconds Restore hangs under GitHub rate limits). Or open `SilkTraceStudio.slnx` and F5.
 
 ## Controls
 
