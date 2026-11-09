@@ -8,8 +8,9 @@ namespace SilkTraceStudio;
 
 internal static class Program
 {
-    private const int OrbitSamplesPerFrame = 24;
-    private const int AccumulateSamplesPerBatch = 24;
+    private const int OrbitPreviewSamples = 2;
+    private const int AccumulateSamplesPerBatch = 8;
+    private const int MaxProgressiveSamples = 256;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomFactor = 0.12f;
     private const float DefaultDistance = 2.6f;
@@ -24,6 +25,7 @@ internal static class Program
         var fps = new SilkSmoothedFps();
         var orbit = CreateDefaultOrbit();
         var sample = 0;
+        var blitGeneration = -1;
         var frameWidth = 0;
         var frameHeight = 0;
         var traceWidth = 0;
@@ -44,6 +46,7 @@ internal static class Program
                 session.Resize(traceWidth, traceHeight);
                 display.Invalidate(traceWidth, traceHeight);
                 sample = 0;
+                blitGeneration = -1;
             }
 
             if (frame.IsResetPressed())
@@ -51,14 +54,14 @@ internal static class Program
                 autoOrbit = false;
                 autoOrbitAngle = 0f;
                 orbit = CreateDefaultOrbit();
-                ResetTrace(worker, session, display, ref sample, traceWidth, traceHeight);
+                SoftReset(worker, ref sample);
             }
 
             if (frame.IsOrbitTogglePressed())
             {
                 autoOrbit = !autoOrbit;
                 autoOrbitAngle = orbit.Yaw;
-                ResetTrace(worker, session, display, ref sample, traceWidth, traceHeight);
+                SoftReset(worker, ref sample);
             }
 
             if (frame.IsBackendCyclePressed())
@@ -68,19 +71,20 @@ internal static class Program
                 worker.ReplaceBackend(session.Backend);
                 display.Invalidate(traceWidth, traceHeight);
                 sample = 0;
+                blitGeneration = -1;
             }
 
             if (frame.IsDigitPressed(1))
             {
-                SwitchBackend(worker, session, display, ref sample, traceWidth, traceHeight, PathTraceBackendKind.Ilgpu);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Ilgpu);
             }
             else if (frame.IsDigitPressed(2))
             {
-                SwitchBackend(worker, session, display, ref sample, traceWidth, traceHeight, PathTraceBackendKind.Vulkan);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Vulkan);
             }
             else if (frame.IsDigitPressed(3))
             {
-                SwitchBackend(worker, session, display, ref sample, traceWidth, traceHeight, PathTraceBackendKind.Cpu);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Cpu);
             }
 
             var cameraMoved = false;
@@ -92,7 +96,6 @@ internal static class Program
                 cameraMoved = true;
             }
 
-            // Zoom works in both free-look and auto-orbit (dolly toward target).
             if (MathF.Abs(frame.ScrollDelta) > 1e-4f)
             {
                 var scale = MathF.Exp(-frame.ScrollDelta * ScrollZoomFactor);
@@ -111,7 +114,8 @@ internal static class Program
 
             if (cameraMoved)
             {
-                ResetTrace(worker, session, display, ref sample, traceWidth, traceHeight);
+                // Non-blocking: cancel stale GPU work instead of WaitForIdle on the UI thread.
+                SoftReset(worker, ref sample);
             }
 
             var aspect = traceWidth / (float)Math.Max(1, traceHeight);
@@ -124,14 +128,15 @@ internal static class Program
 
             if (autoOrbit)
             {
-                worker.EnqueueOrbit(camera, OrbitSamplesPerFrame);
+                worker.TryEnqueueOrbitPreview(camera, OrbitPreviewSamples);
             }
-            else
+            else if (sample < MaxProgressiveSamples)
             {
                 worker.TryEnqueueAccumulate(camera, ref sample, AccumulateSamplesPerBatch);
             }
 
-            if (display.TryCopyFrame(out var pixels, out var blitWidth, out var blitHeight))
+            // Skip redundant CPU→GL uploads when the tracer has not published a new frame.
+            if (display.TryCopyFrameIfNew(ref blitGeneration, out var pixels, out var blitWidth, out var blitHeight))
             {
                 frame.Blit(pixels, blitWidth, blitHeight);
             }
@@ -142,7 +147,7 @@ internal static class Program
                 autoOrbit,
                 fps.Value,
                 worker.IsBusy,
-                $"trace {traceWidth}x{traceHeight} · dist {orbit.Distance:F2} · drag LMB · scroll zoom · Space orbit · B · 1/2/3 · R reset view"));
+                $"trace {traceWidth}x{traceHeight} · dist {orbit.Distance:F2} · drag LMB · scroll zoom · Space orbit · B · 1/2/3 · R reset"));
         });
     }
 
@@ -154,7 +159,6 @@ internal static class Program
             Distance = DefaultDistance,
             Yaw = 0f,
             Pitch = DefaultPitch,
-            // Scene is meter-scale; Simulation defaults (80…24000) are for CAD/world units.
             MinDistance = 0.35f,
             MaxDistance = 18f,
             MinPitch = -1.2f,
@@ -164,21 +168,10 @@ internal static class Program
         return orbit;
     }
 
-    private static void ResetTrace(
-        PathTraceBackgroundWorker worker,
-        PathTraceSession session,
-        PathTraceDisplayBuffer display,
-        ref int sample,
-        int traceWidth,
-        int traceHeight)
+    private static void SoftReset(PathTraceBackgroundWorker worker, ref int sample)
     {
-        worker.WaitForIdle();
-        session.Backend.ResetAccumulation();
-        if (traceWidth > 0 && traceHeight > 0)
-        {
-            display.Invalidate(traceWidth, traceHeight);
-        }
-
+        // Keep the last presented frame on screen; cancel/rebuild accumulation off-thread.
+        worker.RequestReset();
         sample = 0;
     }
 
@@ -187,6 +180,7 @@ internal static class Program
         PathTraceSession session,
         PathTraceDisplayBuffer display,
         ref int sample,
+        ref int blitGeneration,
         int traceWidth,
         int traceHeight,
         PathTraceBackendKind kind)
@@ -194,11 +188,11 @@ internal static class Program
         worker.WaitForIdle();
         session.SwitchBackend(kind);
         worker.ReplaceBackend(session.Backend);
+        sample = 0;
+        blitGeneration = -1;
         if (traceWidth > 0 && traceHeight > 0)
         {
             display.Invalidate(traceWidth, traceHeight);
         }
-
-        sample = 0;
     }
 }

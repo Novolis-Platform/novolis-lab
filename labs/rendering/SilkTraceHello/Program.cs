@@ -9,8 +9,9 @@ namespace SilkTraceHello;
 
 internal static class Program
 {
-    private const int OrbitSamplesPerFrame = 16;
-    private const int AccumulateSamplesPerBatch = 16;
+    private const int OrbitPreviewSamples = 2;
+    private const int AccumulateSamplesPerBatch = 8;
+    private const int MaxProgressiveSamples = 256;
 
     public static void Main()
     {
@@ -22,6 +23,7 @@ internal static class Program
         var display = new PathTraceDisplayBuffer();
         using var worker = new PathTraceBackgroundWorker(backend, display);
         var sample = 0;
+        var blitGeneration = -1;
         var frameWidth = 0;
         var frameHeight = 0;
         var orbitAngle = 0f;
@@ -38,22 +40,19 @@ internal static class Program
                 backend.UploadSceneAsync(compiled).GetAwaiter().GetResult();
                 display.Invalidate(frameWidth, frameHeight);
                 sample = 0;
+                blitGeneration = -1;
             }
 
             if (frame.IsResetPressed())
             {
-                worker.WaitForIdle();
-                backend.ResetAccumulation();
-                display.Invalidate(frameWidth, frameHeight);
+                worker.RequestReset();
                 sample = 0;
             }
 
             if (frame.IsOrbitTogglePressed())
             {
                 orbitEnabled = !orbitEnabled;
-                worker.WaitForIdle();
-                backend.ResetAccumulation();
-                display.Invalidate(frameWidth, frameHeight);
+                worker.RequestReset();
                 sample = 0;
             }
 
@@ -78,14 +77,14 @@ internal static class Program
 
             if (orbitEnabled)
             {
-                worker.EnqueueOrbit(camera, OrbitSamplesPerFrame);
+                worker.TryEnqueueOrbitPreview(camera, OrbitPreviewSamples);
             }
-            else
+            else if (sample < MaxProgressiveSamples)
             {
                 worker.TryEnqueueAccumulate(camera, ref sample, AccumulateSamplesPerBatch);
             }
 
-            if (display.TryCopyFrame(out var pixels, out var blitWidth, out var blitHeight))
+            if (display.TryCopyFrameIfNew(ref blitGeneration, out var pixels, out var blitWidth, out var blitHeight))
             {
                 frame.Blit(pixels, blitWidth, blitHeight);
             }
