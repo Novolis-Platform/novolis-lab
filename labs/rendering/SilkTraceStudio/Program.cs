@@ -14,8 +14,9 @@ internal static class Program
     private const int MovingPreviewSamplesCpu = 1;
     private const int AccumulateSamplesPerBatchGpu = 4;
     private const int AccumulateSamplesPerBatchCpu = 2;
-    private const int MovingTraceMaxWidth = 480;
-    private const int MovingTraceMaxHeight = 270;
+    // Keep the DMA readback tiny while moving — present tax is GPU→CPU, not the kernel.
+    private const int MovingTraceMaxWidth = 320;
+    private const int MovingTraceMaxHeight = 180;
     private const float MovingSettleSeconds = 0.18f;
     private const float AutoOrbitSampleBucketRadians = 0.045f;
     private const int MaxProgressiveSamples = 512;
