@@ -8,9 +8,11 @@ namespace SilkTraceStudio;
 
 internal static class Program
 {
-    // RTX-class GPUs finish these quickly; higher spp kills orbit grain from the recording.
-    private const int OrbitPreviewSamples = 32;
-    private const int AccumulateSamplesPerBatch = 16;
+    // Keep moving previews light so drag/orbit stay responsive; accumulate in small batches for frequent presents.
+    private const int MovingPreviewSamplesGpu = 6;
+    private const int MovingPreviewSamplesCpu = 2;
+    private const int AccumulateSamplesPerBatchGpu = 4;
+    private const int AccumulateSamplesPerBatchCpu = 2;
     private const int MaxProgressiveSamples = 512;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomFactor = 0.12f;
@@ -67,8 +69,9 @@ internal static class Program
 
             if (frame.IsBackendCyclePressed())
             {
+                // Interactive cycle skips Vulkan CPU shim (digit 2 still selects it explicitly).
                 worker.WaitForIdle();
-                session.CycleBackend();
+                session.CycleBackendInteractive();
                 worker.ReplaceBackend(session.Backend);
                 display.Invalidate(traceWidth, traceHeight);
                 sample = 0;
@@ -100,7 +103,7 @@ internal static class Program
             if (MathF.Abs(frame.ScrollDelta) > 1e-4f)
             {
                 var scale = MathF.Exp(-frame.ScrollDelta * ScrollZoomFactor);
-                orbit.Distance = Math.Clamp(
+                orbit.Distance = System.Math.Clamp(
                     orbit.Distance * scale,
                     orbit.MinDistance,
                     orbit.MaxDistance);
@@ -113,13 +116,7 @@ internal static class Program
                 orbit.Yaw = autoOrbitAngle;
             }
 
-            if (cameraMoved)
-            {
-                // Non-blocking: cancel stale GPU work instead of WaitForIdle on the UI thread.
-                SoftReset(worker, ref sample);
-            }
-
-            var aspect = traceWidth / (float)Math.Max(1, traceHeight);
+            var aspect = traceWidth / (float)System.Math.Max(1, traceHeight);
             var camera = CameraSnapshot.LookAt(
                 orbit.BuildEyePosition(),
                 orbit.Target,
@@ -127,16 +124,23 @@ internal static class Program
                 orbit.FieldOfViewDegrees,
                 aspect);
 
-            if (autoOrbit)
+            var onGpu = IsRealGpu(session.Backend);
+            if (autoOrbit || cameraMoved)
             {
-                worker.TryEnqueueOrbitPreview(camera, OrbitPreviewSamples);
+                // Coalesce poses — do not SoftReset/cancel every mouse delta (that made ILGPU feel sticky).
+                worker.TryEnqueueMovingPreview(
+                    camera,
+                    onGpu ? MovingPreviewSamplesGpu : MovingPreviewSamplesCpu);
+                sample = 0;
             }
             else if (sample < MaxProgressiveSamples)
             {
-                worker.TryEnqueueAccumulate(camera, ref sample, AccumulateSamplesPerBatch);
+                worker.TryEnqueueAccumulate(
+                    camera,
+                    ref sample,
+                    onGpu ? AccumulateSamplesPerBatchGpu : AccumulateSamplesPerBatchCpu);
             }
 
-            // Skip redundant CPU→GL uploads when the tracer has not published a new frame.
             if (display.TryCopyFrameIfNew(ref blitGeneration, out var pixels, out var blitWidth, out var blitHeight))
             {
                 frame.Blit(pixels, blitWidth, blitHeight);
@@ -151,6 +155,15 @@ internal static class Program
                 $"trace {traceWidth}x{traceHeight} · dist {orbit.Distance:F2} · drag LMB · scroll zoom · Space orbit · B · 1/2/3 · R reset"));
         });
     }
+
+    private static bool IsRealGpu(IRayTracingBackend backend) =>
+        backend.BackendLabel.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase)
+        || backend.BackendLabel.Contains("GeForce", StringComparison.OrdinalIgnoreCase)
+        || backend.BackendLabel.Contains("Radeon", StringComparison.OrdinalIgnoreCase)
+        || backend.BackendLabel.Contains("Arc", StringComparison.OrdinalIgnoreCase)
+        || (backend.BackendLabel.StartsWith("ILGPU (", StringComparison.Ordinal)
+            && !backend.BackendLabel.Contains("fallback", StringComparison.OrdinalIgnoreCase)
+            && !backend.BackendLabel.Contains("CPU", StringComparison.OrdinalIgnoreCase));
 
     private static OrbitCameraRig CreateDefaultOrbit()
     {
@@ -171,7 +184,6 @@ internal static class Program
 
     private static void SoftReset(PathTraceBackgroundWorker worker, ref int sample)
     {
-        // Keep the last presented frame on screen; cancel/rebuild accumulation off-thread.
         worker.RequestReset();
         sample = 0;
     }

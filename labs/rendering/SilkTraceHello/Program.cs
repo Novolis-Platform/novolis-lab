@@ -9,8 +9,8 @@ namespace SilkTraceHello;
 
 internal static class Program
 {
-    private const int OrbitPreviewSamples = 32;
-    private const int AccumulateSamplesPerBatch = 16;
+    private const int MovingPreviewSamples = 6;
+    private const int AccumulateSamplesPerBatch = 4;
     private const int MaxProgressiveSamples = 512;
 
     public static void Main()
@@ -73,11 +73,12 @@ internal static class Program
                 ShowcaseScenes.OrbitTarget,
                 Vector3.UnitY,
                 52f,
-                frameWidth / (float)Math.Max(1, frameHeight));
+                frameWidth / (float)System.Math.Max(1, frameHeight));
 
             if (orbitEnabled)
             {
-                worker.TryEnqueueOrbitPreview(camera, OrbitPreviewSamples);
+                worker.TryEnqueueMovingPreview(camera, MovingPreviewSamples);
+                sample = 0;
             }
             else if (sample < MaxProgressiveSamples)
             {
