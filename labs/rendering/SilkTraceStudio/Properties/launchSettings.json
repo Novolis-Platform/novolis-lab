@@ -4,7 +4,8 @@
       "commandName": "Project",
       "environmentVariables": {
         "NOVOLIS_USE_PROJECT_REFERENCES": "true",
-        "NovolisReadabilityComplexity": "false"
+        "NovolisReadabilityComplexity": "false",
+        "MSBUILDDISABLENODEREUSE": "1"
       }
     }
   }
