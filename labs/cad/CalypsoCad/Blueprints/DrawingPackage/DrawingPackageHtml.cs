@@ -7,10 +7,8 @@ namespace CalypsoCad.Blueprints.DrawingPackage;
 /// <summary>ISO 7200 / class-society style HTML chrome for the drawing package.</summary>
 internal static class DrawingPackageHtml
 {
-    private const string Rev = "A";
-    private const string StdNote =
-        "INTERPRET PER ISO 128-15 / ISO 5457 / ISO 7200. UNITS: METRES. STERN LEFT, BOW RIGHT. " +
-        "NOT DNV PLAN APPROVAL — CLASSIFICATION-STYLE DRAWING REGISTER FOR CALYPSO.";
+    private const string Rev = PackageDrawingChrome.PackageRev;
+    private const string StdNote = PackageDrawingChrome.ClassStyleDisclaimer;
 
     /// <param name="nestDepth">
     /// Directory depth of this HTML under the package root (0 = <c>index.html</c>,
@@ -30,9 +28,11 @@ internal static class DrawingPackageHtml
         sb.AppendLine("<header class=\"hero\">");
         sb.AppendLine("<p class=\"eyebrow\">CALYPSO · TRAMP FREIGHTER · DRAWING PACKAGE</p>");
         sb.AppendLine("<h1>CAL-100-001 Drawing package</h1>");
-        sb.AppendLine("<p class=\"lede\">DNV/ISO-style numbered register: structure (bulkheads, frames, deck plates, members) " +
-                      "and people-movement volumes (shirt-sleeves, airlock anteroom, airlock, hybrid).</p>");
+        sb.AppendLine("<p class=\"lede\">Class-style numbered register (elevated toward ISO 7200 / 5457 / 128-15): structure " +
+                      "(bulkheads, frames, deck plates, members) and people-movement volumes.</p>");
         sb.AppendLine($"<p class=\"meta\">Rev {Rev} · {drawings.Count} drawings · {bom.Count} BOM lines · {StdNote}</p>");
+        sb.AppendLine("<p class=\"meta\"><a href=\"smart/GA-001.html\">Smart GA companion (CadBlueprint)</a> · " +
+                      "<a href=\"calypso.cadblueprint.json\">calypso.cadblueprint.json</a></p>");
         sb.AppendLine("</header>");
 
         sb.AppendLine("<nav class=\"cats\">");

@@ -1,14 +1,14 @@
 {
   "package": "CAL-DWG-PACKAGE",
-  "rev": "A",
-  "generatedUtc": "2026-11-08T20:17:08.7450699Z",
+  "rev": "B",
+  "generatedUtc": "2026-11-09T19:33:25.3998146Z",
   "standards": [
     "ISO 5457",
     "ISO 7200",
     "ISO 128-15"
   ],
   "model": "calypso.cadjson",
-  "note": "Classification-style drawing register from one CAD model \u2014 not DNV plan approval.",
+  "note": "CLASS-STYLE DESIGN PACKAGE (ISO 5457 / 7200 / 128-15). UNITS: m. STERN LEFT / BOW RIGHT. NOT DNV PLAN APPROVAL OR RULE CALCULATION.",
   "categories": [
     {
       "code": "100",

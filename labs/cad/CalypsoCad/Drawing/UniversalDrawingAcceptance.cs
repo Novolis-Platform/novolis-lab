@@ -197,6 +197,9 @@ internal static class UniversalDrawingAcceptance
                 && File.Exists(htmlPath)
                 && File.ReadAllText(htmlPath).Contains(CadBlueprintDom.FormatValue, StringComparison.Ordinal),
                 htmlPath ?? "missing");
+            Check("G CadBlueprint hull shell lifted",
+                export.Blueprint is { Shells.Count: > 0 },
+                export.Blueprint is null ? "no bp" : $"shells={export.Blueprint.Shells.Count}");
 
             // Package path must also contain companion when blueprints were emitted previously.
             var pkgJson = Path.Combine(CalypsoProjectPaths.BlueprintsPackageDirectory, "calypso.cadblueprint.json");

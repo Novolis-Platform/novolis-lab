@@ -67,20 +67,21 @@ internal static class DrawingSvgComposer
 
         if (register.Count > 0)
         {
-            PackageDrawingChrome.Label(sb, 560, 420, "PART REGISTER");
-            DrawRegister(sb, 560, 430, register.Take(12).ToList());
+            PackageDrawingChrome.Label(sb, 28, 390, "PART REGISTER");
+            DrawRegister(sb, 28, 402, register.Take(8).ToList());
         }
 
         if (manifest.Diagnostics.Count > 0)
         {
-            PackageDrawingChrome.NoteLines(sb, 28, 520,
+            PackageDrawingChrome.NoteLines(sb, 280, 390,
                 manifest.Diagnostics.Take(4).ToArray());
         }
         else
         {
-            PackageDrawingChrome.NoteLines(sb, 28, 520,
-                "Geometry projected from ShipPartRegistry ownership.",
+            PackageDrawingChrome.NoteLines(sb, 280, 390,
+                "Geometry from ShipPartRegistry ownership.",
                 "Viewport visibility does not affect this drawing.",
+                "Scale AS SHOWN · ISO 128-15 stern left.",
                 $"Ok={manifest.Ok}");
         }
 
@@ -431,12 +432,13 @@ internal static class DrawingSvgComposer
         }
     }
 
+    // Leave bottom-right clear for ISO 7200 title block (x≥521, y≥504).
     private static List<(double X, double Y, double W, double H)> LayoutSlots(int count) =>
         count switch
         {
-            <= 1 => [(28, 42, 780, 360)],
-            2 => [(28, 42, 520, 360), (560, 42, 260, 160)],
-            _ => [(28, 42, 520, 360), (560, 42, 260, 160), (560, 230, 260, 172)],
+            <= 1 => [(28, 36, 780, 340)],
+            2 => [(28, 36, 500, 340), (540, 36, 270, 150)],
+            _ => [(28, 36, 500, 340), (540, 36, 270, 150), (540, 210, 270, 160)],
         };
 
     private static string Sanitize(string id)

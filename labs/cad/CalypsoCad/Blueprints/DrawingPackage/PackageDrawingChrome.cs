@@ -35,6 +35,16 @@ internal static class PackageDrawingChrome
             CalypsoBulkheads.BuildSchedule(loa, CadJsonStructureQuery.StationMap(cad)));
     }
 
+    public const string PackageRev = "B";
+
+    public const string ClassStyleDisclaimer =
+        "CLASS-STYLE DESIGN PACKAGE (ISO 5457 / 7200 / 128-15). UNITS: m. STERN LEFT / BOW RIGHT. " +
+        "NOT DNV PLAN APPROVAL OR RULE CALCULATION.";
+
+    /// <summary>
+    /// Plot-first A1 landscape sheet: content lives in SVG; ISO 7200 title block is drawn in-sheet
+    /// (bottom-right). Screen aside mirrors the block for browser reading.
+    /// </summary>
     public static StringBuilder BeginHtml(DrawingEntry entry, string subject, IReadOnlyList<(string Key, string Value)> blockRows, string subtitle)
     {
         var sb = new StringBuilder();
@@ -42,29 +52,39 @@ internal static class PackageDrawingChrome
         sb.AppendLine($"<title>{Esc(entry.DrawingNumber)} — {Esc(subject)}</title>");
         sb.AppendLine("""
             <style>
-            body{margin:0;background:#ebe6dc;font:13px/1.35 "Segoe UI",system-ui,sans-serif;color:#1a1f24}
-            .wrap{padding:1rem 1.25rem 1.5rem}
-            .tb{float:right;width:300px;border:1px solid #111;background:#fff;margin:0 0 1rem 1rem}
+            @page{size:841mm 594mm;margin:0}
+            body{margin:0;background:#2a2a2a;font:13px/1.35 "Segoe UI",system-ui,sans-serif;color:#1a1f24}
+            .wrap{padding:12px;max-width:1200px;margin:0 auto}
+            .tb{margin:0 0 10px;border:1px solid #111;background:#fff}
             .tb table{width:100%;border-collapse:collapse}
-            .tb th,.tb td{padding:.35rem .45rem;border-bottom:1px solid #ccc;text-align:left;font-size:12px}
-            .tb th{width:34%;background:#e8eee9}
-            h1{font:700 1.35rem/1.2 system-ui;margin:0 0 .35rem}
-            .meta{color:#5a6570;font-size:12px;margin:0 0 .8rem;clear:both}
+            .tb th,.tb td{padding:.3rem .45rem;border-bottom:1px solid #ccc;text-align:left;font-size:11px}
+            .tb th{width:28%;background:#e8eee9}
+            .meta{color:#c8c8c8;font-size:11px;margin:0 0 .6rem}
             svg{display:block;width:100%;height:auto;background:#fff;border:1px solid #333}
+            @media print{
+              body{background:#fff}
+              .wrap{padding:0;max-width:none}
+              .tb,.meta{display:none!important}
+              svg{border:none;width:841mm;height:594mm}
+            }
             </style>
             """);
         sb.AppendLine("</head><body><div class=\"wrap\">");
+        sb.AppendLine($"<p class=\"meta\">{Esc(subtitle)} · Rev {PackageRev}</p>");
         sb.AppendLine("<aside class=\"tb\"><table>");
-        sb.AppendLine($"<tr><th>Drawing</th><td>{Esc(entry.DrawingNumber)}</td></tr>");
+        sb.AppendLine($"<tr><th>Drawing no.</th><td>{Esc(entry.DrawingNumber)}</td></tr>");
+        sb.AppendLine($"<tr><th>Title</th><td>{Esc(entry.Title)}</td></tr>");
         sb.AppendLine($"<tr><th>Label</th><td>{Esc(entry.Label)}</td></tr>");
         foreach (var (k, v) in blockRows)
             sb.AppendLine($"<tr><th>{Esc(k)}</th><td>{Esc(v)}</td></tr>");
-        sb.AppendLine("<tr><th>Rev</th><td>A</td></tr>");
+        sb.AppendLine($"<tr><th>Rev</th><td>{PackageRev}</td></tr>");
+        sb.AppendLine("<tr><th>Sheet</th><td>A1 landscape (ISO 5457)</td></tr>");
+        sb.AppendLine("<tr><th>Scale</th><td>AS SHOWN</td></tr>");
         sb.AppendLine("</table></aside>");
-        sb.AppendLine($"<h1>{Esc(entry.Title)}</h1>");
-        sb.AppendLine($"<p class=\"meta\">{Esc(subtitle)}</p>");
         sb.AppendLine("<svg viewBox=\"0 0 841 594\" xmlns=\"http://www.w3.org/2000/svg\">");
-        sb.AppendLine("<rect x=\"10\" y=\"10\" width=\"821\" height=\"574\" fill=\"none\" stroke=\"#111\" stroke-width=\"1.2\"/>");
+        sb.AppendLine("<rect x=\"0\" y=\"0\" width=\"841\" height=\"594\" fill=\"#fff\"/>");
+        sb.AppendLine("<rect x=\"20\" y=\"10\" width=\"801\" height=\"574\" fill=\"none\" stroke=\"#111\" stroke-width=\"1.4\"/>");
+        DrawIso7200TitleBlock(sb, entry, subject, blockRows);
         return sb;
     }
 
@@ -73,6 +93,50 @@ internal static class PackageDrawingChrome
         sb.AppendLine("</svg></div></body></html>");
         return sb.ToString();
     }
+
+    /// <summary>ISO 7200-style title block, bottom-right of A1 sheet (mm viewBox).</summary>
+    public static void DrawIso7200TitleBlock(
+        StringBuilder sb,
+        DrawingEntry entry,
+        string subject,
+        IReadOnlyList<(string Key, string Value)> blockRows)
+    {
+        const double x = 521, y = 504, w = 300, h = 80;
+        sb.AppendLine($"<g id=\"iso7200-title-block\">");
+        sb.AppendLine($"<rect x=\"{F(x)}\" y=\"{F(y)}\" width=\"{F(w)}\" height=\"{F(h)}\" fill=\"#fff\" stroke=\"#111\" stroke-width=\"1.1\"/>");
+        // Grid
+        sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(y + 22)}\" x2=\"{F(x + w)}\" y2=\"{F(y + 22)}\" stroke=\"#111\" stroke-width=\"0.6\"/>");
+        sb.AppendLine($"<line x1=\"{F(x)}\" y1=\"{F(y + 44)}\" x2=\"{F(x + w)}\" y2=\"{F(y + 44)}\" stroke=\"#111\" stroke-width=\"0.6\"/>");
+        sb.AppendLine($"<line x1=\"{F(x + 90)}\" y1=\"{F(y)}\" x2=\"{F(x + 90)}\" y2=\"{F(y + h)}\" stroke=\"#111\" stroke-width=\"0.55\"/>");
+        sb.AppendLine($"<line x1=\"{F(x + 180)}\" y1=\"{F(y + 22)}\" x2=\"{F(x + 180)}\" y2=\"{F(y + h)}\" stroke=\"#111\" stroke-width=\"0.55\"/>");
+
+        sb.AppendLine($"<text x=\"{F(x + 4)}\" y=\"{F(y + 10)}\" font-size=\"7\" fill=\"#555\">OWNER / LEGAL OWNER</text>");
+        sb.AppendLine($"<text x=\"{F(x + 4)}\" y=\"{F(y + 18)}\" font-size=\"9\" font-weight=\"600\" fill=\"#111\">NOVOLIS · CALYPSO</text>");
+        sb.AppendLine($"<text x=\"{F(x + 94)}\" y=\"{F(y + 10)}\" font-size=\"7\" fill=\"#555\">DRAWING NUMBER</text>");
+        sb.AppendLine($"<text x=\"{F(x + 94)}\" y=\"{F(y + 18)}\" font-size=\"11\" font-weight=\"700\" fill=\"#111\">{Esc(entry.DrawingNumber)}</text>");
+
+        sb.AppendLine($"<text x=\"{F(x + 4)}\" y=\"{F(y + 32)}\" font-size=\"7\" fill=\"#555\">TITLE</text>");
+        sb.AppendLine($"<text x=\"{F(x + 4)}\" y=\"{F(y + 41)}\" font-size=\"8.5\" font-weight=\"600\" fill=\"#111\">{Esc(Trim(entry.Title, 48))}</text>");
+
+        sb.AppendLine($"<text x=\"{F(x + 4)}\" y=\"{F(y + 54)}\" font-size=\"7\" fill=\"#555\">SUBJECT</text>");
+        sb.AppendLine($"<text x=\"{F(x + 4)}\" y=\"{F(y + 63)}\" font-size=\"8\" fill=\"#111\">{Esc(Trim(subject, 28))}</text>");
+        sb.AppendLine($"<text x=\"{F(x + 94)}\" y=\"{F(y + 54)}\" font-size=\"7\" fill=\"#555\">REV</text>");
+        sb.AppendLine($"<text x=\"{F(x + 94)}\" y=\"{F(y + 66)}\" font-size=\"14\" font-weight=\"700\" fill=\"#111\">{PackageRev}</text>");
+        sb.AppendLine($"<text x=\"{F(x + 184)}\" y=\"{F(y + 54)}\" font-size=\"7\" fill=\"#555\">SCALE</text>");
+        sb.AppendLine($"<text x=\"{F(x + 184)}\" y=\"{F(y + 66)}\" font-size=\"9\" fill=\"#111\">AS SHOWN</text>");
+        sb.AppendLine($"<text x=\"{F(x + 184)}\" y=\"{F(y + 32)}\" font-size=\"7\" fill=\"#555\">SHEET</text>");
+        sb.AppendLine($"<text x=\"{F(x + 184)}\" y=\"{F(y + 41)}\" font-size=\"8\" fill=\"#111\">A1 · 841×594</text>");
+
+        var extras = string.Join(" · ", blockRows.Take(2).Select(r => $"{r.Key}: {r.Value}"));
+        if (!string.IsNullOrWhiteSpace(extras))
+            sb.AppendLine($"<text x=\"{F(x + 4)}\" y=\"{F(y + 76)}\" font-size=\"6.5\" fill=\"#444\">{Esc(Trim(extras, 70))}</text>");
+
+        sb.AppendLine($"<text x=\"28\" y=\"576\" font-size=\"6.5\" fill=\"#444\">{Esc(ClassStyleDisclaimer)}</text>");
+        sb.AppendLine("</g>");
+    }
+
+    private static string Trim(string s, int n) =>
+        s.Length <= n ? s : s[..(n - 1)] + "…";
 
     public static void Label(StringBuilder sb, double x, double y, string text) =>
         sb.AppendLine($"<text x=\"{F(x)}\" y=\"{F(y)}\" font-size=\"11\" font-weight=\"600\" fill=\"#222\">{Esc(text)}</text>");

@@ -170,11 +170,11 @@ internal static class DrawingPackageEmitter
                 new
                 {
                     package = "CAL-DWG-PACKAGE",
-                    rev = "A",
+                    rev = PackageDrawingChrome.PackageRev,
                     generatedUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
                     standards = new[] { "ISO 5457", "ISO 7200", "ISO 128-15" },
                     model = "calypso.cadjson",
-                    note = "Classification-style drawing register from one CAD model — not DNV plan approval.",
+                    note = PackageDrawingChrome.ClassStyleDisclaimer,
                     categories = DrawingPackageCategories.All.Select(c => new
                     {
                         code = c.SystemCode,
