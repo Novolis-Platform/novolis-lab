@@ -1,0 +1,5 @@
+# Faster local Studio restores: skip NuGet audit + SourceLink GitHub queries on the whole ProjectRef graph.
+/p:NuGetAudit=false
+/p:EnableSourceLink=false
+/p:EnableSourceControlManagerQueries=false
+/p:NovolisUseProjectReferences=true

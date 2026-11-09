@@ -26,9 +26,11 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <NoWarn>$(NoWarn);CS1711</NoWarn>
-    <!-- Dogfood hosts: skip SourceLink git/GitHub queries and NOV2301 ProjectReference noise. -->
+    <!-- Dogfood hosts: skip SourceLink git/GitHub queries, NuGet audit, and NOV2301 noise. -->
     <EnableSourceLink>false</EnableSourceLink>
     <EmbedUntrackedSources>false</EmbedUntrackedSources>
+    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
+    <NuGetAudit>false</NuGetAudit>
     <NovolisReadabilityComplexity>false</NovolisReadabilityComplexity>
   </PropertyGroup>
 
