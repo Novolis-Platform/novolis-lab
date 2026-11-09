@@ -1,4 +1,5 @@
 using System.Numerics;
+using Microsoft.Extensions.Logging;
 using Novolis.Rendering.PathTrace.Demos;
 using Novolis.Rendering.Runtime;
 using Novolis.Silk;
@@ -21,6 +22,19 @@ internal static class Program
 
     public static void Main()
     {
+        using var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder
+                .SetMinimumLevel(LogLevel.Information)
+                .AddSimpleConsole(options =>
+                {
+                    options.SingleLine = true;
+                    options.TimestampFormat = "HH:mm:ss ";
+                });
+        });
+        var logger = loggerFactory.CreateLogger("SilkTraceStudio");
+        var perf = new PathTracePerfMeter(logger);
+
         var compiled = ShowcaseScenes.BuildStudioShowcase();
         using var session = new PathTraceSession(compiled);
         var display = new PathTraceDisplayBuffer();
@@ -35,6 +49,10 @@ internal static class Program
         var traceHeight = 0;
         var autoOrbit = false;
         var autoOrbitAngle = 0f;
+
+        logger.LogInformation(
+            "SilkTraceStudio started backend={Backend}",
+            session.Backend.BackendLabel);
 
         SilkGame.Run("SilkTraceStudio — path tracing", 1280, 720, frame =>
         {
@@ -76,19 +94,20 @@ internal static class Program
                 display.Invalidate(traceWidth, traceHeight);
                 sample = 0;
                 blitGeneration = -1;
+                logger.LogInformation("backend cycled to {Backend}", session.Backend.BackendLabel);
             }
 
             if (frame.IsDigitPressed(1))
             {
-                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Ilgpu);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Ilgpu, logger);
             }
             else if (frame.IsDigitPressed(2))
             {
-                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Vulkan);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Vulkan, logger);
             }
             else if (frame.IsDigitPressed(3))
             {
-                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Cpu);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, traceWidth, traceHeight, PathTraceBackendKind.Cpu, logger);
             }
 
             var cameraMoved = false;
@@ -128,20 +147,21 @@ internal static class Program
             if (autoOrbit || cameraMoved)
             {
                 // Coalesce poses — do not SoftReset/cancel every mouse delta (that made ILGPU feel sticky).
-                worker.TryEnqueueMovingPreview(
+                perf.NoteEnqueue(worker.TryEnqueueMovingPreview(
                     camera,
-                    onGpu ? MovingPreviewSamplesGpu : MovingPreviewSamplesCpu);
+                    onGpu ? MovingPreviewSamplesGpu : MovingPreviewSamplesCpu));
                 sample = 0;
             }
             else if (sample < MaxProgressiveSamples)
             {
-                worker.TryEnqueueAccumulate(
+                perf.NoteEnqueue(worker.TryEnqueueAccumulate(
                     camera,
                     ref sample,
-                    onGpu ? AccumulateSamplesPerBatchGpu : AccumulateSamplesPerBatchCpu);
+                    onGpu ? AccumulateSamplesPerBatchGpu : AccumulateSamplesPerBatchCpu));
             }
 
-            if (display.TryCopyFrameIfNew(ref blitGeneration, out var pixels, out var blitWidth, out var blitHeight))
+            var blitThisFrame = display.TryCopyFrameIfNew(ref blitGeneration, out var pixels, out var blitWidth, out var blitHeight);
+            if (blitThisFrame)
             {
                 frame.Blit(pixels, blitWidth, blitHeight);
             }
@@ -153,6 +173,17 @@ internal static class Program
                 fps.Value,
                 worker.IsBusy,
                 $"trace {traceWidth}x{traceHeight} · dist {orbit.Distance:F2} · drag LMB · scroll zoom · Space orbit · B · 1/2/3 · R reset"));
+
+            perf.Tick(
+                frame.DeltaSeconds,
+                fps.Value,
+                display.DisplayedSampleCount,
+                worker.IsBusy,
+                blitThisFrame,
+                session.Backend.BackendLabel,
+                traceWidth,
+                traceHeight,
+                autoOrbit || cameraMoved);
         });
     }
 
@@ -196,7 +227,8 @@ internal static class Program
         ref int blitGeneration,
         int traceWidth,
         int traceHeight,
-        PathTraceBackendKind kind)
+        PathTraceBackendKind kind,
+        ILogger logger)
     {
         worker.WaitForIdle();
         session.SwitchBackend(kind);
@@ -207,5 +239,7 @@ internal static class Program
         {
             display.Invalidate(traceWidth, traceHeight);
         }
+
+        logger.LogInformation("backend switched to {Backend}", session.Backend.BackendLabel);
     }
 }
