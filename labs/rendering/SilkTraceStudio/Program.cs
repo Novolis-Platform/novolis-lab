@@ -1,6 +1,5 @@
 using System.Numerics;
 using Microsoft.Extensions.Logging;
-using Novolis.Math.Geometry;
 using Novolis.Rendering.PathTrace.Demos;
 using Novolis.Rendering.Runtime;
 using Novolis.Silk;
@@ -15,8 +14,9 @@ internal static class Program
     private const int MovingPreviewSamplesCpu = 1;
     private const int AccumulateSamplesPerBatchGpu = 4;
     private const int AccumulateSamplesPerBatchCpu = 2;
-    private const int MovingTraceMaxWidth = 640;
-    private const int MovingTraceMaxHeight = 360;
+    private const int MovingTraceMaxWidth = 480;
+    private const int MovingTraceMaxHeight = 270;
+    private const float MovingSettleSeconds = 0.18f;
     private const int MaxProgressiveSamples = 512;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomFactor = 0.12f;
@@ -52,10 +52,9 @@ internal static class Program
         var traceHeight = 0;
         var autoOrbit = false;
         var autoOrbitAngle = 0f;
-        Rgba32[]? lastBlitPixels = null;
-        var lastBlitWidth = 0;
-        var lastBlitHeight = 0;
+        var hasBlitTexture = false;
         var movingTrace = false;
+        var stillSeconds = 0f;
 
         logger.LogInformation(
             "SilkTraceStudio started backend={Backend}",
@@ -81,7 +80,7 @@ internal static class Program
                     ref traceHeight,
                     ref sample,
                     ref blitGeneration,
-                    ref lastBlitPixels);
+                    ref hasBlitTexture);
             }
 
             if (frame.IsResetPressed())
@@ -108,21 +107,21 @@ internal static class Program
                 display.Invalidate(traceWidth, traceHeight);
                 sample = 0;
                 blitGeneration = -1;
-                lastBlitPixels = null;
+                hasBlitTexture = false;
                 logger.LogInformation("backend cycled to {Backend}", session.Backend.BackendLabel);
             }
 
             if (frame.IsDigitPressed(1))
             {
-                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, ref lastBlitPixels, traceWidth, traceHeight, PathTraceBackendKind.Ilgpu, logger);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, ref hasBlitTexture, traceWidth, traceHeight, PathTraceBackendKind.Ilgpu, logger);
             }
             else if (frame.IsDigitPressed(2))
             {
-                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, ref lastBlitPixels, traceWidth, traceHeight, PathTraceBackendKind.Vulkan, logger);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, ref hasBlitTexture, traceWidth, traceHeight, PathTraceBackendKind.Vulkan, logger);
             }
             else if (frame.IsDigitPressed(3))
             {
-                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, ref lastBlitPixels, traceWidth, traceHeight, PathTraceBackendKind.Cpu, logger);
+                SwitchBackend(worker, session, display, ref sample, ref blitGeneration, ref hasBlitTexture, traceWidth, traceHeight, PathTraceBackendKind.Cpu, logger);
             }
 
             var cameraMoved = false;
@@ -150,7 +149,18 @@ internal static class Program
                 orbit.Yaw = autoOrbitAngle;
             }
 
-            var wantMovingTrace = autoOrbit || cameraMoved || dragging;
+            var cameraBusy = autoOrbit || cameraMoved || dragging;
+            if (cameraBusy)
+            {
+                stillSeconds = 0f;
+            }
+            else
+            {
+                stillSeconds += frame.DeltaSeconds;
+            }
+
+            // Drop res immediately while moving; wait briefly before upscaling so short pauses do not hitch.
+            var wantMovingTrace = cameraBusy || stillSeconds < MovingSettleSeconds;
             if (frameWidth > 0 && wantMovingTrace != movingTrace)
             {
                 movingTrace = wantMovingTrace;
@@ -165,7 +175,7 @@ internal static class Program
                     ref traceHeight,
                     ref sample,
                     ref blitGeneration,
-                    ref lastBlitPixels);
+                    ref hasBlitTexture);
             }
 
             var aspect = traceWidth / (float)System.Math.Max(1, traceHeight);
@@ -177,7 +187,7 @@ internal static class Program
                 aspect);
 
             var onGpu = IsRealGpu(session.Backend);
-            if (autoOrbit || cameraMoved || dragging)
+            if (cameraBusy)
             {
                 // Coalesce poses — do not SoftReset/cancel every mouse delta (that made ILGPU feel sticky).
                 perf.NoteEnqueue(worker.TryEnqueueMovingPreview(
@@ -185,7 +195,7 @@ internal static class Program
                     onGpu ? MovingPreviewSamplesGpu : MovingPreviewSamplesCpu));
                 sample = 0;
             }
-            else if (sample < MaxProgressiveSamples)
+            else if (!movingTrace && sample < MaxProgressiveSamples)
             {
                 perf.NoteEnqueue(worker.TryEnqueueAccumulate(
                     camera,
@@ -196,15 +206,13 @@ internal static class Program
             var blitThisFrame = display.TryCopyFrameIfNew(ref blitGeneration, out var pixels, out var blitWidth, out var blitHeight);
             if (blitThisFrame)
             {
-                lastBlitPixels = pixels;
-                lastBlitWidth = blitWidth;
-                lastBlitHeight = blitHeight;
+                frame.Blit(pixels, blitWidth, blitHeight);
+                hasBlitTexture = true;
             }
-
-            // GLFW swaps a fresh back buffer each frame — re-draw the last path-trace or the window flickers.
-            if (lastBlitPixels is not null && lastBlitWidth > 0 && lastBlitHeight > 0)
+            else if (hasBlitTexture)
             {
-                frame.Blit(lastBlitPixels, lastBlitWidth, lastBlitHeight);
+                // Keep the window painted without fighting ILGPU with a TexSubImage every swap.
+                frame.RedrawBlit();
             }
 
             frame.SetTitle(PathTraceStatusTitle.Format(
@@ -224,7 +232,7 @@ internal static class Program
                 session.Backend.BackendLabel,
                 traceWidth,
                 traceHeight,
-                autoOrbit || cameraMoved || dragging);
+                cameraBusy);
         });
     }
 
@@ -239,7 +247,7 @@ internal static class Program
         ref int traceHeight,
         ref int sample,
         ref int blitGeneration,
-        ref Rgba32[]? lastBlitPixels)
+        ref bool hasBlitTexture)
     {
         var (width, height) = moving
             ? InteractiveTraceSize.Clamp(frameWidth, frameHeight, MovingTraceMaxWidth, MovingTraceMaxHeight)
@@ -256,7 +264,7 @@ internal static class Program
         traceHeight = height;
         sample = 0;
         blitGeneration = -1;
-        lastBlitPixels = null;
+        hasBlitTexture = false;
     }
 
     private static bool IsRealGpu(IRayTracingBackend backend) =>
@@ -297,7 +305,7 @@ internal static class Program
         PathTraceDisplayBuffer display,
         ref int sample,
         ref int blitGeneration,
-        ref Rgba32[]? lastBlitPixels,
+        ref bool hasBlitTexture,
         int traceWidth,
         int traceHeight,
         PathTraceBackendKind kind,
@@ -308,7 +316,7 @@ internal static class Program
         worker.ReplaceBackend(session.Backend);
         sample = 0;
         blitGeneration = -1;
-        lastBlitPixels = null;
+        hasBlitTexture = false;
         if (traceWidth > 0 && traceHeight > 0)
         {
             display.Invalidate(traceWidth, traceHeight);
