@@ -53,44 +53,58 @@ internal static class PackageDrawingChrome
         sb.AppendLine("""
             <style>
             @page{size:841mm 594mm;margin:0}
-            body{margin:0;background:#2a2a2a;font:13px/1.35 "Segoe UI",system-ui,sans-serif;color:#1a1f24}
-            .wrap{padding:12px;max-width:1200px;margin:0 auto}
-            .tb{margin:0 0 10px;border:1px solid #111;background:#fff}
-            .tb table{width:100%;border-collapse:collapse}
-            .tb th,.tb td{padding:.3rem .45rem;border-bottom:1px solid #ccc;text-align:left;font-size:11px}
-            .tb th{width:28%;background:#e8eee9}
-            .meta{color:#c8c8c8;font-size:11px;margin:0 0 .6rem}
-            svg{display:block;width:100%;height:auto;background:#fff;border:1px solid #333}
+            html,body{margin:0;padding:0;background:#fff;font:12px/1.35 "Segoe UI",system-ui,sans-serif;color:#111}
+            .sheet{margin:0 auto;max-width:100vw}
+            .sheet > svg{display:block;width:100%;height:auto;background:#fff}
+            details.meta{max-width:841px;margin:8px auto 16px;padding:0 8px;color:#555}
+            details.meta summary{cursor:pointer;font-size:12px;color:#666}
+            details.meta table{width:100%;border-collapse:collapse;margin-top:8px;background:#fafafa}
+            details.meta th,details.meta td{padding:.28rem .4rem;border:1px solid #ddd;text-align:left;font-size:11px}
+            details.meta th{width:30%;background:#eee}
             @media print{
-              body{background:#fff}
-              .wrap{padding:0;max-width:none}
-              .tb,.meta{display:none!important}
-              svg{border:none;width:841mm;height:594mm}
+              details.meta{display:none!important}
+              .sheet > svg{width:841mm;height:594mm}
             }
             </style>
             """);
-        sb.AppendLine("</head><body><div class=\"wrap\">");
-        sb.AppendLine($"<p class=\"meta\">{Esc(subtitle)} · Rev {PackageRev}</p>");
-        sb.AppendLine("<aside class=\"tb\"><table>");
-        sb.AppendLine($"<tr><th>Drawing no.</th><td>{Esc(entry.DrawingNumber)}</td></tr>");
-        sb.AppendLine($"<tr><th>Title</th><td>{Esc(entry.Title)}</td></tr>");
-        sb.AppendLine($"<tr><th>Label</th><td>{Esc(entry.Label)}</td></tr>");
-        foreach (var (k, v) in blockRows)
-            sb.AppendLine($"<tr><th>{Esc(k)}</th><td>{Esc(v)}</td></tr>");
-        sb.AppendLine($"<tr><th>Rev</th><td>{PackageRev}</td></tr>");
-        sb.AppendLine("<tr><th>Sheet</th><td>A1 landscape (ISO 5457)</td></tr>");
-        sb.AppendLine("<tr><th>Scale</th><td>AS SHOWN</td></tr>");
-        sb.AppendLine("</table></aside>");
-        sb.AppendLine("<svg viewBox=\"0 0 841 594\" xmlns=\"http://www.w3.org/2000/svg\">");
+        sb.AppendLine("</head><body>");
+        // Drawing first — the A1 sheet is the document; metadata is secondary.
+        sb.AppendLine("<div class=\"sheet\">");
+        sb.AppendLine("<svg viewBox=\"0 0 841 594\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"drawing sheet\">");
         sb.AppendLine("<rect x=\"0\" y=\"0\" width=\"841\" height=\"594\" fill=\"#fff\"/>");
         sb.AppendLine("<rect x=\"20\" y=\"10\" width=\"801\" height=\"574\" fill=\"none\" stroke=\"#111\" stroke-width=\"1.4\"/>");
         DrawIso7200TitleBlock(sb, entry, subject, blockRows);
         return sb;
     }
 
-    public static string EndHtml(StringBuilder sb)
+    public static string EndHtml(StringBuilder sb, DrawingEntry? entry = null, string? subject = null, IReadOnlyList<(string Key, string Value)>? blockRows = null, string? subtitle = null)
     {
-        sb.AppendLine("</svg></div></body></html>");
+        sb.AppendLine("</svg></div>");
+        if (entry is not null)
+        {
+            sb.AppendLine("<details class=\"meta\">");
+            sb.AppendLine($"<summary>Sheet data · {Esc(entry.DrawingNumber)} · Rev {PackageRev}" +
+                          (string.IsNullOrWhiteSpace(subtitle) ? "" : $" · {Esc(subtitle)}") +
+                          "</summary>");
+            sb.AppendLine("<table>");
+            sb.AppendLine($"<tr><th>Drawing no.</th><td>{Esc(entry.DrawingNumber)}</td></tr>");
+            sb.AppendLine($"<tr><th>Title</th><td>{Esc(entry.Title)}</td></tr>");
+            sb.AppendLine($"<tr><th>Label</th><td>{Esc(entry.Label)}</td></tr>");
+            if (!string.IsNullOrWhiteSpace(subject))
+                sb.AppendLine($"<tr><th>Subject</th><td>{Esc(subject)}</td></tr>");
+            if (blockRows is not null)
+            {
+                foreach (var (k, v) in blockRows)
+                    sb.AppendLine($"<tr><th>{Esc(k)}</th><td>{Esc(v)}</td></tr>");
+            }
+
+            sb.AppendLine($"<tr><th>Rev</th><td>{PackageRev}</td></tr>");
+            sb.AppendLine("<tr><th>Sheet</th><td>A1 landscape (ISO 5457)</td></tr>");
+            sb.AppendLine("<tr><th>Scale</th><td>AS SHOWN</td></tr>");
+            sb.AppendLine("</table></details>");
+        }
+
+        sb.AppendLine("</body></html>");
         return sb.ToString();
     }
 

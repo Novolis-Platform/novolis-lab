@@ -1,0 +1,617 @@
+{
+  "format": "novolis.cad",
+  "schemaVersion": 1,
+  "name": "Demo cottage",
+  "generator": {
+    "name": "Novolis.Cad",
+    "version": "2026.1.0"
+  },
+  "createdAt": "2026-11-09T20:30:38.2360878Z",
+  "modifiedAt": "2026-11-09T20:30:38.2362536Z",
+  "unitScaleMeters": 1,
+  "linearUnit": "meter",
+  "angleUnit": "radian",
+  "coordinateSystem": {
+    "handedness": "right",
+    "upAxis": "y",
+    "forwardAxis": "z"
+  },
+  "layers": [
+    {
+      "id": "b1000000-0000-4000-8000-000000000001",
+      "name": "A-WALL",
+      "visible": true,
+      "locked": false
+    }
+  ],
+  "linetypes": [
+    {
+      "name": "Continuous"
+    }
+  ],
+  "entities": [
+    {
+      "id": "1e7feedf-04e8-4d69-ab25-7e89e488cdfb",
+      "name": "cottage-shell",
+      "kind": "box",
+      "center": [
+        5,
+        1.35,
+        4
+      ],
+      "radius": 0,
+      "height": 0,
+      "thickness": 0,
+      "deck": 0,
+      "halfExtents": [
+        5,
+        1.35,
+        4
+      ],
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "ac35cae0-5124-4c2d-8e46-1a247efe8c32",
+      "name": "W-S",
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "kind": "wall",
+      "a": [
+        0,
+        0,
+        0
+      ],
+      "b": [
+        10,
+        0,
+        0
+      ],
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0.15,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "299d3f2e-87f0-48c9-b2a1-5e4b18fbb230",
+      "name": "W-E",
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "kind": "wall",
+      "a": [
+        10,
+        0,
+        0
+      ],
+      "b": [
+        10,
+        0,
+        8
+      ],
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0.15,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "7cea841b-7418-403e-aa9b-e21da253c2dd",
+      "name": "W-N",
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "kind": "wall",
+      "a": [
+        10,
+        0,
+        8
+      ],
+      "b": [
+        0,
+        0,
+        8
+      ],
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0.15,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "3e52bdf2-df11-419e-b646-f827508a1bc9",
+      "name": "W-W",
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "kind": "wall",
+      "a": [
+        0,
+        0,
+        8
+      ],
+      "b": [
+        0,
+        0,
+        0
+      ],
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0.15,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "26bfb507-ab8a-483d-8c47-b398226ae8b1",
+      "name": "W-hall",
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "kind": "wall",
+      "a": [
+        4,
+        0,
+        0
+      ],
+      "b": [
+        4,
+        0,
+        8
+      ],
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0.15,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "a0f3022f-8e67-46d7-90f4-892693948bef",
+      "name": "W-kit",
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "kind": "wall",
+      "a": [
+        4,
+        0,
+        4
+      ],
+      "b": [
+        10,
+        0,
+        4
+      ],
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0.15,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "ff895c2c-c622-4149-af45-92898399bba6",
+      "name": "W-bath",
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "kind": "wall",
+      "a": [
+        0,
+        0,
+        3
+      ],
+      "b": [
+        4,
+        0,
+        3
+      ],
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0.15,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "957be468-133c-4628-a6f7-5ef8e3c83482",
+      "name": "Entry",
+      "kind": "space",
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "footprint": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          3
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "a2d9d466-581e-4aed-bb2d-7260512a755e",
+      "name": "Bath",
+      "kind": "space",
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "footprint": [
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          4,
+          0,
+          3
+        ],
+        [
+          4,
+          0,
+          8
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "63599e88-1044-4e5f-b307-073e5143c676",
+      "name": "Living",
+      "kind": "space",
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "footprint": [
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          4
+        ],
+        [
+          4,
+          0,
+          4
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "d0bdb66f-c6b0-4c8e-8aef-4816f5f51744",
+      "name": "Kitchen",
+      "kind": "space",
+      "radius": 0,
+      "height": 2.7,
+      "thickness": 0,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "footprint": [
+        [
+          4,
+          0,
+          4
+        ],
+        [
+          10,
+          0,
+          4
+        ],
+        [
+          10,
+          0,
+          8
+        ],
+        [
+          4,
+          0,
+          8
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "aeea4a61-9169-42a8-be04-f1b7b5687621",
+      "name": "Front door",
+      "kind": "opening",
+      "radius": 0,
+      "height": 2.1,
+      "thickness": 1,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "door",
+      "footprint": [
+        [
+          3.4,
+          0,
+          -0.1
+        ],
+        [
+          4.6,
+          0,
+          -0.1
+        ],
+        [
+          4.6,
+          0,
+          0.1
+        ],
+        [
+          3.4,
+          0,
+          0.1
+        ]
+      ],
+      "hostWallId": "26bfb507-ab8a-483d-8c47-b398226ae8b1",
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "1e4775db-8f98-4eb8-a1b3-de12a04c6609",
+      "name": "Bath door",
+      "kind": "opening",
+      "radius": 0,
+      "height": 2.1,
+      "thickness": 0.8,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "door",
+      "footprint": [
+        [
+          1.5,
+          0,
+          2.9
+        ],
+        [
+          2.5,
+          0,
+          2.9
+        ],
+        [
+          2.5,
+          0,
+          3.1
+        ],
+        [
+          1.5,
+          0,
+          3.1
+        ]
+      ],
+      "hostWallId": "ff895c2c-c622-4149-af45-92898399bba6",
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "61453677-0b0b-41c1-9154-2e21a43692e8",
+      "name": "Living window",
+      "kind": "opening",
+      "radius": 0,
+      "height": 1.2,
+      "thickness": 2,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "window",
+      "footprint": [
+        [
+          6,
+          0,
+          -0.1
+        ],
+        [
+          8,
+          0,
+          -0.1
+        ],
+        [
+          8,
+          0,
+          0.1
+        ],
+        [
+          6,
+          0,
+          0.1
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "ca367267-2e42-44e0-bcc4-fee0439f1012",
+      "name": "Kitchen window",
+      "kind": "opening",
+      "radius": 0,
+      "height": 1.2,
+      "thickness": 2,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "window",
+      "footprint": [
+        [
+          10.1,
+          0,
+          5
+        ],
+        [
+          10.1,
+          0,
+          7
+        ],
+        [
+          9.9,
+          0,
+          7
+        ],
+        [
+          9.9,
+          0,
+          5
+        ]
+      ],
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    }
+  ],
+  "camera": {
+    "yaw": 0.9,
+    "pitch": 0.45,
+    "distance": 24,
+    "target": [
+      0,
+      0.5,
+      0
+    ]
+  }
+}

@@ -3,19 +3,18 @@
 <head><meta charset="utf-8"/>
 <title>Calypso — Rev F (CAL-INT-DK-001 / LOA 69) blueprint</title>
 <style>
-:root { --nbp-sheet:#fff; --nbp-ink:#111; --nbp-ui-bg:#1e1e1e; --nbp-ui-fg:#e4e4e4; --nbp-accent:#5a9fd4; }
+:root { --nbp-sheet:#fff; --nbp-ink:#111; --nbp-accent:#5a9fd4; }
 @page { size: 841mm 594mm; margin: 0; }
-html, body { margin:0; padding:0; background:#2a2a2a; color:var(--nbp-ui-fg); font:13px/1.35 system-ui,sans-serif; }
-body { display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
-#nbp-ui { background:var(--nbp-ui-bg); padding:12px 14px; border-right:1px solid #333; overflow:auto; }
-#nbp-ui h1 { font-size:14px; margin:0 0 4px; font-weight:600; }
-#nbp-ui .meta { color:#999; font-size:11px; margin-bottom:12px; }
-#nbp-ui fieldset { border:1px solid #444; margin:0 0 10px; padding:8px 10px; }
+html, body { margin:0; padding:0; background:#fff; color:#111; font:13px/1.35 system-ui,sans-serif; }
+#nbp-stage { margin:0; padding:0; }
+#nbp-sheet { display:block; width:100%; height:auto; background:var(--nbp-sheet); }
+#nbp-ui { max-width:841px; margin:10px auto 20px; padding:0 12px; }
+#nbp-ui details { border:1px solid #ddd; padding:8px 12px; background:#fafafa; }
+#nbp-ui summary { cursor:pointer; font-weight:600; }
+#nbp-ui fieldset { border:1px solid #ccc; margin:8px 0; padding:8px 10px; }
 #nbp-ui legend { padding:0 4px; color:var(--nbp-accent); font-size:11px; }
 #nbp-ui label { display:flex; gap:8px; align-items:center; margin:4px 0; cursor:pointer; }
 #nbp-ui label.locked { opacity:0.65; cursor:default; }
-#nbp-stage { display:flex; justify-content:center; align-items:flex-start; padding:12px; overflow:auto; }
-#nbp-sheet { background:var(--nbp-sheet); max-width:100%; height:auto; box-shadow:0 0 0 1px #333; }
 .ol { fill:#f4f6f8; stroke:var(--nbp-ink); stroke-width:1.05; }
 .space { fill:#fff; stroke:#111; stroke-width:0.45; }
 .wall { stroke:#222; stroke-width:0.9; fill:none; }
@@ -25,10 +24,8 @@ body { display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
 .room { font:3.2px "IBM Plex Mono",Consolas,monospace; fill:#111; }
 .classnote { font:2.8px "IBM Plex Mono",Consolas,monospace; fill:#444; }
 @media print {
-  body { display:block; background:#fff; }
   #nbp-ui { display:none !important; }
-  #nbp-stage { padding:0; }
-  #nbp-sheet { width:841mm; height:594mm; box-shadow:none; }
+  #nbp-sheet { width:841mm; height:594mm; }
   g[data-nbp-plot="false"] { display:none !important; }
 }
 body:has(#t-exterior-shell:not(:checked)) g[data-nbp-layer="exterior.shell"] { display:none; }
@@ -38,37 +35,6 @@ body:has(#t-openings-all:not(:checked)) g[data-nbp-layer="openings.all"] { displ
 body:has(#t-dims-primary:not(:checked)) g[data-nbp-layer="dims.primary"] { display:none; }
 </style>
 </head><body>
-<aside id="nbp-ui" aria-label="Blueprint layers">
-<h1>Calypso — Rev F (CAL-INT-DK-001 / LOA 69) blueprint</h1>
-<div class="meta">novolis.cad.blueprint · schema 1 · seagoing-ship</div>
-<form id="nbp-layer-form">
-<fieldset>
-<legend>Sheet chrome</legend>
-<label class="locked"><input type="checkbox" checked disabled/> Frame</label>
-</fieldset>
-<fieldset>
-<legend>Exteriors</legend>
-<label><input id="t-exterior-shell" type="checkbox" checked/> Shell / facade</label>
-</fieldset>
-<fieldset>
-<legend>Walls</legend>
-<label><input id="t-structure-walls" type="checkbox" checked/> Walls</label>
-</fieldset>
-<fieldset>
-<legend>Interiors</legend>
-<label><input id="t-interior-spaces" type="checkbox" checked/> Spaces</label>
-</fieldset>
-<fieldset>
-<legend>Doors / hatches / holes</legend>
-<label><input id="t-openings-all" type="checkbox" checked/> Openings</label>
-</fieldset>
-<fieldset>
-<legend>Measurements</legend>
-<label><input id="t-dims-primary" type="checkbox" checked/> Primary dims</label>
-</fieldset>
-</form>
-<p class="meta">Toggles use CSS <code>:has()</code>. Print hides UI and non-plot layers.</p>
-</aside>
 <main id="nbp-stage">
 <svg id="nbp-sheet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 841 594" width="100%" role="img" aria-label="Calypso — Rev F (CAL-INT-DK-001 / LOA 69) blueprint">
 <g data-nbp-layer="chrome.frame" data-nbp-path="chrome/frame" data-nbp-kind="chrome" data-nbp-plot="true">
@@ -1033,6 +999,37 @@ body:has(#t-dims-primary:not(:checked)) g[data-nbp-layer="dims.primary"] { displ
 </g>
 </g>
 </svg></main>
+<aside id="nbp-ui" aria-label="Blueprint layers">
+<details>
+<summary>Layers · Calypso — Rev F (CAL-INT-DK-001 / LOA 69) blueprint · seagoing-ship</summary>
+<form id="nbp-layer-form">
+<fieldset>
+<legend>Sheet chrome</legend>
+<label class="locked"><input type="checkbox" checked disabled/> Frame</label>
+</fieldset>
+<fieldset>
+<legend>Exteriors</legend>
+<label><input id="t-exterior-shell" type="checkbox" checked/> Shell / facade</label>
+</fieldset>
+<fieldset>
+<legend>Walls</legend>
+<label><input id="t-structure-walls" type="checkbox" checked/> Walls</label>
+</fieldset>
+<fieldset>
+<legend>Interiors</legend>
+<label><input id="t-interior-spaces" type="checkbox" checked/> Spaces</label>
+</fieldset>
+<fieldset>
+<legend>Doors / hatches / holes</legend>
+<label><input id="t-openings-all" type="checkbox" checked/> Openings</label>
+</fieldset>
+<fieldset>
+<legend>Measurements</legend>
+<label><input id="t-dims-primary" type="checkbox" checked/> Primary dims</label>
+</fieldset>
+</form>
+<p class="meta">Toggles use CSS <code>:has()</code>. Print hides UI and non-plot layers.</p>
+</details></aside>
 <script type="application/json" id="nbp-manifest">
 {
   "format": "novolis.cad.blueprint",

@@ -37,11 +37,12 @@ internal static class DrawingSvgComposer
         foreach (var m in measurements.Take(4))
             block.Add((m.Label, $"{m.ValueMeters.ToString("0.###", CultureInfo.InvariantCulture)} m{(m.IsTrue3D ? " (3D)" : "")}"));
 
+        const string subtitle = "Hierarchy-driven drawing · actual CAD geometry · ISO 128-15";
         var sb = PackageDrawingChrome.BeginHtml(
             entry,
             request.SubjectId,
             block,
-            "Hierarchy-driven drawing · actual CAD geometry · ISO 128-15");
+            subtitle);
 
         // Clip paths for every view slot — geometry must not spill into sibling panels.
         sb.AppendLine("<defs>");
@@ -85,7 +86,7 @@ internal static class DrawingSvgComposer
                 $"Ok={manifest.Ok}");
         }
 
-        return PackageDrawingChrome.EndHtml(sb);
+        return PackageDrawingChrome.EndHtml(sb, entry, request.SubjectId, block, subtitle);
     }
 
     private static void ComposeView(
@@ -397,6 +398,14 @@ internal static class DrawingSvgComposer
                     $"<line x1=\"{F(mx - 3)}\" y1=\"{F(my - 3)}\" x2=\"{F(mx + 3)}\" y2=\"{F(my + 3)}\" stroke=\"#666\" stroke-width=\"0.5\"/>");
             }
         }
+
+        // Overall extents on the principal view (drafting convention).
+        var x0 = SX(proj.MinU);
+        var x1 = SX(proj.MaxU);
+        var y0 = SY(proj.MaxV);
+        var y1 = SY(proj.MinV);
+        PackageDrawingChrome.DimH(sb, x0, Math.Min(y + h - 14, y1 + 14), x1, PackageDrawingChrome.Nice(spanU));
+        PackageDrawingChrome.DimV(sb, Math.Min(x + w - 10, x1 + 12), y0, y1, PackageDrawingChrome.Nice(spanV), labelRight: false);
 
         sb.AppendLine(
             $"<text x=\"{F(x + 6)}\" y=\"{F(y + h - 8)}\" font-size=\"9\" fill=\"#555\">{Esc(view.Orientation.ToString())} · {spanU.ToString("0.##", CultureInfo.InvariantCulture)}×{spanV.ToString("0.##", CultureInfo.InvariantCulture)} m</text>");

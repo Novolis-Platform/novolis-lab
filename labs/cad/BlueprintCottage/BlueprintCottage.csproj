@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>BlueprintCottage</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <LibraryReference Include="Novolis.Cad.Blueprint" />
+    <LibraryReference Include="Novolis.Cad.Primitives" />
+  </ItemGroup>
+</Project>

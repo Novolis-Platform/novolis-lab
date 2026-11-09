@@ -2,36 +2,22 @@
 <title>CAL-310-004 — CROSSING</title>
 <style>
 @page{size:841mm 594mm;margin:0}
-body{margin:0;background:#2a2a2a;font:13px/1.35 "Segoe UI",system-ui,sans-serif;color:#1a1f24}
-.wrap{padding:12px;max-width:1200px;margin:0 auto}
-.tb{margin:0 0 10px;border:1px solid #111;background:#fff}
-.tb table{width:100%;border-collapse:collapse}
-.tb th,.tb td{padding:.3rem .45rem;border-bottom:1px solid #ccc;text-align:left;font-size:11px}
-.tb th{width:28%;background:#e8eee9}
-.meta{color:#c8c8c8;font-size:11px;margin:0 0 .6rem}
-svg{display:block;width:100%;height:auto;background:#fff;border:1px solid #333}
+html,body{margin:0;padding:0;background:#fff;font:12px/1.35 "Segoe UI",system-ui,sans-serif;color:#111}
+.sheet{margin:0 auto;max-width:100vw}
+.sheet > svg{display:block;width:100%;height:auto;background:#fff}
+details.meta{max-width:841px;margin:8px auto 16px;padding:0 8px;color:#555}
+details.meta summary{cursor:pointer;font-size:12px;color:#666}
+details.meta table{width:100%;border-collapse:collapse;margin-top:8px;background:#fafafa}
+details.meta th,details.meta td{padding:.28rem .4rem;border:1px solid #ddd;text-align:left;font-size:11px}
+details.meta th{width:30%;background:#eee}
 @media print{
-  body{background:#fff}
-  .wrap{padding:0;max-width:none}
-  .tb,.meta{display:none!important}
-  svg{border:none;width:841mm;height:594mm}
+  details.meta{display:none!important}
+  .sheet > svg{width:841mm;height:594mm}
 }
 </style>
-</head><body><div class="wrap">
-<p class="meta">Shirt-sleeves volume only &#183; people movement &#183; ISO 128-15 · Rev B</p>
-<aside class="tb"><table>
-<tr><th>Drawing no.</th><td>CAL-310-004</td></tr>
-<tr><th>Title</th><td>Shirt-sleeves — CROSSING</td></tr>
-<tr><th>Label</th><td>CROSSING</td></tr>
-<tr><th>Space</th><td>CROSSING</td></tr>
-<tr><th>Class</th><td>Shirt-sleeves</td></tr>
-<tr><th>Deck</th><td>-1</td></tr>
-<tr><th>z</th><td>19–23 m</td></tr>
-<tr><th>Rev</th><td>B</td></tr>
-<tr><th>Sheet</th><td>A1 landscape (ISO 5457)</td></tr>
-<tr><th>Scale</th><td>AS SHOWN</td></tr>
-</table></aside>
-<svg viewBox="0 0 841 594" xmlns="http://www.w3.org/2000/svg">
+</head><body>
+<div class="sheet">
+<svg viewBox="0 0 841 594" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="drawing sheet">
 <rect x="0" y="0" width="841" height="594" fill="#fff"/>
 <rect x="20" y="10" width="801" height="574" fill="none" stroke="#111" stroke-width="1.4"/>
 <g id="iso7200-title-block">
@@ -88,4 +74,5 @@ svg{display:block;width:100%;height:auto;background:#fff;border:1px solid #333}
 <text x="560" y="280" font-size="10" fill="#333">Shirt-sleeves.</text>
 <text x="560" y="294" font-size="10" fill="#333">A/B: this volume only.</text>
 <text x="560" y="308" font-size="10" fill="#333">C: extent on CL profile.</text>
-</svg></div></body></html>
+</svg></div>
+</body></html>

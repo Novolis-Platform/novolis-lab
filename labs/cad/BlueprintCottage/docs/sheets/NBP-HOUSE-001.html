@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-nbp-format="novolis.cad.blueprint" data-nbp-schema="1">
+<head><meta charset="utf-8"/>
+<title>Demo cottage — ground floor GA</title>
+<style>
+:root { --nbp-sheet:#fff; --nbp-ink:#111; --nbp-accent:#5a9fd4; }
+@page { size: 841mm 594mm; margin: 0; }
+html, body { margin:0; padding:0; background:#fff; color:#111; font:13px/1.35 system-ui,sans-serif; }
+#nbp-stage { margin:0; padding:0; }
+#nbp-sheet { display:block; width:100%; height:auto; background:var(--nbp-sheet); }
+#nbp-ui { max-width:841px; margin:10px auto 20px; padding:0 12px; }
+#nbp-ui details { border:1px solid #ddd; padding:8px 12px; background:#fafafa; }
+#nbp-ui summary { cursor:pointer; font-weight:600; }
+#nbp-ui fieldset { border:1px solid #ccc; margin:8px 0; padding:8px 10px; }
+#nbp-ui legend { padding:0 4px; color:var(--nbp-accent); font-size:11px; }
+#nbp-ui label { display:flex; gap:8px; align-items:center; margin:4px 0; cursor:pointer; }
+#nbp-ui label.locked { opacity:0.65; cursor:default; }
+.ol { fill:#f4f6f8; stroke:var(--nbp-ink); stroke-width:1.05; }
+.space { fill:#fff; stroke:#111; stroke-width:0.45; }
+.wall { stroke:#222; stroke-width:0.9; fill:none; }
+.opening { fill:#dce8f5; stroke:#1a4a7a; stroke-width:0.45; }
+.dim { stroke:#222; stroke-width:0.25; fill:none; }
+.dimt { font:3px "IBM Plex Mono",Consolas,monospace; fill:#111; }
+.room { font:3.2px "IBM Plex Mono",Consolas,monospace; fill:#111; }
+.classnote { font:2.8px "IBM Plex Mono",Consolas,monospace; fill:#444; }
+@media print {
+  #nbp-ui { display:none !important; }
+  #nbp-sheet { width:841mm; height:594mm; }
+  g[data-nbp-plot="false"] { display:none !important; }
+}
+body:has(#t-exterior-shell:not(:checked)) g[data-nbp-layer="exterior.shell"] { display:none; }
+body:has(#t-structure-walls:not(:checked)) g[data-nbp-layer="structure.walls"] { display:none; }
+body:has(#t-interior-spaces:not(:checked)) g[data-nbp-layer="interior.spaces"] { display:none; }
+body:has(#t-openings-all:not(:checked)) g[data-nbp-layer="openings.all"] { display:none; }
+body:has(#t-dims-primary:not(:checked)) g[data-nbp-layer="dims.primary"] { display:none; }
+</style>
+</head><body>
+<main id="nbp-stage">
+<svg id="nbp-sheet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 841 594" width="100%" role="img" aria-label="Demo cottage — ground floor GA">
+<g data-nbp-layer="chrome.frame" data-nbp-path="chrome/frame" data-nbp-kind="chrome" data-nbp-plot="true">
+<rect x="0" y="0" width="841" height="594" fill="#f7f4ea"/>
+<rect x="20" y="10" width="811" height="574" fill="none" stroke="#111" stroke-width="0.7"/>
+<text x="28" y="26" class="room">Demo cottage — ground floor GA</text>
+<text x="28" y="38" class="dimt">house · plan-north-up · m · SCALE AS SHOWN</text>
+<text x="28" y="578" class="classnote">CLASS-STYLE GA COMPANION (novolis.cad.blueprint) — NOT DNV PLAN APPROVAL. ISO 128-15 stern left when orientation says so.</text>
+<rect x="671" y="536" width="160" height="42" fill="#fff" stroke="#111" stroke-width="0.7"/>
+<text x="675" y="546" class="dimt">DRAWING</text>
+<text x="675" y="556" class="room">NBP-HOUSE-001</text>
+<text x="675" y="568" class="dimt">REV A · A1</text>
+</g>
+<g data-nbp-view="level-0" data-nbp-view-kind="plan">
+<g data-nbp-layer="exterior.shell" data-nbp-path="exterior/shell" data-nbp-kind="outline" data-nbp-plot="true">
+<path d="M 160.506 512.273 L 685.247 512.273 L 685.247 92.48 L 160.506 92.48 Z" class="ol"/>
+<text x="422.876" y="302.376" class="room" text-anchor="middle">cottage-shell</text>
+</g>
+<g data-nbp-layer="structure.walls" data-nbp-path="structure/walls" data-nbp-kind="structure" data-nbp-plot="true">
+<line x1="160.506" y1="512.273" x2="685.247" y2="512.273" class="wall"/>
+<line x1="685.247" y1="512.273" x2="685.247" y2="92.48" class="wall"/>
+<line x1="685.247" y1="92.48" x2="160.506" y2="92.48" class="wall"/>
+<line x1="160.506" y1="92.48" x2="160.506" y2="512.273" class="wall"/>
+<line x1="370.402" y1="512.273" x2="370.402" y2="92.48" class="wall"/>
+<line x1="370.402" y1="302.376" x2="685.247" y2="302.376" class="wall"/>
+<line x1="160.506" y1="354.85" x2="370.402" y2="354.85" class="wall"/>
+</g>
+<g data-nbp-layer="interior.spaces" data-nbp-path="interior/spaces" data-nbp-kind="space" data-nbp-plot="true">
+<path d="M 160.506 512.273 L 370.402 512.273 L 370.402 354.85 L 160.506 354.85 Z" class="space"/>
+<text x="265.454" y="433.561" class="room" text-anchor="middle">Entry</text>
+<path d="M 160.506 354.85 L 370.402 354.85 L 370.402 92.48 L 160.506 92.48 Z" class="space"/>
+<text x="265.454" y="223.665" class="room" text-anchor="middle">Bath</text>
+<path d="M 370.402 512.273 L 685.247 512.273 L 685.247 302.376 L 370.402 302.376 Z" class="space"/>
+<text x="527.824" y="407.324" class="room" text-anchor="middle">Living</text>
+<path d="M 370.402 302.376 L 685.247 302.376 L 685.247 92.48 L 370.402 92.48 Z" class="space"/>
+<text x="527.824" y="197.428" class="room" text-anchor="middle">Kitchen</text>
+</g>
+<g data-nbp-layer="openings.all" data-nbp-path="openings/all" data-nbp-kind="opening" data-nbp-plot="true">
+<path d="M 338.918 517.52 L 401.887 517.52 L 401.887 507.025 L 338.918 507.025 Z" class="opening"/>
+<path d="M 239.217 360.098 L 291.691 360.098 L 291.691 349.603 L 239.217 349.603 Z" class="opening"/>
+<path d="M 475.35 517.52 L 580.299 517.52 L 580.299 507.025 L 475.35 507.025 Z" class="opening"/>
+<path d="M 690.494 249.902 L 690.494 144.954 L 679.999 144.954 L 679.999 249.902 Z" class="opening"/>
+</g>
+<g data-nbp-layer="dims.primary" data-nbp-path="dims/primary" data-nbp-kind="dimension" data-nbp-plot="true">
+<line x1="160.506" y1="527.52" x2="690.494" y2="527.52" class="dim"/>
+<text x="425.5" y="535.52" class="dimt" text-anchor="middle">10.1 m</text>
+<line x1="700.494" y1="92.48" x2="700.494" y2="517.52" class="dim"/>
+<text x="704.494" y="305" class="dimt">8.1 m</text>
+</g>
+</g>
+</svg></main>
+<script type="application/json" id="nbp-manifest">
+{
+  "format": "novolis.cad.blueprint",
+  "schemaVersion": 1,
+  "name": "Demo cottage \u00B7 ground floor plan",
+  "context": "house",
+  "sheets": [
+    {
+      "id": "NBP-HOUSE-001",
+      "title": "Demo cottage \u2014 ground floor GA",
+      "rev": "A",
+      "units": "m",
+      "orientation": "plan-north-up",
+      "sheet": {
+        "size": "A1",
+        "widthMm": 841,
+        "heightMm": 594,
+        "landscape": true,
+        "borderLeftMm": 20,
+        "borderMm": 10
+      },
+      "folders": [
+        {
+          "path": "chrome",
+          "label": "Sheet chrome",
+          "defaultExpanded": true
+        },
+        {
+          "path": "exterior",
+          "label": "Exteriors",
+          "defaultExpanded": true
+        },
+        {
+          "path": "structure",
+          "label": "Walls",
+          "defaultExpanded": true
+        },
+        {
+          "path": "interior",
+          "label": "Interiors",
+          "defaultExpanded": true
+        },
+        {
+          "path": "openings",
+          "label": "Doors / hatches / holes",
+          "defaultExpanded": true
+        },
+        {
+          "path": "dims",
+          "label": "Measurements",
+          "defaultExpanded": true
+        }
+      ],
+      "layers": [
+        {
+          "id": "chrome.frame",
+          "path": "chrome/frame",
+          "label": "Frame",
+          "kind": "chrome",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": true
+        },
+        {
+          "id": "exterior.shell",
+          "path": "exterior/shell",
+          "label": "Shell / facade",
+          "kind": "outline",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "structure.walls",
+          "path": "structure/walls",
+          "label": "Walls",
+          "kind": "structure",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "interior.spaces",
+          "path": "interior/spaces",
+          "label": "Spaces",
+          "kind": "space",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "openings.all",
+          "path": "openings/all",
+          "label": "Openings",
+          "kind": "opening",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "dims.primary",
+          "path": "dims/primary",
+          "label": "Primary dims",
+          "kind": "dimension",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        }
+      ],
+      "views": [
+        {
+          "id": "level-0",
+          "label": "Ground",
+          "kind": "plan",
+          "levelIndex": 0
+        }
+      ],
+      "presets": [
+        {
+          "id": "print",
+          "label": "Print",
+          "visibleLayerIds": [
+            "chrome.frame",
+            "exterior.shell",
+            "structure.walls",
+            "interior.spaces",
+            "openings.all",
+            "dims.primary"
+          ],
+          "forPlot": true
+        }
+      ],
+      "showUi": false,
+      "defaultPresetId": "print"
+    }
+  ]
+}
+</script>
+</body></html>

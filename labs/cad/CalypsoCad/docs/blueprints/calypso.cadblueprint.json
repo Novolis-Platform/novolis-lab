@@ -16,19 +16,19 @@
   "layerCatalogHref": "calypso.cadlayers.json",
   "levels": [
     {
-      "id": "a584c969-b539-4659-b36a-d2bb5118cc63",
+      "id": "03ed254c-8275-4630-992c-adb617833c52",
       "index": -1,
       "name": "Deck -1",
       "elevation": 0
     },
     {
-      "id": "4a9ad369-e148-47ae-9cdf-ce16c522a5a7",
+      "id": "b978fed2-99de-476d-9d43-930b04023b95",
       "index": 0,
       "name": "Deck 0",
       "elevation": 0
     },
     {
-      "id": "8ed0e2b8-299e-47d0-8146-4545f24051ff",
+      "id": "6086c635-10be-488b-9eac-bda2637dbc54",
       "index": 1,
       "name": "Deck 1",
       "elevation": 0

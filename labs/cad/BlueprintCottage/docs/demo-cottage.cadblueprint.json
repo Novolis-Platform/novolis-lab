@@ -1,0 +1,577 @@
+{
+  "format": "novolis.cad.blueprint",
+  "schemaVersion": 1,
+  "name": "Demo cottage \u00B7 ground floor plan",
+  "generator": {
+    "name": "Novolis.Cad.Blueprint",
+    "version": "2026.1.0"
+  },
+  "createdAt": "2026-11-09T20:30:38.2360878Z",
+  "modifiedAt": "2026-11-09T20:30:38.2362536Z",
+  "context": "house",
+  "linearUnit": "meter",
+  "unitScaleMeters": 1,
+  "cadDocumentHref": "./demo-cottage.cadjson",
+  "cadDocumentName": "Demo cottage",
+  "levels": [
+    {
+      "id": "1c127b97-2bd7-48bf-a21c-2abf873a2e7c",
+      "index": 0,
+      "name": "Ground",
+      "elevation": 0
+    }
+  ],
+  "shells": [
+    {
+      "id": "1e7feedf-04e8-4d69-ab25-7e89e488cdfb",
+      "name": "cottage-shell",
+      "kind": "hull",
+      "planRing": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          8
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "height": 2.7,
+      "sourceEntityId": "1e7feedf-04e8-4d69-ab25-7e89e488cdfb"
+    }
+  ],
+  "walls": [
+    {
+      "id": "ac35cae0-5124-4c2d-8e46-1a247efe8c32",
+      "name": "W-S",
+      "levelIndex": 0,
+      "a": [
+        0,
+        0,
+        0
+      ],
+      "b": [
+        10,
+        0,
+        0
+      ],
+      "thickness": 0.15,
+      "height": 2.7,
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "ac35cae0-5124-4c2d-8e46-1a247efe8c32"
+    },
+    {
+      "id": "299d3f2e-87f0-48c9-b2a1-5e4b18fbb230",
+      "name": "W-E",
+      "levelIndex": 0,
+      "a": [
+        10,
+        0,
+        0
+      ],
+      "b": [
+        10,
+        0,
+        8
+      ],
+      "thickness": 0.15,
+      "height": 2.7,
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "299d3f2e-87f0-48c9-b2a1-5e4b18fbb230"
+    },
+    {
+      "id": "7cea841b-7418-403e-aa9b-e21da253c2dd",
+      "name": "W-N",
+      "levelIndex": 0,
+      "a": [
+        10,
+        0,
+        8
+      ],
+      "b": [
+        0,
+        0,
+        8
+      ],
+      "thickness": 0.15,
+      "height": 2.7,
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "7cea841b-7418-403e-aa9b-e21da253c2dd"
+    },
+    {
+      "id": "3e52bdf2-df11-419e-b646-f827508a1bc9",
+      "name": "W-W",
+      "levelIndex": 0,
+      "a": [
+        0,
+        0,
+        8
+      ],
+      "b": [
+        0,
+        0,
+        0
+      ],
+      "thickness": 0.15,
+      "height": 2.7,
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "3e52bdf2-df11-419e-b646-f827508a1bc9"
+    },
+    {
+      "id": "26bfb507-ab8a-483d-8c47-b398226ae8b1",
+      "name": "W-hall",
+      "levelIndex": 0,
+      "a": [
+        4,
+        0,
+        0
+      ],
+      "b": [
+        4,
+        0,
+        8
+      ],
+      "thickness": 0.15,
+      "height": 2.7,
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "26bfb507-ab8a-483d-8c47-b398226ae8b1"
+    },
+    {
+      "id": "a0f3022f-8e67-46d7-90f4-892693948bef",
+      "name": "W-kit",
+      "levelIndex": 0,
+      "a": [
+        4,
+        0,
+        4
+      ],
+      "b": [
+        10,
+        0,
+        4
+      ],
+      "thickness": 0.15,
+      "height": 2.7,
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "a0f3022f-8e67-46d7-90f4-892693948bef"
+    },
+    {
+      "id": "ff895c2c-c622-4149-af45-92898399bba6",
+      "name": "W-bath",
+      "levelIndex": 0,
+      "a": [
+        0,
+        0,
+        3
+      ],
+      "b": [
+        4,
+        0,
+        3
+      ],
+      "thickness": 0.15,
+      "height": 2.7,
+      "layerId": "b1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "ff895c2c-c622-4149-af45-92898399bba6"
+    }
+  ],
+  "spaces": [
+    {
+      "id": "957be468-133c-4628-a6f7-5ef8e3c83482",
+      "name": "Entry",
+      "levelIndex": 0,
+      "kind": "interior",
+      "footprint": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          3
+        ]
+      ],
+      "height": 2.7,
+      "sourceEntityId": "957be468-133c-4628-a6f7-5ef8e3c83482"
+    },
+    {
+      "id": "a2d9d466-581e-4aed-bb2d-7260512a755e",
+      "name": "Bath",
+      "levelIndex": 0,
+      "kind": "interior",
+      "footprint": [
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          4,
+          0,
+          3
+        ],
+        [
+          4,
+          0,
+          8
+        ],
+        [
+          0,
+          0,
+          8
+        ]
+      ],
+      "height": 2.7,
+      "sourceEntityId": "a2d9d466-581e-4aed-bb2d-7260512a755e"
+    },
+    {
+      "id": "63599e88-1044-4e5f-b307-073e5143c676",
+      "name": "Living",
+      "levelIndex": 0,
+      "kind": "interior",
+      "footprint": [
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          4
+        ],
+        [
+          4,
+          0,
+          4
+        ]
+      ],
+      "height": 2.7,
+      "sourceEntityId": "63599e88-1044-4e5f-b307-073e5143c676"
+    },
+    {
+      "id": "d0bdb66f-c6b0-4c8e-8aef-4816f5f51744",
+      "name": "Kitchen",
+      "levelIndex": 0,
+      "kind": "interior",
+      "footprint": [
+        [
+          4,
+          0,
+          4
+        ],
+        [
+          10,
+          0,
+          4
+        ],
+        [
+          10,
+          0,
+          8
+        ],
+        [
+          4,
+          0,
+          8
+        ]
+      ],
+      "height": 2.7,
+      "sourceEntityId": "d0bdb66f-c6b0-4c8e-8aef-4816f5f51744"
+    }
+  ],
+  "openings": [
+    {
+      "id": "aeea4a61-9169-42a8-be04-f1b7b5687621",
+      "name": "Front door",
+      "levelIndex": 0,
+      "kind": "door",
+      "clearWidth": 1.1999998,
+      "clearHeight": 2.1,
+      "footprint": [
+        [
+          3.4,
+          0,
+          -0.1
+        ],
+        [
+          4.6,
+          0,
+          -0.1
+        ],
+        [
+          4.6,
+          0,
+          0.1
+        ],
+        [
+          3.4,
+          0,
+          0.1
+        ]
+      ],
+      "hostWallId": "26bfb507-ab8a-483d-8c47-b398226ae8b1",
+      "sourceEntityId": "aeea4a61-9169-42a8-be04-f1b7b5687621"
+    },
+    {
+      "id": "1e4775db-8f98-4eb8-a1b3-de12a04c6609",
+      "name": "Bath door",
+      "levelIndex": 0,
+      "kind": "door",
+      "clearWidth": 1,
+      "clearHeight": 2.1,
+      "footprint": [
+        [
+          1.5,
+          0,
+          2.9
+        ],
+        [
+          2.5,
+          0,
+          2.9
+        ],
+        [
+          2.5,
+          0,
+          3.1
+        ],
+        [
+          1.5,
+          0,
+          3.1
+        ]
+      ],
+      "hostWallId": "ff895c2c-c622-4149-af45-92898399bba6",
+      "sourceEntityId": "1e4775db-8f98-4eb8-a1b3-de12a04c6609"
+    },
+    {
+      "id": "61453677-0b0b-41c1-9154-2e21a43692e8",
+      "name": "Living window",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 2,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          6,
+          0,
+          -0.1
+        ],
+        [
+          8,
+          0,
+          -0.1
+        ],
+        [
+          8,
+          0,
+          0.1
+        ],
+        [
+          6,
+          0,
+          0.1
+        ]
+      ],
+      "sourceEntityId": "61453677-0b0b-41c1-9154-2e21a43692e8"
+    },
+    {
+      "id": "ca367267-2e42-44e0-bcc4-fee0439f1012",
+      "name": "Kitchen window",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 2,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          10.1,
+          0,
+          5
+        ],
+        [
+          10.1,
+          0,
+          7
+        ],
+        [
+          9.9,
+          0,
+          7
+        ],
+        [
+          9.9,
+          0,
+          5
+        ]
+      ],
+      "sourceEntityId": "ca367267-2e42-44e0-bcc4-fee0439f1012"
+    }
+  ],
+  "sheets": [
+    {
+      "id": "NBP-HOUSE-001",
+      "title": "Demo cottage \u2014 ground floor GA",
+      "rev": "A",
+      "units": "m",
+      "orientation": "plan-north-up",
+      "sheet": {
+        "size": "A1",
+        "widthMm": 841,
+        "heightMm": 594,
+        "landscape": true,
+        "borderLeftMm": 20,
+        "borderMm": 10
+      },
+      "folders": [
+        {
+          "path": "chrome",
+          "label": "Sheet chrome",
+          "defaultExpanded": true
+        },
+        {
+          "path": "exterior",
+          "label": "Exteriors",
+          "defaultExpanded": true
+        },
+        {
+          "path": "structure",
+          "label": "Walls",
+          "defaultExpanded": true
+        },
+        {
+          "path": "interior",
+          "label": "Interiors",
+          "defaultExpanded": true
+        },
+        {
+          "path": "openings",
+          "label": "Doors / hatches / holes",
+          "defaultExpanded": true
+        },
+        {
+          "path": "dims",
+          "label": "Measurements",
+          "defaultExpanded": true
+        }
+      ],
+      "layers": [
+        {
+          "id": "chrome.frame",
+          "path": "chrome/frame",
+          "label": "Frame",
+          "kind": "chrome",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": true
+        },
+        {
+          "id": "exterior.shell",
+          "path": "exterior/shell",
+          "label": "Shell / facade",
+          "kind": "outline",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "structure.walls",
+          "path": "structure/walls",
+          "label": "Walls",
+          "kind": "structure",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "interior.spaces",
+          "path": "interior/spaces",
+          "label": "Spaces",
+          "kind": "space",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "openings.all",
+          "path": "openings/all",
+          "label": "Openings",
+          "kind": "opening",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "dims.primary",
+          "path": "dims/primary",
+          "label": "Primary dims",
+          "kind": "dimension",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        }
+      ],
+      "views": [
+        {
+          "id": "level-0",
+          "label": "Ground",
+          "kind": "plan",
+          "levelIndex": 0
+        }
+      ],
+      "presets": [
+        {
+          "id": "print",
+          "label": "Print",
+          "visibleLayerIds": [
+            "chrome.frame",
+            "exterior.shell",
+            "structure.walls",
+            "interior.spaces",
+            "openings.all",
+            "dims.primary"
+          ],
+          "forPlot": true
+        }
+      ],
+      "showUi": false,
+      "defaultPresetId": "print"
+    }
+  ]
+}
