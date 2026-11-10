@@ -1,0 +1,1558 @@
+{
+  "format": "novolis.cad.blueprint",
+  "schemaVersion": 1,
+  "name": "Innerscene \u00B7 three-bedroom bungalow",
+  "generator": {
+    "name": "Novolis.Cad.Blueprint",
+    "version": "1"
+  },
+  "createdAt": "2026-11-10T17:04:09.7680362Z",
+  "modifiedAt": "2026-11-10T17:04:09.7681204Z",
+  "context": "house",
+  "linearUnit": "meter",
+  "unitScaleMeters": 1,
+  "cadDocumentHref": "./innerscene-bungalow.cadjson",
+  "cadDocumentName": "Innerscene three-bedroom bungalow (CC0)",
+  "levels": [
+    {
+      "id": "01a1a9b5-7c33-4e17-8eb9-765e451f57cb",
+      "index": 0,
+      "name": "Ground",
+      "elevation": 0
+    }
+  ],
+  "shells": [],
+  "walls": [
+    {
+      "id": "39e0cf20-1454-44c1-af32-b4d57d6bd19c",
+      "name": "W-1",
+      "levelIndex": 0,
+      "a": [
+        1.295,
+        0,
+        3.1018
+      ],
+      "b": [
+        1.295,
+        0,
+        5.1768
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "39e0cf20-1454-44c1-af32-b4d57d6bd19c"
+    },
+    {
+      "id": "6ff3d999-6100-4d6e-a5f4-52ff6353fc67",
+      "name": "W-2",
+      "levelIndex": 0,
+      "a": [
+        1.295,
+        0,
+        7.1768
+      ],
+      "b": [
+        1.295,
+        0,
+        8.9768
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "6ff3d999-6100-4d6e-a5f4-52ff6353fc67"
+    },
+    {
+      "id": "ff98b383-ee51-4d75-9f63-256c9feb5d9e",
+      "name": "W-3",
+      "levelIndex": 0,
+      "a": [
+        1.295,
+        0,
+        8.9768
+      ],
+      "b": [
+        1.295,
+        0,
+        10.1768
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "ff98b383-ee51-4d75-9f63-256c9feb5d9e"
+    },
+    {
+      "id": "db002651-f07a-4647-811a-65840e316241",
+      "name": "W-4",
+      "levelIndex": 0,
+      "a": [
+        1.295,
+        0,
+        11.9768
+      ],
+      "b": [
+        1.295,
+        0,
+        13.8518
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "db002651-f07a-4647-811a-65840e316241"
+    },
+    {
+      "id": "85ca4f6c-3cba-408f-baa9-06501e632232",
+      "name": "W-5",
+      "levelIndex": 0,
+      "a": [
+        1.295,
+        0,
+        3.1018
+      ],
+      "b": [
+        1.87,
+        0,
+        3.1018
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "85ca4f6c-3cba-408f-baa9-06501e632232"
+    },
+    {
+      "id": "c566b972-c7d0-4aae-85ff-c3dbb0ff1679",
+      "name": "W-6",
+      "levelIndex": 0,
+      "a": [
+        1.295,
+        0,
+        13.8518
+      ],
+      "b": [
+        2.17,
+        0,
+        13.8518
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "c566b972-c7d0-4aae-85ff-c3dbb0ff1679"
+    },
+    {
+      "id": "ff959933-ecbf-4377-87f2-417a18ba429a",
+      "name": "W-7",
+      "levelIndex": 0,
+      "a": [
+        1.295,
+        0,
+        8.9768
+      ],
+      "b": [
+        6.87,
+        0,
+        8.9768
+      ],
+      "thickness": 0.10000038,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "ff959933-ecbf-4377-87f2-417a18ba429a"
+    },
+    {
+      "id": "28c10d71-5043-4f36-a9a7-4fdd5135ea52",
+      "name": "W-8",
+      "levelIndex": 0,
+      "a": [
+        5.07,
+        0,
+        3.1018
+      ],
+      "b": [
+        5.77,
+        0,
+        3.1018
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "28c10d71-5043-4f36-a9a7-4fdd5135ea52"
+    },
+    {
+      "id": "fc3ad1d9-5154-455d-a9ab-729266fc5f39",
+      "name": "W-9",
+      "levelIndex": 0,
+      "a": [
+        5.77,
+        0,
+        4.7018
+      ],
+      "b": [
+        6.62,
+        0,
+        4.7018
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "fc3ad1d9-5154-455d-a9ab-729266fc5f39"
+    },
+    {
+      "id": "3c11e148-c2ba-4c7b-9836-d82266be7856",
+      "name": "W-10",
+      "levelIndex": 0,
+      "a": [
+        5.77,
+        0,
+        4.7018
+      ],
+      "b": [
+        5.77,
+        0,
+        5.5768
+      ],
+      "thickness": 0.10000038,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "3c11e148-c2ba-4c7b-9836-d82266be7856"
+    },
+    {
+      "id": "33711abf-5f80-405b-a658-a17fa30c9f90",
+      "name": "W-11",
+      "levelIndex": 0,
+      "a": [
+        5.77,
+        0,
+        7.1768
+      ],
+      "b": [
+        5.77,
+        0,
+        8.9768
+      ],
+      "thickness": 0.10000038,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "33711abf-5f80-405b-a658-a17fa30c9f90"
+    },
+    {
+      "id": "910bbb75-5e6a-4a07-8395-6b66d13aa2d3",
+      "name": "W-12",
+      "levelIndex": 0,
+      "a": [
+        6.57,
+        0,
+        13.8518
+      ],
+      "b": [
+        6.57,
+        0,
+        13.8518
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "910bbb75-5e6a-4a07-8395-6b66d13aa2d3"
+    },
+    {
+      "id": "f3a6d58a-834f-4869-bf52-20e3ed2d981c",
+      "name": "W-13",
+      "levelIndex": 0,
+      "a": [
+        6.57,
+        0,
+        11.5768
+      ],
+      "b": [
+        6.57,
+        0,
+        13.8518
+      ],
+      "thickness": 0.099999905,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "f3a6d58a-834f-4869-bf52-20e3ed2d981c"
+    },
+    {
+      "id": "287610a3-078f-49c0-a1ce-2255cce9e29c",
+      "name": "W-14",
+      "levelIndex": 0,
+      "a": [
+        6.57,
+        0,
+        11.5768
+      ],
+      "b": [
+        7.37,
+        0,
+        11.5768
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "287610a3-078f-49c0-a1ce-2255cce9e29c"
+    },
+    {
+      "id": "d7fd26b1-a567-4323-ba71-f7f40c97e25e",
+      "name": "W-15",
+      "levelIndex": 0,
+      "a": [
+        7.67,
+        0,
+        8.9768
+      ],
+      "b": [
+        8.57,
+        0,
+        8.9768
+      ],
+      "thickness": 0.10000038,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "d7fd26b1-a567-4323-ba71-f7f40c97e25e"
+    },
+    {
+      "id": "4ee3b65b-9900-477b-bb99-095d5f2769d5",
+      "name": "W-16",
+      "levelIndex": 0,
+      "a": [
+        8.57,
+        0,
+        13.8518
+      ],
+      "b": [
+        9.07,
+        0,
+        13.8518
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "4ee3b65b-9900-477b-bb99-095d5f2769d5"
+    },
+    {
+      "id": "03d073b4-c642-4f7d-9a08-d3104fa1cc41",
+      "name": "W-17",
+      "levelIndex": 0,
+      "a": [
+        8.586666,
+        0,
+        11.560134
+      ],
+      "b": [
+        8.586666,
+        0,
+        11.560134
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "03d073b4-c642-4f7d-9a08-d3104fa1cc41"
+    },
+    {
+      "id": "6c7bd167-e5de-4c81-89e1-727d6faddbb8",
+      "name": "W-18",
+      "levelIndex": 0,
+      "a": [
+        8.695,
+        0,
+        4.7018
+      ],
+      "b": [
+        8.695,
+        0,
+        4.7018
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "6c7bd167-e5de-4c81-89e1-727d6faddbb8"
+    },
+    {
+      "id": "07856ee2-72f0-43c9-af34-014aeeb4036c",
+      "name": "W-19",
+      "levelIndex": 0,
+      "a": [
+        8.695,
+        0,
+        4.7018
+      ],
+      "b": [
+        8.57,
+        0,
+        7.3767996
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "07856ee2-72f0-43c9-af34-014aeeb4036c"
+    },
+    {
+      "id": "434c9c0c-6b7c-46b5-bc9a-32733a13cf97",
+      "name": "W-20",
+      "levelIndex": 0,
+      "a": [
+        8.57,
+        0,
+        8.5768
+      ],
+      "b": [
+        8.57,
+        0,
+        10.976801
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "434c9c0c-6b7c-46b5-bc9a-32733a13cf97"
+    },
+    {
+      "id": "dd0ad8de-5594-48b5-b234-2b6a7e25175d",
+      "name": "W-21",
+      "levelIndex": 0,
+      "a": [
+        8.57,
+        0,
+        10.976801
+      ],
+      "b": [
+        8.652074,
+        0,
+        13.849455
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "dd0ad8de-5594-48b5-b234-2b6a7e25175d"
+    },
+    {
+      "id": "5504d32f-d566-447c-83bd-0a2f34d9e734",
+      "name": "W-22",
+      "levelIndex": 0,
+      "a": [
+        8.57,
+        0,
+        8.5768
+      ],
+      "b": [
+        9.07,
+        0,
+        8.5768
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "5504d32f-d566-447c-83bd-0a2f34d9e734"
+    },
+    {
+      "id": "9c2d3fb3-5163-4839-9b37-90dc89f4750b",
+      "name": "W-23",
+      "levelIndex": 0,
+      "a": [
+        8.57,
+        0,
+        7.3767996
+      ],
+      "b": [
+        10.57,
+        0,
+        7.3767996
+      ],
+      "thickness": 0.099999905,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "9c2d3fb3-5163-4839-9b37-90dc89f4750b"
+    },
+    {
+      "id": "7ed05037-b345-4164-a2e7-c751ae095bf6",
+      "name": "W-24",
+      "levelIndex": 0,
+      "a": [
+        8.57,
+        0,
+        10.976801
+      ],
+      "b": [
+        10.77,
+        0,
+        10.976801
+      ],
+      "thickness": 0.10000038,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "7ed05037-b345-4164-a2e7-c751ae095bf6"
+    },
+    {
+      "id": "dc7e9e6b-b96f-4924-9ec8-4a16d3d1deaf",
+      "name": "W-25",
+      "levelIndex": 0,
+      "a": [
+        8.695,
+        0,
+        3.1018
+      ],
+      "b": [
+        8.695,
+        0,
+        4.7018
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "dc7e9e6b-b96f-4924-9ec8-4a16d3d1deaf"
+    },
+    {
+      "id": "8184d8be-9370-4b17-a2e6-9f001bbfdee4",
+      "name": "W-26",
+      "levelIndex": 0,
+      "a": [
+        8.695,
+        0,
+        3.1018
+      ],
+      "b": [
+        9.17,
+        0,
+        3.1018
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "8184d8be-9370-4b17-a2e6-9f001bbfdee4"
+    },
+    {
+      "id": "f045013a-360d-4e12-984b-c0b78b087105",
+      "name": "W-27",
+      "levelIndex": 0,
+      "a": [
+        9.87,
+        0,
+        8.5768
+      ],
+      "b": [
+        11.77,
+        0,
+        8.5768
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "f045013a-360d-4e12-984b-c0b78b087105"
+    },
+    {
+      "id": "bccd2b6e-310e-4fab-9c93-bf5985c7f4d0",
+      "name": "W-28",
+      "levelIndex": 0,
+      "a": [
+        10.77,
+        0,
+        13.8518
+      ],
+      "b": [
+        11.97,
+        0,
+        13.8518
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "bccd2b6e-310e-4fab-9c93-bf5985c7f4d0"
+    },
+    {
+      "id": "b26d9ca8-eace-468b-8f69-30d1f0615276",
+      "name": "W-29",
+      "levelIndex": 0,
+      "a": [
+        10.77,
+        0,
+        8.5768
+      ],
+      "b": [
+        10.77,
+        0,
+        10.976801
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "b26d9ca8-eace-468b-8f69-30d1f0615276"
+    },
+    {
+      "id": "0b19bc00-366d-463c-bcf3-190f2bbfc0a9",
+      "name": "W-30",
+      "levelIndex": 0,
+      "a": [
+        10.77,
+        0,
+        10.976801
+      ],
+      "b": [
+        10.77,
+        0,
+        11.9768
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "0b19bc00-366d-463c-bcf3-190f2bbfc0a9"
+    },
+    {
+      "id": "2c6b7796-ccfb-4b8a-8a66-6cec63de02ed",
+      "name": "W-31",
+      "levelIndex": 0,
+      "a": [
+        10.77,
+        0,
+        12.7768
+      ],
+      "b": [
+        10.77,
+        0,
+        13.8518
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "2c6b7796-ccfb-4b8a-8a66-6cec63de02ed"
+    },
+    {
+      "id": "34e143fb-10ce-4c49-9b65-8a104a95d971",
+      "name": "W-32",
+      "levelIndex": 0,
+      "a": [
+        11.570001,
+        0,
+        3.1018
+      ],
+      "b": [
+        12.37,
+        0,
+        3.1018
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "34e143fb-10ce-4c49-9b65-8a104a95d971"
+    },
+    {
+      "id": "5d14d688-a13c-46c9-b6c7-0b926367203f",
+      "name": "W-33",
+      "levelIndex": 0,
+      "a": [
+        11.570001,
+        0,
+        3.1018
+      ],
+      "b": [
+        11.570001,
+        0,
+        7.3268
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "5d14d688-a13c-46c9-b6c7-0b926367203f"
+    },
+    {
+      "id": "f5608a8c-562b-4534-a372-4c3eb923e493",
+      "name": "W-34",
+      "levelIndex": 0,
+      "a": [
+        12.47,
+        0,
+        7.3767996
+      ],
+      "b": [
+        15.045,
+        0,
+        7.3767996
+      ],
+      "thickness": 0.099999905,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "f5608a8c-562b-4534-a372-4c3eb923e493"
+    },
+    {
+      "id": "bdefd2a6-808a-414b-9776-5c48d7396593",
+      "name": "W-35",
+      "levelIndex": 0,
+      "a": [
+        12.57,
+        0,
+        8.5768
+      ],
+      "b": [
+        15.045,
+        0,
+        8.5768
+      ],
+      "thickness": 0.09999943,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "bdefd2a6-808a-414b-9776-5c48d7396593"
+    },
+    {
+      "id": "270e9738-ff4e-4f3e-a724-e8c4053d948f",
+      "name": "W-36",
+      "levelIndex": 0,
+      "a": [
+        13.97,
+        0,
+        13.8518
+      ],
+      "b": [
+        15.045,
+        0,
+        13.8518
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "270e9738-ff4e-4f3e-a724-e8c4053d948f"
+    },
+    {
+      "id": "c03e2b31-1f50-4e03-9cd7-71bd5e5b390b",
+      "name": "W-37",
+      "levelIndex": 0,
+      "a": [
+        15.086667,
+        0,
+        3.1018
+      ],
+      "b": [
+        15.086667,
+        0,
+        3.1018
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "c03e2b31-1f50-4e03-9cd7-71bd5e5b390b"
+    },
+    {
+      "id": "0858e1ee-68de-4369-9720-8769f7f502df",
+      "name": "W-38",
+      "levelIndex": 0,
+      "a": [
+        15.086667,
+        0,
+        3.1018
+      ],
+      "b": [
+        15.045,
+        0,
+        4.3768
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "0858e1ee-68de-4369-9720-8769f7f502df"
+    },
+    {
+      "id": "6a9d0a64-309b-4b0c-9987-3cf94e817757",
+      "name": "W-39",
+      "levelIndex": 0,
+      "a": [
+        15.045,
+        0,
+        5.9768
+      ],
+      "b": [
+        15.045,
+        0,
+        7.3767996
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "6a9d0a64-309b-4b0c-9987-3cf94e817757"
+    },
+    {
+      "id": "3a76d37e-c9d0-46d1-9e2b-1cb23dfeaa02",
+      "name": "W-40",
+      "levelIndex": 0,
+      "a": [
+        15.045,
+        0,
+        8.5768
+      ],
+      "b": [
+        15.045,
+        0,
+        9.9768
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "3a76d37e-c9d0-46d1-9e2b-1cb23dfeaa02"
+    },
+    {
+      "id": "0e16c5fd-e73d-40cd-9bc7-d1e0680ab2b1",
+      "name": "W-41",
+      "levelIndex": 0,
+      "a": [
+        15.045,
+        0,
+        12.5768
+      ],
+      "b": [
+        15.045,
+        0,
+        13.8518
+      ],
+      "thickness": 0.25,
+      "height": 2.7,
+      "layerId": "d1000000-0000-4000-8000-000000000001",
+      "layerName": "A-WALL",
+      "sourceEntityId": "0e16c5fd-e73d-40cd-9bc7-d1e0680ab2b1"
+    }
+  ],
+  "spaces": [],
+  "openings": [
+    {
+      "id": "080cd581-3a6b-48fd-ad37-88d26eee242c",
+      "name": "door-1",
+      "levelIndex": 0,
+      "kind": "door",
+      "clearWidth": 0.8000002,
+      "clearHeight": 2.1,
+      "footprint": [
+        [
+          13.22,
+          0,
+          7.4367995
+        ],
+        [
+          14.02,
+          0,
+          7.4367995
+        ],
+        [
+          14.02,
+          0,
+          7.3167996
+        ],
+        [
+          13.22,
+          0,
+          7.3167996
+        ]
+      ],
+      "hostWallId": "f5608a8c-562b-4534-a372-4c3eb923e493",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "080cd581-3a6b-48fd-ad37-88d26eee242c"
+    },
+    {
+      "id": "ee4741e2-69c0-4a46-9310-25b1d929652e",
+      "name": "window-2",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 2,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          1.1574999,
+          0,
+          5.1768
+        ],
+        [
+          1.1574999,
+          0,
+          7.1768
+        ],
+        [
+          1.4325,
+          0,
+          7.1768
+        ],
+        [
+          1.4325,
+          0,
+          5.1768
+        ]
+      ],
+      "hostWallId": "39e0cf20-1454-44c1-af32-b4d57d6bd19c",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "ee4741e2-69c0-4a46-9310-25b1d929652e"
+    },
+    {
+      "id": "c4fb8e30-4cea-4d89-9d30-e7ff704cf084",
+      "name": "window-3",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 3,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          1.1574999,
+          0,
+          8.9768
+        ],
+        [
+          1.1574999,
+          0,
+          11.9768
+        ],
+        [
+          1.4325,
+          0,
+          11.9768
+        ],
+        [
+          1.4325,
+          0,
+          8.9768
+        ]
+      ],
+      "hostWallId": "db002651-f07a-4647-811a-65840e316241",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "c4fb8e30-4cea-4d89-9d30-e7ff704cf084"
+    },
+    {
+      "id": "cdc98bd0-d9b8-4f3d-b1d2-d20869b846e3",
+      "name": "window-4",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 1.8000002,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          1.1574999,
+          0,
+          10.1768
+        ],
+        [
+          1.1574999,
+          0,
+          11.9768
+        ],
+        [
+          1.4325,
+          0,
+          11.9768
+        ],
+        [
+          1.4325,
+          0,
+          10.1768
+        ]
+      ],
+      "hostWallId": "db002651-f07a-4647-811a-65840e316241",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "cdc98bd0-d9b8-4f3d-b1d2-d20869b846e3"
+    },
+    {
+      "id": "f23b0a5c-05de-444c-b6ed-916b8ed8fbf4",
+      "name": "window-5",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 3.2000003,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          1.8699999,
+          0,
+          3.2393
+        ],
+        [
+          5.07,
+          0,
+          3.2393
+        ],
+        [
+          5.07,
+          0,
+          2.9643
+        ],
+        [
+          1.8699999,
+          0,
+          2.9643
+        ]
+      ],
+      "hostWallId": "28c10d71-5043-4f36-a9a7-4fdd5135ea52",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "f23b0a5c-05de-444c-b6ed-916b8ed8fbf4"
+    },
+    {
+      "id": "42c2555c-644a-40e4-a883-d620b7501ff7",
+      "name": "window-6",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 2.9249997,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          5.77,
+          0,
+          3.2393
+        ],
+        [
+          8.695,
+          0,
+          3.2393
+        ],
+        [
+          8.695,
+          0,
+          2.9643
+        ],
+        [
+          5.77,
+          0,
+          2.9643
+        ]
+      ],
+      "hostWallId": "28c10d71-5043-4f36-a9a7-4fdd5135ea52",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "42c2555c-644a-40e4-a883-d620b7501ff7"
+    },
+    {
+      "id": "652aa101-43b4-4630-a6d3-042825832ec3",
+      "name": "window-7",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 1.5999999,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          5.71,
+          0,
+          5.5768
+        ],
+        [
+          5.71,
+          0,
+          7.1768
+        ],
+        [
+          5.83,
+          0,
+          7.1768
+        ],
+        [
+          5.83,
+          0,
+          5.5768
+        ]
+      ],
+      "hostWallId": "33711abf-5f80-405b-a658-a17fa30c9f90",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "652aa101-43b4-4630-a6d3-042825832ec3"
+    },
+    {
+      "id": "32e6d7cb-900a-4ef7-9df2-e26806a41673",
+      "name": "window-8",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 1.7000008,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          9.07,
+          0,
+          13.9893
+        ],
+        [
+          10.77,
+          0,
+          13.9893
+        ],
+        [
+          10.77,
+          0,
+          13.7143
+        ],
+        [
+          9.07,
+          0,
+          13.7143
+        ]
+      ],
+      "hostWallId": "bccd2b6e-310e-4fab-9c93-bf5985c7f4d0",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "32e6d7cb-900a-4ef7-9df2-e26806a41673"
+    },
+    {
+      "id": "a20ccd13-fdf6-4842-a185-3767ee766de3",
+      "name": "window-9",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 1.1986928,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          8.510065,
+          0,
+          7.373999
+        ],
+        [
+          8.454112,
+          0,
+          8.571385
+        ],
+        [
+          8.573981,
+          0,
+          8.576987
+        ],
+        [
+          8.629934,
+          0,
+          7.3796
+        ]
+      ],
+      "hostWallId": "07856ee2-72f0-43c9-af34-014aeeb4036c",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "a20ccd13-fdf6-4842-a185-3767ee766de3"
+    },
+    {
+      "id": "e92c90dd-12db-4507-b0c5-aef3a508e777",
+      "name": "window-10",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 3.5,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          9.07,
+          0,
+          8.636801
+        ],
+        [
+          12.57,
+          0,
+          8.636801
+        ],
+        [
+          12.57,
+          0,
+          8.5168
+        ],
+        [
+          9.07,
+          0,
+          8.5168
+        ]
+      ],
+      "hostWallId": "bdefd2a6-808a-414b-9776-5c48d7396593",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "e92c90dd-12db-4507-b0c5-aef3a508e777"
+    },
+    {
+      "id": "e469ebc0-cd6d-4576-9f7d-1b94ee7d8ef0",
+      "name": "window-11",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 1.9000006,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          10.57,
+          0,
+          7.4367995
+        ],
+        [
+          12.47,
+          0,
+          7.4367995
+        ],
+        [
+          12.47,
+          0,
+          7.3167996
+        ],
+        [
+          10.57,
+          0,
+          7.3167996
+        ]
+      ],
+      "hostWallId": "f5608a8c-562b-4534-a372-4c3eb923e493",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "e469ebc0-cd6d-4576-9f7d-1b94ee7d8ef0"
+    },
+    {
+      "id": "0ccae2fe-b759-400a-806d-345fdf05e8fa",
+      "name": "window-12",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 2.4000006,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          9.17,
+          0,
+          3.2393
+        ],
+        [
+          11.570001,
+          0,
+          3.2393
+        ],
+        [
+          11.570001,
+          0,
+          2.9643
+        ],
+        [
+          9.17,
+          0,
+          2.9643
+        ]
+      ],
+      "hostWallId": "34e143fb-10ce-4c49-9b65-8a104a95d971",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "0ccae2fe-b759-400a-806d-345fdf05e8fa"
+    },
+    {
+      "id": "cef28370-c26e-4596-8e5c-dcb596fcdfd6",
+      "name": "window-13",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 2,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          11.97,
+          0,
+          13.9893
+        ],
+        [
+          13.97,
+          0,
+          13.9893
+        ],
+        [
+          13.97,
+          0,
+          13.7143
+        ],
+        [
+          11.97,
+          0,
+          13.7143
+        ]
+      ],
+      "hostWallId": "bccd2b6e-310e-4fab-9c93-bf5985c7f4d0",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "cef28370-c26e-4596-8e5c-dcb596fcdfd6"
+    },
+    {
+      "id": "463a8411-7f03-46b0-aeda-14e4f916afc4",
+      "name": "window-14",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 1.7999992,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          10.71,
+          0,
+          10.976801
+        ],
+        [
+          10.71,
+          0,
+          12.7768
+        ],
+        [
+          10.830001,
+          0,
+          12.7768
+        ],
+        [
+          10.830001,
+          0,
+          10.976801
+        ]
+      ],
+      "hostWallId": "b26d9ca8-eace-468b-8f69-30d1f0615276",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "463a8411-7f03-46b0-aeda-14e4f916afc4"
+    },
+    {
+      "id": "4cc07fb5-d2c7-4c99-957c-418f4fd9a0d7",
+      "name": "window-15",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 1.5982928,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          14.9075,
+          0,
+          4.3768
+        ],
+        [
+          14.9075,
+          0,
+          5.975093
+        ],
+        [
+          15.1825,
+          0,
+          5.975093
+        ],
+        [
+          15.1825,
+          0,
+          4.3768
+        ]
+      ],
+      "hostWallId": "6a9d0a64-309b-4b0c-9987-3cf94e817757",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "4cc07fb5-d2c7-4c99-957c-418f4fd9a0d7"
+    },
+    {
+      "id": "0283228f-1552-4045-9329-575ef49c7235",
+      "name": "window-16",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 1.2000008,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          14.9075,
+          0,
+          7.3767996
+        ],
+        [
+          14.9075,
+          0,
+          8.5768
+        ],
+        [
+          15.1825,
+          0,
+          8.5768
+        ],
+        [
+          15.1825,
+          0,
+          7.3767996
+        ]
+      ],
+      "hostWallId": "6a9d0a64-309b-4b0c-9987-3cf94e817757",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "0283228f-1552-4045-9329-575ef49c7235"
+    },
+    {
+      "id": "211b4117-be52-4751-8389-2d13ab3c2d97",
+      "name": "window-17",
+      "levelIndex": 0,
+      "kind": "window",
+      "clearWidth": 2.6000004,
+      "clearHeight": 1.2,
+      "footprint": [
+        [
+          14.9075,
+          0,
+          9.9768
+        ],
+        [
+          14.9075,
+          0,
+          12.5768
+        ],
+        [
+          15.1825,
+          0,
+          12.5768
+        ],
+        [
+          15.1825,
+          0,
+          9.9768
+        ]
+      ],
+      "hostWallId": "3a76d37e-c9d0-46d1-9e2b-1cb23dfeaa02",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "layerName": "A-OPENING",
+      "sourceEntityId": "211b4117-be52-4751-8389-2d13ab3c2d97"
+    }
+  ],
+  "sheets": [
+    {
+      "id": "NBP-DXF-001",
+      "title": "Innerscene bungalow GA (DXF smoke)",
+      "rev": "A",
+      "units": "m",
+      "orientation": "plan-north-up",
+      "sheet": {
+        "size": "A1",
+        "widthMm": 841,
+        "heightMm": 594,
+        "landscape": true,
+        "borderLeftMm": 20,
+        "borderMm": 10
+      },
+      "folders": [
+        {
+          "path": "chrome",
+          "label": "Sheet chrome",
+          "defaultExpanded": true
+        },
+        {
+          "path": "exterior",
+          "label": "Exteriors",
+          "defaultExpanded": true
+        },
+        {
+          "path": "structure",
+          "label": "Walls",
+          "defaultExpanded": true
+        },
+        {
+          "path": "interior",
+          "label": "Interiors",
+          "defaultExpanded": true
+        },
+        {
+          "path": "openings",
+          "label": "Doors / hatches / holes",
+          "defaultExpanded": true
+        },
+        {
+          "path": "dims",
+          "label": "Measurements",
+          "defaultExpanded": true
+        }
+      ],
+      "layers": [
+        {
+          "id": "chrome.frame",
+          "path": "chrome/frame",
+          "label": "Frame",
+          "kind": "chrome",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": true
+        },
+        {
+          "id": "exterior.shell",
+          "path": "exterior/shell",
+          "label": "Shell / facade",
+          "kind": "outline",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "structure.walls",
+          "path": "structure/walls",
+          "label": "Walls",
+          "kind": "structure",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "interior.spaces",
+          "path": "interior/spaces",
+          "label": "Spaces",
+          "kind": "space",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "openings.all",
+          "path": "openings/all",
+          "label": "Openings",
+          "kind": "opening",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        },
+        {
+          "id": "dims.primary",
+          "path": "dims/primary",
+          "label": "Primary dims",
+          "kind": "dimension",
+          "defaultVisible": true,
+          "plot": true,
+          "locked": false
+        }
+      ],
+      "views": [
+        {
+          "id": "level-0",
+          "label": "Ground",
+          "kind": "plan",
+          "levelIndex": 0
+        }
+      ],
+      "presets": [
+        {
+          "id": "print",
+          "label": "Print",
+          "visibleLayerIds": [
+            "chrome.frame",
+            "exterior.shell",
+            "structure.walls",
+            "interior.spaces",
+            "openings.all",
+            "dims.primary"
+          ],
+          "forPlot": true
+        }
+      ],
+      "showUi": false,
+      "defaultPresetId": "print"
+    }
+  ]
+}

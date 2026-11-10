@@ -2,8 +2,14 @@
 
 | File | Source |
 | --- | --- |
-| `bishop-overland-floorplan.dxf` | [jscad/sample-files](https://github.com/jscad/sample-files) → `dxf/dxf-parser/floorplan.dxf` |
+| `innerscene-three-bedroom-bungalow.dxf` | [Innerscene — Three Bedroom Bungalow](https://www.innerscene.com/library/three-bedroom-bungalow-plan-drawing-0a096c88) (CC0 1.0) |
 
-Residential architectural floor plan (“Bishop-Overland”) with AIA-style layers (`A-WALL`, `A-OPENING`, `A-FOOTPRINT`, dimensions, hatches). ~1.1 MB ASCII DXF, ~967 entities — used as a stress fixture for `Novolis.Cad.Dxf` → `Novolis.Cad.Blueprint`.
+ASCII DXF authored with ezdxf. Header declares CC0 public domain. AIA-style layers (`A-WALL`, `A-DOOR`, `A-GLAZ`, dims, furniture). Walls are closed poche rectangles (~250 mm) — not double-line face soup. `INSUNITS=4` (millimetres). ~412 KB.
 
-Upstream README: sample/test files for the jscad project. Retained here for reproducible offline import/export tests.
+Download API (stable): `https://www.innerscene.com/api/library/three-bedroom-bungalow-plan-drawing-0a096c88/download`
+
+## Alternate smoke (not checked in)
+
+| File | Source |
+| --- | --- |
+| `apartment.dxf` | [storytold/cadcraft](https://github.com/storytold/cadcraft/blob/main/examples/apartment.dxf) — small (~49 KB) closed `A-WALL` + `A-DOOR` swings |

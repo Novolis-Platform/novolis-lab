@@ -1,7 +1,7 @@
 using Novolis.Cad.Blueprint;
 using Novolis.Cad.Dxf;
 
-// Stress fixture: real AIA-layer residential DXF from jscad/sample-files (Bishop-Overland).
+// Smoke fixture: Innerscene three-bedroom bungalow (CC0) — closed A-WALL poche + A-DOOR/A-GLAZ.
 var fixture = args.Length > 0 && File.Exists(args[0])
     ? Path.GetFullPath(args[0])
     : ResolveFixture();
@@ -15,25 +15,25 @@ Console.WriteLine($"Output:      {outDir}");
 
 var import = DxfCadImporter.ImportFile(fixture, new DxfImportOptions
 {
-    DocumentName = "Bishop-Overland floor plan (jscad sample)",
+    DocumentName = "Innerscene three-bedroom bungalow (CC0)",
 });
 foreach (var note in import.Notes)
     Console.WriteLine($"  [import] {note}");
 
 Directory.CreateDirectory(outDir);
-var cadJsonPath = Path.Combine(outDir, "bishop-overland.cadjson");
+var cadJsonPath = Path.Combine(outDir, "innerscene-bungalow.cadjson");
 await File.WriteAllTextAsync(
     cadJsonPath,
     System.Text.Json.JsonSerializer.Serialize(import.Document, Novolis.Cad.Primitives.CadJson.Options));
 Console.WriteLine($"  wrote {cadJsonPath}");
 
 var (bp, lift) = CadBlueprintProjector.FromCadDocumentWithDiagnostics(
-    import.Document, CadBlueprintContexts.House, "./bishop-overland.cadjson");
-bp.Name = "Bishop-Overland · ground floor plan";
+    import.Document, CadBlueprintContexts.House, "./innerscene-bungalow.cadjson");
+bp.Name = "Innerscene · three-bedroom bungalow";
 foreach (var sheet in bp.Sheets)
 {
     sheet.Id = "NBP-DXF-001";
-    sheet.Title = "Bishop-Overland residential GA (DXF stress)";
+    sheet.Title = "Innerscene bungalow GA (DXF smoke)";
     sheet.Rev = "A";
     sheet.ShowUi = false;
     sheet.Orientation = "plan-north-up";
@@ -45,12 +45,12 @@ foreach (var d in lift)
 var result = CadBlueprintExporter.Export(bp, new CadBlueprintExportOptions
 {
     OutputDirectory = outDir,
-    FileStem = "bishop-overland",
+    FileStem = "innerscene-bungalow",
     SmartHtmlSubfolder = "sheets",
     SvgSubfolder = "svg",
     PdfSubfolder = "pdf",
     ContextOverride = CadBlueprintContexts.House,
-    CadDocumentHref = "./bishop-overland.cadjson",
+    CadDocumentHref = "./innerscene-bungalow.cadjson",
     FailOnError = true,
     FailOnWarning = false,
 });
@@ -75,19 +75,19 @@ static string ResolveFixture()
     var dir = new DirectoryInfo(AppContext.BaseDirectory);
     while (dir is not null)
     {
-        var local = Path.Combine(dir.FullName, "fixtures", "bishop-overland-floorplan.dxf");
+        var local = Path.Combine(dir.FullName, "fixtures", "innerscene-three-bedroom-bungalow.dxf");
         if (File.Exists(local))
             return local;
 
         var nested = Path.Combine(
-            dir.FullName, "labs", "cad", "BlueprintDxfStress", "fixtures", "bishop-overland-floorplan.dxf");
+            dir.FullName, "labs", "cad", "BlueprintDxfStress", "fixtures", "innerscene-three-bedroom-bungalow.dxf");
         if (File.Exists(nested))
             return nested;
 
         dir = dir.Parent;
     }
 
-    throw new FileNotFoundException("Could not locate fixtures/bishop-overland-floorplan.dxf");
+    throw new FileNotFoundException("Could not locate fixtures/innerscene-three-bedroom-bungalow.dxf");
 }
 
 static string ResolveDocsDir()
