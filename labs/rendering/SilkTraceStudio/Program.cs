@@ -14,13 +14,12 @@ internal static class Program
     // Motion: multi-spp GPU batch per pose, one DMA readback (do not cancel mid-batch).
     private const int MovingPreviewSamplesGpu = 12;
     private const int MovingPreviewSamplesCpu = 4;
-    // Still: short batches so blitHz stays ~1–4 (64 spp @ 960x540 was ~5s/present → blitHz 0.2).
+    // Short batches so blitHz stays ~1–2. One interactive res for move+still — flipping
+    // 640x360↔800x450 on settle was wiping hundreds of samples (see 336→48 in perf logs).
     private const int AccumulateSamplesPerBatchGpu = 16;
     private const int AccumulateSamplesPerBatchCpu = 4;
-    private const int MovingTraceMaxWidth = 640;
-    private const int MovingTraceMaxHeight = 360;
-    private const int StillTraceMaxWidth = 800;
-    private const int StillTraceMaxHeight = 450;
+    private const int InteractiveTraceMaxWidth = 800;
+    private const int InteractiveTraceMaxHeight = 450;
     private const float MovingSettleSeconds = 0.15f;
     private const float AutoOrbitRadiansPerSecond = 0.35f;
     private const int MaxProgressiveSamples = 4096;
@@ -87,7 +86,6 @@ internal static class Program
                     display,
                     frameWidth,
                     frameHeight,
-                    moving: false,
                     ref traceWidth,
                     ref traceHeight,
                     ref sample,
@@ -171,17 +169,16 @@ internal static class Program
                 stillSeconds += frame.DeltaSeconds;
             }
 
-            var wantMovingTrace = cameraBusy || stillSeconds < MovingSettleSeconds;
-            if (frameWidth > 0 && wantMovingTrace != movingTrace)
+            // Moving vs still only changes enqueue policy now — same trace resolution either way.
+            movingTrace = cameraBusy || stillSeconds < MovingSettleSeconds;
+            if (frameWidth > 0 && (traceWidth == 0 || traceHeight == 0))
             {
-                movingTrace = wantMovingTrace;
                 ApplyTraceSize(
                     worker,
                     session,
                     display,
                     frameWidth,
                     frameHeight,
-                    moving: movingTrace,
                     ref traceWidth,
                     ref traceHeight,
                     ref sample,
@@ -261,16 +258,17 @@ internal static class Program
         PathTraceDisplayBuffer display,
         int frameWidth,
         int frameHeight,
-        bool moving,
         ref int traceWidth,
         ref int traceHeight,
         ref int sample,
         ref int blitGeneration,
         ref bool hasBlitTexture)
     {
-        var (width, height) = moving
-            ? InteractiveTraceSize.Clamp(frameWidth, frameHeight, MovingTraceMaxWidth, MovingTraceMaxHeight)
-            : InteractiveTraceSize.Clamp(frameWidth, frameHeight, StillTraceMaxWidth, StillTraceMaxHeight);
+        var (width, height) = InteractiveTraceSize.Clamp(
+            frameWidth,
+            frameHeight,
+            InteractiveTraceMaxWidth,
+            InteractiveTraceMaxHeight);
         if (width == traceWidth && height == traceHeight)
         {
             return;
