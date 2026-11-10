@@ -12,14 +12,15 @@ namespace SilkTraceStudio;
 internal static class Program
 {
     // Motion: multi-spp GPU batch per pose, one DMA readback (do not cancel mid-batch).
-    // Measured ~90 blitHz at 8 spp / 640x360 → ~22 Hz at 32 spp (more kernel work per DMA tax).
-    private const int MovingPreviewSamplesGpu = 32;
+    private const int MovingPreviewSamplesGpu = 12;
     private const int MovingPreviewSamplesCpu = 4;
-    // Still frames: fat GPU batches; NEE now works so each spp cleans walls instead of mud.
-    private const int AccumulateSamplesPerBatchGpu = 64;
+    // Still: short batches so blitHz stays ~1–4 (64 spp @ 960x540 was ~5s/present → blitHz 0.2).
+    private const int AccumulateSamplesPerBatchGpu = 16;
     private const int AccumulateSamplesPerBatchCpu = 4;
     private const int MovingTraceMaxWidth = 640;
     private const int MovingTraceMaxHeight = 360;
+    private const int StillTraceMaxWidth = 800;
+    private const int StillTraceMaxHeight = 450;
     private const float MovingSettleSeconds = 0.15f;
     private const float AutoOrbitRadiansPerSecond = 0.35f;
     private const int MaxProgressiveSamples = 4096;
@@ -245,7 +246,13 @@ internal static class Program
                 traceWidth,
                 traceHeight,
                 cameraBusy);
-        }, vsync: false);
+
+            // Do not spin the CPU at 1500 Hz while a multi-spp GPU batch runs.
+            if (worker.IsBusy && !blitThisFrame)
+            {
+                Thread.Sleep(8);
+            }
+        }, vsync: true);
     }
 
     private static void ApplyTraceSize(
@@ -263,7 +270,7 @@ internal static class Program
     {
         var (width, height) = moving
             ? InteractiveTraceSize.Clamp(frameWidth, frameHeight, MovingTraceMaxWidth, MovingTraceMaxHeight)
-            : InteractiveTraceSize.Clamp(frameWidth, frameHeight);
+            : InteractiveTraceSize.Clamp(frameWidth, frameHeight, StillTraceMaxWidth, StillTraceMaxHeight);
         if (width == traceWidth && height == traceHeight)
         {
             return;
