@@ -1,5 +1,6 @@
 using System.Numerics;
 using Microsoft.Extensions.Logging;
+using Novolis.Math.Geometry;
 using Novolis.Rendering.Backends.Igpu;
 using Novolis.Rendering.PathTrace.Demos;
 using Novolis.Rendering.Runtime;
@@ -337,7 +338,14 @@ internal static class Program
             throw new InvalidOperationException("Path-trace backend produced no CPU pixels.");
         }
 
-        var png = RgbaPng.Encode(pixels.ToArray(), w, h);
+        var frame = pixels.ToArray();
+        if (samples < PathTraceMildDenoise.MaxSampleCount)
+        {
+            var scratch = new Rgba32[frame.Length];
+            PathTraceMildDenoise.ApplyInPlace(frame, w, h, samples, scratch);
+        }
+
+        var png = RgbaPng.Encode(frame, w, h);
         File.WriteAllBytes(path, png);
         Console.WriteLine($"wrote {path} ({png.Length} bytes)");
         return true;
