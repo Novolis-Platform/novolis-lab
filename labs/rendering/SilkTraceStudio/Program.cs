@@ -14,15 +14,15 @@ internal static class Program
     // Motion: multi-spp GPU batch per pose, one DMA readback (do not cancel mid-batch).
     private const int MovingPreviewSamplesGpu = 8;
     private const int MovingPreviewSamplesCpu = 4;
-    // Settled 4K batches stay short so the first clean blit arrives before a multi-second stall.
-    private const int AccumulateSamplesPerBatchGpu = 8;
-    private const int AccumulateSamplesPerBatchCpu = 2;
-    // Preview while moving; one intentional wipe to 4K after settle (not a dither between close sizes).
+    // Short settled batches so the first clean blit arrives before a multi-second stall.
+    private const int AccumulateSamplesPerBatchGpu = 16;
+    private const int AccumulateSamplesPerBatchCpu = 4;
+    // Preview while moving; settle at 1080p (4K is headless-only — interactive 4K was ~3 spp/s).
     private const int PreviewTraceWidth = 640;
     private const int PreviewTraceHeight = 360;
-    private const int SettleTraceWidth = 3840;
-    private const int SettleTraceHeight = 2160;
-    private const float MovingSettleSeconds = 0.2f;
+    private const int SettleTraceWidth = 1920;
+    private const int SettleTraceHeight = 1080;
+    private const float MovingSettleSeconds = 0.25f;
     private const float AutoOrbitRadiansPerSecond = 0.35f;
     private const int MaxProgressiveSamples = 8192;
     private const float MouseLookSensitivity = 0.004f;
