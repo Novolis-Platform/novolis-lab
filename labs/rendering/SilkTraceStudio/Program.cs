@@ -53,7 +53,7 @@ internal static class Program
         using var session = new PathTraceSession(compiled);
         var display = new PathTraceDisplayBuffer();
         using var worker = new PathTraceBackgroundWorker(session.Backend, display);
-        var fps = new SilkSmoothedFps();
+        var blitRate = new SilkSmoothedBlitHz();
         var orbit = CreateDefaultOrbit();
         var sample = 0;
         var blitGeneration = -1;
@@ -73,7 +73,7 @@ internal static class Program
 
         SilkGame.Run("SilkTraceStudio — path tracing", 1280, 720, frame =>
         {
-            fps.Update(frame.DeltaSeconds);
+            blitRate.Tick(frame.DeltaSeconds);
 
             if (frame.Width != frameWidth || frame.Height != frameHeight)
             {
@@ -219,6 +219,7 @@ internal static class Program
             {
                 frame.Blit(pixels, blitWidth, blitHeight);
                 hasBlitTexture = true;
+                blitRate.NoteBlit(display.DisplayedSampleCount);
             }
             else if (hasBlitTexture)
             {
@@ -229,13 +230,14 @@ internal static class Program
                 session.Backend,
                 display.DisplayedSampleCount,
                 autoOrbit,
-                fps.Value,
-                worker.IsBusy,
-                $"trace {traceWidth}x{traceHeight} · dist {orbit.Distance:F2} · drag LMB · scroll zoom · Space orbit · B · 1/2/3 · R reset"));
+                blitHz: blitRate.BlitHz > 0f ? blitRate.BlitHz : null,
+                sppPerSecond: blitRate.SppPerSecond > 0f ? blitRate.SppPerSecond : null,
+                rendering: worker.IsBusy,
+                extra: $"trace {traceWidth}x{traceHeight} · dist {orbit.Distance:F2} · drag LMB · scroll zoom · Space orbit · B · 1/2/3 · R reset"));
 
             perf.Tick(
                 frame.DeltaSeconds,
-                fps.Value,
+                blitRate.BlitHz,
                 display.DisplayedSampleCount,
                 worker.IsBusy,
                 blitThisFrame,
