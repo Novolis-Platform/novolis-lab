@@ -9,13 +9,17 @@ namespace SilkTraceStudio;
 
 internal static class Program
 {
-    // Motion = latest-pose preview (never wait on accumulate). Still = progressive refine.
-    private const int MovingPreviewSamplesGpu = 1;
-    private const int MovingPreviewSamplesCpu = 1;
+    // Motion: multi-spp GPU batch per pose, one DMA readback (do not cancel mid-batch).
+    // Still: progressive refine at full interactive res.
+    // Academic note: interactive PT is usually present-bound (GPU→CPU), not kernel-bound on a 4070;
+    // thrashing cancel/restart every UI frame keeps samples at 1 and the SMs idle.
+    // ~8 spp @ 640x360 ≈ one DMA period of real kernel work on a 4070 (see PathTrace.Profile).
+    private const int MovingPreviewSamplesGpu = 8;
+    private const int MovingPreviewSamplesCpu = 2;
     private const int AccumulateSamplesPerBatchGpu = 8;
     private const int AccumulateSamplesPerBatchCpu = 2;
-    private const int MovingTraceMaxWidth = 480;
-    private const int MovingTraceMaxHeight = 270;
+    private const int MovingTraceMaxWidth = 640;
+    private const int MovingTraceMaxHeight = 360;
     private const float MovingSettleSeconds = 0.15f;
     private const float AutoOrbitRadiansPerSecond = 0.35f;
     private const int MaxProgressiveSamples = 512;
