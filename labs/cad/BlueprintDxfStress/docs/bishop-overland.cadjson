@@ -6,8 +6,8 @@
     "name": "Novolis.Cad.Dxf",
     "version": "1"
   },
-  "createdAt": "2026-11-10T16:31:48.2551939Z",
-  "modifiedAt": "2026-11-10T16:31:48.2552966Z",
+  "createdAt": "2026-11-10T16:52:37.4803926Z",
+  "modifiedAt": "2026-11-10T16:52:37.4805045Z",
   "unitScaleMeters": 1,
   "linearUnit": "meter",
   "angleUnit": "radian",
@@ -43,7 +43,7 @@
   ],
   "entities": [
     {
-      "id": "ef19034a-95ec-4b40-b95e-0277a387c59f",
+      "id": "cd95cff9-822b-46ee-8935-10d1989805ae",
       "name": "ENTRY",
       "layerId": "d1000000-0000-4000-8000-000000000003",
       "kind": "space",
@@ -145,7 +145,7 @@
       "periodic": false
     },
     {
-      "id": "4645378e-9c85-4db7-a2a6-166cd2fb0ee9",
+      "id": "26030e22-cced-4797-a77c-9c47fee515f0",
       "name": "PORCH",
       "layerId": "d1000000-0000-4000-8000-000000000003",
       "kind": "space",
@@ -187,7 +187,7 @@
       "periodic": false
     },
     {
-      "id": "f4b9ec4a-496f-494d-abd3-01c95397ce10",
+      "id": "a5ff24bb-58ee-44af-b6a6-659ebc0e5d6e",
       "name": "2 CAR GARAGE",
       "layerId": "d1000000-0000-4000-8000-000000000003",
       "kind": "space",
@@ -229,7 +229,7 @@
       "periodic": false
     },
     {
-      "id": "b3065475-c8bc-4334-999e-b42f2f96d656",
+      "id": "746bed6f-fc64-4fe6-82c2-790748c4ac9b",
       "name": "DECK",
       "layerId": "d1000000-0000-4000-8000-000000000003",
       "kind": "space",
@@ -271,17 +271,17 @@
       "periodic": false
     },
     {
-      "id": "c726bcab-516d-469d-a08c-56762b9f1742",
+      "id": "ced4f928-d71f-4dc9-889d-688a39d27aa6",
       "name": "W-1",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -5.150432,
         0,
-        8.721525
+        8.734225
       ],
       "b": [
-        -16.478832,
+        -16.402634,
         0,
         8.721525
       ],
@@ -301,19 +301,19 @@
       "periodic": false
     },
     {
-      "id": "567c4781-b355-4837-baab-0b4d8581dff9",
+      "id": "2e71d0d3-a00b-43bb-a4be-ebd25606d14a",
       "name": "W-2",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -16.402634,
         0,
-        -0.32087484
+        -0.24467485
       ],
       "b": [
         -16.402634,
         0,
-        8.823125
+        8.721525
       ],
       "radius": 0,
       "height": 2.7,
@@ -331,19 +331,19 @@
       "periodic": false
     },
     {
-      "id": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a",
+      "id": "c976ffce-cc8e-4821-aa5a-998874f37536",
       "name": "W-3",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         1.1233677,
         0,
-        -5.502475
+        -5.426275
       ],
       "b": [
         1.1233677,
         0,
-        8.823125
+        8.746925
       ],
       "radius": 0,
       "height": 2.7,
@@ -361,19 +361,19 @@
       "periodic": false
     },
     {
-      "id": "d97e38d5-cfa7-4998-8f79-6ad965b67fa8",
+      "id": "ff0a2ce3-d507-4e47-bb03-31014c06973f",
       "name": "W-4",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -5.4806323,
         0,
-        -5.502475
+        -5.426275
       ],
       "b": [
-        -5.4806323,
+        -5.4615827,
         0,
-        0.99992514
+        1.1205752
       ],
       "radius": 0,
       "height": 2.7,
@@ -391,19 +391,19 @@
       "periodic": false
     },
     {
-      "id": "bd6dac37-319f-4039-a2a7-f93238d752e3",
+      "id": "99224b6e-825d-4f6f-8247-ddb9f875976d",
       "name": "W-5",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -5.4044323,
+        -5.4615827,
         0,
-        1.1777251
+        1.1205752
       ],
       "b": [
-        0.99636793,
+        1.1233677,
         0,
-        1.1777251
+        1.1777248
       ],
       "radius": 0,
       "height": 2.7,
@@ -421,19 +421,19 @@
       "periodic": false
     },
     {
-      "id": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d",
+      "id": "949f0319-7cb0-439e-9fc9-e6bccb53cf1b",
       "name": "W-6",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        1.1995677,
+        1.1233677,
         0,
         8.746925
       ],
       "b": [
         -5.150432,
         0,
-        8.746925
+        8.734225
       ],
       "radius": 0,
       "height": 2.7,
@@ -451,19 +451,19 @@
       "periodic": false
     },
     {
-      "id": "ff62268f-9c18-46e0-8a28-78374682215d",
+      "id": "4ac60821-c453-42b9-b045-ca33a7c1b196",
       "name": "W-7",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -16.478832,
+        -16.402634,
         0,
         -0.24467485
       ],
       "b": [
-        -12.059233,
+        -12.186232,
         0,
-        -0.24467485
+        -0.28277484
       ],
       "radius": 0,
       "height": 2.7,
@@ -481,17 +481,17 @@
       "periodic": false
     },
     {
-      "id": "f81a4628-91a0-447f-964b-e66c44471425",
+      "id": "2a7fa530-241c-4e08-a3f8-2a28f17d9d4e",
       "name": "W-8",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -12.262432,
+        -12.177765,
         0,
         -0.85427487
       ],
       "b": [
-        -8.452433,
+        -8.630232,
         0,
         -0.85427487
       ],
@@ -511,7 +511,7 @@
       "periodic": false
     },
     {
-      "id": "d3844196-530f-406b-9f28-cbfdc6be20db",
+      "id": "e911a7c1-c271-4e73-b445-778c5d8dc9c2",
       "name": "W-9",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -521,13 +521,13 @@
         3.1843252
       ],
       "b": [
-        -12.160832,
+        -12.177765,
         0,
-        -0.32087484
+        -0.8542752
       ],
       "radius": 0,
       "height": 2.7,
-      "thickness": 0.10160065,
+      "thickness": 0.20319939,
       "deck": 0,
       "startAngle": 0,
       "endAngle": 0,
@@ -541,7 +541,7 @@
       "periodic": false
     },
     {
-      "id": "e558d8f3-aaa1-47f3-9802-ddf1428a1e19",
+      "id": "bd0a9b55-ea88-433f-869d-a16bea44bbe5",
       "name": "W-10",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -571,12 +571,12 @@
       "periodic": false
     },
     {
-      "id": "192b813a-8cbf-4cfa-bfce-8a61e8ac456d",
+      "id": "156f072c-6564-47b1-b16d-a55931fdba4b",
       "name": "W-11",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -16.326433,
+        -16.402634,
         0,
         4.352725
       ],
@@ -601,14 +601,14 @@
       "periodic": false
     },
     {
-      "id": "d99e5dba-6ab9-428e-9876-4a4bd772bb30",
+      "id": "44fc8048-ed64-4609-a365-4f9c1a44b482",
       "name": "W-12",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -8.249232,
+        -8.298943,
         0,
-        7.0959253
+        6.918125
       ],
       "b": [
         -8.249232,
@@ -631,19 +631,19 @@
       "periodic": false
     },
     {
-      "id": "dfccf641-f507-4c4e-8fb8-210baaee2523",
+      "id": "b26d3ee2-e443-4fd4-9c2c-48146b84a315",
       "name": "W-13",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -12.110033,
         0,
-        4.4035254
+        5.0131254
       ],
       "b": [
-        -12.110033,
+        -12.0931,
         0,
-        7.057825
+        6.918125
       ],
       "radius": 0,
       "height": 2.7,
@@ -661,19 +661,19 @@
       "periodic": false
     },
     {
-      "id": "175021b0-a523-4428-9f5e-1bfa6646747a",
+      "id": "87b04285-51ed-4815-85ec-7fbb8591aaaf",
       "name": "W-14",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -7.9444323,
+        -7.912368,
         0,
-        1.1015251
+        1.1014919
       ],
       "b": [
-        -5.3536325,
+        -5.4615827,
         0,
-        1.1015251
+        1.1205752
       ],
       "radius": 0,
       "height": 2.7,
@@ -691,17 +691,17 @@
       "periodic": false
     },
     {
-      "id": "2cd63bb4-c32b-4bcd-96cc-5c8093868b05",
+      "id": "c3b24448-959b-4e32-8e59-0ac26007b26a",
       "name": "W-15",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -5.5060325,
+        -5.4552326,
         0,
         3.235125
       ],
       "b": [
-        -3.0168324,
+        -2.9660325,
         0,
         3.235125
       ],
@@ -721,19 +721,19 @@
       "periodic": false
     },
     {
-      "id": "f81e2cd0-a357-4675-a8b6-1eda9e08b4f6",
+      "id": "77cf96f6-c8bc-47cb-bb7f-33f6cb1b43fc",
       "name": "W-16",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -9.874832,
         0,
-        6.8673253
+        6.918125
       ],
       "b": [
         -9.874832,
         0,
-        4.4035254
+        4.352725
       ],
       "radius": 0,
       "height": 2.7,
@@ -751,19 +751,19 @@
       "periodic": false
     },
     {
-      "id": "d8a38ef1-c317-47b0-960f-57fafb298cfd",
+      "id": "5a8a3d94-0208-4889-96c1-fc1cbbde5ff2",
       "name": "W-17",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -7.919032,
         0,
-        -0.16847485
+        -0.24467486
       ],
       "b": [
-        -7.919032,
+        -7.906332,
         0,
-        2.269925
+        2.320725
       ],
       "radius": 0,
       "height": 2.7,
@@ -781,19 +781,19 @@
       "periodic": false
     },
     {
-      "id": "6622f006-c0cd-40f8-826c-a3b8f24d1cb9",
+      "id": "1d142c0f-283e-41e9-a511-a56fc98b8fef",
       "name": "W-18",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -6.6595535,
+        -6.6446867,
         0,
-        8.706646
+        8.732539
       ],
       "b": [
-        -8.234353,
+        -8.298943,
         0,
-        7.131846
+        6.918125
       ],
       "radius": 0,
       "height": 2.7,
@@ -811,17 +811,17 @@
       "periodic": false
     },
     {
-      "id": "ec43d71a-ba3d-48f1-9b63-8d17f0a4257e",
+      "id": "19444711-d582-42f2-994f-492d9e2674ec",
       "name": "W-19",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -9.925632,
+        -9.874832,
         0,
         5.0131254
       ],
       "b": [
-        -12.059233,
+        -12.110033,
         0,
         5.0131254
       ],
@@ -841,19 +841,19 @@
       "periodic": false
     },
     {
-      "id": "0e416256-9503-497c-b397-f7751523cb06",
+      "id": "28ff6c6c-54d6-4152-b37e-62037630f336",
       "name": "W-20",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -5.4552326,
+        -5.4615827,
         0,
-        1.1523252
+        1.1205752
       ],
       "b": [
         -5.4552326,
         0,
-        3.2859251
+        3.235125
       ],
       "radius": 0,
       "height": 2.7,
@@ -871,19 +871,19 @@
       "periodic": false
     },
     {
-      "id": "a52f9191-26a0-4e9b-9f45-e70fae6a367e",
+      "id": "6249ac9a-077e-4e53-8040-bdf9f12f40cc",
       "name": "W-21",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -8.249232,
+        -8.298943,
         0,
-        6.968925
+        6.918125
       ],
       "b": [
-        -8.249232,
+        -8.249243,
         0,
-        8.670725
+        8.730728
       ],
       "radius": 0,
       "height": 2.7,
@@ -901,12 +901,12 @@
       "periodic": false
     },
     {
-      "id": "b1f005e6-301f-4e82-b3a4-3e3bbf603d39",
+      "id": "ef8b13ec-b0c3-45a7-a213-2981a0763df3",
       "name": "W-22",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -13.062532,
+        -13.811832,
         0,
         3.235125
       ],
@@ -931,17 +931,17 @@
       "periodic": false
     },
     {
-      "id": "8fae0de9-93d8-4f05-a45f-ae908e282e7e",
+      "id": "3e99901c-2303-4986-aecb-e0855aa52b28",
       "name": "W-23",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -8.300033,
+        -8.298943,
         0,
         6.918125
       ],
       "b": [
-        -9.824033,
+        -9.874832,
         0,
         6.918125
       ],
@@ -961,14 +961,14 @@
       "periodic": false
     },
     {
-      "id": "27a4270b-248d-4efb-871b-bbd906461358",
+      "id": "410c342e-4a17-4bc8-b7f8-2109acf4e7e9",
       "name": "W-24",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -2.9660325,
         0,
-        3.2859251
+        3.235125
       ],
       "b": [
         -2.9660325,
@@ -991,14 +991,14 @@
       "periodic": false
     },
     {
-      "id": "03a6b3a0-dc5d-4578-b299-59dff2973b38",
+      "id": "b706b6d7-0c4f-4659-b982-814cb58afb4a",
       "name": "W-25",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -2.3310323,
+        -2.3307724,
         0,
-        1.1523252
+        1.1477469
       ],
       "b": [
         -2.3310323,
@@ -1021,14 +1021,14 @@
       "periodic": false
     },
     {
-      "id": "c0041324-8b0a-478f-967b-40a77eb0d40a",
+      "id": "0f76332a-5fb6-4c72-a004-60fce21abea2",
       "name": "W-26",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -4.032832,
+        -4.032444,
         0,
-        1.1523252
+        1.1329784
       ],
       "b": [
         -4.032832,
@@ -1051,19 +1051,19 @@
       "periodic": false
     },
     {
-      "id": "c38a5598-43da-42cf-8914-7bbbc1c92133",
+      "id": "d710eb55-04f9-4fb4-aaf8-8aa82ec6d6cf",
       "name": "W-27",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -8.554032,
         0,
-        2.117525
+        2.320725
       ],
       "b": [
         -8.554032,
         0,
-        3.1843252
+        3.235125
       ],
       "radius": 0,
       "height": 2.7,
@@ -1081,19 +1081,19 @@
       "periodic": false
     },
     {
-      "id": "efdfe8d2-175a-488e-9ecf-8c939b61de5a",
+      "id": "1b0e71fe-b5b8-4524-826b-14e120360f01",
       "name": "W-28",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
         -13.811832,
         0,
-        3.2859251
+        3.235125
       ],
       "b": [
         -13.811832,
         0,
-        4.301925
+        4.352725
       ],
       "radius": 0,
       "height": 2.7,
@@ -1111,7 +1111,7 @@
       "periodic": false
     },
     {
-      "id": "828609d0-0fca-4362-9ec0-c21306057e0e",
+      "id": "fcc196ad-c2bc-4cbd-8357-ddfa7f6c8812",
       "name": "W-29",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -1121,7 +1121,7 @@
         4.352725
       ],
       "b": [
-        -10.0780325,
+        -9.874832,
         0,
         4.352725
       ],
@@ -1141,12 +1141,12 @@
       "periodic": false
     },
     {
-      "id": "83db56e1-85f2-4066-95de-d0d0b1724c8a",
+      "id": "e10a5a21-13b6-4dfe-b7b0-dc4fd686f67c",
       "name": "W-30",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        1.1995677,
+        1.1233677,
         0,
         -5.426275
       ],
@@ -1171,7 +1171,7 @@
       "periodic": false
     },
     {
-      "id": "c490311a-eeca-45bb-9ea4-d4dc311f016c",
+      "id": "dbb29656-ac14-4384-b0c9-fb3c7728bd0c",
       "name": "W-31",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -1181,7 +1181,7 @@
         -5.426275
       ],
       "b": [
-        -5.5568323,
+        -5.4806323,
         0,
         -5.426275
       ],
@@ -1201,12 +1201,12 @@
       "periodic": false
     },
     {
-      "id": "1387de9f-302f-4d33-9d9e-22951281e752",
+      "id": "497e5780-85d1-4cce-9b3f-0be5defb3bdf",
       "name": "W-32",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -16.326433,
+        -16.402634,
         0,
         3.235125
       ],
@@ -1231,7 +1231,7 @@
       "periodic": false
     },
     {
-      "id": "3a6e41c3-34e2-4964-b314-09861a4e916f",
+      "id": "75244e7f-b1bf-4859-85ea-ce63da0cbb76",
       "name": "W-33",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -1241,9 +1241,9 @@
         7.819825
       ],
       "b": [
-        -12.110033,
+        -12.110038,
         0,
-        8.670725
+        8.72637
       ],
       "radius": 0,
       "height": 2.7,
@@ -1261,7 +1261,7 @@
       "periodic": false
     },
     {
-      "id": "78b0f0eb-f3d7-4d99-9fb5-e85564a79461",
+      "id": "675c6f6a-714c-478b-b086-2923ddba9506",
       "name": "W-34",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -1271,9 +1271,9 @@
         7.819825
       ],
       "b": [
-        -9.874832,
+        -9.874841,
         0,
-        8.670725
+        8.728893
       ],
       "radius": 0,
       "height": 2.7,
@@ -1291,19 +1291,19 @@
       "periodic": false
     },
     {
-      "id": "930825c6-6f26-47e5-b078-15c6f50278ec",
+      "id": "f7a21669-9827-4235-9ce7-1acd1471b7fc",
       "name": "W-35",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -8.630232,
+        -8.585782,
         0,
-        -0.77807486
+        -0.18752486
       ],
       "b": [
-        -8.630232,
+        -8.585782,
         0,
-        -0.016074853
+        -0.18752486
       ],
       "radius": 0,
       "height": 2.7,
@@ -1321,19 +1321,19 @@
       "periodic": false
     },
     {
-      "id": "14e2539c-3f55-4ae5-bd24-8ac4d421d8b8",
+      "id": "890be104-f365-49e7-8a61-4bf352a562b4",
       "name": "W-36",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -7.7412324,
+        -8.585782,
         0,
-        -0.24467485
+        -0.18752486
       ],
       "b": [
-        -8.452433,
+        -8.585782,
         0,
-        -0.24467485
+        -0.18752486
       ],
       "radius": 0,
       "height": 2.7,
@@ -1351,17 +1351,17 @@
       "periodic": false
     },
     {
-      "id": "addc5ed4-713b-48cd-bfc9-a0034d364089",
+      "id": "61815887-4fc8-438e-87a0-67a5269c4f16",
       "name": "W-37",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -11.373432,
+        -12.0931,
         0,
         6.918125
       ],
       "b": [
-        -12.059233,
+        -12.0931,
         0,
         6.918125
       ],
@@ -1381,12 +1381,12 @@
       "periodic": false
     },
     {
-      "id": "8aa333fd-ca8f-4b08-8d24-a3a545ec972e",
+      "id": "f7f2e1a2-8555-4e3f-910b-6aef9f0d4a45",
       "name": "W-38",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -9.925632,
+        -9.874832,
         0,
         6.918125
       ],
@@ -1411,47 +1411,17 @@
       "periodic": false
     },
     {
-      "id": "7fa7df90-e04e-4b40-9c12-ae7a27e1531d",
+      "id": "80dc8470-afaf-4cc0-8db9-690404111f3d",
       "name": "W-39",
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "kind": "wall",
       "a": [
-        -12.186232,
-        0,
-        -0.9304749
-      ],
-      "b": [
-        -12.186232,
-        0,
-        -0.3208748
-      ],
-      "radius": 0,
-      "height": 2.7,
-      "thickness": 0.20319939,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "7db5ca75-d978-465b-bc4d-d8615f61d003",
-      "name": "W-40",
-      "layerId": "d1000000-0000-4000-8000-000000000001",
-      "kind": "wall",
-      "a": [
-        -8.503232,
+        -8.554032,
         0,
         2.320725
       ],
       "b": [
-        -7.8936324,
+        -7.906332,
         0,
         2.320725
       ],
@@ -1471,13 +1441,13 @@
       "periodic": false
     },
     {
-      "id": "9937fa35-3efd-4cf9-aac6-e11590de2ab0",
+      "id": "56049f77-1392-464b-a995-d3b6bc07d7cf",
       "name": "window-1",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "kind": "opening",
       "radius": 0,
       "height": 1.2,
-      "thickness": 1.8288002,
+      "thickness": 1.2191997,
       "deck": 0,
       "startAngle": 0,
       "endAngle": 0,
@@ -1485,27 +1455,27 @@
       "openingType": "window",
       "footprint": [
         [
-          1.3113277,
+          -8.452202,
           0,
-          7.5531254
+          8.618739
         ],
         [
-          1.3113277,
+          -9.671401,
           0,
-          5.724325
+          8.617363
         ],
         [
-          1.0878077,
+          -9.671653,
           0,
-          5.724325
+          8.840881
         ],
         [
-          1.0878077,
+          -8.452454,
           0,
-          7.5531254
+          8.8422575
         ]
       ],
-      "hostWallId": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a",
+      "hostWallId": "ced4f928-d71f-4dc9-889d-688a39d27aa6",
       "mergeAtPlane": false,
       "mergeTolerance": 0,
       "intensity": 0,
@@ -1515,12 +1485,100 @@
       "periodic": false
     },
     {
-      "id": "0cc3f409-01fe-41bd-a7dd-3a1ace09f6fb",
+      "id": "521a1bd2-7cfb-4e2c-a01a-3c316a7bf9b0",
       "name": "window-2",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "kind": "opening",
       "radius": 0,
       "height": 1.2,
+      "thickness": 1.8286276,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "window",
+      "footprint": [
+        [
+          -13.329166,
+          0,
+          8.6132345
+        ],
+        [
+          -15.157793,
+          0,
+          8.611171
+        ],
+        [
+          -15.158045,
+          0,
+          8.834689
+        ],
+        [
+          -13.329418,
+          0,
+          8.836753
+        ]
+      ],
+      "hostWallId": "ced4f928-d71f-4dc9-889d-688a39d27aa6",
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "79a8f42c-6661-4995-959c-c7e622c7cffc",
+      "name": "door-3",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "kind": "opening",
+      "radius": 0,
+      "height": 2.1,
+      "thickness": 0.9144001,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "door",
+      "footprint": [
+        [
+          1.0116076,
+          0,
+          2.3461251
+        ],
+        [
+          1.0116076,
+          0,
+          3.2605252
+        ],
+        [
+          1.2351277,
+          0,
+          3.2605252
+        ],
+        [
+          1.2351277,
+          0,
+          2.3461251
+        ]
+      ],
+      "hostWallId": "c976ffce-cc8e-4821-aa5a-998874f37536",
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "d7957337-67f9-4e44-b93c-2ad1ba5a46f8",
+      "name": "window-4",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "kind": "opening",
+      "radius": 0,
+      "height": 1.2,
       "thickness": 1.8288002,
       "deck": 0,
       "startAngle": 0,
@@ -1529,27 +1587,27 @@
       "openingType": "window",
       "footprint": [
         [
-          -13.329232,
+          1.0116076,
           0,
-          8.711365
+          5.7243257
         ],
         [
-          -15.158032,
+          1.0116076,
           0,
-          8.711365
+          7.553126
         ],
         [
-          -15.158032,
+          1.2351277,
           0,
-          8.934885
+          7.553126
         ],
         [
-          -13.329232,
+          1.2351277,
           0,
-          8.934885
+          5.7243257
         ]
       ],
-      "hostWallId": "c726bcab-516d-469d-a08c-56762b9f1742",
+      "hostWallId": "c976ffce-cc8e-4821-aa5a-998874f37536",
       "mergeAtPlane": false,
       "mergeTolerance": 0,
       "intensity": 0,
@@ -1559,13 +1617,101 @@
       "periodic": false
     },
     {
-      "id": "c0017697-393b-4747-9cdc-86eece60fba5",
-      "name": "window-3",
+      "id": "fd61a309-5d5b-4dce-9e26-08860e7f2093",
+      "name": "door-5",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "kind": "opening",
+      "radius": 0,
+      "height": 2.1,
+      "thickness": 0.60959876,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "door",
+      "footprint": [
+        [
+          0.8443493,
+          0,
+          8.634601
+        ],
+        [
+          0.23475173,
+          0,
+          8.633367
+        ],
+        [
+          0.23429927,
+          0,
+          8.856885
+        ],
+        [
+          0.8438968,
+          0,
+          8.858119
+        ]
+      ],
+      "hostWallId": "949f0319-7cb0-439e-9fc9-e6bccb53cf1b",
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "8e1f869b-f3ce-4945-a01f-dfba51b6d02f",
+      "name": "door-6",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "kind": "opening",
+      "radius": 0,
+      "height": 2.1,
+      "thickness": 0.60929036,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "door",
+      "footprint": [
+        [
+          -1.7975484,
+          0,
+          8.629252
+        ],
+        [
+          -2.4068377,
+          0,
+          8.628019
+        ],
+        [
+          -2.4072902,
+          0,
+          8.851538
+        ],
+        [
+          -1.7980009,
+          0,
+          8.852771
+        ]
+      ],
+      "hostWallId": "949f0319-7cb0-439e-9fc9-e6bccb53cf1b",
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "778cfe20-fc3f-4662-be6f-e1dd21738ccd",
+      "name": "window-7",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "kind": "opening",
       "radius": 0,
       "height": 1.2,
-      "thickness": 1.8287997,
+      "thickness": 1.3714685,
       "deck": 0,
       "startAngle": 0,
       "endAngle": 0,
@@ -1573,27 +1719,27 @@
       "openingType": "window",
       "footprint": [
         [
-          -5.607632,
+          -3.7787402,
           0,
-          8.858685
+          8.625242
         ],
         [
-          -3.7788324,
+          -5.150206,
           0,
-          8.858685
+          8.622466
         ],
         [
-          -3.7788324,
+          -5.150658,
           0,
-          8.635166
+          8.845984
         ],
         [
-          -5.607632,
+          -3.7791927,
           0,
-          8.635166
+          8.848761
         ]
       ],
-      "hostWallId": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d",
+      "hostWallId": "949f0319-7cb0-439e-9fc9-e6bccb53cf1b",
       "mergeAtPlane": false,
       "mergeTolerance": 0,
       "intensity": 0,
@@ -1603,8 +1749,52 @@
       "periodic": false
     },
     {
-      "id": "566111e5-3d97-4170-9fb4-c6b3ada029f8",
-      "name": "window-4",
+      "id": "63336609-7f02-4b37-872c-6d731bf1ff1e",
+      "name": "window-8",
+      "layerId": "d1000000-0000-4000-8000-000000000002",
+      "kind": "opening",
+      "radius": 0,
+      "height": 1.2,
+      "thickness": 1.5225608,
+      "deck": 0,
+      "startAngle": 0,
+      "endAngle": 0,
+      "rotationY": 0,
+      "openingType": "window",
+      "footprint": [
+        [
+          -15.029699,
+          0,
+          -0.17325746
+        ],
+        [
+          -13.5072,
+          0,
+          -0.18701495
+        ],
+        [
+          -13.508715,
+          0,
+          -0.3546481
+        ],
+        [
+          -15.031214,
+          0,
+          -0.3408906
+        ]
+      ],
+      "hostWallId": "4ac60821-c453-42b9-b045-ca33a7c1b196",
+      "mergeAtPlane": false,
+      "mergeTolerance": 0,
+      "intensity": 0,
+      "visible": true,
+      "closed": false,
+      "degree": 0,
+      "periodic": false
+    },
+    {
+      "id": "470bc4fe-9373-4eca-9805-bbe3e60e0242",
+      "name": "window-9",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "kind": "opening",
       "radius": 0,
@@ -1617,16 +1807,6 @@
       "openingType": "window",
       "footprint": [
         [
-          -9.595432,
-          0,
-          -0.93809485
-        ],
-        [
-          -11.119432,
-          0,
-          -0.93809485
-        ],
-        [
           -11.119432,
           0,
           -0.7704549
@@ -1635,669 +1815,19 @@
           -9.595432,
           0,
           -0.7704549
+        ],
+        [
+          -9.595432,
+          0,
+          -0.93809485
+        ],
+        [
+          -11.119432,
+          0,
+          -0.93809485
         ]
       ],
-      "hostWallId": "f81a4628-91a0-447f-964b-e66c44471425",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "3089ac52-fa64-4aee-a642-069b31901771",
-      "name": "window-5",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 1.2,
-      "thickness": 1.5240002,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "window",
-      "footprint": [
-        [
-          -13.507032,
-          0,
-          -0.32849485
-        ],
-        [
-          -15.031033,
-          0,
-          -0.32849485
-        ],
-        [
-          -15.031033,
-          0,
-          -0.16085485
-        ],
-        [
-          -13.507032,
-          0,
-          -0.16085485
-        ]
-      ],
-      "hostWallId": "ff62268f-9c18-46e0-8a28-78374682215d",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "4e9d4d49-2cce-4440-a0d3-9b86e6f2d37c",
-      "name": "window-6",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 1.2,
-      "thickness": 1.2192001,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "window",
-      "footprint": [
-        [
-          -9.671633,
-          0,
-          8.858685
-        ],
-        [
-          -8.452433,
-          0,
-          8.858685
-        ],
-        [
-          -8.452433,
-          0,
-          8.635166
-        ],
-        [
-          -9.671633,
-          0,
-          8.635166
-        ]
-      ],
-      "hostWallId": "c726bcab-516d-469d-a08c-56762b9f1742",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "ad1cc7e4-a082-452e-b212-73dd97cb9054",
-      "name": "door-7",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.9144001,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          1.2351277,
-          0,
-          3.2605252
-        ],
-        [
-          1.2351277,
-          0,
-          2.3461251
-        ],
-        [
-          1.0116076,
-          0,
-          2.3461251
-        ],
-        [
-          1.0116076,
-          0,
-          3.2605252
-        ]
-      ],
-      "hostWallId": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "3d68dc8f-5460-4ad1-9647-6e252c2d0b49",
-      "name": "door-8",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.9144001,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -2.0710075,
-          0,
-          2.0667253
-        ],
-        [
-          -2.0710075,
-          0,
-          1.1523252
-        ],
-        [
-          -2.1910074,
-          0,
-          1.1523252
-        ],
-        [
-          -2.1910074,
-          0,
-          2.0667253
-        ]
-      ],
-      "hostWallId": "03a6b3a0-dc5d-4578-b299-59dff2973b38",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "84623430-834f-422f-a9fa-c0f24d99be75",
-      "name": "door-9",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.9144001,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          1.2732277,
-          0,
-          6.6387253
-        ],
-        [
-          1.2732277,
-          0,
-          5.724325
-        ],
-        [
-          1.0497077,
-          0,
-          5.724325
-        ],
-        [
-          1.0497077,
-          0,
-          6.6387253
-        ]
-      ],
-      "hostWallId": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "e8453915-ebb0-41a8-b873-2fa60e3ec8da",
-      "name": "door-10",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.9144001,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -1.2515323,
-          0,
-          0.91610515
-        ],
-        [
-          -2.1659324,
-          0,
-          0.91610515
-        ],
-        [
-          -2.1659324,
-          0,
-          1.0837451
-        ],
-        [
-          -1.2515323,
-          0,
-          1.0837451
-        ]
-      ],
-      "hostWallId": "bd6dac37-319f-4039-a2a7-f93238d752e3",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "8ed260d5-5d5c-457b-97ae-6116ded2e134",
-      "name": "door-11",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.9144001,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -15.158032,
-          0,
-          8.871386
-        ],
-        [
-          -14.243632,
-          0,
-          8.871386
-        ],
-        [
-          -14.243632,
-          0,
-          8.647865
-        ],
-        [
-          -15.158032,
-          0,
-          8.647865
-        ]
-      ],
-      "hostWallId": "c726bcab-516d-469d-a08c-56762b9f1742",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "6cf1cb9c-b270-40f5-a711-fba7842bdd95",
-      "name": "door-12",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.9143996,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -5.8108325,
-          0,
-          0.8881651
-        ],
-        [
-          -6.725232,
-          0,
-          0.8881651
-        ],
-        [
-          -6.725232,
-          0,
-          1.1116852
-        ],
-        [
-          -5.8108325,
-          0,
-          1.1116852
-        ]
-      ],
-      "hostWallId": "175021b0-a523-4428-9f5e-1bfa6646747a",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "0895ca9e-c9e6-49da-8309-f0df6473a3b4",
-      "name": "door-13",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.7620001,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -12.046207,
-          0,
-          2.4223251
-        ],
-        [
-          -12.046207,
-          0,
-          3.1843252
-        ],
-        [
-          -11.926207,
-          0,
-          3.1843252
-        ],
-        [
-          -11.926207,
-          0,
-          2.4223251
-        ]
-      ],
-      "hostWallId": "d3844196-530f-406b-9f28-cbfdc6be20db",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "acd085e4-9b57-4c65-93a7-594ff4884c0d",
-      "name": "door-14",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.76199996,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -4.07537,
-          0,
-          1.9524251
-        ],
-        [
-          -4.07537,
-          0,
-          2.714425
-        ],
-        [
-          -3.95537,
-          0,
-          2.714425
-        ],
-        [
-          -3.95537,
-          0,
-          1.9524251
-        ]
-      ],
-      "hostWallId": "c0041324-8b0a-478f-967b-40a77eb0d40a",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "404f0349-f477-404d-ab01-67c70d9579c7",
-      "name": "door-15",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.7619996,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -9.91737,
-          0,
-          7.438825
-        ],
-        [
-          -9.91737,
-          0,
-          8.200825
-        ],
-        [
-          -9.797369,
-          0,
-          8.200825
-        ],
-        [
-          -9.797369,
-          0,
-          7.438825
-        ]
-      ],
-      "hostWallId": "78b0f0eb-f3d7-4d99-9fb5-e85564a79461",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "9faf262d-b783-45c2-a19a-40cc055dc2c3",
-      "name": "door-16",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.7619996,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -12.224657,
-          0,
-          5.165525
-        ],
-        [
-          -12.224657,
-          0,
-          4.4035254
-        ],
-        [
-          -12.344658,
-          0,
-          4.4035254
-        ],
-        [
-          -12.344658,
-          0,
-          5.165525
-        ]
-      ],
-      "hostWallId": "dfccf641-f507-4c4e-8fb8-210baaee2523",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "bcdd4867-058f-46be-88e4-4e3d85389c6d",
-      "name": "door-17",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.71119976,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -8.4235325,
-          0,
-          4.4035254
-        ],
-        [
-          -8.4235325,
-          0,
-          5.114725
-        ],
-        [
-          -8.303532,
-          0,
-          5.114725
-        ],
-        [
-          -8.303532,
-          0,
-          4.4035254
-        ]
-      ],
-      "hostWallId": "d99e5dba-6ab9-428e-9876-4a4bd772bb30",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "d26aeda1-e63f-4019-bf44-d7149c837605",
-      "name": "door-18",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.6096,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          0.8439677,
-          0,
-          8.635166
-        ],
-        [
-          0.23436768,
-          0,
-          8.635166
-        ],
-        [
-          0.23436768,
-          0,
-          8.858685
-        ],
-        [
-          0.8439677,
-          0,
-          8.858685
-        ]
-      ],
-      "hostWallId": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d",
-      "mergeAtPlane": false,
-      "mergeTolerance": 0,
-      "intensity": 0,
-      "visible": true,
-      "closed": false,
-      "degree": 0,
-      "periodic": false
-    },
-    {
-      "id": "88ee2da5-654e-4fc2-bcb1-c9d91fc20fbb",
-      "name": "door-19",
-      "layerId": "d1000000-0000-4000-8000-000000000002",
-      "kind": "opening",
-      "radius": 0,
-      "height": 2.1,
-      "thickness": 0.60959995,
-      "deck": 0,
-      "startAngle": 0,
-      "endAngle": 0,
-      "rotationY": 0,
-      "openingType": "door",
-      "footprint": [
-        [
-          -1.7976323,
-          0,
-          8.635166
-        ],
-        [
-          -2.4072323,
-          0,
-          8.635166
-        ],
-        [
-          -2.4072323,
-          0,
-          8.858685
-        ],
-        [
-          -1.7976323,
-          0,
-          8.858685
-        ]
-      ],
-      "hostWallId": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d",
+      "hostWallId": "2a7fa530-241c-4e08-a3f8-2a28f17d9d4e",
       "mergeAtPlane": false,
       "mergeTolerance": 0,
       "intensity": 0,
