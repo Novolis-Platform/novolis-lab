@@ -6,8 +6,8 @@
     "name": "Novolis.Cad.Blueprint",
     "version": "1"
   },
-  "createdAt": "2026-11-10T16:31:24.2972294Z",
-  "modifiedAt": "2026-11-10T16:31:24.2973323Z",
+  "createdAt": "2026-11-10T16:31:48.2551939Z",
+  "modifiedAt": "2026-11-10T16:31:48.2552966Z",
   "context": "house",
   "linearUnit": "meter",
   "unitScaleMeters": 1,
@@ -15,7 +15,7 @@
   "cadDocumentName": "Bishop-Overland floor plan (jscad sample)",
   "levels": [
     {
-      "id": "9cd5894f-54e2-4eed-9d06-43fd2aa1c957",
+      "id": "87f171e8-2e2f-468b-a176-534f20bfd0f0",
       "index": 0,
       "name": "Ground",
       "elevation": 0
@@ -24,7 +24,7 @@
   "shells": [],
   "walls": [
     {
-      "id": "3c38dc65-6861-4c8f-9ca8-d7a38086f5f2",
+      "id": "c726bcab-516d-469d-a08c-56762b9f1742",
       "name": "W-1",
       "levelIndex": 0,
       "a": [
@@ -41,10 +41,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "3c38dc65-6861-4c8f-9ca8-d7a38086f5f2"
+      "sourceEntityId": "c726bcab-516d-469d-a08c-56762b9f1742"
     },
     {
-      "id": "3873617b-381f-4497-992c-59adfaae8602",
+      "id": "567c4781-b355-4837-baab-0b4d8581dff9",
       "name": "W-2",
       "levelIndex": 0,
       "a": [
@@ -61,10 +61,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "3873617b-381f-4497-992c-59adfaae8602"
+      "sourceEntityId": "567c4781-b355-4837-baab-0b4d8581dff9"
     },
     {
-      "id": "65d8281c-b63c-4f7c-8f5b-b70f2c74f555",
+      "id": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a",
       "name": "W-3",
       "levelIndex": 0,
       "a": [
@@ -81,10 +81,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "65d8281c-b63c-4f7c-8f5b-b70f2c74f555"
+      "sourceEntityId": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a"
     },
     {
-      "id": "5840ee93-72d8-43cf-ae0b-0a8bc6209d26",
+      "id": "d97e38d5-cfa7-4998-8f79-6ad965b67fa8",
       "name": "W-4",
       "levelIndex": 0,
       "a": [
@@ -101,10 +101,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "5840ee93-72d8-43cf-ae0b-0a8bc6209d26"
+      "sourceEntityId": "d97e38d5-cfa7-4998-8f79-6ad965b67fa8"
     },
     {
-      "id": "32833bdb-1f0e-4b04-9930-f6c981608e11",
+      "id": "bd6dac37-319f-4039-a2a7-f93238d752e3",
       "name": "W-5",
       "levelIndex": 0,
       "a": [
@@ -121,10 +121,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "32833bdb-1f0e-4b04-9930-f6c981608e11"
+      "sourceEntityId": "bd6dac37-319f-4039-a2a7-f93238d752e3"
     },
     {
-      "id": "1a811dd1-523f-41d8-9aba-a878ad067234",
+      "id": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d",
       "name": "W-6",
       "levelIndex": 0,
       "a": [
@@ -141,10 +141,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "1a811dd1-523f-41d8-9aba-a878ad067234"
+      "sourceEntityId": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d"
     },
     {
-      "id": "92ab8904-0ecc-4299-96b3-8306433d2157",
+      "id": "ff62268f-9c18-46e0-8a28-78374682215d",
       "name": "W-7",
       "levelIndex": 0,
       "a": [
@@ -161,10 +161,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "92ab8904-0ecc-4299-96b3-8306433d2157"
+      "sourceEntityId": "ff62268f-9c18-46e0-8a28-78374682215d"
     },
     {
-      "id": "7e2c2163-8e28-4e6f-99c2-bc6e97693683",
+      "id": "f81a4628-91a0-447f-964b-e66c44471425",
       "name": "W-8",
       "levelIndex": 0,
       "a": [
@@ -181,10 +181,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "7e2c2163-8e28-4e6f-99c2-bc6e97693683"
+      "sourceEntityId": "f81a4628-91a0-447f-964b-e66c44471425"
     },
     {
-      "id": "c5c6a96a-a7fd-4a47-90fb-17df457b5d3a",
+      "id": "d3844196-530f-406b-9f28-cbfdc6be20db",
       "name": "W-9",
       "levelIndex": 0,
       "a": [
@@ -201,10 +201,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "c5c6a96a-a7fd-4a47-90fb-17df457b5d3a"
+      "sourceEntityId": "d3844196-530f-406b-9f28-cbfdc6be20db"
     },
     {
-      "id": "72f04c15-9398-49c4-b0e8-94ca1772d2e8",
+      "id": "e558d8f3-aaa1-47f3-9802-ddf1428a1e19",
       "name": "W-10",
       "levelIndex": 0,
       "a": [
@@ -221,10 +221,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "72f04c15-9398-49c4-b0e8-94ca1772d2e8"
+      "sourceEntityId": "e558d8f3-aaa1-47f3-9802-ddf1428a1e19"
     },
     {
-      "id": "cac5fd30-5922-421a-ae33-2913d88cca51",
+      "id": "192b813a-8cbf-4cfa-bfce-8a61e8ac456d",
       "name": "W-11",
       "levelIndex": 0,
       "a": [
@@ -241,10 +241,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "cac5fd30-5922-421a-ae33-2913d88cca51"
+      "sourceEntityId": "192b813a-8cbf-4cfa-bfce-8a61e8ac456d"
     },
     {
-      "id": "bc5a8bf0-1ea1-426f-8291-3fe963d0bf71",
+      "id": "d99e5dba-6ab9-428e-9876-4a4bd772bb30",
       "name": "W-12",
       "levelIndex": 0,
       "a": [
@@ -261,10 +261,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "bc5a8bf0-1ea1-426f-8291-3fe963d0bf71"
+      "sourceEntityId": "d99e5dba-6ab9-428e-9876-4a4bd772bb30"
     },
     {
-      "id": "0c5aee88-ce4d-49f1-be19-3a767634e8c9",
+      "id": "dfccf641-f507-4c4e-8fb8-210baaee2523",
       "name": "W-13",
       "levelIndex": 0,
       "a": [
@@ -281,10 +281,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "0c5aee88-ce4d-49f1-be19-3a767634e8c9"
+      "sourceEntityId": "dfccf641-f507-4c4e-8fb8-210baaee2523"
     },
     {
-      "id": "208a722d-cddd-486b-b188-c36cf135157d",
+      "id": "175021b0-a523-4428-9f5e-1bfa6646747a",
       "name": "W-14",
       "levelIndex": 0,
       "a": [
@@ -301,10 +301,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "208a722d-cddd-486b-b188-c36cf135157d"
+      "sourceEntityId": "175021b0-a523-4428-9f5e-1bfa6646747a"
     },
     {
-      "id": "cf402358-6262-4d0c-96c3-cca17c57eadf",
+      "id": "2cd63bb4-c32b-4bcd-96cc-5c8093868b05",
       "name": "W-15",
       "levelIndex": 0,
       "a": [
@@ -321,10 +321,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "cf402358-6262-4d0c-96c3-cca17c57eadf"
+      "sourceEntityId": "2cd63bb4-c32b-4bcd-96cc-5c8093868b05"
     },
     {
-      "id": "377c7d41-fac6-496f-96b6-3e9d38d0acb0",
+      "id": "f81e2cd0-a357-4675-a8b6-1eda9e08b4f6",
       "name": "W-16",
       "levelIndex": 0,
       "a": [
@@ -341,10 +341,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "377c7d41-fac6-496f-96b6-3e9d38d0acb0"
+      "sourceEntityId": "f81e2cd0-a357-4675-a8b6-1eda9e08b4f6"
     },
     {
-      "id": "7c4e3d97-9e47-4e83-be4f-ca0f55ec2a19",
+      "id": "d8a38ef1-c317-47b0-960f-57fafb298cfd",
       "name": "W-17",
       "levelIndex": 0,
       "a": [
@@ -361,10 +361,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "7c4e3d97-9e47-4e83-be4f-ca0f55ec2a19"
+      "sourceEntityId": "d8a38ef1-c317-47b0-960f-57fafb298cfd"
     },
     {
-      "id": "c55bbf41-a532-455e-9a5f-3b04c257899b",
+      "id": "6622f006-c0cd-40f8-826c-a3b8f24d1cb9",
       "name": "W-18",
       "levelIndex": 0,
       "a": [
@@ -381,10 +381,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "c55bbf41-a532-455e-9a5f-3b04c257899b"
+      "sourceEntityId": "6622f006-c0cd-40f8-826c-a3b8f24d1cb9"
     },
     {
-      "id": "fa723dd7-56ed-47de-a14c-918fe6f2aa83",
+      "id": "ec43d71a-ba3d-48f1-9b63-8d17f0a4257e",
       "name": "W-19",
       "levelIndex": 0,
       "a": [
@@ -401,10 +401,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "fa723dd7-56ed-47de-a14c-918fe6f2aa83"
+      "sourceEntityId": "ec43d71a-ba3d-48f1-9b63-8d17f0a4257e"
     },
     {
-      "id": "0fa395a4-47b3-458d-9ed7-f5b38bbf78e6",
+      "id": "0e416256-9503-497c-b397-f7751523cb06",
       "name": "W-20",
       "levelIndex": 0,
       "a": [
@@ -421,10 +421,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "0fa395a4-47b3-458d-9ed7-f5b38bbf78e6"
+      "sourceEntityId": "0e416256-9503-497c-b397-f7751523cb06"
     },
     {
-      "id": "de349458-0c7a-4428-8a50-2f0a53c1b559",
+      "id": "a52f9191-26a0-4e9b-9f45-e70fae6a367e",
       "name": "W-21",
       "levelIndex": 0,
       "a": [
@@ -441,10 +441,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "de349458-0c7a-4428-8a50-2f0a53c1b559"
+      "sourceEntityId": "a52f9191-26a0-4e9b-9f45-e70fae6a367e"
     },
     {
-      "id": "5c50f645-09c7-4a81-bff8-814258b44547",
+      "id": "b1f005e6-301f-4e82-b3a4-3e3bbf603d39",
       "name": "W-22",
       "levelIndex": 0,
       "a": [
@@ -461,10 +461,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "5c50f645-09c7-4a81-bff8-814258b44547"
+      "sourceEntityId": "b1f005e6-301f-4e82-b3a4-3e3bbf603d39"
     },
     {
-      "id": "649768b9-89fa-47de-9bec-c5c87880baef",
+      "id": "8fae0de9-93d8-4f05-a45f-ae908e282e7e",
       "name": "W-23",
       "levelIndex": 0,
       "a": [
@@ -481,10 +481,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "649768b9-89fa-47de-9bec-c5c87880baef"
+      "sourceEntityId": "8fae0de9-93d8-4f05-a45f-ae908e282e7e"
     },
     {
-      "id": "9a4174cf-3e08-44e3-9d60-10d616777bba",
+      "id": "27a4270b-248d-4efb-871b-bbd906461358",
       "name": "W-24",
       "levelIndex": 0,
       "a": [
@@ -501,10 +501,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "9a4174cf-3e08-44e3-9d60-10d616777bba"
+      "sourceEntityId": "27a4270b-248d-4efb-871b-bbd906461358"
     },
     {
-      "id": "427dec43-d477-4237-b32a-c0d07897a40e",
+      "id": "03a6b3a0-dc5d-4578-b299-59dff2973b38",
       "name": "W-25",
       "levelIndex": 0,
       "a": [
@@ -521,10 +521,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "427dec43-d477-4237-b32a-c0d07897a40e"
+      "sourceEntityId": "03a6b3a0-dc5d-4578-b299-59dff2973b38"
     },
     {
-      "id": "c59a3c1d-6616-4cf1-89c5-bb3d89f4b95d",
+      "id": "c0041324-8b0a-478f-967b-40a77eb0d40a",
       "name": "W-26",
       "levelIndex": 0,
       "a": [
@@ -541,10 +541,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "c59a3c1d-6616-4cf1-89c5-bb3d89f4b95d"
+      "sourceEntityId": "c0041324-8b0a-478f-967b-40a77eb0d40a"
     },
     {
-      "id": "c09c8cff-923b-4cf0-8bef-45c23a9f7d9a",
+      "id": "c38a5598-43da-42cf-8914-7bbbc1c92133",
       "name": "W-27",
       "levelIndex": 0,
       "a": [
@@ -561,10 +561,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "c09c8cff-923b-4cf0-8bef-45c23a9f7d9a"
+      "sourceEntityId": "c38a5598-43da-42cf-8914-7bbbc1c92133"
     },
     {
-      "id": "c643476a-582f-4641-8b82-5920971bb718",
+      "id": "efdfe8d2-175a-488e-9ecf-8c939b61de5a",
       "name": "W-28",
       "levelIndex": 0,
       "a": [
@@ -581,10 +581,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "c643476a-582f-4641-8b82-5920971bb718"
+      "sourceEntityId": "efdfe8d2-175a-488e-9ecf-8c939b61de5a"
     },
     {
-      "id": "227a18a9-173c-429c-8167-c13bdf449403",
+      "id": "828609d0-0fca-4362-9ec0-c21306057e0e",
       "name": "W-29",
       "levelIndex": 0,
       "a": [
@@ -601,10 +601,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "227a18a9-173c-429c-8167-c13bdf449403"
+      "sourceEntityId": "828609d0-0fca-4362-9ec0-c21306057e0e"
     },
     {
-      "id": "ebfe6eeb-6a83-4e56-a966-9093895cc8f2",
+      "id": "83db56e1-85f2-4066-95de-d0d0b1724c8a",
       "name": "W-30",
       "levelIndex": 0,
       "a": [
@@ -621,10 +621,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "ebfe6eeb-6a83-4e56-a966-9093895cc8f2"
+      "sourceEntityId": "83db56e1-85f2-4066-95de-d0d0b1724c8a"
     },
     {
-      "id": "853eb322-a32c-4390-8d92-1d81f90f45f2",
+      "id": "c490311a-eeca-45bb-9ea4-d4dc311f016c",
       "name": "W-31",
       "levelIndex": 0,
       "a": [
@@ -641,10 +641,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "853eb322-a32c-4390-8d92-1d81f90f45f2"
+      "sourceEntityId": "c490311a-eeca-45bb-9ea4-d4dc311f016c"
     },
     {
-      "id": "f3b38be3-0ed2-4454-8b16-e5b2152d585a",
+      "id": "1387de9f-302f-4d33-9d9e-22951281e752",
       "name": "W-32",
       "levelIndex": 0,
       "a": [
@@ -661,10 +661,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "f3b38be3-0ed2-4454-8b16-e5b2152d585a"
+      "sourceEntityId": "1387de9f-302f-4d33-9d9e-22951281e752"
     },
     {
-      "id": "31e862a2-4f8e-4ce9-b29c-1c0facdc0e25",
+      "id": "3a6e41c3-34e2-4964-b314-09861a4e916f",
       "name": "W-33",
       "levelIndex": 0,
       "a": [
@@ -681,10 +681,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "31e862a2-4f8e-4ce9-b29c-1c0facdc0e25"
+      "sourceEntityId": "3a6e41c3-34e2-4964-b314-09861a4e916f"
     },
     {
-      "id": "dfc78184-c1a9-435a-ae59-d0c6c576e5ea",
+      "id": "78b0f0eb-f3d7-4d99-9fb5-e85564a79461",
       "name": "W-34",
       "levelIndex": 0,
       "a": [
@@ -701,10 +701,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "dfc78184-c1a9-435a-ae59-d0c6c576e5ea"
+      "sourceEntityId": "78b0f0eb-f3d7-4d99-9fb5-e85564a79461"
     },
     {
-      "id": "966e1614-cbef-4fe5-bd4e-b841845794c9",
+      "id": "930825c6-6f26-47e5-b078-15c6f50278ec",
       "name": "W-35",
       "levelIndex": 0,
       "a": [
@@ -721,10 +721,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "966e1614-cbef-4fe5-bd4e-b841845794c9"
+      "sourceEntityId": "930825c6-6f26-47e5-b078-15c6f50278ec"
     },
     {
-      "id": "dbda8a29-5a8d-40e0-876d-795846bfb53e",
+      "id": "14e2539c-3f55-4ae5-bd24-8ac4d421d8b8",
       "name": "W-36",
       "levelIndex": 0,
       "a": [
@@ -741,10 +741,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "dbda8a29-5a8d-40e0-876d-795846bfb53e"
+      "sourceEntityId": "14e2539c-3f55-4ae5-bd24-8ac4d421d8b8"
     },
     {
-      "id": "9f6c07ac-5ad2-4083-8e61-ecddc10a78a7",
+      "id": "addc5ed4-713b-48cd-bfc9-a0034d364089",
       "name": "W-37",
       "levelIndex": 0,
       "a": [
@@ -761,10 +761,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "9f6c07ac-5ad2-4083-8e61-ecddc10a78a7"
+      "sourceEntityId": "addc5ed4-713b-48cd-bfc9-a0034d364089"
     },
     {
-      "id": "19c61c81-c1df-4a0f-80f3-8db073ac18f2",
+      "id": "8aa333fd-ca8f-4b08-8d24-a3a545ec972e",
       "name": "W-38",
       "levelIndex": 0,
       "a": [
@@ -781,10 +781,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "19c61c81-c1df-4a0f-80f3-8db073ac18f2"
+      "sourceEntityId": "8aa333fd-ca8f-4b08-8d24-a3a545ec972e"
     },
     {
-      "id": "3eaafb18-4a28-4f7c-aeb6-b76faf8715a2",
+      "id": "7fa7df90-e04e-4b40-9c12-ae7a27e1531d",
       "name": "W-39",
       "levelIndex": 0,
       "a": [
@@ -801,10 +801,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "3eaafb18-4a28-4f7c-aeb6-b76faf8715a2"
+      "sourceEntityId": "7fa7df90-e04e-4b40-9c12-ae7a27e1531d"
     },
     {
-      "id": "ad3a2edc-08c6-48b1-a826-aa9ba597b778",
+      "id": "7db5ca75-d978-465b-bc4d-d8615f61d003",
       "name": "W-40",
       "levelIndex": 0,
       "a": [
@@ -821,12 +821,12 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000001",
       "layerName": "A-WALL",
-      "sourceEntityId": "ad3a2edc-08c6-48b1-a826-aa9ba597b778"
+      "sourceEntityId": "7db5ca75-d978-465b-bc4d-d8615f61d003"
     }
   ],
   "spaces": [
     {
-      "id": "b49aba4e-6dc4-4176-8cdb-8f727230e52b",
+      "id": "ef19034a-95ec-4b40-b95e-0277a387c59f",
       "name": "ENTRY",
       "levelIndex": 0,
       "kind": "interior",
@@ -915,10 +915,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000003",
       "layerName": "A-SPACE",
-      "sourceEntityId": "b49aba4e-6dc4-4176-8cdb-8f727230e52b"
+      "sourceEntityId": "ef19034a-95ec-4b40-b95e-0277a387c59f"
     },
     {
-      "id": "d94f2600-74e4-4538-ac86-732234ab19bd",
+      "id": "4645378e-9c85-4db7-a2a6-166cd2fb0ee9",
       "name": "PORCH",
       "levelIndex": 0,
       "kind": "interior",
@@ -947,10 +947,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000003",
       "layerName": "A-SPACE",
-      "sourceEntityId": "d94f2600-74e4-4538-ac86-732234ab19bd"
+      "sourceEntityId": "4645378e-9c85-4db7-a2a6-166cd2fb0ee9"
     },
     {
-      "id": "0ce10952-1ff1-4939-a388-8f2e1c790838",
+      "id": "f4b9ec4a-496f-494d-abd3-01c95397ce10",
       "name": "2 CAR GARAGE",
       "levelIndex": 0,
       "kind": "interior",
@@ -979,10 +979,10 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000003",
       "layerName": "A-SPACE",
-      "sourceEntityId": "0ce10952-1ff1-4939-a388-8f2e1c790838"
+      "sourceEntityId": "f4b9ec4a-496f-494d-abd3-01c95397ce10"
     },
     {
-      "id": "35c93ca7-d74f-488f-b56b-b1ef23d7c99f",
+      "id": "b3065475-c8bc-4334-999e-b42f2f96d656",
       "name": "DECK",
       "levelIndex": 0,
       "kind": "interior",
@@ -1011,12 +1011,12 @@
       "height": 2.7,
       "layerId": "d1000000-0000-4000-8000-000000000003",
       "layerName": "A-SPACE",
-      "sourceEntityId": "35c93ca7-d74f-488f-b56b-b1ef23d7c99f"
+      "sourceEntityId": "b3065475-c8bc-4334-999e-b42f2f96d656"
     }
   ],
   "openings": [
     {
-      "id": "29073fde-1680-4c3e-9b7a-155adf424f4a",
+      "id": "9937fa35-3efd-4cf9-aac6-e11590de2ab0",
       "name": "window-1",
       "levelIndex": 0,
       "kind": "window",
@@ -1044,13 +1044,13 @@
           7.5531254
         ]
       ],
-      "hostWallId": "65d8281c-b63c-4f7c-8f5b-b70f2c74f555",
+      "hostWallId": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "29073fde-1680-4c3e-9b7a-155adf424f4a"
+      "sourceEntityId": "9937fa35-3efd-4cf9-aac6-e11590de2ab0"
     },
     {
-      "id": "fb3cbade-7d24-47a1-91a2-b9992588c42e",
+      "id": "0cc3f409-01fe-41bd-a7dd-3a1ace09f6fb",
       "name": "window-2",
       "levelIndex": 0,
       "kind": "window",
@@ -1078,13 +1078,13 @@
           8.934885
         ]
       ],
-      "hostWallId": "3c38dc65-6861-4c8f-9ca8-d7a38086f5f2",
+      "hostWallId": "c726bcab-516d-469d-a08c-56762b9f1742",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "fb3cbade-7d24-47a1-91a2-b9992588c42e"
+      "sourceEntityId": "0cc3f409-01fe-41bd-a7dd-3a1ace09f6fb"
     },
     {
-      "id": "d89bcca8-fc73-421a-98f1-beb8d8aea056",
+      "id": "c0017697-393b-4747-9cdc-86eece60fba5",
       "name": "window-3",
       "levelIndex": 0,
       "kind": "window",
@@ -1112,13 +1112,13 @@
           8.635166
         ]
       ],
-      "hostWallId": "1a811dd1-523f-41d8-9aba-a878ad067234",
+      "hostWallId": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "d89bcca8-fc73-421a-98f1-beb8d8aea056"
+      "sourceEntityId": "c0017697-393b-4747-9cdc-86eece60fba5"
     },
     {
-      "id": "9b581efd-71bc-4f12-8f32-158344c74a48",
+      "id": "566111e5-3d97-4170-9fb4-c6b3ada029f8",
       "name": "window-4",
       "levelIndex": 0,
       "kind": "window",
@@ -1146,13 +1146,13 @@
           -0.7704549
         ]
       ],
-      "hostWallId": "7e2c2163-8e28-4e6f-99c2-bc6e97693683",
+      "hostWallId": "f81a4628-91a0-447f-964b-e66c44471425",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "9b581efd-71bc-4f12-8f32-158344c74a48"
+      "sourceEntityId": "566111e5-3d97-4170-9fb4-c6b3ada029f8"
     },
     {
-      "id": "b0491e1c-e3e2-4cd1-bfec-acf704554c16",
+      "id": "3089ac52-fa64-4aee-a642-069b31901771",
       "name": "window-5",
       "levelIndex": 0,
       "kind": "window",
@@ -1180,13 +1180,13 @@
           -0.16085485
         ]
       ],
-      "hostWallId": "92ab8904-0ecc-4299-96b3-8306433d2157",
+      "hostWallId": "ff62268f-9c18-46e0-8a28-78374682215d",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "b0491e1c-e3e2-4cd1-bfec-acf704554c16"
+      "sourceEntityId": "3089ac52-fa64-4aee-a642-069b31901771"
     },
     {
-      "id": "e3ee1daf-c798-4a8b-8215-d31016f88368",
+      "id": "4e9d4d49-2cce-4440-a0d3-9b86e6f2d37c",
       "name": "window-6",
       "levelIndex": 0,
       "kind": "window",
@@ -1214,13 +1214,13 @@
           8.635166
         ]
       ],
-      "hostWallId": "3c38dc65-6861-4c8f-9ca8-d7a38086f5f2",
+      "hostWallId": "c726bcab-516d-469d-a08c-56762b9f1742",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "e3ee1daf-c798-4a8b-8215-d31016f88368"
+      "sourceEntityId": "4e9d4d49-2cce-4440-a0d3-9b86e6f2d37c"
     },
     {
-      "id": "afcc5c30-988f-43dc-a11f-87f9d49d92fa",
+      "id": "ad1cc7e4-a082-452e-b212-73dd97cb9054",
       "name": "door-7",
       "levelIndex": 0,
       "kind": "door",
@@ -1248,13 +1248,13 @@
           3.2605252
         ]
       ],
-      "hostWallId": "65d8281c-b63c-4f7c-8f5b-b70f2c74f555",
+      "hostWallId": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "afcc5c30-988f-43dc-a11f-87f9d49d92fa"
+      "sourceEntityId": "ad1cc7e4-a082-452e-b212-73dd97cb9054"
     },
     {
-      "id": "79731805-93de-4cf2-9f7f-55021c69b622",
+      "id": "3d68dc8f-5460-4ad1-9647-6e252c2d0b49",
       "name": "door-8",
       "levelIndex": 0,
       "kind": "door",
@@ -1282,13 +1282,13 @@
           2.0667253
         ]
       ],
-      "hostWallId": "427dec43-d477-4237-b32a-c0d07897a40e",
+      "hostWallId": "03a6b3a0-dc5d-4578-b299-59dff2973b38",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "79731805-93de-4cf2-9f7f-55021c69b622"
+      "sourceEntityId": "3d68dc8f-5460-4ad1-9647-6e252c2d0b49"
     },
     {
-      "id": "4007c0f5-50e0-4ce7-9f32-26681d500448",
+      "id": "84623430-834f-422f-a9fa-c0f24d99be75",
       "name": "door-9",
       "levelIndex": 0,
       "kind": "door",
@@ -1316,13 +1316,13 @@
           6.6387253
         ]
       ],
-      "hostWallId": "65d8281c-b63c-4f7c-8f5b-b70f2c74f555",
+      "hostWallId": "cac4f24c-ae74-4c37-bf09-d32bcdf1487a",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "4007c0f5-50e0-4ce7-9f32-26681d500448"
+      "sourceEntityId": "84623430-834f-422f-a9fa-c0f24d99be75"
     },
     {
-      "id": "295fb1d4-206b-49be-b2df-8d288319d2d5",
+      "id": "e8453915-ebb0-41a8-b873-2fa60e3ec8da",
       "name": "door-10",
       "levelIndex": 0,
       "kind": "door",
@@ -1350,13 +1350,13 @@
           1.0837451
         ]
       ],
-      "hostWallId": "32833bdb-1f0e-4b04-9930-f6c981608e11",
+      "hostWallId": "bd6dac37-319f-4039-a2a7-f93238d752e3",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "295fb1d4-206b-49be-b2df-8d288319d2d5"
+      "sourceEntityId": "e8453915-ebb0-41a8-b873-2fa60e3ec8da"
     },
     {
-      "id": "938fb0a4-5940-4ebb-a891-b7f72528c460",
+      "id": "8ed260d5-5d5c-457b-97ae-6116ded2e134",
       "name": "door-11",
       "levelIndex": 0,
       "kind": "door",
@@ -1384,13 +1384,13 @@
           8.647865
         ]
       ],
-      "hostWallId": "3c38dc65-6861-4c8f-9ca8-d7a38086f5f2",
+      "hostWallId": "c726bcab-516d-469d-a08c-56762b9f1742",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "938fb0a4-5940-4ebb-a891-b7f72528c460"
+      "sourceEntityId": "8ed260d5-5d5c-457b-97ae-6116ded2e134"
     },
     {
-      "id": "119d6fe5-8245-4bfc-90c7-40b90812b2f8",
+      "id": "6cf1cb9c-b270-40f5-a711-fba7842bdd95",
       "name": "door-12",
       "levelIndex": 0,
       "kind": "door",
@@ -1418,13 +1418,13 @@
           1.1116852
         ]
       ],
-      "hostWallId": "208a722d-cddd-486b-b188-c36cf135157d",
+      "hostWallId": "175021b0-a523-4428-9f5e-1bfa6646747a",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "119d6fe5-8245-4bfc-90c7-40b90812b2f8"
+      "sourceEntityId": "6cf1cb9c-b270-40f5-a711-fba7842bdd95"
     },
     {
-      "id": "51303623-f836-4f5c-bf05-b3fa84908af5",
+      "id": "0895ca9e-c9e6-49da-8309-f0df6473a3b4",
       "name": "door-13",
       "levelIndex": 0,
       "kind": "door",
@@ -1452,13 +1452,13 @@
           2.4223251
         ]
       ],
-      "hostWallId": "c5c6a96a-a7fd-4a47-90fb-17df457b5d3a",
+      "hostWallId": "d3844196-530f-406b-9f28-cbfdc6be20db",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "51303623-f836-4f5c-bf05-b3fa84908af5"
+      "sourceEntityId": "0895ca9e-c9e6-49da-8309-f0df6473a3b4"
     },
     {
-      "id": "9f89590e-0f10-4fa2-b185-6b21d6ab9e0b",
+      "id": "acd085e4-9b57-4c65-93a7-594ff4884c0d",
       "name": "door-14",
       "levelIndex": 0,
       "kind": "door",
@@ -1486,13 +1486,13 @@
           1.9524251
         ]
       ],
-      "hostWallId": "c59a3c1d-6616-4cf1-89c5-bb3d89f4b95d",
+      "hostWallId": "c0041324-8b0a-478f-967b-40a77eb0d40a",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "9f89590e-0f10-4fa2-b185-6b21d6ab9e0b"
+      "sourceEntityId": "acd085e4-9b57-4c65-93a7-594ff4884c0d"
     },
     {
-      "id": "7eac45f9-8c40-4fc1-b5fa-f0aa3d72314e",
+      "id": "404f0349-f477-404d-ab01-67c70d9579c7",
       "name": "door-15",
       "levelIndex": 0,
       "kind": "door",
@@ -1520,13 +1520,13 @@
           7.438825
         ]
       ],
-      "hostWallId": "dfc78184-c1a9-435a-ae59-d0c6c576e5ea",
+      "hostWallId": "78b0f0eb-f3d7-4d99-9fb5-e85564a79461",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "7eac45f9-8c40-4fc1-b5fa-f0aa3d72314e"
+      "sourceEntityId": "404f0349-f477-404d-ab01-67c70d9579c7"
     },
     {
-      "id": "11c0ee3b-ad3a-47f0-b4de-576137dcc6b1",
+      "id": "9faf262d-b783-45c2-a19a-40cc055dc2c3",
       "name": "door-16",
       "levelIndex": 0,
       "kind": "door",
@@ -1554,13 +1554,13 @@
           5.165525
         ]
       ],
-      "hostWallId": "0c5aee88-ce4d-49f1-be19-3a767634e8c9",
+      "hostWallId": "dfccf641-f507-4c4e-8fb8-210baaee2523",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "11c0ee3b-ad3a-47f0-b4de-576137dcc6b1"
+      "sourceEntityId": "9faf262d-b783-45c2-a19a-40cc055dc2c3"
     },
     {
-      "id": "bcfab2e1-ea86-4b89-ba07-c837f844c0a1",
+      "id": "bcdd4867-058f-46be-88e4-4e3d85389c6d",
       "name": "door-17",
       "levelIndex": 0,
       "kind": "door",
@@ -1588,13 +1588,13 @@
           4.4035254
         ]
       ],
-      "hostWallId": "bc5a8bf0-1ea1-426f-8291-3fe963d0bf71",
+      "hostWallId": "d99e5dba-6ab9-428e-9876-4a4bd772bb30",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "bcfab2e1-ea86-4b89-ba07-c837f844c0a1"
+      "sourceEntityId": "bcdd4867-058f-46be-88e4-4e3d85389c6d"
     },
     {
-      "id": "ac698545-1d8b-4153-96e0-16dc8ad96d7d",
+      "id": "d26aeda1-e63f-4019-bf44-d7149c837605",
       "name": "door-18",
       "levelIndex": 0,
       "kind": "door",
@@ -1622,13 +1622,13 @@
           8.858685
         ]
       ],
-      "hostWallId": "1a811dd1-523f-41d8-9aba-a878ad067234",
+      "hostWallId": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "ac698545-1d8b-4153-96e0-16dc8ad96d7d"
+      "sourceEntityId": "d26aeda1-e63f-4019-bf44-d7149c837605"
     },
     {
-      "id": "fc1b2a0c-0168-4b08-a75c-8c13b9c7bb42",
+      "id": "88ee2da5-654e-4fc2-bcb1-c9d91fc20fbb",
       "name": "door-19",
       "levelIndex": 0,
       "kind": "door",
@@ -1656,10 +1656,10 @@
           8.858685
         ]
       ],
-      "hostWallId": "1a811dd1-523f-41d8-9aba-a878ad067234",
+      "hostWallId": "eaa53a2c-f66b-4e5f-a7af-118e7d332d3d",
       "layerId": "d1000000-0000-4000-8000-000000000002",
       "layerName": "A-OPENING",
-      "sourceEntityId": "fc1b2a0c-0168-4b08-a75c-8c13b9c7bb42"
+      "sourceEntityId": "88ee2da5-654e-4fc2-bcb1-c9d91fc20fbb"
     }
   ],
   "sheets": [
