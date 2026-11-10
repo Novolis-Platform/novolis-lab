@@ -14,12 +14,13 @@ internal static class Program
     // Motion: multi-spp GPU batch per pose, one DMA readback (do not cancel mid-batch).
     private const int MovingPreviewSamplesGpu = 12;
     private const int MovingPreviewSamplesCpu = 4;
-    // Short batches so blitHz stays ~1–2. One interactive res for move+still — flipping
-    // 640x360↔800x450 on settle was wiping hundreds of samples (see 336→48 in perf logs).
+    // One interactive res for move+still — flipping 640↔800 wiped samples (336→48).
+    // One GPU launch traces the whole batch; 16 spp keeps blitHz up once the kernel is leaner.
     private const int AccumulateSamplesPerBatchGpu = 16;
     private const int AccumulateSamplesPerBatchCpu = 4;
-    private const int InteractiveTraceMaxWidth = 800;
-    private const int InteractiveTraceMaxHeight = 450;
+    // 640×360 keeps ILGPU interactive; 800×450 was ~13 ms/spp even after NEE cuts.
+    private const int InteractiveTraceMaxWidth = 640;
+    private const int InteractiveTraceMaxHeight = 360;
     private const float MovingSettleSeconds = 0.15f;
     private const float AutoOrbitRadiansPerSecond = 0.35f;
     private const int MaxProgressiveSamples = 4096;
@@ -329,7 +330,7 @@ internal static class Program
         var samples = ArgInt(args, "--samples", 192);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
 
-        using var backend = new IlgpuRayTracingBackend();
+        using var backend = new IlgpuRayTracingBackend { MaxTraceDepth = 6 };
         Console.WriteLine($"headless backend={backend.BackendLabel} {width}x{height} samples={samples}");
         var scene = ShowcaseScenes.BuildStudioShowcase();
         var camera = CameraSnapshot.LookAt(
