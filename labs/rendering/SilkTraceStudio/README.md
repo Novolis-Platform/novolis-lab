@@ -2,6 +2,8 @@
 
 Studio-style path-tracing showcase over **Novolis.Rendering.PathTrace.Demos** (Cpu / Ilgpu / Vulkan), **Novolis.Silk**, and **Novolis.Simulation.View**.
 
+The default scene is an open-face diorama box: red/green side walls, checkered floor, ceiling panel light, and a mix of matte, metal, glass, and emissive props so bounce light is visible.
+
 ## Fast local run
 
 **Do not** run `dotnet … --project d:\…\SilkTraceStudio.csproj` from `C:\Users\frank` (or any cwd without a Novolis `global.json`). That picks **SDK 11 preview** instead of lab-pinned **10.0.403** and makes Restore much slower.
@@ -56,3 +58,9 @@ dotnet build-server shutdown
 | R | Reset accumulation |
 
 Title bar shows backend, samples, FPS, and control hints. Console gets a 5s `ILogger` perf pulse.
+
+## Headless still
+
+```powershell
+dotnet run --project d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\SilkTraceStudio.csproj -p:NovolisUseProjectReferences=true -c Release -- --headless-png d:\novolis\novolis-lab\labs\rendering\SilkTraceStudio\docs\studio-diorama.png --width 960 --height 540 --samples 256
+```

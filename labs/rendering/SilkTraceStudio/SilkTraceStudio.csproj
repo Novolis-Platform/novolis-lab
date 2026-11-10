@@ -11,6 +11,7 @@
     <!-- PathTrace.Demos already pulls Cpu / Igpu / Vulkan / Runtime / Scene. -->
     <LibraryReference Include="Novolis.Rendering.PathTrace.Demos" />
     <LibraryReference Include="Novolis.Silk" />
+    <LibraryReference Include="Novolis.Silk.Capture" />
     <LibraryReference Include="Novolis.Simulation.View" />
   </ItemGroup>
 </Project>

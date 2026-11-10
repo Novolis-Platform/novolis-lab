@@ -1,8 +1,10 @@
 using System.Numerics;
 using Microsoft.Extensions.Logging;
+using Novolis.Rendering.Backends.Igpu;
 using Novolis.Rendering.PathTrace.Demos;
 using Novolis.Rendering.Runtime;
 using Novolis.Silk;
+using Novolis.Silk.Capture;
 using Novolis.Simulation.View;
 
 namespace SilkTraceStudio;
@@ -22,11 +24,17 @@ internal static class Program
     private const int MaxProgressiveSamples = 512;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomFactor = 0.12f;
-    private const float DefaultDistance = 2.6f;
-    private const float DefaultPitch = 0.35f;
+    private const float DefaultDistance = 2.45f;
+    private const float DefaultPitch = 0.18f;
+    private const float DefaultYaw = 0.22f;
 
-    public static void Main()
+    public static void Main(string[] args)
     {
+        if (TryRunHeadlessPng(args))
+        {
+            return;
+        }
+
         using var loggerFactory = LoggerFactory.Create(builder =>
         {
             builder
@@ -285,7 +293,7 @@ internal static class Program
         {
             Target = ShowcaseScenes.OrbitTarget,
             Distance = DefaultDistance,
-            Yaw = 0f,
+            Yaw = DefaultYaw,
             Pitch = DefaultPitch,
             MinDistance = 0.35f,
             MaxDistance = 18f,
@@ -294,6 +302,67 @@ internal static class Program
         };
         orbit.SnapTarget(ShowcaseScenes.OrbitTarget);
         return orbit;
+    }
+
+    /// <summary>
+    /// <c>--headless-png &lt;path&gt; [--width 960] [--height 540] [--samples 128]</c>
+    /// traces the studio diorama once and writes a PNG (no window).
+    /// </summary>
+    private static bool TryRunHeadlessPng(string[] args)
+    {
+        var path = ArgValue(args, "--headless-png");
+        if (path is null)
+        {
+            return false;
+        }
+
+        var width = ArgInt(args, "--width", 960);
+        var height = ArgInt(args, "--height", 540);
+        var samples = ArgInt(args, "--samples", 192);
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+
+        using var backend = new IlgpuRayTracingBackend();
+        Console.WriteLine($"headless backend={backend.BackendLabel} {width}x{height} samples={samples}");
+        var scene = ShowcaseScenes.BuildStudioShowcase();
+        var camera = CameraSnapshot.LookAt(
+            ShowcaseScenes.StudioDefaultEye,
+            ShowcaseScenes.OrbitTarget,
+            Vector3.UnitY,
+            52f,
+            width / (float)height);
+
+        backend.ResizeAsync(width, height).GetAwaiter().GetResult();
+        backend.UploadSceneAsync(scene).GetAwaiter().GetResult();
+        backend.ResetAccumulation();
+        backend.RenderBatchAsync(camera, 0, samples, flushToCpu: true).GetAwaiter().GetResult();
+        if (!backend.Output.TryGetCpuPixels(out var pixels, out var w, out var h))
+        {
+            throw new InvalidOperationException("Path-trace backend produced no CPU pixels.");
+        }
+
+        var png = RgbaPng.Encode(pixels.ToArray(), w, h);
+        File.WriteAllBytes(path, png);
+        Console.WriteLine($"wrote {path} ({png.Length} bytes)");
+        return true;
+    }
+
+    private static string? ArgValue(string[] args, string name)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase))
+            {
+                return args[i + 1];
+            }
+        }
+
+        return null;
+    }
+
+    private static int ArgInt(string[] args, string name, int fallback)
+    {
+        var text = ArgValue(args, name);
+        return text is not null && int.TryParse(text, out var value) && value > 0 ? value : fallback;
     }
 
     private static void SoftReset(PathTraceBackgroundWorker worker, ref int sample)
