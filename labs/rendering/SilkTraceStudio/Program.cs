@@ -12,18 +12,19 @@ namespace SilkTraceStudio;
 internal static class Program
 {
     // Motion: multi-spp GPU batch per pose, one DMA readback (do not cancel mid-batch).
-    private const int MovingPreviewSamplesGpu = 12;
+    private const int MovingPreviewSamplesGpu = 8;
     private const int MovingPreviewSamplesCpu = 4;
-    // One interactive res for move+still — flipping 640↔800 wiped samples (336→48).
-    // One GPU launch traces the whole batch; 16 spp keeps blitHz up once the kernel is leaner.
-    private const int AccumulateSamplesPerBatchGpu = 16;
-    private const int AccumulateSamplesPerBatchCpu = 4;
-    // 640×360 keeps ILGPU interactive; 800×450 was ~13 ms/spp even after NEE cuts.
-    private const int InteractiveTraceMaxWidth = 640;
-    private const int InteractiveTraceMaxHeight = 360;
-    private const float MovingSettleSeconds = 0.15f;
+    // Settled 4K batches stay short so the first clean blit arrives before a multi-second stall.
+    private const int AccumulateSamplesPerBatchGpu = 8;
+    private const int AccumulateSamplesPerBatchCpu = 2;
+    // Preview while moving; one intentional wipe to 4K after settle (not a dither between close sizes).
+    private const int PreviewTraceWidth = 640;
+    private const int PreviewTraceHeight = 360;
+    private const int SettleTraceWidth = 3840;
+    private const int SettleTraceHeight = 2160;
+    private const float MovingSettleSeconds = 0.2f;
     private const float AutoOrbitRadiansPerSecond = 0.35f;
-    private const int MaxProgressiveSamples = 4096;
+    private const int MaxProgressiveSamples = 8192;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomFactor = 0.12f;
     private const float DefaultDistance = 2.45f;
@@ -80,18 +81,6 @@ internal static class Program
             {
                 frameWidth = frame.Width;
                 frameHeight = frame.Height;
-                movingTrace = false;
-                ApplyTraceSize(
-                    worker,
-                    session,
-                    display,
-                    frameWidth,
-                    frameHeight,
-                    ref traceWidth,
-                    ref traceHeight,
-                    ref sample,
-                    ref blitGeneration,
-                    ref hasBlitTexture);
             }
 
             if (frame.IsResetPressed())
@@ -170,16 +159,18 @@ internal static class Program
                 stillSeconds += frame.DeltaSeconds;
             }
 
-            // Moving vs still only changes enqueue policy now — same trace resolution either way.
+            // Preview while busy; after settle, jump once to 4K and accumulate (wipe is intentional).
             movingTrace = cameraBusy || stillSeconds < MovingSettleSeconds;
-            if (frameWidth > 0 && (traceWidth == 0 || traceHeight == 0))
+            var wantW = movingTrace ? PreviewTraceWidth : SettleTraceWidth;
+            var wantH = movingTrace ? PreviewTraceHeight : SettleTraceHeight;
+            if (wantW != traceWidth || wantH != traceHeight)
             {
                 ApplyTraceSize(
                     worker,
                     session,
                     display,
-                    frameWidth,
-                    frameHeight,
+                    wantW,
+                    wantH,
                     ref traceWidth,
                     ref traceHeight,
                     ref sample,
@@ -257,19 +248,16 @@ internal static class Program
         PathTraceBackgroundWorker worker,
         PathTraceSession session,
         PathTraceDisplayBuffer display,
-        int frameWidth,
-        int frameHeight,
+        int width,
+        int height,
         ref int traceWidth,
         ref int traceHeight,
         ref int sample,
         ref int blitGeneration,
         ref bool hasBlitTexture)
     {
-        var (width, height) = InteractiveTraceSize.Clamp(
-            frameWidth,
-            frameHeight,
-            InteractiveTraceMaxWidth,
-            InteractiveTraceMaxHeight);
+        width = System.Math.Max(2, width) & ~1;
+        height = System.Math.Max(2, height) & ~1;
         if (width == traceWidth && height == traceHeight)
         {
             return;
@@ -314,7 +302,7 @@ internal static class Program
     }
 
     /// <summary>
-    /// <c>--headless-png &lt;path&gt; [--width 960] [--height 540] [--samples 128]</c>
+    /// <c>--headless-png &lt;path&gt; [--width 3840] [--height 2160] [--samples 256]</c>
     /// traces the studio diorama once and writes a PNG (no window).
     /// </summary>
     private static bool TryRunHeadlessPng(string[] args)
@@ -325,9 +313,9 @@ internal static class Program
             return false;
         }
 
-        var width = ArgInt(args, "--width", 960);
-        var height = ArgInt(args, "--height", 540);
-        var samples = ArgInt(args, "--samples", 192);
+        var width = ArgInt(args, "--width", 3840);
+        var height = ArgInt(args, "--height", 2160);
+        var samples = ArgInt(args, "--samples", 256);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
 
         using var backend = new IlgpuRayTracingBackend { MaxTraceDepth = 6 };
