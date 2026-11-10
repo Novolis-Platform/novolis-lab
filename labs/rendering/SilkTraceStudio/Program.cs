@@ -9,21 +9,33 @@ namespace SilkTraceStudio;
 
 internal static class Program
 {
-    // Drag: 1 spp replace + pose-chaining. Auto-orbit: accumulate in small yaw buckets (samples climb).
-    private const int MovingPreviewSamplesGpu = 1;
-    private const int MovingPreviewSamplesCpu = 1;
-    private const int AccumulateSamplesPerBatchGpu = 4;
+    // Drag: multi-spp replace. Auto-orbit: wide yaw buckets so samples climb toward static quality.
+    private const int MovingPreviewSamplesGpu = 4;
+    private const int MovingPreviewSamplesCpu = 2;
+    private const int AccumulateSamplesPerBatchGpu = 8;
     private const int AccumulateSamplesPerBatchCpu = 2;
-    // Keep the DMA readback tiny while moving — present tax is GPU→CPU, not the kernel.
-    private const int MovingTraceMaxWidth = 320;
-    private const int MovingTraceMaxHeight = 180;
-    private const float MovingSettleSeconds = 0.18f;
-    private const float AutoOrbitSampleBucketRadians = 0.045f;
+    private const int OrbitAccumulateBatchGpu = 12;
+    // Drag stays DMA-cheap; auto-orbit uses a mid res so more samples actually look clean.
+    private const int DragTraceMaxWidth = 320;
+    private const int DragTraceMaxHeight = 180;
+    private const int OrbitTraceMaxWidth = 640;
+    private const int OrbitTraceMaxHeight = 360;
+    private const float MovingSettleSeconds = 0.12f;
+    private const float AutoOrbitSampleBucketRadians = 0.22f;
+    private const float AutoOrbitRadiansPerSecond = 0.22f;
     private const int MaxProgressiveSamples = 512;
+    private const int MaxOrbitProgressiveSamples = 256;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomFactor = 0.12f;
     private const float DefaultDistance = 2.6f;
     private const float DefaultPitch = 0.35f;
+
+    private enum TraceQuality : byte
+    {
+        Static = 0,
+        Drag = 1,
+        Orbit = 2,
+    }
 
     public static void Main()
     {
@@ -56,13 +68,14 @@ internal static class Program
         var autoOrbitAngle = 0f;
         var autoOrbitSampleAnchor = 0f;
         var hasBlitTexture = false;
-        var movingTrace = false;
+        var traceQuality = TraceQuality.Static;
         var stillSeconds = 0f;
 
         logger.LogInformation(
             "SilkTraceStudio started backend={Backend}",
             session.Backend.BackendLabel);
 
+        // Uncapped present loop — VSync was pinning the title FPS near ~75 on this display.
         SilkGame.Run("SilkTraceStudio — path tracing", 1280, 720, frame =>
         {
             fps.Update(frame.DeltaSeconds);
@@ -71,14 +84,14 @@ internal static class Program
             {
                 frameWidth = frame.Width;
                 frameHeight = frame.Height;
-                movingTrace = false;
+                traceQuality = TraceQuality.Static;
                 ApplyTraceSize(
                     worker,
                     session,
                     display,
                     frameWidth,
                     frameHeight,
-                    moving: false,
+                    TraceQuality.Static,
                     ref traceWidth,
                     ref traceHeight,
                     ref sample,
@@ -150,7 +163,7 @@ internal static class Program
 
             if (autoOrbit)
             {
-                autoOrbitAngle += frame.DeltaSeconds * 0.35f;
+                autoOrbitAngle += frame.DeltaSeconds * AutoOrbitRadiansPerSecond;
                 orbit.Yaw = autoOrbitAngle;
             }
 
@@ -165,23 +178,35 @@ internal static class Program
                 stillSeconds += frame.DeltaSeconds;
             }
 
-            // Drop res immediately while moving; wait briefly before upscaling so short pauses do not hitch.
-            var wantMovingTrace = cameraBusy || stillSeconds < MovingSettleSeconds;
-            if (frameWidth > 0 && wantMovingTrace != movingTrace)
+            var wantQuality = autoOrbit
+                ? TraceQuality.Orbit
+                : (cameraMoved || stillSeconds < MovingSettleSeconds)
+                    ? TraceQuality.Drag
+                    : TraceQuality.Static;
+            if (frameWidth > 0 && wantQuality != traceQuality)
             {
-                movingTrace = wantMovingTrace;
-                ApplyTraceSize(
-                    worker,
-                    session,
-                    display,
-                    frameWidth,
-                    frameHeight,
-                    moving: movingTrace,
-                    ref traceWidth,
-                    ref traceHeight,
-                    ref sample,
-                    ref blitGeneration,
-                    ref hasBlitTexture);
+                // Drag settle uses drag res briefly; only upscale when fully static.
+                if (wantQuality == TraceQuality.Static && stillSeconds < MovingSettleSeconds)
+                {
+                    wantQuality = TraceQuality.Drag;
+                }
+
+                if (wantQuality != traceQuality)
+                {
+                    traceQuality = wantQuality;
+                    ApplyTraceSize(
+                        worker,
+                        session,
+                        display,
+                        frameWidth,
+                        frameHeight,
+                        traceQuality,
+                        ref traceWidth,
+                        ref traceHeight,
+                        ref sample,
+                        ref blitGeneration,
+                        ref hasBlitTexture);
+                }
             }
 
             var aspect = traceWidth / (float)System.Math.Max(1, traceHeight);
@@ -195,7 +220,7 @@ internal static class Program
             var onGpu = IsRealGpu(session.Backend);
             if (autoOrbit)
             {
-                // Refine within a small yaw bucket so samples climb instead of strobing 1 spp replaces.
+                // Wide yaw buckets: climb toward hundreds of samples before resetting (less noisy orbit).
                 if (MathF.Abs(autoOrbitAngle - autoOrbitSampleAnchor) >= AutoOrbitSampleBucketRadians)
                 {
                     worker.ArmAccumulationReset();
@@ -203,24 +228,24 @@ internal static class Program
                     autoOrbitSampleAnchor = autoOrbitAngle;
                 }
 
-                if (sample < MaxProgressiveSamples)
+                if (sample < MaxOrbitProgressiveSamples)
                 {
                     perf.NoteEnqueue(worker.TryEnqueueAccumulate(
                         camera,
                         ref sample,
-                        onGpu ? AccumulateSamplesPerBatchGpu : AccumulateSamplesPerBatchCpu));
+                        onGpu ? OrbitAccumulateBatchGpu : AccumulateSamplesPerBatchCpu));
                 }
             }
             else if (cameraMoved)
             {
-                // Drag/zoom: coalesce poses — do not SoftReset/cancel every mouse delta.
+                // Drag/zoom: multi-spp replace, coalesced — do not SoftReset every mouse delta.
                 autoOrbitSampleAnchor = orbit.Yaw;
                 perf.NoteEnqueue(worker.TryEnqueueMovingPreview(
                     camera,
                     onGpu ? MovingPreviewSamplesGpu : MovingPreviewSamplesCpu));
                 sample = 0;
             }
-            else if (!movingTrace && sample < MaxProgressiveSamples)
+            else if (traceQuality == TraceQuality.Static && sample < MaxProgressiveSamples)
             {
                 perf.NoteEnqueue(worker.TryEnqueueAccumulate(
                     camera,
@@ -258,7 +283,7 @@ internal static class Program
                 traceWidth,
                 traceHeight,
                 cameraBusy);
-        });
+        }, vsync: false);
     }
 
     private static void ApplyTraceSize(
@@ -267,16 +292,19 @@ internal static class Program
         PathTraceDisplayBuffer display,
         int frameWidth,
         int frameHeight,
-        bool moving,
+        TraceQuality quality,
         ref int traceWidth,
         ref int traceHeight,
         ref int sample,
         ref int blitGeneration,
         ref bool hasBlitTexture)
     {
-        var (width, height) = moving
-            ? InteractiveTraceSize.Clamp(frameWidth, frameHeight, MovingTraceMaxWidth, MovingTraceMaxHeight)
-            : InteractiveTraceSize.Clamp(frameWidth, frameHeight);
+        var (width, height) = quality switch
+        {
+            TraceQuality.Drag => InteractiveTraceSize.Clamp(frameWidth, frameHeight, DragTraceMaxWidth, DragTraceMaxHeight),
+            TraceQuality.Orbit => InteractiveTraceSize.Clamp(frameWidth, frameHeight, OrbitTraceMaxWidth, OrbitTraceMaxHeight),
+            _ => InteractiveTraceSize.Clamp(frameWidth, frameHeight),
+        };
         if (width == traceWidth && height == traceHeight)
         {
             return;

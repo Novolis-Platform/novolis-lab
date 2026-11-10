@@ -98,7 +98,7 @@ internal static class Program
             }
 
             frame.SetTitle(PathTraceStatusTitle.Format(backend, display.DisplayedSampleCount, orbitEnabled));
-        });
+        }, vsync: false);
 
         worker.Dispose();
         if (backend is IDisposable disposable)
