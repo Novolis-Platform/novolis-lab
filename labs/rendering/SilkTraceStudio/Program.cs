@@ -10,12 +10,9 @@ namespace SilkTraceStudio;
 internal static class Program
 {
     // Motion: multi-spp GPU batch per pose, one DMA readback (do not cancel mid-batch).
-    // Still: progressive refine at full interactive res.
-    // Academic note: interactive PT is usually present-bound (GPU→CPU), not kernel-bound on a 4070;
-    // thrashing cancel/restart every UI frame keeps samples at 1 and the SMs idle.
-    // ~8 spp @ 640x360 ≈ one DMA period of real kernel work on a 4070 (see PathTrace.Profile).
-    private const int MovingPreviewSamplesGpu = 8;
-    private const int MovingPreviewSamplesCpu = 2;
+    // Measured ~90 blitHz at 8 spp / 640x360 → ~22 Hz at 32 spp (more kernel work per DMA tax).
+    private const int MovingPreviewSamplesGpu = 32;
+    private const int MovingPreviewSamplesCpu = 4;
     private const int AccumulateSamplesPerBatchGpu = 8;
     private const int AccumulateSamplesPerBatchCpu = 2;
     private const int MovingTraceMaxWidth = 640;
