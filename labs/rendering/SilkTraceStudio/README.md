@@ -2,7 +2,7 @@
 
 Studio-style path-tracing showcase over **Novolis.Rendering.PathTrace.Demos** (Cpu / Ilgpu / Vulkan), **Novolis.Silk**, and **Novolis.Simulation.View**.
 
-The default scene is an open-face diorama box: red/green side walls, checkered floor, ceiling panel light, and a mix of matte, metal, glass, and emissive props so bounce light is visible.
+The default scene is the **Materials capability diorama**: every `MaterialPresets.Showcase` look (Cornell walls, checker tiles, matte/metal/glass/skin, cyan lightsaber + magenta neon, softbox) compiled through `Novolis.Rendering.Materials` → path-trace NEE.
 
 ## Fast local run
 
