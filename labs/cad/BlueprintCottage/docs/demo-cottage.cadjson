@@ -6,8 +6,8 @@
     "name": "Novolis.Cad",
     "version": "2026.1.0"
   },
-  "createdAt": "2026-11-10T16:52:55.6073476Z",
-  "modifiedAt": "2026-11-10T16:52:55.6075109Z",
+  "createdAt": "2026-11-10T17:56:17.9359948Z",
+  "modifiedAt": "2026-11-10T17:56:17.9361431Z",
   "unitScaleMeters": 1,
   "linearUnit": "meter",
   "angleUnit": "radian",
@@ -31,7 +31,7 @@
   ],
   "entities": [
     {
-      "id": "8ecf0b6e-d9f6-4123-8d58-1742a0ca0c10",
+      "id": "1d8a189a-c47a-47cb-a390-4809c4236dbc",
       "name": "cottage-shell",
       "kind": "box",
       "center": [
@@ -60,7 +60,7 @@
       "periodic": false
     },
     {
-      "id": "be2861ee-2418-4b07-803a-ab58a9b5b4f1",
+      "id": "43de5833-ca04-4fdc-ad12-be799b78f3c7",
       "name": "W-S",
       "layerId": "b1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -90,7 +90,7 @@
       "periodic": false
     },
     {
-      "id": "000ce9de-6279-4e96-96ce-d4d179a5509b",
+      "id": "fd4a12e0-326e-4d6f-b7fd-5a757300a802",
       "name": "W-E",
       "layerId": "b1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -120,7 +120,7 @@
       "periodic": false
     },
     {
-      "id": "2e9a4a96-6f16-48f7-b45d-c37b810f798a",
+      "id": "6e1bde6c-13dc-4dc8-8d5b-49c4af42f1ed",
       "name": "W-N",
       "layerId": "b1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -150,7 +150,7 @@
       "periodic": false
     },
     {
-      "id": "eeac2038-d159-49c0-96ef-c2ef92bf3d5f",
+      "id": "d09a956a-9cea-4e09-861e-c2bc9cde9c3c",
       "name": "W-W",
       "layerId": "b1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -180,7 +180,7 @@
       "periodic": false
     },
     {
-      "id": "918bd5d9-ce27-4452-85ac-c7fde8819fa9",
+      "id": "2fcca6b0-8c8d-4409-8303-5c070776920c",
       "name": "W-hall",
       "layerId": "b1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -210,7 +210,7 @@
       "periodic": false
     },
     {
-      "id": "5b47de06-d36b-4255-beea-3a3572019002",
+      "id": "ea932dd1-97a6-4d69-9c80-a11a83799670",
       "name": "W-kit",
       "layerId": "b1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -240,7 +240,7 @@
       "periodic": false
     },
     {
-      "id": "fb920e5b-86d0-4935-8f3f-3e4ddd957dfb",
+      "id": "569d145d-1571-48bb-ba06-488d5323a971",
       "name": "W-bath",
       "layerId": "b1000000-0000-4000-8000-000000000001",
       "kind": "wall",
@@ -270,7 +270,7 @@
       "periodic": false
     },
     {
-      "id": "18dc6cb7-2761-4f4a-960e-4f9847c105bc",
+      "id": "35dc5198-8317-4a30-9013-1efee1b1a470",
       "name": "Entry",
       "kind": "space",
       "radius": 0,
@@ -311,7 +311,7 @@
       "periodic": false
     },
     {
-      "id": "9307355a-a9c3-4611-a355-6ed2b8032762",
+      "id": "d309d7a5-791b-4ddf-a5f0-cabf87e115c7",
       "name": "Bath",
       "kind": "space",
       "radius": 0,
@@ -352,7 +352,7 @@
       "periodic": false
     },
     {
-      "id": "27c41f92-0b03-4dea-a394-7e5c75700ae3",
+      "id": "7a5a530c-4905-4c7c-9530-271d110a8b13",
       "name": "Living",
       "kind": "space",
       "radius": 0,
@@ -393,7 +393,7 @@
       "periodic": false
     },
     {
-      "id": "8e7ed2c0-3173-49fc-aa65-b3c8f4498759",
+      "id": "06bdb4cf-60a6-4aca-874c-8411c3f1e56e",
       "name": "Kitchen",
       "kind": "space",
       "radius": 0,
@@ -434,7 +434,7 @@
       "periodic": false
     },
     {
-      "id": "011e5842-3828-436f-8cb8-ea9b9be87215",
+      "id": "164f81b7-a8c7-40e5-a50b-f39c1c1a8af5",
       "name": "Front door",
       "kind": "opening",
       "radius": 0,
@@ -467,7 +467,7 @@
           0.1
         ]
       ],
-      "hostWallId": "be2861ee-2418-4b07-803a-ab58a9b5b4f1",
+      "hostWallId": "43de5833-ca04-4fdc-ad12-be799b78f3c7",
       "mergeAtPlane": false,
       "mergeTolerance": 0,
       "intensity": 0,
@@ -477,7 +477,7 @@
       "periodic": false
     },
     {
-      "id": "64f5d086-27f0-4b23-be22-16d0ed900629",
+      "id": "f9151f02-5172-4fd5-aae4-7a2cc939bbbc",
       "name": "Bath door",
       "kind": "opening",
       "radius": 0,
@@ -510,7 +510,7 @@
           3.1
         ]
       ],
-      "hostWallId": "fb920e5b-86d0-4935-8f3f-3e4ddd957dfb",
+      "hostWallId": "569d145d-1571-48bb-ba06-488d5323a971",
       "mergeAtPlane": false,
       "mergeTolerance": 0,
       "intensity": 0,
@@ -520,7 +520,7 @@
       "periodic": false
     },
     {
-      "id": "8e127a99-0441-4f91-bbab-f8c73749ea9b",
+      "id": "7ddd1343-443d-4357-854c-87547b24a4d7",
       "name": "Living window",
       "kind": "opening",
       "radius": 0,
@@ -553,7 +553,7 @@
           0.1
         ]
       ],
-      "hostWallId": "be2861ee-2418-4b07-803a-ab58a9b5b4f1",
+      "hostWallId": "43de5833-ca04-4fdc-ad12-be799b78f3c7",
       "mergeAtPlane": false,
       "mergeTolerance": 0,
       "intensity": 0,
@@ -563,7 +563,7 @@
       "periodic": false
     },
     {
-      "id": "94338f32-093c-4eec-9e53-a5738c22d8f2",
+      "id": "01b9aa30-0a98-4b8c-9f3e-78f0cba08db7",
       "name": "Kitchen window",
       "kind": "opening",
       "radius": 0,
@@ -596,7 +596,7 @@
           5
         ]
       ],
-      "hostWallId": "000ce9de-6279-4e96-96ce-d4d179a5509b",
+      "hostWallId": "fd4a12e0-326e-4d6f-b7fd-5a757300a802",
       "mergeAtPlane": false,
       "mergeTolerance": 0,
       "intensity": 0,

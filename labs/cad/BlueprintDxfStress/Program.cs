@@ -30,10 +30,19 @@ Console.WriteLine($"  wrote {cadJsonPath}");
 var (bp, lift) = CadBlueprintProjector.FromCadDocumentWithDiagnostics(
     import.Document, CadBlueprintContexts.House, "./innerscene-bungalow.cadjson");
 bp.Name = "Innerscene · three-bedroom bungalow";
-foreach (var sheet in bp.Sheets)
+
+var sheetIndex = 0;
+foreach (var sheet in bp.Sheets.OrderBy(s => s.Id, StringComparer.Ordinal))
 {
-    sheet.Id = "NBP-DXF-001";
-    sheet.Title = "Innerscene bungalow GA (DXF smoke)";
+    sheetIndex++;
+    var viewKind = sheet.Views.FirstOrDefault()?.Kind ?? "plan";
+    sheet.Id = $"NBP-DXF-{sheetIndex:000}";
+    sheet.Title = viewKind switch
+    {
+        "section" => "Innerscene bungalow — Section A-A",
+        "elevation" => "Innerscene bungalow — South elevation",
+        _ => "Innerscene bungalow — Ground floor plan",
+    };
     sheet.Rev = "A";
     sheet.ShowUi = false;
     sheet.Orientation = "plan-north-up";
@@ -66,9 +75,12 @@ if (!result.Ok)
 
 foreach (var p in result.WrittenPaths)
     Console.WriteLine($"  wrote {p}");
+
+var htmlCount = result.WrittenPaths.Count(p => p.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
 Console.WriteLine(
-    $"OK — walls={import.WallCount} spaces={import.SpaceCount} openings={import.OpeningCount}");
-return 0;
+    $"OK — walls={import.WallCount} spaces={import.SpaceCount} openings={import.OpeningCount} "
+    + $"views={import.Views.Count} strokes={import.StrokeCount} sheets={htmlCount}");
+return htmlCount >= 3 ? 0 : 1;
 
 static string ResolveFixture()
 {
