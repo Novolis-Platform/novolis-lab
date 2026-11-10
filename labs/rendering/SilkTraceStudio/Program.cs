@@ -15,14 +15,14 @@ internal static class Program
     // Measured ~90 blitHz at 8 spp / 640x360 → ~22 Hz at 32 spp (more kernel work per DMA tax).
     private const int MovingPreviewSamplesGpu = 32;
     private const int MovingPreviewSamplesCpu = 4;
-    // Still frames: fat GPU batches amortize ~500ms readback at 960x540 (blitHz≈2 at 8spp was too thin).
-    private const int AccumulateSamplesPerBatchGpu = 48;
+    // Still frames: fat GPU batches; NEE now works so each spp cleans walls instead of mud.
+    private const int AccumulateSamplesPerBatchGpu = 64;
     private const int AccumulateSamplesPerBatchCpu = 4;
     private const int MovingTraceMaxWidth = 640;
     private const int MovingTraceMaxHeight = 360;
     private const float MovingSettleSeconds = 0.15f;
     private const float AutoOrbitRadiansPerSecond = 0.35f;
-    private const int MaxProgressiveSamples = 2048;
+    private const int MaxProgressiveSamples = 4096;
     private const float MouseLookSensitivity = 0.004f;
     private const float ScrollZoomFactor = 0.12f;
     private const float DefaultDistance = 2.45f;
